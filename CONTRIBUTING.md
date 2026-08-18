@@ -2,11 +2,11 @@
 
 This repo is internal team + core contributors. PRs go through review before merge.
 
-## Format (settled 2026-08-18)
+## Format (settled 2026-08-18, revised same day)
 
 Two layers, both required for a new example:
 
-1. **A card on `index.html`** — title, one-line description, a real code snippet, a `file:line` citation. If you're writing more than 2-3 sentences of description, the example is teaching two things — split it.
+1. **A card on `index.html`** — title + a one-sentence hook that states the *consequence*, not just the mechanic (compare "one hash, eight fields" to "reorder the fields and you get a silently different hash" — the second is why anyone should care). No code snippet on the card itself — that lives in the walkthrough. Whole card is a clickable link.
 2. **A short animated walkthrough** (`qN-slug.html`) the card links to — same stage/diagram/code/caption format as the original demos, 3 steps, one sentence per caption. See "Animated walkthrough rules" below before building one.
 
 Before you start a new example, open (or claim) a GitHub Issue for the topic first.
@@ -34,16 +34,15 @@ Both move fast — `git pull` (or re-clone) fresh before writing anything, and r
 Each example is a `.card` in `index.html`'s grid, under the right audience section:
 
 - **Title** — action-oriented, states what you're doing ("Compute your cross-chain address"), not the mechanic's internal name.
-- **One-line description** — what it does and why you'd reach for it. One sentence, two max.
-- **A time badge** — `quick` (green, ≤3 min to read/adapt) or `medium` (amber, 4-6 min). Nothing on this page should take longer than that; if it does, it's not a basic example.
-- **A real code snippet** — short enough to read at a glance, long enough to actually copy-paste and use.
-- **A `file:line` citation** with a link to the real source line.
+- **A one-sentence hook** — the consequence or reason to care, not a restatement of the title. Ask "so what?" before shipping it — if the answer isn't in the sentence, it's still a mechanic description, not a hook.
+- **A time badge** — this is time to *watch the 3-step walkthrough*, not time to complete the real process it depicts. For a contract-level snippet those are close enough not to matter; for an infra walkthrough (deploying a real testnet, running a load test) they are NOT the same number, and the badge must not blur them. If a walkthrough depicts something that takes real setup time (docker builds, funding a faucet, a multi-minute sync), say so honestly in the hook or caption rather than let the badge imply otherwise.
+- **CTA** — "WATCH THE 3-STEP WALKTHROUGH →", exactly, on every card. Consistency here is deliberate — 14 cards with 14 different CTAs would cost more scanability than it buys in novelty.
 
-Match the existing cards' visual style exactly — same palette, same card shape, same badge colors. Don't introduce a new look per contributor.
+Match the existing cards' visual style exactly — same palette, same card shape. Don't introduce a new look per contributor.
 
 ## The "coming soon" honesty rule
 
-An audience section with no examples yet gets an honest "coming soon" note, not empty space or a fabricated example. Never write a card that implies something works when it doesn't — `SPEC · NOT LIVE` badges every page for the same reason.
+An audience section with no examples yet gets an honest "coming soon" note, not empty space or a fabricated example. Never write a card or caption that implies something works, or takes less time/effort, than it really does.
 
 ## Before opening a PR
 
