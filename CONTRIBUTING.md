@@ -28,12 +28,14 @@ Three more things every walkthrough needs, all already in `q1`'s header/`scaleSt
 
 ## The one hard rule: verify against real source, don't paraphrase
 
-Every snippet must be **verbatim** from the actual source, cited by exact `file:line`. Two sources of truth:
+Every snippet must be **verbatim** from the actual source, cited by exact `file:line`. This repo is strictly about **`eez-rollup0`** — every example, dapp-dev included, has to trace back to something inside that one repository:
 
-- **Contract layer**: [`eez-association/eez-core-protocol`](https://github.com/eez-association/eez-core-protocol) @ `main`
-- **Infra layer**: [`eez-association/eez-rollup0`](https://github.com/eez-association/eez-rollup0) @ `main`
+- **Infra layer** — cite `eez-rollup0` @ `main` directly (e.g. `crates/eez-deriver/src/deriver.rs:164`).
+- **Contract layer** — `eez-core-protocol` is a **git submodule of `eez-rollup0`** (`git submodule update --init --recursive eez-core-protocol`, pinned by a gitlink commit, not by `main`). Cite it as `eez-core-protocol/<path>:<line>` — the path as it actually sits inside `eez-rollup0` — and verify against **the exact pinned commit** (`git ls-tree HEAD eez-core-protocol` in a fresh `eez-rollup0` clone, then check out that commit inside the submodule), not against `eez-core-protocol`'s own independently-moving `main`.
 
-Both move fast — `git pull` (or re-clone) fresh before writing anything, and re-check before merge if a PR sat open more than a few days. If you can't verify something, say so in the PR description rather than inventing a plausible-looking signature.
+This distinction is not pedantic — it broke a real citation once: `eez-core-protocol`'s `main` had moved two weeks ahead of the commit `eez-rollup0` actually pins, and a function had shifted by 4 lines in between. The demo was accurate against the wrong ground truth and wrong against the right one. Always resolve the pinned commit first.
+
+Everything moves fast — re-resolve the pin and re-pull fresh before writing anything, and re-check before merge if a PR sat open more than a few days. If you can't verify something, say so in the PR description rather than inventing a plausible-looking signature.
 
 ## Card format
 
