@@ -6,34 +6,34 @@
 <title>Why You Can't Call the Manager Directly — EEZ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;}
-  html,body{margin:0;background:#0b0f14;}
-  :root{ --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
+  html,body{margin:0;background:#000;}
+  :root{ --sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
   @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
   @keyframes dashMove{ to{stroke-dashoffset:-24;} }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
   button{font-family:var(--mono);}
   button:focus-visible{outline:2px solid #3fb950;outline-offset:2px;}
-  .btn:hover{background:#1e2630 !important;}
+  .btn:hover{background:#1a1a1a !important;}
   .btn-play:hover{background:#4fce61 !important;}
-  a.back{font-family:var(--mono);font-size:12px;color:#8b95a3;text-decoration:none;}
-  a.back:hover{color:#cdd5e0;}
+  a.back{font-family:var(--mono);font-size:12px;color:#9a9a9a;text-decoration:none;}
+  a.back:hover{color:#fff;}
 </style>
 </head>
 <body>
-<div style="position:fixed;inset:0;background:#0b0f14;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
-<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background:#0b0f14;color:#e6edf3;transform-origin:center center;">
+<div style="position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
+<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background-color:#000;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:42px 42px;color:#fff;transform-origin:center center;">
 
-  <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1c232d;">
+  <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1a1a1a;">
     <div style="display:flex;align-items:center;gap:18px;">
       <a class="back" href="./index.html">← Quickstarts</a>
-      <div style="width:5px;height:5px;border-radius:50%;background:#2c3543;"></div>
-      <div style="font-size:22px;font-weight:600;color:#e6edf3;">Why You Can't Call the Manager Directly</div>
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#e8b15e;background:rgba(240,168,60,0.12);border:1px solid #463a1e;border-radius:5px;padding:4px 9px;">SPEC · NOT LIVE</div>
+      <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">Why You Can't Call the Manager Directly</div>
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#e8b15e;background:transparent;border:1px solid #4a3f26;border-radius:100px;padding:4px 12px;">SPEC · NOT LIVE</div>
     </div>
-    <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#8b95a3;letter-spacing:0.06em;">01 / 03</div>
+    <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#9a9a9a;letter-spacing:0.06em;">01 / 03</div>
   </div>
 
   <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:40px;">
@@ -77,24 +77,24 @@
     <div id="note" style="font-size:16px;color:#7d8798;max-width:900px;"></div>
   </div>
 
-  <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0d1219;border:1px solid #1c232d;border-radius:10px;overflow:hidden;">
-    <div style="display:flex;align-items:center;gap:9px;padding:16px 22px;border-bottom:1px solid #1c232d;">
+  <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#050505;border:1px solid #1a1a1a;border-radius:10px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:9px;padding:16px 22px;border-bottom:1px solid #1a1a1a;">
       <div style="width:9px;height:9px;border-radius:50%;background:#3fb950;"></div>
-      <div style="font-family:var(--mono);font-size:14px;color:#8b95a3;letter-spacing:0.02em;">EEZ.sol:786</div>
+      <div style="font-family:var(--mono);font-size:14px;color:#9a9a9a;letter-spacing:0.02em;">EEZ.sol:786</div>
     </div>
     <div id="codePanel" style="height:660px;overflow:hidden;padding:22px 26px;font-family:var(--mono);font-size:20px;line-height:36px;"></div>
   </div>
 
-  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1c232d;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
+  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
     <div style="flex:1;max-width:1180px;">
       <div id="kicker" style="font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:#3fb950;margin-bottom:11px;"></div>
-      <div id="caption" style="font-size:25px;line-height:1.4;color:#c3ccd6;text-wrap:pretty;"></div>
+      <div id="caption" style="font-size:25px;line-height:1.4;color:#d8d8d8;text-wrap:pretty;"></div>
     </div>
     <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
       <div style="display:flex;align-items:center;gap:12px;">
-        <button id="btnPrev" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;">‹ Prev</button>
-        <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:#06210c;background:#3fb950;border:1px solid #3fb950;border-radius:8px;padding:12px 26px;cursor:pointer;min-width:120px;">▶ Play</button>
-        <button id="btnNext" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;">Next ›</button>
+        <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
+        <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:#06210c;background:#3fb950;border:1px solid #3fb950;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
+        <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
       </div>
       <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
     </div>

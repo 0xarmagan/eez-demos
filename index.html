@@ -4,98 +4,125 @@
 <title>EEZ Quickstarts</title>
 <meta name="description" content="Real, verbatim EEZ walkthroughs — by audience. Dapp developers, rollup operators, protocol researchers.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
-html,body{margin:0;background:#0a0d12}
-:root{--sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;--mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace}
-body{color:#e6edf3;font-family:var(--sans)}
-.wrap{max-width:1280px;margin:0 auto;padding:48px 32px 96px}
+html,body{margin:0;background:#000}
+:root{--sans:'Geist',system-ui,-apple-system,sans-serif;--mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;--grad:linear-gradient(135deg,#4ee08c,#5b8dff,#b478f0)}
+body{
+  color:#fff;font-family:var(--sans);
+  background-color:#000;
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:42px 42px;
+}
+.wrap{max-width:1200px;margin:0 auto;padding:48px 32px 100px}
 
 /* header */
-.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:8px}
-.brand{display:flex;align-items:center;gap:12px}
-.brand .sq{width:15px;height:15px;background:#3fb950;border-radius:3px;flex:none}
-.brand b{font-family:var(--mono);font-size:13.5px;letter-spacing:.06em;color:#8b95a3}
-.pill{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:#e8b15e;background:rgba(240,168,60,.12);border:1px solid #463a1e;border-radius:5px;padding:3px 8px}
-.navlinks{display:flex;gap:18px;font-family:var(--mono);font-size:12.5px}
-.navlinks a{color:#7c85f4;text-decoration:none}
-.navlinks a:hover{text-decoration:underline}
-h1{font-size:34px;font-weight:600;margin:22px 0 8px;letter-spacing:-.01em;text-wrap:balance}
-.lede{font-size:16px;line-height:1.55;color:#9aa4b1;max-width:660px;margin:0 0 28px}
-.lede a{color:#7c85f4;text-decoration:none}
-.lede a:hover{text-decoration:underline}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:56px}
+.brand{display:flex;align-items:center;gap:14px}
+.brand svg{width:24px;height:24px;flex:none}
+.brand b{font-family:var(--mono);font-size:13px;letter-spacing:.05em;color:#9a9a9a}
+.navlinks{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:12px}
+.navlinks a{color:#9a9a9a;text-decoration:none}
+.navlinks a:hover{color:#fff}
+.pill-badge{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:#e8b15e;background:transparent;border:1px solid #4a3f26;border-radius:100px;padding:4px 12px}
+
+/* eyebrow */
+.eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.1em;color:#7a7a7a;margin-bottom:18px}
+.eyebrow b{color:#fff;font-weight:500}
+
+/* headline: mixed-weight split */
+h1{font-size:48px;line-height:1.08;margin:0 0 20px;letter-spacing:-.01em;text-wrap:balance}
+h1 .w{font-weight:800}
+h1 .l{font-weight:300;color:#dcdcdc}
+.lede{font-size:16px;line-height:1.6;color:#8a8a8a;max-width:560px;margin:0 0 32px}
+.lede b{color:#d0d0d0;font-weight:500}
+.lede a{color:#d0d0d0;text-decoration:none;border-bottom:1px solid #333}
+.lede a:hover{color:#fff;border-color:#666}
+
+/* pill CTAs */
+.pill-row{display:flex;gap:12px;margin-bottom:60px;flex-wrap:wrap}
+.pill{display:inline-flex;align-items:center;gap:11px;background:#fff;color:#000;border-radius:100px;padding:5px 5px 5px 20px;font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.03em;text-decoration:none}
+.pill .circ{width:30px;height:30px;border-radius:50%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+.pill.outline{background:transparent;color:#fff;border:1px solid #2e2e2e;padding:5px 5px 5px 20px}
+.pill.outline .circ{background:#141414;border:1px solid #2e2e2e}
 
 /* audience nav */
-.audiences{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:44px}
-.aud{display:block;text-decoration:none;color:inherit;background:#10151d;border:1px solid #1c232d;border-radius:10px;padding:16px 18px;transition:border-color .15s,background .15s}
-.aud:hover{background:#131a24;border-color:#2a3444}
-.aud .k{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--c);text-transform:uppercase}
-.aud .t{font-size:16px;font-weight:600;margin-top:5px;color:#eef1f6}
-.aud .n{font-family:var(--mono);font-size:12px;color:#5c6673;margin-top:3px}
+.audiences{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#1a1a1a;border:1px solid #1a1a1a;border-radius:14px;overflow:hidden;margin-bottom:56px}
+.aud{display:block;text-decoration:none;color:inherit;background:#050505;padding:20px 22px;transition:background .15s}
+.aud:hover{background:#0d0d0d}
+.aud .k{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:#7a7a7a;text-transform:uppercase}
+.aud .t{font-size:17px;font-weight:600;margin-top:6px;color:#fff}
+.aud .n{font-family:var(--mono);font-size:12px;color:#6a6a6a;margin-top:4px}
 
 /* section */
 .sec{margin-top:8px}
-.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:44px 0 16px;flex-wrap:wrap}
-.sec-title{font-family:var(--mono);font-size:13px;letter-spacing:.12em;color:var(--c);text-transform:uppercase;display:flex;align-items:center;gap:10px}
-.sec-title .n{color:#4d5866;font-weight:400}
+.sec-head{margin:56px 0 18px}
 
-/* example card — whole card is the link, no code shown, clear CTA */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-.card{display:flex;flex-direction:column;gap:14px;text-decoration:none;color:inherit;background:#10151d;border:1px solid #1c232d;border-left:3px solid var(--c);border-radius:11px;padding:20px 22px;min-width:0;transition:border-color .15s,background .15s,transform .15s}
-.card:hover{background:#131a24;border-color:#2a3444;transform:translateY(-2px)}
-.card:hover .cta{color:#eef1f6}
-.card:hover .cta .arrow{transform:translateX(3px)}
+/* card grid — flat hairline grid, no colored rail; gradient reserved for hover accent */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1px;background:#1a1a1a;border:1px solid #1a1a1a;border-radius:14px;overflow:hidden}
+.card{text-decoration:none;color:inherit;background:#050505;padding:26px 24px;display:flex;flex-direction:column;gap:14px;min-width:0;transition:background .15s}
+.card:hover{background:#0d0d0d}
+.card:hover .cta{color:#fff}
+.card:hover .cta .circ{background:var(--grad);border-color:transparent;color:#000}
 .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.card-title{font-size:17px;font-weight:600;color:#eef1f6;line-height:1.35}
-.badge{flex:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;padding:3px 8px;border-radius:100px;white-space:nowrap}
-.badge.quick{background:rgba(63,185,80,.15);color:#5fd576}
-.badge.medium{background:rgba(240,168,60,.15);color:#f0b45c}
-.card-hook{font-size:14px;line-height:1.5;color:#9aa4b1;margin:0}
-.cta{margin-top:auto;padding-top:4px;display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:13px;font-weight:600;color:var(--c);transition:color .15s}
-.cta .arrow{display:inline-block;transition:transform .15s}
+.card-title{font-size:16.5px;font-weight:600;color:#fff;line-height:1.35}
+.badge{flex:none;font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:#7a7a7a;border:1px solid #2a2a2a;border-radius:100px;padding:3px 9px;white-space:nowrap}
+.card-hook{font-size:13.5px;line-height:1.5;color:#888;margin:0}
+.cta{margin-top:auto;padding-top:2px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:11.5px;font-weight:500;color:#767676;letter-spacing:.02em;transition:color .15s}
+.cta .circ{width:26px;height:26px;border-radius:50%;border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none;transition:background .15s,border-color .15s,color .15s;color:#fff}
 
-.soon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
-.soon-card{background:#0d1117;border:1px dashed #262f3d;border-radius:11px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
-.soon-card .t{font-size:15.5px;font-weight:600;color:#aeb7c2}
-.soon-card .n{font-size:13px;color:#5c6673}
-.soon-note{font-family:var(--mono);font-size:12px;color:#4d5866;margin-top:14px}
-.soon-note a{color:#5b6bd6;text-decoration:none}
-.soon-note a:hover{text-decoration:underline}
+.soon-note{font-family:var(--mono);font-size:12px;color:#5a5a5a;margin-top:14px}
+.soon-note a{color:#9a9a9a;text-decoration:none}
+.soon-note a:hover{color:#fff}
 
-.foot{margin-top:56px;padding-top:20px;border-top:1px solid #1c232d;font-family:var(--mono);font-size:11.5px;color:#4d5866;line-height:1.7}
-.foot a{color:#5b6bd6;text-decoration:none}
+.foot{margin-top:64px;padding-top:22px;border-top:1px solid #1a1a1a;font-family:var(--mono);font-size:11.5px;color:#5a5a5a;line-height:1.7}
+.foot a{color:#9a9a9a;text-decoration:none}
+.foot a:hover{color:#fff}
 
 @media(max-width:800px){.audiences{grid-template-columns:1fr}}
-@media(max-width:640px){.wrap{padding:32px 18px 72px}h1{font-size:26px}}
+@media(max-width:640px){.wrap{padding:32px 18px 72px}h1{font-size:32px}}
 </style>
 </head>
 <body><div class="wrap">
 
   <div class="top">
-    <div class="brand"><span class="sq"></span><b>EEZ // QUICKSTARTS</b><span class="pill">SPEC · NOT LIVE</span></div>
+    <div class="brand">
+      <svg viewBox="0 0 40 60" fill="none"><defs><linearGradient id="g1" x1="0" y1="0" x2="40" y2="60"><stop offset="0%" stop-color="#4ee08c"/><stop offset="50%" stop-color="#5b8dff"/><stop offset="100%" stop-color="#b478f0"/></linearGradient></defs><path d="M20 2 L38 26 L20 34 L2 26 Z M20 34 L38 26 L20 58 L2 26 Z" stroke="url(#g1)" stroke-width="2.4" stroke-linejoin="round"/></svg>
+      <b>EEZ // QUICKSTARTS</b>
+    </div>
     <div class="navlinks">
       <a href="https://github.com/eez-association/eez-core-protocol">eez-core-protocol ↗</a>
       <a href="https://github.com/eez-association/eez-rollup0">eez-rollup0 ↗</a>
       <a href="https://github.com/0xarmagan/eez-demos/blob/main/CONTRIBUTING.md">Contribute ↗</a>
+      <span class="pill-badge">SPEC · NOT LIVE</span>
     </div>
   </div>
 
-  <h1>Real EEZ code, by what you're trying to do</h1>
-  <p class="lede">Verbatim from <a href="https://github.com/eez-association/eez-core-protocol">eez-core-protocol</a> and <a href="https://github.com/eez-association/eez-rollup0">eez-rollup0</a>. Pick a card, watch the walkthrough.</p>
+  <div class="eyebrow">[ <b>DAPP DEVELOPERS</b> · ROLLUP OPERATORS · PROTOCOL RESEARCHERS ]</div>
+  <h1><span class="w">Real EEZ</span> <span class="l">code, by what</span><br><span class="w">you're</span> <span class="l">trying to do</span></h1>
+  <p class="lede">Verbatim from <a href="https://github.com/eez-association/eez-core-protocol"><b>eez-core-protocol</b></a> and <a href="https://github.com/eez-association/eez-rollup0"><b>eez-rollup0</b></a>. Pick a card, watch the walkthrough.</p>
+
+  <div class="pill-row">
+    <a class="pill" href="#dapp-developers">START WITH DAPP DEVS <span class="circ">→</span></a>
+    <a class="pill outline" href="#rollup-operators">RUN A ROLLUP <span class="circ">→</span></a>
+    <a class="pill outline" href="#protocol-researchers">GO DEEP <span class="circ">→</span></a>
+  </div>
 
   <div class="audiences">
-    <a class="aud" href="#dapp-developers" style="--c:#3fb950">
+    <a class="aud" href="#dapp-developers">
       <div class="k">Start here</div>
       <div class="t">Dapp Developers</div>
       <div class="n">6 examples</div>
     </a>
-    <a class="aud" href="#rollup-operators" style="--c:#7c83ff">
+    <a class="aud" href="#rollup-operators">
       <div class="k">Operate</div>
       <div class="t">Rollup Operators</div>
       <div class="n">2 examples</div>
     </a>
-    <a class="aud" href="#protocol-researchers" style="--c:#b478f0">
+    <a class="aud" href="#protocol-researchers">
       <div class="k">Go deep</div>
       <div class="t">Protocol Researchers</div>
       <div class="n">3 examples</div>
@@ -105,45 +132,45 @@ h1{font-size:34px;font-weight:600;margin:22px 0 8px;letter-spacing:-.01em;text-w
   <!-- ================= DAPP DEVELOPERS ================= -->
   <section class="sec" id="dapp-developers">
     <div class="sec-head">
-      <div class="sec-title" style="--c:#3fb950">Dapp Developers</div>
+      <div class="eyebrow">[ DAPP DEVELOPERS ]</div>
     </div>
 
     <div class="grid">
 
-      <a class="card" style="--c:#3fb950" href="./q1-compute-your-cross-chain-address.html">
-        <div class="card-head"><div class="card-title">Compute your cross-chain address</div><span class="badge quick">2 min</span></div>
+      <a class="card" href="./q1-compute-your-cross-chain-address.html">
+        <div class="card-head"><div class="card-title">Compute your cross-chain address</div><span class="badge">2 MIN</span></div>
         <p class="card-hook">Your alias exists before anything is deployed.</p>
-        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+        <div class="cta">OPEN THE WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
-      <a class="card" style="--c:#3fb950" href="./q2-send-a-cross-chain-call.html">
-        <div class="card-head"><div class="card-title">Send a cross-chain call</div><span class="badge quick">3 min</span></div>
+      <a class="card" href="./q2-send-a-cross-chain-call.html">
+        <div class="card-head"><div class="card-title">Send a cross-chain call</div><span class="badge">3 MIN</span></div>
         <p class="card-hook">No special function — just call the proxy.</p>
-        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+        <div class="cta">OPEN THE WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
-      <a class="card" style="--c:#f0a83c" href="./q3-fix-the-msg-sender-gotcha.html">
-        <div class="card-head"><div class="card-title">Fix the msg.sender gotcha</div><span class="badge medium">5 min</span></div>
+      <a class="card" href="./q3-fix-the-msg-sender-gotcha.html">
+        <div class="card-head"><div class="card-title">Fix the msg.sender gotcha</div><span class="badge">5 MIN</span></div>
         <p class="card-hook">The #1 mistake every cross-chain dev makes.</p>
-        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+        <div class="cta">OPEN THE WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
-      <a class="card" style="--c:#3fb950" href="./q4-check-if-an-address-is-a-proxy.html">
-        <div class="card-head"><div class="card-title">Check if an address is a proxy</div><span class="badge quick">2 min</span></div>
+      <a class="card" href="./q4-check-if-an-address-is-a-proxy.html">
+        <div class="card-head"><div class="card-title">Check if an address is a proxy</div><span class="badge">2 MIN</span></div>
         <p class="card-hook">Read the registry directly, don't guess.</p>
-        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+        <div class="cta">OPEN THE WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
-      <a class="card" style="--c:#b478f0" href="./q5-encode-a-calls-content-hash.html">
-        <div class="card-head"><div class="card-title">Encode a call's content hash</div><span class="badge medium">4 min</span></div>
+      <a class="card" href="./q5-encode-a-calls-content-hash.html">
+        <div class="card-head"><div class="card-title">Encode a call's content hash</div><span class="badge">4 MIN</span></div>
         <p class="card-hook">One hash, eight fields, in this exact order.</p>
-        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+        <div class="cta">OPEN THE WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
-      <a class="card" style="--c:#f85149" href="./q6-why-you-cant-call-the-manager-directly.html">
-        <div class="card-head"><div class="card-title">Why you can't call the manager directly</div><span class="badge quick">2 min</span></div>
+      <a class="card" href="./q6-why-you-cant-call-the-manager-directly.html">
+        <div class="card-head"><div class="card-title">Why you can't call the manager directly</div><span class="badge">2 MIN</span></div>
         <p class="card-hook">Only a real proxy gets through.</p>
-        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+        <div class="cta">OPEN THE WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
     </div>
@@ -152,21 +179,21 @@ h1{font-size:34px;font-weight:600;margin:22px 0 8px;letter-spacing:-.01em;text-w
   <!-- ================= ROLLUP OPERATORS ================= -->
   <section class="sec" id="rollup-operators">
     <div class="sec-head">
-      <div class="sec-title" style="--c:#7c83ff">Rollup Operators</div>
+      <div class="eyebrow">[ ROLLUP OPERATORS ]</div>
     </div>
 
     <div class="grid">
 
-      <a class="card" style="--c:#7c83ff" href="./ro1-run-the-devnet-with-kurtosis.html">
-        <div class="card-head"><div class="card-title">Run the EEZ devnet with Kurtosis</div><span class="badge quick">3 min</span></div>
+      <a class="card" href="./ro1-run-the-devnet-with-kurtosis.html">
+        <div class="card-head"><div class="card-title">Run the EEZ devnet with Kurtosis</div><span class="badge">3 MIN</span></div>
         <p class="card-hook">One command: sequencer, composer, proof-signer, embedded L1.</p>
-        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+        <div class="cta">OPEN THE WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
-      <a class="card" style="--c:#7c83ff" href="./ro2-deploy-the-protocol.html">
-        <div class="card-head"><div class="card-title">Deploy the protocol</div><span class="badge medium">4 min</span></div>
+      <a class="card" href="./ro2-deploy-the-protocol.html">
+        <div class="card-head"><div class="card-title">Deploy the protocol</div><span class="badge">4 MIN</span></div>
         <p class="card-hook">One script: EEZ, the proof system, and your manager.</p>
-        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+        <div class="cta">OPEN THE WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
     </div>
@@ -175,27 +202,27 @@ h1{font-size:34px;font-weight:600;margin:22px 0 8px;letter-spacing:-.01em;text-w
   <!-- ================= PROTOCOL RESEARCHERS ================= -->
   <section class="sec" id="protocol-researchers">
     <div class="sec-head">
-      <div class="sec-title" style="--c:#b478f0">Protocol Researchers</div>
+      <div class="eyebrow">[ PROTOCOL RESEARCHERS ]</div>
     </div>
 
     <div class="grid">
 
-      <a class="card" style="--c:#b478f0" href="./pr1-the-four-components-of-rollup0.html">
-        <div class="card-head"><div class="card-title">The four components of Rollup0</div><span class="badge quick">3 min</span></div>
+      <a class="card" href="./pr1-the-four-components-of-rollup0.html">
+        <div class="card-head"><div class="card-title">The four components of Rollup0</div><span class="badge">3 MIN</span></div>
         <p class="card-hook">Sequencer, composer, proof-signer, deriver — who does what.</p>
-        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+        <div class="cta">OPEN THE WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
-      <a class="card" style="--c:#b478f0" href="./pr2-commit-first-repair-if-needed.html">
-        <div class="card-head"><div class="card-title">Commit-first, repair-if-needed</div><span class="badge medium">4 min</span></div>
+      <a class="card" href="./pr2-commit-first-repair-if-needed.html">
+        <div class="card-head"><div class="card-title">Commit-first, repair-if-needed</div><span class="badge">4 MIN</span></div>
         <p class="card-hook">L2 commits immediately. L1 is still the source of truth.</p>
-        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+        <div class="cta">OPEN THE WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
-      <a class="card" style="--c:#b478f0" href="./pr3-the-deriver.html">
-        <div class="card-head"><div class="card-title">The deriver: trustless re-derivation</div><span class="badge medium">4 min</span></div>
+      <a class="card" href="./pr3-the-deriver.html">
+        <div class="card-head"><div class="card-title">The deriver: trustless re-derivation</div><span class="badge">4 MIN</span></div>
         <p class="card-hook">Rebuild the whole L2 chain from L1 alone.</p>
-        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+        <div class="cta">OPEN THE WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
     </div>
