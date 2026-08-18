@@ -43,8 +43,12 @@
       <a class="back" href="./index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
       <div style="font-size:22px;font-weight:600;color:#fff;">The Four Components of Rollup0</div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#5a5a5a;">PRE-MAINNET</div>
     </div>
-    <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#9a9a9a;letter-spacing:0.06em;">01 / 03</div>
+    <div style="display:flex;align-items:center;gap:22px;">
+      <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#9a9a9a;letter-spacing:0.06em;">01 / 03</div>
+      <a class="back" href="./pr2-commit-first-repair-if-needed.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Commit-First, Repair-If-Needed →</a>
+    </div>
   </div>
 
   <!-- ===== DIAGRAM — real struct/fn signatures flowing through the pipeline ===== -->
@@ -271,7 +275,34 @@
     document.getElementById("dots").innerHTML = d;
   }
 
-  function scaleStage(){ var s = Math.min(window.innerWidth/1920, window.innerHeight/1080); document.getElementById("stage").style.transform = "scale("+s+")"; }
+  function scaleStage(){
+    var w = window.innerWidth, h = window.innerHeight;
+    var s = Math.min(w/1920, h/1080);
+    var stage = document.getElementById("stage");
+    var wrap = stage.parentNode;
+    if (s < 0.58) {
+      s = 0.58;
+      stage.style.transformOrigin = "top left";
+      wrap.style.position = "static";
+      wrap.style.display = "block";
+      wrap.style.overflow = "visible";
+      wrap.style.width = (1920*s) + "px";
+      wrap.style.height = (1080*s) + "px";
+      document.body.style.overflowX = "auto";
+    } else {
+      stage.style.transformOrigin = "center center";
+      wrap.style.position = "fixed";
+      wrap.style.inset = "0";
+      wrap.style.display = "flex";
+      wrap.style.alignItems = "center";
+      wrap.style.justifyContent = "center";
+      wrap.style.overflow = "hidden";
+      wrap.style.width = "";
+      wrap.style.height = "";
+      document.body.style.overflowX = "";
+    }
+    stage.style.transform = "scale(" + s + ")";
+  }
   function schedule(){ clearTimeout(timer); timer = setTimeout(function(){ if(!playing) return; if(step >= N-1){ playing=false; render(); return; } step++; render(); schedule(); }, STEP_MS); }
   function togglePlay(){ if(playing){ clearTimeout(timer); playing=false; render(); return; } if(step >= N-1) step = 0; playing = true; render(); schedule(); }
   function next(){ clearTimeout(timer); playing=false; step=Math.min(N-1,step+1); render(); }
@@ -289,4 +320,5 @@
   scaleStage(); render();
 })();
 </script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body></html>

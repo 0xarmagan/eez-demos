@@ -20,6 +20,12 @@ Copy `q1-compute-your-cross-chain-address.html` as your structural template. Two
 
 Keep the stage/panel/control structure (fixed 1920×1080, diagram left, code right, caption bottom, Prev/Play/Next) — that part isn't up for redesign per demo.
 
+Three more things every walkthrough needs, all already in `q1`'s header/`scaleStage()` — copy them, don't reinvent:
+
+3. **A `PRE-MAINNET` label** next to the title. Removing the old `SPEC · NOT LIVE` badge site-wide (2026-08-18) left zero honesty signal anywhere — this is its quieter replacement. Every page needs it, not just `index.html`, since links get shared directly to a single walkthrough.
+4. **A `NEXT: <title> →`** link on the header's right side, pointing to the next example in the fixed sequence (dapp devs → rollup operators → protocol researchers, in the order they appear on `index.html`). The last example (`pr3-the-deriver.html`) links to `index.html` instead ("ALL 14 EXAMPLES →"). Update the chain when you insert a new example — check both neighbors.
+5. **The `scaleStage()` mobile floor.** Below `s < 0.58` the fixed-1920px stage scaled to fit becomes unreadably small on a phone. `q1`'s version clamps to `0.58` and switches the wrapper to a scrollable block instead of a centered fixed frame, so mobile gets a pannable-but-legible view instead of illegible text. Copy the whole function, not just the transform line.
+
 ## The one hard rule: verify against real source, don't paraphrase
 
 Every snippet must be **verbatim** from the actual source, cited by exact `file:line`. Two sources of truth:
