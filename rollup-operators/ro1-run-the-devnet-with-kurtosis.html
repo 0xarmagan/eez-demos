@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Run a Real Chiado L2 — EEZ</title>
+<title>Run the EEZ Devnet with Kurtosis — EEZ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -32,87 +32,90 @@
 
   <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1a1a1a;">
     <div style="display:flex;align-items:center;gap:18px;">
-      <a class="back" href="./index.html">← Quickstarts</a>
+      <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-      <div style="font-size:22px;font-weight:600;color:#fff;">Run a Real Chiado L2</div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">Run the EEZ Devnet with Kurtosis</div>
       <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#5a5a5a;">PRE-MAINNET</div>
     </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#9a9a9a;letter-spacing:0.06em;">01 / 03</div>
-      <a class="back" href="./ro4-send-and-test-cross-chain-calls.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Send & Test Cross-Chain Calls →</a>
+      <a class="back" href="ro2-deploy-the-protocol.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Deploy the Protocol →</a>
     </div>
   </div>
 
-  <!-- ===== DIAGRAM — real commands, real ports, real files ===== -->
+  <!-- ===== DIAGRAM — real commands, real stack ===== -->
   <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
 
-    <!-- STEP 1: one-time setup -->
-    <div id="s1" style="display:flex;flex-direction:column;gap:20px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">ONE-TIME SETUP</div>
-      <div style="display:flex;flex-wrap:wrap;gap:9px;max-width:960px;">
-        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">docker build eez-node</div>
-        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">docker build eez-proof-signer</div>
-        <div class="chip" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;font-weight:600;">chiado L1 snapshot</div>
-        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">shared JWT</div>
-        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">consensus configs</div>
-        <div class="chip" style="background:rgba(232,177,94,0.14);color:#f0cf9e;border:1px solid #7a5f2e;">faucet-funded keys</div>
+    <!-- STEP 1: prereqs + submodule -->
+    <div id="s1" style="display:flex;flex-direction:column;gap:22px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">PREREQS + SUBMODULE</div>
+      <div style="display:flex;flex-wrap:wrap;gap:9px;max-width:900px;">
+        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">Docker</div>
+        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">Kurtosis CLI</div>
+        <div class="chip" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;font-weight:600;">Foundry v1.7.1</div>
+        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">Bash</div>
+        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">Git</div>
+        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">GNU timeout</div>
+        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">jq</div>
+        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">curl</div>
+        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">openssl</div>
       </div>
-      <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:14px 20px;max-width:980px;">
-        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">docker build -t eez-node:local .</span></div>
-        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">docker build -f Dockerfile.signer -t eez-proof-signer:local .</span></div>
-        <div class="term" style="color:#7ee08c;margin-top:6px;">$ <span style="color:#d8d8d8;">docker run --rm -v "$PWD/data/chiado-l1:/data" \</span></div>
-        <div class="term" style="color:#d8d8d8;padding-left:20px;">ghcr.io/gnosischain/reth_gnosis:v2.0.0 download --chain chiado --minimal --datadir /data</div>
-        <div class="term" style="color:#7ee08c;margin-top:6px;">$ <span style="color:#d8d8d8;">openssl rand -hex 32 &gt; data/jwt.hex</span></div>
-        <div class="term" style="color:#7ee08c;margin-top:6px;">$ <span style="color:#d8d8d8;">git clone https://github.com/gnosischain/configs.git /tmp/gnosis-configs</span></div>
-        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">cp -r /tmp/gnosis-configs/chiado configs/chiado</span></div>
+      <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:16px 20px;max-width:900px;">
+        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">git submodule update --init --recursive \</span></div>
+        <div class="term" style="color:#d8d8d8;padding-left:20px;">eez-core-protocol</div>
       </div>
       <div style="display:flex;align-items:center;gap:14px;">
-        <div style="font-size:20px;color:#3fb950;">→</div>
-        <div style="font-family:var(--mono);font-size:14px;color:#f0cf9e;background:rgba(232,177,94,0.1);border:1px solid #7a5f2e;border-radius:7px;padding:7px 13px;">faucet.chiadochain.net</div>
-        <div style="font-size:15px;color:#7d8798;">funds the operator + poster keys with xDAI</div>
+        <div style="font-size:22px;color:#3fb950;">→</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#aeb6ec;background:rgba(124,131,255,0.1);border:1px solid #3a4173;border-radius:7px;padding:8px 14px;">eez-core-protocol/ <span style="color:#4d5866;">— contract source pulled in</span></div>
       </div>
-      <div style="font-size:16px;color:#7d8798;max-width:820px;">Two Docker builds, a minimal Chiado L1 snapshot, a shared engine-API JWT, cloned consensus configs, and faucet-funded keys — once.</div>
+      <div style="font-size:16px;color:#7d8798;max-width:820px;">Docker, Kurtosis, Foundry v1.7.1 and a handful of common CLI tools, plus the contracts submodule checked out locally.</div>
     </div>
 
-    <!-- STEP 2: deploy, then start -->
-    <div id="s2" style="display:none;flex-direction:column;gap:18px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">DEPLOY, THEN START</div>
-      <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:14px 20px;max-width:980px;">
-        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">cp .env.example .env</span></div>
-        <div class="term" style="color:#4d5866;padding-left:20px;"># EEZ_L1_RPC_URL · EEZ_L1_POSTER_KEY · EEZ_PROOF_SIGNER_KEY · EEZ_L2_SYSTEM_KEY</div>
-        <div class="term" style="color:#7ee08c;margin-top:6px;">$ <span style="color:#f1e8ff;font-weight:600;">EEZ_DEPLOY_SKIP_SIMULATION=1 make deploy-protocol</span></div>
-      </div>
-      <div style="display:flex;flex-wrap:wrap;gap:12px;">
-        <div style="font-family:var(--mono);font-size:14px;color:#cfe9d4;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:9px 14px;">deployments.env <span style="color:#4d5866;">— registry, proof system, rollup id, deploy block, bridge, EEZL2</span></div>
-        <div style="font-family:var(--mono);font-size:14px;color:#cfe9d4;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:9px 14px;">datadir/genesis.json <span style="color:#4d5866;">— timestamp pinned to deploy block</span></div>
-      </div>
-      <div style="border:1.5px dashed #7a5f2e;border-radius:9px;padding:10px 16px;max-width:900px;">
-        <div style="font-family:var(--mono);font-size:13px;color:#f0cf9e;">deploy must run before up — there is no separate genesis-creation step</div>
-      </div>
-      <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:14px 20px;max-width:980px;">
-        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">cp .env.chiado.example .env.chiado</span></div>
-        <div class="term" style="color:#7ee08c;margin-top:6px;">$ <span style="color:#d8d8d8;">docker compose --env-file .env.chiado \</span></div>
-        <div class="term" style="color:#d8d8d8;padding-left:20px;">-f docker-compose.chiado-node.yml up</div>
-      </div>
-      <div style="font-size:16px;color:#7d8798;max-width:820px;">deploy-protocol writes deployments.env and datadir/genesis.json, then docker compose starts eez-node, eez-proof-signer, and lighthouse together.</div>
-    </div>
-
-    <!-- STEP 3: health check -->
-    <div id="s3" style="display:none;flex-direction:column;gap:22px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">HEALTH CHECK</div>
+    <!-- STEP 2: start the engine + name the enclave -->
+    <div id="s2" style="display:none;flex-direction:column;gap:22px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">START THE ENGINE</div>
       <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:16px 20px;max-width:980px;">
-        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">cast block-number --rpc-url http://localhost:18645</span></div>
-        <div class="term" style="color:#4d5866;padding-left:20px;"># embedded chiado L1</div>
-        <div class="term" style="color:#7ee08c;margin-top:10px;">$ <span style="color:#d8d8d8;">cast block-number --rpc-url http://localhost:18688</span></div>
-        <div class="term" style="color:#4d5866;padding-left:20px;"># eez L2</div>
+        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">kurtosis engine start</span></div>
+        <div class="term" style="color:#7ee08c;margin-top:10px;">$ <span style="color:#d8d8d8;">export KURTOSIS_ENCLAVE=<span style="color:#f1e8ff;font-weight:600;">eez-dev</span></span></div>
+        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">export KURTOSIS_ARGS_FILE=<span style="color:#f1e8ff;font-weight:600;">"$PWD/testing/kurtosis/ci-args.yaml"</span></span></div>
       </div>
-      <div id="healthResult" style="margin-top:2px;background:rgba(63,185,80,0.06);border:1.5px dashed #3fb950;border-radius:9px;padding:14px 22px;display:inline-flex;align-items:center;gap:16px;animation:riseIn .4s ease both;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="font-size:20px;color:#3fb950;">→</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#f1e8ff;background:rgba(180,120,240,0.1);border:1px solid #5a3d78;border-radius:7px;padding:7px 13px;">eez-dev</div>
+          <div style="font-size:15px;color:#7d8798;">names the disposable enclave</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="font-size:20px;color:#3fb950;">→</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#f1e8ff;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:7px;padding:7px 13px;">testing/kurtosis/ci-args.yaml</div>
+          <div style="font-size:15px;color:#7d8798;">the real config this run uses</div>
+        </div>
+      </div>
+      <div style="font-size:16px;color:#7d8798;max-width:820px;">KURTOSIS_ENCLAVE names the network and KURTOSIS_ARGS_FILE points at the args file that configures it.</div>
+    </div>
+
+    <!-- STEP 3: one script -> full stack -->
+    <div id="s3" style="display:none;flex-direction:column;gap:22px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">ONE SCRIPT → FULL STACK</div>
+      <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:16px 20px;max-width:980px;">
+        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">bash testing/kurtosis/start.sh \</span></div>
+        <div class="term" style="color:#d8d8d8;padding-left:20px;">"$KURTOSIS_ARGS_FILE"</div>
+      </div>
+      <div style="border:1.5px dashed #3a4173;border-radius:11px;padding:16px 18px;max-width:980px;">
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#7782b8;margin-bottom:12px;">eez-dev enclave</div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+          <div style="font-family:var(--mono);font-size:14px;color:#d8d8d8;background:rgba(124,131,255,0.1);border:1px solid #3a4173;border-radius:8px;padding:11px 16px;">private PoS L1</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#d8d8d8;background:rgba(124,131,255,0.1);border:1px solid #3a4173;border-radius:8px;padding:11px 16px;">MEV-builder</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#cfe9d4;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:11px 16px;font-weight:600;">EEZ node</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#d8d8d8;background:rgba(124,131,255,0.1);border:1px solid #3a4173;border-radius:8px;padding:11px 16px;">proof-signer</div>
+        </div>
+      </div>
+      <div id="devnetResult" style="margin-top:2px;background:rgba(63,185,80,0.06);border:1.5px dashed #3fb950;border-radius:9px;padding:14px 22px;display:inline-flex;align-items:center;gap:16px;animation:riseIn .4s ease both;">
         <div style="width:8px;height:8px;border-radius:50%;background:#3fb950;animation:pulse 1.8s ease-in-out infinite;"></div>
-        <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">:18645 → L1 climbing</div>
-        <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-        <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">:18688 → L2 producing</div>
+        <div style="font-size:20px;font-weight:600;color:#eef3f8;">devnet is live</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">contracts deployed · L2 genesis generated</div>
       </div>
-      <div style="font-size:16px;color:#7d8798;max-width:820px;">Two cast calls confirm the embedded Chiado L1 is climbing past the deploy block while the L2 sequencer is producing.</div>
+      <div style="font-size:16px;color:#7d8798;max-width:820px;">Contracts deploy, a deployment-bound L2 genesis is generated, and the node, proof-signer, private L1 and MEV-builder all boot together.</div>
     </div>
 
   </div>
@@ -124,7 +127,7 @@
         <div style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#28c840;"></div>
       </div>
-      <div style="font-family:var(--mono);font-size:13px;color:#7a7a7a;letter-spacing:0.02em;">README.md · Run a chiado L2 (Docker)</div>
+      <div style="font-family:var(--mono);font-size:13px;color:#7a7a7a;letter-spacing:0.02em;">testing/kurtosis/README.md</div>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:hidden;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
   </div>
@@ -152,71 +155,47 @@
   var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["ONE-TIME SETUP", "DEPLOY, THEN START", "HEALTH CHECK"];
+  var kickers = ["PREREQS + SUBMODULE", "START THE ENGINE", "ONE SCRIPT → FULL STACK"];
   var captions = [
-    "Two Docker builds, a minimal Chiado L1 snapshot, a shared JWT, cloned configs, and faucet-funded keys — once.",
-    "deploy-protocol writes deployments.env and genesis.json before docker compose starts the node, signer, and lighthouse.",
-    "cast block-number against both ports confirms the embedded L1 is climbing and the L2 is producing."
+    "Docker, Kurtosis, Foundry v1.7.1 and a few common tools, plus the contracts submodule checked out locally.",
+    "KURTOSIS_ENCLAVE names the disposable network and KURTOSIS_ARGS_FILE points at the real ci-args.yaml.",
+    "One script deploys contracts, generates the L2 genesis, and boots the L1, MEV-builder, node and proof-signer together."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
   // so the panel never dumps the whole README ungrouped.
   var codeByStep = [
     [
-      "# one-time setup",
+      "# disposable local devnet",
       "",
-      "$ docker build -t eez-node:local .",
-      "$ docker build -f Dockerfile.signer \\",
-      "    -t eez-proof-signer:local .",
-      "",
-      "$ docker run --rm \\",
-      "    -v \"$PWD/data/chiado-l1:/data\" \\",
-      "    ghcr.io/gnosischain/reth_gnosis:v2.0.0 \\",
-      "    download --chain chiado --minimal \\",
-      "    --datadir /data",
-      "",
-      "$ openssl rand -hex 32 > data/jwt.hex",
-      "",
-      "$ git clone \\",
-      "    https://github.com/gnosischain/configs.git \\",
-      "    /tmp/gnosis-configs",
-      "$ cp -r /tmp/gnosis-configs/chiado configs/chiado"
+      "$ git submodule update --init --recursive \\",
+      "    eez-core-protocol"
     ],
     [
-      "$ cp .env.example .env",
-      "# set EEZ_L1_RPC_URL, EEZ_L1_POSTER_KEY,",
-      "#     EEZ_PROOF_SIGNER_KEY, EEZ_L2_SYSTEM_KEY",
+      "# disposable local devnet",
       "",
-      "$ EEZ_DEPLOY_SKIP_SIMULATION=1 \\",
-      "    make deploy-protocol",
+      "$ git submodule update --init --recursive \\",
+      "    eez-core-protocol",
       "",
-      "# -> writes deployments.env",
-      "# -> writes datadir/genesis.json",
-      "# (deploy runs before up --",
-      "#  no separate genesis step)",
+      "$ kurtosis engine start",
       "",
-      "$ cp .env.chiado.example .env.chiado",
-      "$ docker compose --env-file .env.chiado \\",
-      "    -f docker-compose.chiado-node.yml up"
+      "$ export KURTOSIS_ENCLAVE=eez-dev",
+      "$ export KURTOSIS_ARGS_FILE=\"$PWD/testing/kurtosis/ci-args.yaml\""
     ],
     [
-      "$ cp .env.chiado.example .env.chiado",
-      "$ docker compose --env-file .env.chiado \\",
-      "    -f docker-compose.chiado-node.yml up",
+      "$ kurtosis engine start",
       "",
-      "# ~5 min: lighthouse checkpoint-syncs L1,",
-      "# catches up past the deploy block",
+      "$ export KURTOSIS_ENCLAVE=eez-dev",
+      "$ export KURTOSIS_ARGS_FILE=\"$PWD/testing/kurtosis/ci-args.yaml\"",
       "",
-      "$ cast block-number \\",
-      "    --rpc-url http://localhost:18645",
-      "$ cast block-number \\",
-      "    --rpc-url http://localhost:18688"
+      "$ bash testing/kurtosis/start.sh \\",
+      "    \"$KURTOSIS_ARGS_FILE\""
     ]
   ];
   var hlByStep = [
-    [2,3,4],
-    [4,5,7,8],
-    [7,8,9,10]
+    [2,3],
+    [5,7,8],
+    [5,6]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Encode a Call's Content Hash — EEZ</title>
+<title>How Msg.sender Resolves Across Chains — EEZ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -13,7 +13,8 @@
   html,body{margin:0;background:#000;}
   :root{ --sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
   @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
-  @keyframes flowByte{ from{transform:translateX(-14px);opacity:0;} to{transform:translateX(0);opacity:1;} }
+  @keyframes dashMove{ to{stroke-dashoffset:-24;} }
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 20%{transform:translateX(-4px);} 40%{transform:translateX(4px);} 60%{transform:translateX(-3px);} 80%{transform:translateX(3px);} }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
   button{font-family:var(--mono);}
   button:focus-visible{outline:2px solid #3fb950;outline-offset:2px;}
@@ -21,9 +22,6 @@
   .btn-play:hover{background:#4fce61 !important;}
   a.back{font-family:var(--mono);font-size:12px;color:#9a9a9a;text-decoration:none;}
   a.back:hover{color:#fff;}
-  .byte{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;border-radius:4px;padding:5px 8px;}
-  .chip{background:#10151c;border:1px solid #232b36;border-radius:7px;padding:9px 14px;font-family:var(--mono);font-size:14.5px;color:#9aa4b1;transition:border-color .25s,color .25s,background .25s;}
-  .chip.hit{border-color:#3fb950;color:#7ee08c;background:rgba(63,185,80,0.08);}
 </style>
 </head>
 <body>
@@ -32,44 +30,49 @@
 
   <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1a1a1a;">
     <div style="display:flex;align-items:center;gap:18px;">
-      <a class="back" href="./index.html">← Quickstarts</a>
+      <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-      <div style="font-size:22px;font-weight:600;color:#fff;">Encode a Call's Content Hash</div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">How Msg.sender Resolves Across Chains</div>
       <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#5a5a5a;">PRE-MAINNET</div>
     </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#9a9a9a;letter-spacing:0.06em;">01 / 03</div>
-      <a class="back" href="./ro1-run-the-devnet-with-kurtosis.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Run the EEZ Devnet with Kurtosis →</a>
+      <a class="back" href="q4-check-if-an-address-is-a-proxy.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: How the Proxy Registry Works →</a>
     </div>
   </div>
 
-  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:30px;">
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:36px;">
 
-    <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">8 FIELDS · THIS ORDER · LOAD-BEARING</div>
-    <div id="fields" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-      <div class="chip" data-i="0">1. isStatic</div>
-      <div class="chip" data-i="1">2. sourceAddress</div>
-      <div class="chip" data-i="2">3. sourceRollupId</div>
-      <div class="chip" data-i="3">4. targetAddress</div>
-      <div class="chip" data-i="4">5. targetRollupId</div>
-      <div class="chip" data-i="5">6. value</div>
-      <div class="chip" data-i="6">7. callGas</div>
-      <div class="chip" data-i="7">8. data</div>
-    </div>
-
-    <div id="hashRow" style="display:none;align-items:center;gap:16px;">
-      <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:#7ee08c;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:10px 16px;">keccak256(abi.encode(...))</div>
-      <div style="font-size:26px;color:#3fb950;">→</div>
-      <div style="display:flex;gap:3px;">
-        <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;">a3</div>
-        <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;">7c</div>
-        <div class="byte" style="background:#141b2b;color:#4d5866;border:1px solid #232b36;">⋯</div>
-        <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;">e2</div>
+    <div style="display:flex;align-items:center;gap:0;position:relative;height:130px;">
+      <svg viewBox="0 0 1080 130" style="position:absolute;inset:0;width:1080px;height:130px;pointer-events:none;">
+        <defs><marker id="ari" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7c83ff"></path></marker></defs>
+        <line x1="300" y1="65" x2="700" y2="65" stroke="#7c83ff" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#ari)" style="animation:dashMove 1s linear infinite;"></line>
+      </svg>
+      <div style="width:280px;background:#141b2b;border:1.5px solid #7c83ff;border-radius:9px;padding:16px 18px;">
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#7782b8;">YOUR EOA</div>
+        <div style="font-size:24px;font-weight:600;margin-top:4px;color:#eef1ff;">owner</div>
       </div>
-      <div style="font-family:var(--mono);font-size:13px;color:#4d5866;">bytes32 callHash</div>
+      <div style="flex:1;"></div>
+      <div style="width:280px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:16px 18px;">
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#a98ad0;">WHAT ARRIVES</div>
+        <div style="font-size:24px;font-weight:600;margin-top:4px;color:#f1e8ff;">proxy(owner)</div>
+        <div style="font-size:13px;color:#9b8bb8;margin-top:6px;">this is msg.sender there</div>
+      </div>
     </div>
 
-    <div id="warn" style="display:none;background:#1a0f10;border:1.5px solid #f85149;border-radius:9px;padding:16px 22px;font-size:16px;color:#c79490;">Reorder any field and you get a <b style="color:#ffb3af">different</b> hash — this exact sequence is what the protocol hashes on-chain.</div>
+    <div id="revertCard" style="display:none;background:#1a0f10;border:1.5px solid #f85149;border-radius:10px;padding:22px 26px;">
+      <div style="font-family:var(--mono);font-size:18px;color:#ff8a84;">require(msg.sender == owner);</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:16px;">
+        <div style="font-size:30px;line-height:1;color:#f85149;">⦸</div>
+        <div style="font-size:16px;color:#c79490;">Passes on the same chain. Reverts every time cross-chain — msg.sender is the proxy, not owner.</div>
+      </div>
+    </div>
+
+    <div id="fixCard" style="display:none;background:rgba(63,185,80,0.06);border:1.5px solid #3fb950;border-radius:10px;padding:22px 26px;">
+      <div style="font-family:var(--mono);font-size:18px;color:#7ee08c;">require(msg.sender == proxy);</div>
+      <div style="font-size:16px;color:#a9b6ac;margin-top:14px;">Whitelist the proxy itself — derive it with computeCrossChainProxyAddress.</div>
+    </div>
+
   </div>
 
   <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0a0a0a;border:1px solid #262626;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);">
@@ -79,7 +82,7 @@
         <div style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#28c840;"></div>
       </div>
-      <div style="font-family:var(--mono);font-size:13px;color:#7a7a7a;letter-spacing:0.02em;">eez-core-protocol/src/base/EEZBase.sol:198</div>
+      <div style="font-family:var(--mono);font-size:13px;color:#7a7a7a;letter-spacing:0.02em;">eez-core-protocol/src/base/CrossChainProxy.sol:39 · fallback</div>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:hidden;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
   </div>
@@ -104,49 +107,36 @@
 
 <script>
 (function(){
-  var N = 3, STEP_MS = 3200;
+  var N = 3, STEP_MS = 3000;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["8 FIELDS, FIXED ORDER", "ONE HASH OUT", "ORDER IS LOAD-BEARING"];
+  var kickers = ["WHO ACTUALLY CALLS", "THE TRAP", "THE FIX"];
   var captions = [
-    "Eight fields describe a cross-chain call, in this exact order.",
-    "Hash them together — one bytes32 identifies the call.",
-    "Reorder them and you get a different hash. Don't."
+    "Cross-chain, the destination sees the proxy — not your EOA.",
+    "A same-chain owner check passes locally, reverts every time cross-chain.",
+    "Whitelist the proxy itself instead."
   ];
 
   var codeByStep = [
     [
-      "function computeCrossChainCallHash(",
-      "    bool isStatic,",
-      "    address sourceAddress,",
-      "    uint64 sourceRollupId,",
-      "    address targetAddress,",
-      "    uint64 targetRollupId,",
-      "    uint256 value,",
-      "    uint64 callGas,",
-      "    bytes memory data",
-      ") public pure returns (bytes32) {"
+      "// CrossChainProxy.sol — the manager forwards;",
+      "// destination sees msg.sender = proxy(owner)."
     ],
     [
-      "return keccak256(abi.encode(",
-      "    isStatic, sourceAddress, sourceRollupId,",
-      "    targetAddress, targetRollupId,",
-      "    value, callGas, data",
-      "));"
+      "// wrong — breaks cross-chain:",
+      "require(msg.sender == owner);"
     ],
     [
-      "return keccak256(abi.encode(",
-      "    isStatic, sourceAddress, sourceRollupId,",
-      "    targetAddress, targetRollupId,",
-      "    value, callGas, data",
-      "));",
-      "// ^ same order the protocol hashes on-chain"
+      "// right — whitelist the proxy:",
+      "address proxy = eez.computeCrossChainProxyAddress(",
+      "    owner, originRollupId",
+      ");",
+      "require(msg.sender == proxy);"
     ]
   ];
-  var hlByStep = [ [1,2,3,4,5,6,7,8], [0,1,2,3,4], [1,2,3,5] ];
+  var hlByStep = [ [0,1], [1], [0,1,2,3,4] ];
 
-  var els = { hashRow: document.getElementById('hashRow'), warn: document.getElementById('warn') };
-  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
+  var els = { revertCard: document.getElementById('revertCard'), fixCard: document.getElementById('fixCard') };
 
   function render(){
     document.getElementById("stepLabel").textContent = String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
@@ -154,10 +144,10 @@
     document.getElementById("caption").textContent = captions[step];
     document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
 
-    chips.forEach(function(c){ c.classList.toggle('hit', step >= 1); });
-    els.hashRow.style.display = step >= 1 ? "flex" : "none";
-    els.warn.style.display = step === 2 ? "block" : "none";
-    els.warn.style.animation = step === 2 ? "riseIn .4s ease both" : "";
+    els.revertCard.style.display = (step === 1) ? "block" : "none";
+    els.revertCard.style.animation = (step === 1) ? "riseIn .4s ease both" : "";
+    els.fixCard.style.display = (step === 2) ? "block" : "none";
+    els.fixCard.style.animation = (step === 2) ? "riseIn .4s ease both" : "";
 
     var code = codeByStep[step];
     var hl = hlByStep[step] || [];

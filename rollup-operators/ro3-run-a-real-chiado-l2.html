@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run a Real Chiado L2 — EEZ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:#000;}
+  :root{ --sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
+  @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  @keyframes flowByte{ from{transform:translateX(-14px);opacity:0;} to{transform:translateX(0);opacity:1;} }
+  @keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,0.4);} 50%{box-shadow:0 0 0 8px rgba(63,185,80,0);} }
+  @keyframes blink{ 0%,49%{opacity:1;} 50%,100%{opacity:0;} }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
+  button{font-family:var(--mono);}
+  button:focus-visible{outline:2px solid #3fb950;outline-offset:2px;}
+  .btn:hover{background:#1a1a1a !important;}
+  .btn-play:hover{background:#4fce61 !important;}
+  a.back{font-family:var(--mono);font-size:12px;color:#9a9a9a;text-decoration:none;}
+  a.back:hover{color:#fff;}
+  .chip{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:13px;border-radius:6px;padding:6px 11px;}
+  .term{font-family:var(--mono);font-size:16px;line-height:1.6;}
+</style>
+</head>
+<body>
+<div style="position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
+<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background-color:#000;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:42px 42px;color:#fff;transform-origin:center center;">
+
+  <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1a1a1a;">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <a class="back" href="../index.html">← Quickstarts</a>
+      <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">Run a Real Chiado L2</div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#5a5a5a;">PRE-MAINNET</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:22px;">
+      <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#9a9a9a;letter-spacing:0.06em;">01 / 03</div>
+      <a class="back" href="ro4-send-and-test-cross-chain-calls.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Send & Test Cross-Chain Calls →</a>
+    </div>
+  </div>
+
+  <!-- ===== DIAGRAM — real commands, real ports, real files ===== -->
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
+
+    <!-- STEP 1: one-time setup -->
+    <div id="s1" style="display:flex;flex-direction:column;gap:20px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">ONE-TIME SETUP</div>
+      <div style="display:flex;flex-wrap:wrap;gap:9px;max-width:960px;">
+        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">docker build eez-node</div>
+        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">docker build eez-proof-signer</div>
+        <div class="chip" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;font-weight:600;">chiado L1 snapshot</div>
+        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">shared JWT</div>
+        <div class="chip" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">consensus configs</div>
+        <div class="chip" style="background:rgba(232,177,94,0.14);color:#f0cf9e;border:1px solid #7a5f2e;">faucet-funded keys</div>
+      </div>
+      <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:14px 20px;max-width:980px;">
+        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">docker build -t eez-node:local .</span></div>
+        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">docker build -f Dockerfile.signer -t eez-proof-signer:local .</span></div>
+        <div class="term" style="color:#7ee08c;margin-top:6px;">$ <span style="color:#d8d8d8;">docker run --rm -v "$PWD/data/chiado-l1:/data" \</span></div>
+        <div class="term" style="color:#d8d8d8;padding-left:20px;">ghcr.io/gnosischain/reth_gnosis:v2.0.0 download --chain chiado --minimal --datadir /data</div>
+        <div class="term" style="color:#7ee08c;margin-top:6px;">$ <span style="color:#d8d8d8;">openssl rand -hex 32 &gt; data/jwt.hex</span></div>
+        <div class="term" style="color:#7ee08c;margin-top:6px;">$ <span style="color:#d8d8d8;">git clone https://github.com/gnosischain/configs.git /tmp/gnosis-configs</span></div>
+        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">cp -r /tmp/gnosis-configs/chiado configs/chiado</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="font-size:20px;color:#3fb950;">→</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#f0cf9e;background:rgba(232,177,94,0.1);border:1px solid #7a5f2e;border-radius:7px;padding:7px 13px;">faucet.chiadochain.net</div>
+        <div style="font-size:15px;color:#7d8798;">funds the operator + poster keys with xDAI</div>
+      </div>
+      <div style="font-size:16px;color:#7d8798;max-width:820px;">Two Docker builds, a minimal Chiado L1 snapshot, a shared engine-API JWT, cloned consensus configs, and faucet-funded keys — once.</div>
+    </div>
+
+    <!-- STEP 2: deploy, then start -->
+    <div id="s2" style="display:none;flex-direction:column;gap:18px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">DEPLOY, THEN START</div>
+      <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:14px 20px;max-width:980px;">
+        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">cp .env.example .env</span></div>
+        <div class="term" style="color:#4d5866;padding-left:20px;"># EEZ_L1_RPC_URL · EEZ_L1_POSTER_KEY · EEZ_PROOF_SIGNER_KEY · EEZ_L2_SYSTEM_KEY</div>
+        <div class="term" style="color:#7ee08c;margin-top:6px;">$ <span style="color:#f1e8ff;font-weight:600;">EEZ_DEPLOY_SKIP_SIMULATION=1 make deploy-protocol</span></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;">
+        <div style="font-family:var(--mono);font-size:14px;color:#cfe9d4;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:9px 14px;">deployments.env <span style="color:#4d5866;">— registry, proof system, rollup id, deploy block, bridge, EEZL2</span></div>
+        <div style="font-family:var(--mono);font-size:14px;color:#cfe9d4;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:9px 14px;">datadir/genesis.json <span style="color:#4d5866;">— timestamp pinned to deploy block</span></div>
+      </div>
+      <div style="border:1.5px dashed #7a5f2e;border-radius:9px;padding:10px 16px;max-width:900px;">
+        <div style="font-family:var(--mono);font-size:13px;color:#f0cf9e;">deploy must run before up — there is no separate genesis-creation step</div>
+      </div>
+      <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:14px 20px;max-width:980px;">
+        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">cp .env.chiado.example .env.chiado</span></div>
+        <div class="term" style="color:#7ee08c;margin-top:6px;">$ <span style="color:#d8d8d8;">docker compose --env-file .env.chiado \</span></div>
+        <div class="term" style="color:#d8d8d8;padding-left:20px;">-f docker-compose.chiado-node.yml up</div>
+      </div>
+      <div style="font-size:16px;color:#7d8798;max-width:820px;">deploy-protocol writes deployments.env and datadir/genesis.json, then docker compose starts eez-node, eez-proof-signer, and lighthouse together.</div>
+    </div>
+
+    <!-- STEP 3: health check -->
+    <div id="s3" style="display:none;flex-direction:column;gap:22px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">HEALTH CHECK</div>
+      <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:16px 20px;max-width:980px;">
+        <div class="term" style="color:#7ee08c;">$ <span style="color:#d8d8d8;">cast block-number --rpc-url http://localhost:18645</span></div>
+        <div class="term" style="color:#4d5866;padding-left:20px;"># embedded chiado L1</div>
+        <div class="term" style="color:#7ee08c;margin-top:10px;">$ <span style="color:#d8d8d8;">cast block-number --rpc-url http://localhost:18688</span></div>
+        <div class="term" style="color:#4d5866;padding-left:20px;"># eez L2</div>
+      </div>
+      <div id="healthResult" style="margin-top:2px;background:rgba(63,185,80,0.06);border:1.5px dashed #3fb950;border-radius:9px;padding:14px 22px;display:inline-flex;align-items:center;gap:16px;animation:riseIn .4s ease both;">
+        <div style="width:8px;height:8px;border-radius:50%;background:#3fb950;animation:pulse 1.8s ease-in-out infinite;"></div>
+        <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">:18645 → L1 climbing</div>
+        <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
+        <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">:18688 → L2 producing</div>
+      </div>
+      <div style="font-size:16px;color:#7d8798;max-width:820px;">Two cast calls confirm the embedded Chiado L1 is climbing past the deploy block while the L2 sequencer is producing.</div>
+    </div>
+
+  </div>
+
+  <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0a0a0a;border:1px solid #262626;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);">
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid #1a1a1a;background:#111;">
+      <div style="display:flex;gap:7px;">
+        <div style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></div>
+        <div style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></div>
+        <div style="width:11px;height:11px;border-radius:50%;background:#28c840;"></div>
+      </div>
+      <div style="font-family:var(--mono);font-size:13px;color:#7a7a7a;letter-spacing:0.02em;">README.md · Run a chiado L2 (Docker)</div>
+    </div>
+    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:hidden;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
+  </div>
+
+  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
+    <div style="flex:1;max-width:1180px;">
+      <div id="kicker" style="font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:#3fb950;margin-bottom:11px;"></div>
+      <div id="caption" style="font-size:25px;line-height:1.4;color:#d8d8d8;text-wrap:pretty;"></div>
+    </div>
+    <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
+        <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:#06210c;background:#3fb950;border:1px solid #3fb950;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
+        <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
+      </div>
+      <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+(function(){
+  var N = 3, STEP_MS = 3200;
+  var step = 0, playing = false, timer = null;
+
+  var kickers = ["ONE-TIME SETUP", "DEPLOY, THEN START", "HEALTH CHECK"];
+  var captions = [
+    "Two Docker builds, a minimal Chiado L1 snapshot, a shared JWT, cloned configs, and faucet-funded keys — once.",
+    "deploy-protocol writes deployments.env and genesis.json before docker compose starts the node, signer, and lighthouse.",
+    "cast block-number against both ports confirms the embedded L1 is climbing and the L2 is producing."
+  ];
+
+  // Progressive code reveal: each step shows only the lines relevant so far,
+  // so the panel never dumps the whole README ungrouped.
+  var codeByStep = [
+    [
+      "# one-time setup",
+      "",
+      "$ docker build -t eez-node:local .",
+      "$ docker build -f Dockerfile.signer \\",
+      "    -t eez-proof-signer:local .",
+      "",
+      "$ docker run --rm \\",
+      "    -v \"$PWD/data/chiado-l1:/data\" \\",
+      "    ghcr.io/gnosischain/reth_gnosis:v2.0.0 \\",
+      "    download --chain chiado --minimal \\",
+      "    --datadir /data",
+      "",
+      "$ openssl rand -hex 32 > data/jwt.hex",
+      "",
+      "$ git clone \\",
+      "    https://github.com/gnosischain/configs.git \\",
+      "    /tmp/gnosis-configs",
+      "$ cp -r /tmp/gnosis-configs/chiado configs/chiado"
+    ],
+    [
+      "$ cp .env.example .env",
+      "# set EEZ_L1_RPC_URL, EEZ_L1_POSTER_KEY,",
+      "#     EEZ_PROOF_SIGNER_KEY, EEZ_L2_SYSTEM_KEY",
+      "",
+      "$ EEZ_DEPLOY_SKIP_SIMULATION=1 \\",
+      "    make deploy-protocol",
+      "",
+      "# -> writes deployments.env",
+      "# -> writes datadir/genesis.json",
+      "# (deploy runs before up --",
+      "#  no separate genesis step)",
+      "",
+      "$ cp .env.chiado.example .env.chiado",
+      "$ docker compose --env-file .env.chiado \\",
+      "    -f docker-compose.chiado-node.yml up"
+    ],
+    [
+      "$ cp .env.chiado.example .env.chiado",
+      "$ docker compose --env-file .env.chiado \\",
+      "    -f docker-compose.chiado-node.yml up",
+      "",
+      "# ~5 min: lighthouse checkpoint-syncs L1,",
+      "# catches up past the deploy block",
+      "",
+      "$ cast block-number \\",
+      "    --rpc-url http://localhost:18645",
+      "$ cast block-number \\",
+      "    --rpc-url http://localhost:18688"
+    ]
+  ];
+  var hlByStep = [
+    [2,3,4],
+    [4,5,7,8],
+    [7,8,9,10]
+  ];
+
+  var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
+
+  function render(){
+    document.getElementById("stepLabel").textContent = String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
+    document.getElementById("kicker").textContent = kickers[step];
+    document.getElementById("caption").textContent = captions[step];
+    document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
+
+    els.s1.style.display = step === 0 ? "flex" : "none";
+    els.s2.style.display = step === 1 ? "flex" : "none";
+    els.s3.style.display = step === 2 ? "flex" : "none";
+
+    var code = codeByStep[step];
+    var hl = hlByStep[step] || [];
+    var html = "";
+    for(var i=0;i<code.length;i++){
+      var lit = hl.indexOf(i) !== -1;
+      var t = code[i].length ? code[i] : " ";
+      html += '<div style="display:flex;align-items:stretch;padding:1px 16px;white-space:nowrap;'
+        + (lit ? "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;" : "background:transparent;") + '">'
+        + '<span style="width:26px;flex:none;text-align:right;padding-right:14px;color:#3a3a3a;user-select:none;">' + (i+1) + '</span>'
+        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#7d8798;") + '">'
+        + t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span></div>';
+    }
+    html += '<div style="display:flex;align-items:stretch;padding:1px 16px;">'
+      + '<span style="width:26px;flex:none;"></span>'
+      + '<span style="display:inline-block;width:10px;height:20px;background:#3fb950;animation:blink 1s step-end infinite;vertical-align:middle;"></span></div>';
+    document.getElementById("codePanel").innerHTML = html;
+
+    var d = "";
+    for(var j=0;j<N;j++){
+      var st = j===step ? "width:30px;background:#3fb950;" : (j<step ? "width:13px;background:#3a4250;" : "width:13px;background:#222a35;");
+      d += '<div style="height:6px;border-radius:3px;transition:width .2s,background .2s;'+st+'"></div>';
+    }
+    document.getElementById("dots").innerHTML = d;
+  }
+
+  function scaleStage(){
+    var w = window.innerWidth, h = window.innerHeight;
+    var s = Math.min(w/1920, h/1080);
+    var stage = document.getElementById("stage");
+    var wrap = stage.parentNode;
+    if (s < 0.58) {
+      s = 0.58;
+      stage.style.transformOrigin = "top left";
+      wrap.style.position = "static";
+      wrap.style.display = "block";
+      wrap.style.overflow = "visible";
+      wrap.style.width = (1920*s) + "px";
+      wrap.style.height = (1080*s) + "px";
+      document.body.style.overflowX = "auto";
+    } else {
+      stage.style.transformOrigin = "center center";
+      wrap.style.position = "fixed";
+      wrap.style.inset = "0";
+      wrap.style.display = "flex";
+      wrap.style.alignItems = "center";
+      wrap.style.justifyContent = "center";
+      wrap.style.overflow = "hidden";
+      wrap.style.width = "";
+      wrap.style.height = "";
+      document.body.style.overflowX = "";
+    }
+    stage.style.transform = "scale(" + s + ")";
+  }
+  function schedule(){ clearTimeout(timer); timer = setTimeout(function(){ if(!playing) return; if(step >= N-1){ playing=false; render(); return; } step++; render(); schedule(); }, STEP_MS); }
+  function togglePlay(){ if(playing){ clearTimeout(timer); playing=false; render(); return; } if(step >= N-1) step = 0; playing = true; render(); schedule(); }
+  function next(){ clearTimeout(timer); playing=false; step=Math.min(N-1,step+1); render(); }
+  function prev(){ clearTimeout(timer); playing=false; step=Math.max(0,step-1); render(); }
+
+  document.getElementById("btnPrev").addEventListener("click", prev);
+  document.getElementById("btnNext").addEventListener("click", next);
+  document.getElementById("btnPlay").addEventListener("click", togglePlay);
+  window.addEventListener("keydown", function(e){
+    if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
+    else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
+    else if(e.key===" "){ e.preventDefault(); togglePlay(); }
+  });
+  window.addEventListener("resize", scaleStage);
+  scaleStage(); render();
+})();
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+</body></html>

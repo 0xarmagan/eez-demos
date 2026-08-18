@@ -7,11 +7,12 @@ Internal team + core contributors. PRs go through review before merge. Claim a t
 Every example is two layers:
 
 1. **A card** on `index.html` — action-oriented title (what you're doing, not the mechanic's internal name) + a one-sentence hook stating the *consequence*, not the mechanic ("reorder the fields and you get a silently different hash," not "eight fields in order"). No code on the card. Badge is time to *watch the walkthrough*, not to complete the real process — don't blur those for an infra example with real setup cost. CTA is always `WATCH THE 3-STEP WALKTHROUGH →`.
-2. **An animated walkthrough** (`qN-slug.html`) — copy `q1-compute-your-cross-chain-address.html` as the template and keep:
+2. **An animated walkthrough**, filed under the matching folder (`dapp-developers/`, `rollup-operators/`, or `protocol-researchers/`) — copy `dapp-developers/q1-compute-your-cross-chain-address.html` as the template and keep:
    - Fixed 1920×1080 stage, diagram left / code right / caption bottom / Prev-Play-Next — not up for redesign.
    - `codeByStep`: progressive reveal per step, never a full file dumped at once.
    - Real data in the diagram (actual bytes, values, state) — never placeholder boxes.
    - The `PRE-MAINNET` label, the header's `NEXT: <title> →` link (through the fixed sequence on `index.html`; the last example links back to the index instead), and `scaleStage()`'s mobile floor (`s < 0.58`, switches to a scrollable layout) — all already in `q1`. Copy them, don't reinvent.
+   - The back link and index link are `../index.html` (walkthroughs live one folder down); a `NEXT:` link crossing into a different audience folder needs the folder in its path too (`../rollup-operators/ro1-....html`), same-folder ones just need the filename.
 
 ## Source of truth — verify against real code, not memory
 

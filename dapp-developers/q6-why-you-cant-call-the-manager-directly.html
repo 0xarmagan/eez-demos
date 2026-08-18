@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>How the Proxy Registry Works — EEZ</title>
+<title>Why the Manager Only Accepts Proxy Calls — EEZ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -21,7 +21,6 @@
   .btn-play:hover{background:#4fce61 !important;}
   a.back{font-family:var(--mono);font-size:12px;color:#9a9a9a;text-decoration:none;}
   a.back:hover{color:#fff;}
-  .row{background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:14.5px;}
 </style>
 </head>
 <body>
@@ -30,45 +29,51 @@
 
   <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1a1a1a;">
     <div style="display:flex;align-items:center;gap:18px;">
-      <a class="back" href="./index.html">← Quickstarts</a>
+      <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-      <div style="font-size:22px;font-weight:600;color:#fff;">How the Proxy Registry Works</div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">Why the Manager Only Accepts Proxy Calls</div>
       <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#5a5a5a;">PRE-MAINNET</div>
     </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#9a9a9a;letter-spacing:0.06em;">01 / 03</div>
-      <a class="back" href="./q6-why-you-cant-call-the-manager-directly.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Why the Manager Only Accepts Proxy Calls →</a>
+      <a class="back" href="q5-encode-a-calls-content-hash.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Encode a Call's Content Hash →</a>
     </div>
   </div>
 
-  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:28px;">
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:40px;">
 
-    <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">authorizedProxies · public mapping</div>
-
-    <!-- table of a few addresses, one highlighted per step -->
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <div class="row" style="opacity:.35;"><span style="color:#5c6673;">0x91aB…c4E2</span><span style="color:#5c6673;">isProxy: false</span></div>
-      <div id="hitRow" class="row" style="border-color:#3fb950;background:rgba(63,185,80,0.07);">
-        <span style="color:#7ee08c;">someAddress</span>
-        <span id="hitVal" style="color:#9a9a9a;">?</span>
+    <div style="position:relative;height:130px;">
+      <svg viewBox="0 0 1080 130" style="position:absolute;inset:0;width:1080px;height:130px;pointer-events:none;">
+        <defs><marker id="ar-r" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f85149"></path></marker></defs>
+        <line id="lBad" x1="300" y1="65" x2="700" y2="65" stroke="#f85149" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#ar-r)" style="opacity:0;animation:dashMove 1s linear infinite;"></line>
+      </svg>
+      <div style="display:flex;align-items:center;">
+        <div style="width:280px;background:#1a0f10;border:1.5px solid #f85149;border-radius:9px;padding:16px 18px;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#c76b66;">ANYONE ELSE</div>
+          <div style="font-size:20px;font-weight:600;margin-top:4px;color:#ffb3af;">eez.executeCrossChainCall()</div>
+        </div>
+        <div style="flex:1;"></div>
+        <div id="badTo" style="width:280px;background:#141b2b;border:1.5px solid #7c83ff;border-radius:9px;padding:16px 18px;opacity:.35;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#7782b8;">EEZ MANAGER</div>
+          <div id="badToText" style="font-size:20px;font-weight:600;margin-top:4px;color:#eef1ff;">?</div>
+        </div>
       </div>
-      <div class="row" style="opacity:.35;"><span style="color:#5c6673;">0x22Fa…9c11</span><span style="color:#5c6673;">isProxy: false</span></div>
     </div>
 
-    <!-- expanded record, step 3 -->
-    <div id="record" style="display:none;background:#050505;border:1px solid #1a1a1a;border-radius:9px;padding:18px 22px;">
-      <div style="display:flex;gap:14px;">
-        <div style="flex:1;background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 14px;">
-          <div style="font-family:var(--mono);font-size:12px;color:#5e9e6b;">isProxy</div>
-          <div style="font-family:var(--mono);font-size:19px;color:#7ee08c;margin-top:3px;">true</div>
+    <div style="position:relative;height:130px;">
+      <svg viewBox="0 0 1080 130" style="position:absolute;inset:0;width:1080px;height:130px;pointer-events:none;">
+        <defs><marker id="ar-g" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#3fb950"></path></marker></defs>
+        <line id="lGood" x1="300" y1="65" x2="700" y2="65" stroke="#3fb950" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#ar-g)" style="opacity:0;animation:dashMove 1s linear infinite;"></line>
+      </svg>
+      <div style="display:flex;align-items:center;">
+        <div style="width:280px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:16px 18px;opacity:.35;" id="goodFrom">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#a98ad0;">A REAL PROXY</div>
+          <div style="font-size:20px;font-weight:600;margin-top:4px;color:#f1e8ff;">fallback → executeCrossChainCall</div>
         </div>
-        <div style="flex:1;background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 14px;">
-          <div style="font-family:var(--mono);font-size:12px;color:#a98ad0;">originalAddress</div>
-          <div style="font-family:var(--mono);font-size:19px;color:#c89cf5;margin-top:3px;">0xC0ffEE…0042</div>
-        </div>
-        <div style="flex:1;background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 14px;">
-          <div style="font-family:var(--mono);font-size:12px;color:#7782b8;">originalRollupId</div>
-          <div style="font-family:var(--mono);font-size:19px;color:#9aa4f0;margin-top:3px;">1</div>
+        <div style="flex:1;"></div>
+        <div id="goodTo" style="width:280px;background:rgba(63,185,80,0.07);border:1.5px solid #3fb950;border-radius:9px;padding:16px 18px;opacity:.35;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#5e9e6b;">EEZ MANAGER</div>
+          <div style="font-size:20px;font-weight:600;margin-top:4px;color:#7ee08c;">executes it</div>
         </div>
       </div>
     </div>
@@ -83,7 +88,7 @@
         <div style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#28c840;"></div>
       </div>
-      <div style="font-family:var(--mono);font-size:13px;color:#7a7a7a;letter-spacing:0.02em;">eez-core-protocol/src/base/EEZBase.sol:60 · authorizedProxies</div>
+      <div style="font-family:var(--mono);font-size:13px;color:#7a7a7a;letter-spacing:0.02em;">eez-core-protocol/src/EEZ.sol:790 · executeCrossChainCall</div>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:hidden;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
   </div>
@@ -111,40 +116,50 @@
   var N = 3, STEP_MS = 3000;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["ONE PUBLIC MAPPING", "READ, DON'T GUESS", "isProxy IS THE FLAG"];
+  var kickers = ["ONLY A REAL PROXY", "THE GUARD", "CHECKED EVERY CALL"];
   var captions = [
-    "Every proxy is recorded when it's created.",
-    "Read the mapping directly — no simulation, no guessing.",
-    "isProxy true means the other two fields are real."
+    "Anyone can try calling the manager's entry point directly.",
+    "It reverts — UnauthorizedProxy(). Only a real proxy gets through.",
+    "The registry check runs on every call, by design."
   ];
   var notes = [
-    "someAddress sits alongside every other address the manager has ever seen.",
-    "One call: authorizedProxies(someAddress).",
-    "true means a real proxy for that (address, rollup) pair — false means it's not."
+    "",
+    "",
+    "The guard checks the registry every time — not a bug, the whole point of it."
   ];
 
   var codeByStep = [
     [
-      "mapping(address proxy => ProxyInfo info)",
-      "    public authorizedProxies;"
+      "function executeCrossChainCall(",
+      "    address sourceAddress,",
+      "    bytes calldata callData",
+      ") external payable returns (bytes memory) {"
     ],
     [
-      "(bool isProxy, address origAddr, uint64 origRid)",
-      "    = eez.authorizedProxies(someAddress);"
-    ],
-    [
-      "struct ProxyInfo {",
-      "    bool isProxy;",
-      "    address originalAddress;",
-      "    uint64 originalRollupId;",
-      "}",
+      "ProxyInfo storage proxyInfo =",
+      "    authorizedProxies[msg.sender];",
       "",
-      "if (isProxy) { /* real proxy for origAddr@origRid */ }"
+      "if (!proxyInfo.isProxy)",
+      "    revert UnauthorizedProxy();"
+    ],
+    [
+      "ProxyInfo storage proxyInfo =",
+      "    authorizedProxies[msg.sender];",
+      "",
+      "if (!proxyInfo.isProxy)",
+      "    revert UnauthorizedProxy();",
+      "",
+      "// msg.sender must be a real proxy —",
+      "// never the caller's own address"
     ]
   ];
-  var hlByStep = [ [0,1], [0,1], [0,1,2,3,5] ];
+  var hlByStep = [ [0,1,2,3], [0,1,3,4], [6,7] ];
 
-  var els = { hitVal: document.getElementById('hitVal'), record: document.getElementById('record'), note: document.getElementById('note') };
+  var els = {
+    lBad: document.getElementById('lBad'), badTo: document.getElementById('badTo'), badToText: document.getElementById('badToText'),
+    lGood: document.getElementById('lGood'), goodFrom: document.getElementById('goodFrom'), goodTo: document.getElementById('goodTo'),
+    note: document.getElementById('note')
+  };
 
   function render(){
     document.getElementById("stepLabel").textContent = String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
@@ -153,10 +168,14 @@
     document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
     els.note.textContent = notes[step];
 
-    els.hitVal.textContent = step === 0 ? "?" : "reading…";
-    els.hitVal.style.color = step === 0 ? "#9a9a9a" : "#7ee08c";
-    els.record.style.display = step === 2 ? "block" : "none";
-    els.record.style.animation = step === 2 ? "riseIn .4s ease both" : "";
+    els.lBad.style.opacity = step >= 0 ? "1" : "0";
+    els.badTo.style.opacity = step >= 1 ? "1" : ".35";
+    els.badToText.textContent = step >= 1 ? "revert UnauthorizedProxy()" : "?";
+    els.badToText.style.color = step >= 1 ? "#ff6b63" : "#eef1ff";
+
+    els.lGood.style.opacity = step >= 2 ? "1" : "0";
+    els.goodFrom.style.opacity = step >= 2 ? "1" : ".35";
+    els.goodTo.style.opacity = step >= 2 ? "1" : ".35";
 
     var code = codeByStep[step];
     var hl = hlByStep[step] || [];
