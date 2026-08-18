@@ -54,3 +54,15 @@ Both move fast. Every code panel cites a real `file:line`; nothing is paraphrase
 - Making the repo public (may happen later, per its own decision)
 - A written/runnable-guide format track (rejected in favor of format consistency — see above)
 - Migrating `eez-remotion`, `eez-uc-html-pipeline`, or other EEZ creative-content pipelines into this repo — this is specifically the interactive-explainer surface, not a general EEZ content home
+
+---
+
+## Revision (2026-08-18, same day) — format pivot
+
+The animated-demo format above (all 14 A–N demos) was **deleted**, not iterated on. Feedback: too much prose per topic, not example-forward enough; inspiration pulled from build.nvidia.com/spark's dense card-grid pattern (title + one-line description + a real snippet, scannable, no click-through required for a basic example).
+
+**New format:** one `index.html`, one card per example, grouped by audience — **dapp developers, rollup operators, protocol researchers** (a genuine 3rd audience, replacing the old "Rollup-integrator" framing) — instead of by protocol layer/track. Each card: title, 1-2 sentence description, a real verbatim snippet, a time badge (quick/medium), a `file:line` citation. No steps, no animation, no per-demo modal.
+
+Dapp-developer audience shipped first with 6 basic examples (computing a proxy address, sending a cross-chain call, the msg.sender gotcha + fix, checking if an address is a proxy, encoding a call hash, why direct manager calls revert) — all re-verified against a fresh `eez-core-protocol` pull at pivot time. Rollup-operator and protocol-researcher sections are honest "coming soon" placeholders, not fabricated content.
+
+Everything else in this doc (source-of-truth split, collaboration model, branch-protection gap, three-audience boundary) still holds — only the presentation format changed, not the underlying rules.

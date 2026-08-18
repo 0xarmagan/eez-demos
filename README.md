@@ -1,25 +1,19 @@
 # eez-demos
 
-Interactive, stepped walkthroughs of the Ethereum Economic Zone (EEZ) — both layers: the **contract mechanics** (Solidity, `eez-core-protocol`) and the **rollup infra** that actually runs a chain (`eez-rollup0`). Each demo pairs a plain-English explanation with **verbatim code** from the real source, shown side by side.
+Real EEZ code examples, organized by **what you're trying to do**, not by protocol mechanic. One page, one card per example: a title, a one-line description, and a real verbatim code snippet — no prose walkthroughs, no animation.
 
-Successor to `eez-contract-demos` (archived) — same format, now covering both layers under one roof.
+Three audiences:
 
-## Tracks
-
-- **Builder track** — dapp-developer-facing contract mechanics (cross-chain proxies, calls, reentrancy).
-- **Rollup-integrator track** — contract mechanics for anyone standing up a rollup (registration, multi-prover threshold).
-- **Node-operator / Rollup0 track** — the actual off-chain infra: sequencer, composer, proof-signer, deriver, running the Kurtosis devnet.
+- **Dapp developers** — building a contract that makes or receives cross-chain calls. 6 examples live.
+- **Rollup operators** — standing up or running a rollup on EEZ. Coming soon.
+- **Protocol researchers** — execution model, settlement, invariants. Coming soon.
 
 ## Source of truth
 
-- Contract-layer code panels: verbatim from [eez-association/eez-core-protocol](https://github.com/eez-association/eez-core-protocol) @ `main`.
-- Infra-layer code panels: verbatim from [eez-association/eez-rollup0](https://github.com/eez-association/eez-rollup0) @ `main`.
-- **Status:** EEZ is pre-audit and not deployed. Every demo is badged `SPEC · NOT LIVE`.
+- Contract layer: [eez-association/eez-core-protocol](https://github.com/eez-association/eez-core-protocol) @ `main`.
+- Infra layer: [eez-association/eez-rollup0](https://github.com/eez-association/eez-rollup0) @ `main`.
+- **Status:** EEZ is pre-audit and not deployed. Every page carries a `SPEC · NOT LIVE` badge.
 
-See `CONTRIBUTING.md` before adding or editing a demo — it covers the house visual style and the verification rule every code panel must follow.
+Every code block cites its real `file:line`. See `CONTRIBUTING.md` before adding an example.
 
-## Controls
-
-← / → to step, space to play/pause. `start-here.html` is the guided two-demo path for a first-time visitor.
-
-*Static site — no build step. Deploy any static host (currently Vercel).*
+*Static site — one `index.html`, no build step. Deployed on Vercel, git-linked (push to `main` deploys).*
