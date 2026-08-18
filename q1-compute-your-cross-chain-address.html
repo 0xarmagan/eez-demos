@@ -11,7 +11,9 @@
   *{box-sizing:border-box;}
   html,body{margin:0;background:#0b0f14;}
   :root{ --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
-  @keyframes riseIn{ from{transform:translateY(12px);} to{transform:translateY(0);} }
+  @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  @keyframes flowByte{ from{transform:translateX(-14px);opacity:0;} to{transform:translateX(0);opacity:1;} }
+  @keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,0.4);} 50%{box-shadow:0 0 0 8px rgba(63,185,80,0);} }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
   button{font-family:var(--mono);}
   button:focus-visible{outline:2px solid #3fb950;outline-offset:2px;}
@@ -19,6 +21,7 @@
   .btn-play:hover{background:#4fce61 !important;}
   a.back{font-family:var(--mono);font-size:12px;color:#8b95a3;text-decoration:none;}
   a.back:hover{color:#cdd5e0;}
+  .byte{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;border-radius:4px;padding:5px 8px;}
 </style>
 </head>
 <body>
@@ -35,48 +38,117 @@
     <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#8b95a3;letter-spacing:0.06em;">01 / 03</div>
   </div>
 
-  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;">
-    <svg viewBox="0 0 1112 712" style="position:absolute;inset:0;width:1112px;height:712px;z-index:1;pointer-events:none;overflow:visible;">
-      <defs><marker id="ar-g" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#3fb950"></path></marker>
-      <marker id="ar-p" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b478f0"></path></marker></defs>
-      <path id="aK" d="M300,556 L336,556" stroke="#3fb950" stroke-width="2.5" fill="none" marker-end="url(#ar-g)" style="opacity:0;"></path>
-      <path id="aP" d="M796,500 L830,220" stroke="#b478f0" stroke-width="2.5" fill="none" marker-end="url(#ar-p)" style="opacity:0;"></path>
-    </svg>
+  <!-- ===== DIAGRAM — dense byte-flow visualization ===== -->
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
 
-    <div id="inputs" style="position:absolute;left:0px;top:70px;width:280px;z-index:2;opacity:0;">
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#6e7a89;margin-bottom:8px;">INPUTS · ONLY TWO</div>
-      <div style="background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 14px;margin-bottom:8px;">
-        <div style="font-family:var(--mono);font-size:13px;color:#7782b8;">originRollupId</div>
-        <div style="font-family:var(--mono);font-size:20px;color:#9aa4f0;margin-top:2px;">1</div>
+    <!-- STEP 1: two inputs, rendered as real byte blocks -->
+    <div id="s1" style="display:flex;flex-direction:column;gap:22px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">INPUTS · ONLY TWO</div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="display:flex;align-items:center;gap:18px;">
+          <div style="width:170px;font-family:var(--mono);font-size:14px;color:#7782b8;flex:none;">originRollupId</div>
+          <div style="display:flex;gap:4px;">
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">00</div>
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">00</div>
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">00</div>
+            <div class="byte" style="background:#141b2b;color:#4d5866;border:1px solid #232b36;">⋯</div>
+            <div class="byte" style="background:rgba(124,131,255,0.22);color:#eef1ff;border:1px solid #5561c9;font-weight:600;">01</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:13px;color:#4d5866;">8 bytes (uint64)</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:18px;">
+          <div style="width:170px;font-family:var(--mono);font-size:14px;color:#7782b8;flex:none;">myContract</div>
+          <div style="display:flex;gap:4px;">
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">c0</div>
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">ff</div>
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">ee</div>
+            <div class="byte" style="background:#141b2b;color:#4d5866;border:1px solid #232b36;">⋯</div>
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">00</div>
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">42</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:13px;color:#4d5866;">20 bytes (address)</div>
+        </div>
       </div>
-      <div style="background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 14px;">
-        <div style="font-family:var(--mono);font-size:13px;color:#7782b8;">myContract</div>
-        <div style="font-family:var(--mono);font-size:20px;color:#9aa4f0;margin-top:2px;">0xC0ffEE…0042</div>
+      <div style="font-size:16px;color:#7d8798;max-width:820px;">Nothing else. No nonce, no deployment order — just these two values, always.</div>
+    </div>
+
+    <!-- STEP 2: bytes packed + hashed into salt -->
+    <div id="s2" style="display:none;flex-direction:column;gap:26px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">PACK + HASH</div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="display:flex;gap:3px;">
+          <div class="byte" style="background:rgba(124,131,255,0.22);color:#eef1ff;border:1px solid #5561c9;">01</div>
+        </div>
+        <div style="font-size:22px;color:#4d5866;">+</div>
+        <div style="display:flex;gap:3px;">
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">c0</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">ff</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">ee</div>
+          <div class="byte" style="background:#141b2b;color:#4d5866;border:1px solid #232b36;">⋯</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">42</div>
+        </div>
+        <div style="font-size:26px;color:#3fb950;margin:0 8px;">→</div>
+        <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:#7ee08c;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:10px 16px;">keccak256</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="font-family:var(--mono);font-size:13px;color:#5e9e6b;width:80px;">salt =</div>
+        <div style="display:flex;gap:3px;">
+          <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;animation:flowByte .4s ease both;">9a</div>
+          <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;animation:flowByte .4s .05s ease both;">2c</div>
+          <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;animation:flowByte .4s .1s ease both;">7f</div>
+          <div class="byte" style="background:#141b2b;color:#4d5866;border:1px solid #232b36;">⋯</div>
+          <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;animation:flowByte .4s .15s ease both;">f1</div>
+          <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;animation:flowByte .4s .2s ease both;">d0</div>
+        </div>
+        <div style="font-family:var(--mono);font-size:13px;color:#4d5866;">32 bytes</div>
+      </div>
+      <div style="font-size:16px;color:#7d8798;max-width:820px;">Same two inputs, on any chain running this manager, always produce this same salt.</div>
+    </div>
+
+    <!-- STEP 3: CREATE2 assembly -> final address, last 20 bytes highlighted -->
+    <div id="s3" style="display:none;flex-direction:column;gap:24px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">CREATE2 → ONE ADDRESS</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div style="font-family:var(--mono);font-size:14px;color:#c3ccd6;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 13px;">0xff</div>
+        <div style="font-size:18px;color:#4d5866;">+</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#9aa4f0;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 13px;">manager</div>
+        <div style="font-size:18px;color:#4d5866;">+</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#7ee08c;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 13px;">salt</div>
+        <div style="font-size:18px;color:#4d5866;">+</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#c89cf5;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 13px;">bytecodeHash</div>
+        <div style="font-size:26px;color:#3fb950;margin:0 4px;">→</div>
+        <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:#7ee08c;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:8px 15px;">keccak256</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="font-family:var(--mono);font-size:13px;color:#8b95a3;width:80px;">32 bytes</div>
+        <div style="display:flex;gap:3px;">
+          <div class="byte" style="background:#141b2b;color:#4d5866;border:1px solid #232b36;">7f</div>
+          <div class="byte" style="background:#141b2b;color:#4d5866;border:1px solid #232b36;">a1</div>
+          <div class="byte" style="background:#141b2b;color:#4d5866;border:1px solid #232b36;">⋯</div>
+          <div class="byte" style="background:rgba(180,120,240,0.28);color:#f1e8ff;border:1.5px solid #b478f0;font-weight:600;">7d</div>
+          <div class="byte" style="background:rgba(180,120,240,0.28);color:#f1e8ff;border:1.5px solid #b478f0;font-weight:600;">3f</div>
+          <div class="byte" style="background:rgba(180,120,240,0.28);color:#f1e8ff;border:1.5px solid #b478f0;font-weight:600;">9b</div>
+          <div class="byte" style="background:rgba(180,120,240,0.28);color:#f1e8ff;border:1.5px solid #b478f0;font-weight:600;">a1</div>
+        </div>
+        <div style="font-family:var(--mono);font-size:13px;color:#c89cf5;">← last 20 bytes = the address</div>
+      </div>
+      <div id="proxyResult" style="margin-top:6px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:16px 22px;display:inline-flex;align-items:center;gap:16px;animation:riseIn .4s ease both;">
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#a98ad0;">YOUR ALIAS</div>
+        <div style="font-size:24px;font-weight:600;color:#f1e8ff;">proxy(myContract)</div>
+        <div style="font-family:var(--mono);font-size:17px;color:#c89cf5;">0x7d3F…9bA1</div>
+        <div style="width:6px;height:6px;border-radius:50%;background:#e8b15e;animation:pulse 1.8s ease-in-out infinite;"></div>
+        <div style="font-family:var(--mono);font-size:13px;color:#e8b15e;">not deployed yet</div>
       </div>
     </div>
 
-    <div id="salt" style="position:absolute;left:340px;top:504px;width:220px;height:104px;background:rgba(63,185,80,0.07);border:1.5px solid #3fb950;border-radius:9px;padding:14px 18px;display:flex;flex-direction:column;justify-content:center;z-index:2;opacity:0;">
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#5e9e6b;">SALT</div>
-      <div style="font-family:var(--mono);font-size:20px;font-weight:600;color:#7ee08c;margin-top:5px;">keccak256(id, addr)</div>
-    </div>
-
-    <div id="proxyBox" style="position:absolute;left:700px;top:70px;width:340px;height:150px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:18px 22px;display:flex;flex-direction:column;justify-content:center;z-index:2;opacity:0;">
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#a98ad0;">YOUR ALIAS · CREATE2</div>
-      <div style="font-size:27px;font-weight:600;margin-top:4px;color:#f1e8ff;">proxy(myContract)</div>
-      <div style="font-family:var(--mono);font-size:17px;color:#c89cf5;margin-top:6px;">0x7d3F…9bA1</div>
-    </div>
-    <div id="notDeployed" style="position:absolute;left:700px;top:240px;display:flex;align-items:center;gap:8px;opacity:0;">
-      <div style="width:7px;height:7px;border-radius:50%;border:1.5px solid #e8b15e;"></div>
-      <div style="font-family:var(--mono);font-size:14px;color:#e8b15e;">known before it's deployed</div>
-    </div>
   </div>
 
   <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0d1219;border:1px solid #1c232d;border-radius:10px;overflow:hidden;">
     <div style="display:flex;align-items:center;gap:9px;padding:16px 22px;border-bottom:1px solid #1c232d;">
       <div style="width:9px;height:9px;border-radius:50%;background:#3fb950;"></div>
-      <div style="font-family:var(--mono);font-size:14px;color:#8b95a3;letter-spacing:0.02em;">EEZBase.sol:176</div>
+      <div style="font-family:var(--mono);font-size:14px;color:#8b95a3;letter-spacing:0.02em;">EEZBase.sol:176 · computeCrossChainProxyAddress</div>
     </div>
-    <div id="codePanel" style="height:660px;overflow:hidden;scroll-behavior:smooth;padding:18px 8px;font-family:var(--mono);font-size:19px;line-height:32px;"></div>
+    <div id="codePanel" style="height:660px;overflow:hidden;padding:22px 26px;font-family:var(--mono);font-size:20px;line-height:36px;"></div>
   </div>
 
   <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1c232d;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
@@ -99,84 +171,88 @@
 
 <script>
 (function(){
-  var N = 3, STEP_MS = 2600;
+  var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["ONE ALIAS, ANY CHAIN", "SALT IN, ADDRESS OUT", "KNOWN BEFORE IT EXISTS"];
+  var kickers = ["TWO INPUTS", "PACKED & HASHED → SALT", "CREATE2 → ONE ADDRESS"];
   var captions = [
-    "Every (address, rollup) pair has exactly one alias on any other chain.",
-    "Hash the two inputs into a salt, feed it to CREATE2.",
-    "Call the view anytime — the address is fixed before deployment."
+    "Two values, packed as bytes — that's the whole identity.",
+    "keccak256 turns them into a 32-byte salt.",
+    "CREATE2 turns (manager, salt, bytecodeHash) into an address — before deployment."
   ];
 
-  var code = [
-    "function computeCrossChainProxyAddress(",
-    "    address originalAddress,",
-    "    uint64 originalRollupId",
-    ") public view returns (address) {",
-    "",
-    "    bytes32 salt = keccak256(",
-    "        abi.encodePacked(",
-    "            originalRollupId, originalAddress",
-    "        )",
-    "    );",
-    "",
-    "    bytes32 bytecodeHash = keccak256(",
-    "        abi.encodePacked(",
-    "            type(CrossChainProxy).creationCode,",
-    "            abi.encode(address(this))",
-    "        )",
-    "    );",
-    "",
-    "    return address(uint160(uint256(keccak256(",
-    "        abi.encodePacked(",
-    "            bytes1(0xff), address(this),",
-    "            salt, bytecodeHash",
-    "        )",
-    "    ))));",
-    "}"
+  // Progressive code reveal: each step shows only the lines relevant so far,
+  // so the panel never dumps the full function ungrouped.
+  var codeByStep = [
+    [
+      "function computeCrossChainProxyAddress(",
+      "    address originalAddress,",
+      "    uint64 originalRollupId",
+      ") public view returns (address) {"
+    ],
+    [
+      "function computeCrossChainProxyAddress(",
+      "    address originalAddress,",
+      "    uint64 originalRollupId",
+      ") public view returns (address) {",
+      "",
+      "    bytes32 salt = keccak256(",
+      "        abi.encodePacked(",
+      "            originalRollupId, originalAddress",
+      "        )",
+      "    );"
+    ],
+    [
+      "    bytes32 salt = keccak256(",
+      "        abi.encodePacked(",
+      "            originalRollupId, originalAddress",
+      "        )",
+      "    );",
+      "",
+      "    bytes32 bytecodeHash = keccak256(abi.encodePacked(",
+      "        type(CrossChainProxy).creationCode,",
+      "        abi.encode(address(this))",
+      "    ));",
+      "",
+      "    return address(uint160(uint256(keccak256(",
+      "        abi.encodePacked(",
+      "            bytes1(0xff), address(this),",
+      "            salt, bytecodeHash",
+      "        )",
+      "    ))));",
+      "}"
+    ]
   ];
   var hlByStep = [
     [0,1,2,3],
     [5,6,7,8,9],
-    [18,19,20,21,22,23]
+    [10,11,12,13,14,15]
   ];
 
-  var els = {};
-  ["inputs","salt","proxyBox","notDeployed","aK","aP"].forEach(function(id){ els[id]=document.getElementById(id); });
-  function riseShow(el, cond){ el.style.opacity = cond ? "1" : "0"; if(cond) el.style.animation="riseIn .5s ease"; }
-  function fade(el, cond){ el.style.opacity = cond ? "1" : "0"; }
+  var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
 
   function render(){
-    var on = function(s){ return step >= s; };
     document.getElementById("stepLabel").textContent = String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
     document.getElementById("kicker").textContent = kickers[step];
     document.getElementById("caption").textContent = captions[step];
     document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
 
-    riseShow(els.inputs, on(0));
-    riseShow(els.salt, on(1));
-    fade(els.aK, on(1));
-    riseShow(els.proxyBox, on(2));
-    fade(els.aP, on(2));
-    riseShow(els.notDeployed, on(2));
+    els.s1.style.display = step === 0 ? "flex" : "none";
+    els.s2.style.display = step === 1 ? "flex" : "none";
+    els.s3.style.display = step === 2 ? "flex" : "none";
 
+    var code = codeByStep[step];
     var hl = hlByStep[step] || [];
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
       var t = code[i].length ? code[i] : " ";
-      html += '<div style="display:flex;align-items:stretch;padding:0 14px;'
+      html += '<div style="display:flex;align-items:stretch;padding:1px 12px;'
         + (lit ? "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;" : "background:transparent;") + '">'
-        + '<span style="width:34px;flex:none;text-align:right;padding-right:18px;user-select:none;'
-        + (lit ? "color:#3fb950;" : "color:#46505c;") + '">' + String(i+1).padStart(2,"0") + '</span>'
-        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#9aa4b1;") + '">'
+        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#7d8798;") + '">'
         + t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span></div>';
     }
     document.getElementById("codePanel").innerHTML = html;
-    var _cp = document.getElementById("codePanel");
-    var _fh = _cp.querySelector("[data-hl]") || _cp.children[hl[0]];
-    if(_fh) _cp.scrollTop = Math.max(0, _fh.offsetTop - 48);
 
     var d = "";
     for(var j=0;j<N;j++){

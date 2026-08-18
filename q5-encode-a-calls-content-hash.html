@@ -11,7 +11,8 @@
   *{box-sizing:border-box;}
   html,body{margin:0;background:#0b0f14;}
   :root{ --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
-  @keyframes riseIn{ from{transform:translateY(12px);} to{transform:translateY(0);} }
+  @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  @keyframes flowByte{ from{transform:translateX(-14px);opacity:0;} to{transform:translateX(0);opacity:1;} }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
   button{font-family:var(--mono);}
   button:focus-visible{outline:2px solid #3fb950;outline-offset:2px;}
@@ -19,6 +20,9 @@
   .btn-play:hover{background:#4fce61 !important;}
   a.back{font-family:var(--mono);font-size:12px;color:#8b95a3;text-decoration:none;}
   a.back:hover{color:#cdd5e0;}
+  .byte{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;border-radius:4px;padding:5px 8px;}
+  .chip{background:#10151c;border:1px solid #232b36;border-radius:7px;padding:9px 14px;font-family:var(--mono);font-size:14.5px;color:#9aa4b1;transition:border-color .25s,color .25s,background .25s;}
+  .chip.hit{border-color:#3fb950;color:#7ee08c;background:rgba(63,185,80,0.08);}
 </style>
 </head>
 <body>
@@ -35,27 +39,33 @@
     <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#8b95a3;letter-spacing:0.06em;">01 / 03</div>
   </div>
 
-  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;">
-    <div id="fields" style="position:absolute;left:0px;top:70px;width:1080px;opacity:0;">
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#6e7a89;margin-bottom:12px;">8 FIELDS · THIS ORDER · LOAD-BEARING</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
-        <div style="background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:15px;color:#9aa4b1;">1. isStatic</div>
-        <div style="background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:15px;color:#9aa4b1;">2. sourceAddress</div>
-        <div style="background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:15px;color:#9aa4b1;">3. sourceRollupId</div>
-        <div style="background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:15px;color:#9aa4b1;">4. targetAddress</div>
-        <div style="background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:15px;color:#9aa4b1;">5. targetRollupId</div>
-        <div style="background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:15px;color:#9aa4b1;">6. value</div>
-        <div style="background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:15px;color:#9aa4b1;">7. callGas</div>
-        <div style="background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 14px;font-family:var(--mono);font-size:15px;color:#9aa4b1;">8. data</div>
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:30px;">
+
+    <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">8 FIELDS · THIS ORDER · LOAD-BEARING</div>
+    <div id="fields" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+      <div class="chip" data-i="0">1. isStatic</div>
+      <div class="chip" data-i="1">2. sourceAddress</div>
+      <div class="chip" data-i="2">3. sourceRollupId</div>
+      <div class="chip" data-i="3">4. targetAddress</div>
+      <div class="chip" data-i="4">5. targetRollupId</div>
+      <div class="chip" data-i="5">6. value</div>
+      <div class="chip" data-i="6">7. callGas</div>
+      <div class="chip" data-i="7">8. data</div>
+    </div>
+
+    <div id="hashRow" style="display:none;align-items:center;gap:16px;">
+      <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:#7ee08c;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:10px 16px;">keccak256(abi.encode(...))</div>
+      <div style="font-size:26px;color:#3fb950;">→</div>
+      <div style="display:flex;gap:3px;">
+        <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;">a3</div>
+        <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;">7c</div>
+        <div class="byte" style="background:#141b2b;color:#4d5866;border:1px solid #232b36;">⋯</div>
+        <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;">e2</div>
       </div>
+      <div style="font-family:var(--mono);font-size:13px;color:#4d5866;">bytes32 callHash</div>
     </div>
 
-    <div id="hashBox" style="position:absolute;left:0px;top:290px;width:500px;height:110px;background:rgba(63,185,80,0.07);border:1.5px solid #3fb950;border-radius:9px;padding:14px 20px;display:flex;flex-direction:column;justify-content:center;opacity:0;">
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#5e9e6b;">RESULT</div>
-      <div style="font-family:var(--mono);font-size:22px;font-weight:600;color:#7ee08c;margin-top:5px;">bytes32 callHash</div>
-    </div>
-
-    <div id="warn" style="position:absolute;left:0px;top:430px;width:1080px;opacity:0;font-size:16px;color:#c79490;">Reorder any field and you get a different hash — this exact sequence is what the protocol hashes on-chain.</div>
+    <div id="warn" style="display:none;background:#1a0f10;border:1.5px solid #f85149;border-radius:9px;padding:16px 22px;font-size:16px;color:#c79490;">Reorder any field and you get a <b style="color:#ffb3af">different</b> hash — this exact sequence is what the protocol hashes on-chain.</div>
   </div>
 
   <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0d1219;border:1px solid #1c232d;border-radius:10px;overflow:hidden;">
@@ -63,7 +73,7 @@
       <div style="width:9px;height:9px;border-radius:50%;background:#3fb950;"></div>
       <div style="font-family:var(--mono);font-size:14px;color:#8b95a3;letter-spacing:0.02em;">EEZBase.sol:198</div>
     </div>
-    <div id="codePanel" style="height:660px;overflow:hidden;scroll-behavior:smooth;padding:18px 8px;font-family:var(--mono);font-size:18.5px;line-height:31px;"></div>
+    <div id="codePanel" style="height:660px;overflow:hidden;padding:22px 26px;font-family:var(--mono);font-size:19px;line-height:34px;"></div>
   </div>
 
   <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1c232d;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
@@ -86,7 +96,7 @@
 
 <script>
 (function(){
-  var N = 3, STEP_MS = 2600;
+  var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
   var kickers = ["8 FIELDS, FIXED ORDER", "ONE HASH OUT", "ORDER IS LOAD-BEARING"];
@@ -96,51 +106,60 @@
     "Reorder them and you get a different hash. Don't."
   ];
 
-  var code = [
-    "function computeCrossChainCallHash(",
-    "    bool isStatic,",
-    "    address sourceAddress,",
-    "    uint64 sourceRollupId,",
-    "    address targetAddress,",
-    "    uint64 targetRollupId,",
-    "    uint256 value,",
-    "    uint64 callGas,",
-    "    bytes memory data",
-    ") public pure returns (bytes32) {",
-    "    return keccak256(abi.encode(",
-    "        isStatic, sourceAddress, sourceRollupId,",
-    "        targetAddress, targetRollupId,",
-    "        value, callGas, data",
-    "    ));",
-    "}"
+  var codeByStep = [
+    [
+      "function computeCrossChainCallHash(",
+      "    bool isStatic,",
+      "    address sourceAddress,",
+      "    uint64 sourceRollupId,",
+      "    address targetAddress,",
+      "    uint64 targetRollupId,",
+      "    uint256 value,",
+      "    uint64 callGas,",
+      "    bytes memory data",
+      ") public pure returns (bytes32) {"
+    ],
+    [
+      "return keccak256(abi.encode(",
+      "    isStatic, sourceAddress, sourceRollupId,",
+      "    targetAddress, targetRollupId,",
+      "    value, callGas, data",
+      "));"
+    ],
+    [
+      "return keccak256(abi.encode(",
+      "    isStatic, sourceAddress, sourceRollupId,",
+      "    targetAddress, targetRollupId,",
+      "    value, callGas, data",
+      "));",
+      "// ^ same order the protocol hashes on-chain"
+    ]
   ];
-  var hlByStep = [ [1,2,3,4,5,6,7,8], [10,11,12,13,14], [10,11,12,13,14] ];
+  var hlByStep = [ [1,2,3,4,5,6,7,8], [0,1,2,3,4], [1,2,3,5] ];
 
-  var els = {};
-  ["fields","hashBox","warn"].forEach(function(id){ els[id]=document.getElementById(id); });
-  function riseShow(el, cond){ el.style.opacity = cond ? "1" : "0"; if(cond) el.style.animation="riseIn .5s ease"; }
+  var els = { hashRow: document.getElementById('hashRow'), warn: document.getElementById('warn') };
+  var chips = Array.prototype.slice.call(document.querySelectorAll('.chip'));
 
   function render(){
-    var on = function(s){ return step >= s; };
     document.getElementById("stepLabel").textContent = String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
     document.getElementById("kicker").textContent = kickers[step];
     document.getElementById("caption").textContent = captions[step];
     document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
 
-    riseShow(els.fields, on(0));
-    riseShow(els.hashBox, on(1));
-    riseShow(els.warn, on(2));
+    chips.forEach(function(c){ c.classList.toggle('hit', step >= 1); });
+    els.hashRow.style.display = step >= 1 ? "flex" : "none";
+    els.warn.style.display = step === 2 ? "block" : "none";
+    els.warn.style.animation = step === 2 ? "riseIn .4s ease both" : "";
 
+    var code = codeByStep[step];
     var hl = hlByStep[step] || [];
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
       var t = code[i].length ? code[i] : " ";
-      html += '<div style="display:flex;align-items:stretch;padding:0 14px;'
+      html += '<div style="display:flex;align-items:stretch;padding:1px 12px;'
         + (lit ? "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;" : "background:transparent;") + '">'
-        + '<span style="width:34px;flex:none;text-align:right;padding-right:18px;user-select:none;'
-        + (lit ? "color:#3fb950;" : "color:#46505c;") + '">' + String(i+1).padStart(2,"0") + '</span>'
-        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#9aa4b1;") + '">'
+        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#7d8798;") + '">'
         + t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span></div>';
     }
     document.getElementById("codePanel").innerHTML = html;

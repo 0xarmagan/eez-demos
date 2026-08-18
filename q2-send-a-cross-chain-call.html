@@ -11,7 +11,8 @@
   *{box-sizing:border-box;}
   html,body{margin:0;background:#0b0f14;}
   :root{ --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
-  @keyframes riseIn{ from{transform:translateY(12px);} to{transform:translateY(0);} }
+  @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  @keyframes dashMove{ to{stroke-dashoffset:-24;} }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
   button{font-family:var(--mono);}
   button:focus-visible{outline:2px solid #3fb950;outline-offset:2px;}
@@ -19,6 +20,7 @@
   .btn-play:hover{background:#4fce61 !important;}
   a.back{font-family:var(--mono);font-size:12px;color:#8b95a3;text-decoration:none;}
   a.back:hover{color:#cdd5e0;}
+  .byte{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;border-radius:4px;padding:5px 8px;}
 </style>
 </head>
 <body>
@@ -35,34 +37,75 @@
     <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#8b95a3;letter-spacing:0.06em;">01 / 03</div>
   </div>
 
-  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;">
-    <svg viewBox="0 0 1112 712" style="position:absolute;inset:0;width:1112px;height:712px;z-index:1;pointer-events:none;overflow:visible;">
-      <defs><marker id="ar-i" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7c83ff"></path></marker>
-      <marker id="ar-p" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b478f0"></path></marker></defs>
-      <path id="aCall" d="M300,146 L556,146" stroke="#7c83ff" stroke-width="2.5" fill="none" marker-end="url(#ar-i)" style="opacity:0;"></path>
-      <path id="aFwd" d="M790,146 L876,146" stroke="#b478f0" stroke-width="2.5" fill="none" marker-end="url(#ar-p)" style="opacity:0;"></path>
-    </svg>
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;">
 
-    <div id="yourBox" style="position:absolute;left:0px;top:70px;width:280px;height:130px;background:#141b2b;border:1.5px solid #7c83ff;border-radius:9px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;opacity:0;">
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#7782b8;">YOUR CONTRACT</div>
-      <div style="font-size:24px;font-weight:600;margin-top:4px;color:#eef1ff;">abi.encodeCall(...)</div>
-      <div style="font-size:13px;color:#8b93b8;margin-top:8px;">a normal encoded call</div>
+    <!-- STEP 1: encode the call, show real calldata bytes -->
+    <div id="s1" style="display:flex;flex-direction:column;gap:22px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">ENCODE — ORDINARY CALLDATA</div>
+      <div style="font-family:var(--mono);font-size:17px;color:#c3ccd6;">abi.encodeCall(IRemote.setValue, (42))</div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="font-family:var(--mono);font-size:13px;color:#7782b8;width:110px;">selector</div>
+        <div style="display:flex;gap:3px;">
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">55</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">24</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">1f</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">6b</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="font-family:var(--mono);font-size:13px;color:#7782b8;width:110px;">arg: 42</div>
+        <div style="display:flex;gap:3px;">
+          <div class="byte" style="background:#141b2b;color:#4d5866;border:1px solid #232b36;">00</div>
+          <div class="byte" style="background:#141b2b;color:#4d5866;border:1px solid #232b36;">⋯</div>
+          <div class="byte" style="background:rgba(124,131,255,0.22);color:#eef1ff;border:1px solid #5561c9;font-weight:600;">2a</div>
+        </div>
+        <div style="font-family:var(--mono);font-size:13px;color:#4d5866;">32 bytes, right-padded</div>
+      </div>
+      <div style="font-size:16px;color:#7d8798;max-width:820px;margin-top:6px;">No cross-chain-specific ABI — this is calldata for any contract call.</div>
     </div>
 
-    <div id="proxyBox" style="position:absolute;left:556px;top:70px;width:236px;height:130px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;opacity:0;">
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#a98ad0;">TARGET'S PROXY</div>
-      <div style="font-size:24px;font-weight:600;margin-top:4px;color:#f1e8ff;">fallback()</div>
-      <div style="font-size:13px;color:#9b8bb8;margin-top:8px;">just call it directly</div>
+    <!-- STEP 2: send to proxy address -->
+    <div id="s2" style="display:none;flex-direction:column;gap:26px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">SEND — TO THE PROXY, NOT THE TARGET</div>
+      <svg viewBox="0 0 1080 130" style="width:1080px;height:130px;">
+        <defs><marker id="ar1" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#3fb950"></path></marker></defs>
+        <line x1="230" y1="65" x2="700" y2="65" stroke="#3fb950" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#ar1)" style="animation:dashMove 1s linear infinite;"></line>
+      </svg>
+      <div style="display:flex;align-items:center;gap:0;margin-top:-100px;">
+        <div style="width:230px;background:#141b2b;border:1.5px solid #7c83ff;border-radius:9px;padding:14px 18px;">
+          <div style="font-family:var(--mono);font-size:12px;color:#7782b8;">YOU</div>
+          <div style="font-family:var(--mono);font-size:17px;color:#eef1ff;margin-top:4px;">.call(data)</div>
+        </div>
+        <div style="flex:1;"></div>
+        <div style="width:290px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:14px 18px;">
+          <div style="font-family:var(--mono);font-size:12px;color:#a98ad0;">proxyAddress</div>
+          <div style="font-family:var(--mono);font-size:17px;color:#f1e8ff;margin-top:4px;">fallback()</div>
+        </div>
+      </div>
+      <div style="font-size:16px;color:#7d8798;max-width:820px;">Same syntax as calling any contract — the proxy's fallback catches it and routes it as a cross-chain execution.</div>
     </div>
 
-    <div id="destBox" style="position:absolute;left:876px;top:70px;width:236px;height:130px;background:#16120a;border:1.5px solid #f0a83c;border-radius:9px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;opacity:0;">
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#b9863a;">DESTINATION</div>
-      <div style="font-size:24px;font-weight:600;margin-top:4px;color:#fff2dc;">runs your call</div>
+    <!-- STEP 3: destination runs it -->
+    <div id="s3" style="display:none;flex-direction:column;gap:26px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">EXECUTE — DESTINATION SIDE</div>
+      <svg viewBox="0 0 1080 130" style="width:1080px;height:130px;">
+        <defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f0a83c"></path></marker></defs>
+        <line x1="330" y1="65" x2="700" y2="65" stroke="#f0a83c" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#ar2)" style="animation:dashMove 1s linear infinite;"></line>
+      </svg>
+      <div style="display:flex;align-items:center;gap:0;margin-top:-100px;">
+        <div style="width:330px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:14px 18px;">
+          <div style="font-family:var(--mono);font-size:12px;color:#a98ad0;">EEZ manager</div>
+          <div style="font-family:var(--mono);font-size:17px;color:#f1e8ff;margin-top:4px;">executeCrossChainCall</div>
+        </div>
+        <div style="flex:1;"></div>
+        <div style="width:290px;background:#16120a;border:1.5px solid #f0a83c;border-radius:9px;padding:14px 18px;">
+          <div style="font-family:var(--mono);font-size:12px;color:#b9863a;">IRemote</div>
+          <div style="font-family:var(--mono);font-size:17px;color:#fff2dc;margin-top:4px;">setValue(42)</div>
+        </div>
+      </div>
+      <div style="font-size:16px;color:#7d8798;max-width:900px;">Runs with the proxy as msg.sender — real return data or revert bubbles straight back to you.</div>
     </div>
 
-    <div id="note" style="position:absolute;left:0px;top:260px;width:1112px;z-index:2;opacity:0;">
-      <div style="background:#0d1219;border:1px solid #1c232d;border-radius:9px;padding:18px 22px;font-size:16px;color:#9aa4b1;">No special entry point. Send calldata to the proxy the same way you'd call any contract — the fallback does the routing.</div>
-    </div>
   </div>
 
   <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0d1219;border:1px solid #1c232d;border-radius:10px;overflow:hidden;">
@@ -70,7 +113,7 @@
       <div style="width:9px;height:9px;border-radius:50%;background:#3fb950;"></div>
       <div style="font-family:var(--mono);font-size:14px;color:#8b95a3;letter-spacing:0.02em;">CrossChainProxy.sol:39</div>
     </div>
-    <div id="codePanel" style="height:660px;overflow:hidden;scroll-behavior:smooth;padding:18px 8px;font-family:var(--mono);font-size:18px;line-height:30px;"></div>
+    <div id="codePanel" style="height:660px;overflow:hidden;padding:22px 26px;font-family:var(--mono);font-size:19px;line-height:34px;"></div>
   </div>
 
   <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1c232d;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
@@ -93,75 +136,73 @@
 
 <script>
 (function(){
-  var N = 3, STEP_MS = 2600;
+  var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["JUST CALL THE PROXY", "FALLBACK FORWARDS IT", "NO SPECIAL PATH FOR YOU"];
+  var kickers = ["ENCODE IT LIKE ANY CALL", "SEND TO THE PROXY", "RUNS ON THE OTHER SIDE"];
   var captions = [
     "Encode a normal call — no cross-chain-specific ABI.",
     "Send it to the proxy address. Its fallback catches everything.",
     "The destination runs it with the proxy as msg.sender."
   ];
 
-  var code = [
-    "fallback() external payable {",
-    "    _fallback();",
-    "}",
-    "",
-    "function _fallback() internal {",
-    "    ...",
-    "    (success, result) = EEZ.call{",
-    "        value: msg.value",
-    "    }(abi.encodeCall(",
-    "        IEEZ.executeCrossChainCall,",
-    "        (msg.sender, msg.data)",
-    "    ));",
-    "    ...",
-    "}",
-    "",
-    "// your side — just a normal call:",
-    "bytes memory data = abi.encodeCall(",
-    "    IRemote.setValue, (42)",
-    ");",
-    "(bool ok, ) = proxyAddress.call(data);"
+  var codeByStep = [
+    [
+      "bytes memory data = abi.encodeCall(",
+      "    IRemote.setValue, (42)",
+      ");"
+    ],
+    [
+      "bytes memory data = abi.encodeCall(",
+      "    IRemote.setValue, (42)",
+      ");",
+      "",
+      "(bool ok, ) = proxyAddress.call(data);",
+      "",
+      "// CrossChainProxy.sol",
+      "fallback() external payable {",
+      "    _fallback();",
+      "}"
+    ],
+    [
+      "function _fallback() internal {",
+      "    ...",
+      "    (success, result) = EEZ.call{",
+      "        value: msg.value",
+      "    }(abi.encodeCall(",
+      "        IEEZ.executeCrossChainCall,",
+      "        (msg.sender, msg.data)",
+      "    ));",
+      "    ...",
+      "}"
+    ]
   ];
-  var hlByStep = [ [15,16,17,18], [0,1,2,4,5], [6,7,8,9,10,11] ];
+  var hlByStep = [ [0,1,2], [4,7,8,9], [2,3,4,5,6,7] ];
 
-  var els = {};
-  ["yourBox","proxyBox","destBox","note","aCall","aFwd"].forEach(function(id){ els[id]=document.getElementById(id); });
-  function riseShow(el, cond){ el.style.opacity = cond ? "1" : "0"; if(cond) el.style.animation="riseIn .5s ease"; }
-  function fade(el, cond){ el.style.opacity = cond ? "1" : "0"; }
+  var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
 
   function render(){
-    var on = function(s){ return step >= s; };
     document.getElementById("stepLabel").textContent = String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
     document.getElementById("kicker").textContent = kickers[step];
     document.getElementById("caption").textContent = captions[step];
     document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
 
-    riseShow(els.yourBox, on(0));
-    riseShow(els.note, on(0));
-    riseShow(els.proxyBox, on(1));
-    fade(els.aCall, on(1));
-    riseShow(els.destBox, on(2));
-    fade(els.aFwd, on(2));
+    els.s1.style.display = step === 0 ? "flex" : "none";
+    els.s2.style.display = step === 1 ? "flex" : "none";
+    els.s3.style.display = step === 2 ? "flex" : "none";
 
+    var code = codeByStep[step];
     var hl = hlByStep[step] || [];
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
       var t = code[i].length ? code[i] : " ";
-      html += '<div style="display:flex;align-items:stretch;padding:0 14px;'
+      html += '<div style="display:flex;align-items:stretch;padding:1px 12px;'
         + (lit ? "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;" : "background:transparent;") + '">'
-        + '<span style="width:34px;flex:none;text-align:right;padding-right:18px;user-select:none;'
-        + (lit ? "color:#3fb950;" : "color:#46505c;") + '">' + String(i+1).padStart(2,"0") + '</span>'
-        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#9aa4b1;") + '">'
+        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#7d8798;") + '">'
         + t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span></div>';
     }
     document.getElementById("codePanel").innerHTML = html;
-    var _cp = document.getElementById("codePanel");
-    var _fh = _cp.children[hl[0]];
-    if(_fh) _cp.scrollTop = Math.max(0, _fh.offsetTop - 48);
 
     var d = "";
     for(var j=0;j<N;j++){

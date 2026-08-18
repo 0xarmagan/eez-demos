@@ -11,7 +11,8 @@
   *{box-sizing:border-box;}
   html,body{margin:0;background:#0b0f14;}
   :root{ --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
-  @keyframes riseIn{ from{transform:translateY(12px);} to{transform:translateY(0);} }
+  @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  @keyframes dashMove{ to{stroke-dashoffset:-24;} }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
   button{font-family:var(--mono);}
   button:focus-visible{outline:2px solid #3fb950;outline-offset:2px;}
@@ -35,33 +36,45 @@
     <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#8b95a3;letter-spacing:0.06em;">01 / 03</div>
   </div>
 
-  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;">
-    <svg viewBox="0 0 1112 712" style="position:absolute;inset:0;width:1112px;height:712px;z-index:1;pointer-events:none;overflow:visible;">
-      <defs><marker id="ar-r" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f85149"></path></marker>
-      <marker id="ar-g" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#3fb950"></path></marker></defs>
-      <path id="aBad" d="M300,146 L556,146" stroke="#f85149" stroke-width="2.5" fill="none" marker-end="url(#ar-r)" style="opacity:0;"></path>
-      <path id="aGood" d="M300,320 L556,320" stroke="#3fb950" stroke-width="2.5" fill="none" marker-end="url(#ar-g)" style="opacity:0;"></path>
-    </svg>
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:40px;">
 
-    <div id="badCaller" style="position:absolute;left:0px;top:70px;width:280px;height:130px;background:#1a0f10;border:1.5px solid #f85149;border-radius:9px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;opacity:0;">
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#c76b66;">ANYONE ELSE</div>
-      <div style="font-size:22px;font-weight:600;margin-top:4px;color:#ffb3af;">eez.executeCrossChainCall()</div>
-    </div>
-    <div id="badManager" style="position:absolute;left:556px;top:70px;width:280px;height:130px;background:#141b2b;border:1.5px solid #7c83ff;border-radius:9px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;opacity:0;">
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#7782b8;">EEZ MANAGER</div>
-      <div style="font-size:22px;font-weight:600;margin-top:4px;color:#ff6b63;">revert UnauthorizedProxy()</div>
-    </div>
-
-    <div id="goodCaller" style="position:absolute;left:0px;top:244px;width:280px;height:130px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;opacity:0;">
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#a98ad0;">A REAL PROXY</div>
-      <div style="font-size:22px;font-weight:600;margin-top:4px;color:#f1e8ff;">fallback → executeCrossChainCall</div>
-    </div>
-    <div id="goodManager" style="position:absolute;left:556px;top:244px;width:280px;height:130px;background:rgba(63,185,80,0.07);border:1.5px solid #3fb950;border-radius:9px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;opacity:0;">
-      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#5e9e6b;">EEZ MANAGER</div>
-      <div style="font-size:22px;font-weight:600;margin-top:4px;color:#7ee08c;">executes it</div>
+    <div style="position:relative;height:130px;">
+      <svg viewBox="0 0 1080 130" style="position:absolute;inset:0;width:1080px;height:130px;pointer-events:none;">
+        <defs><marker id="ar-r" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f85149"></path></marker></defs>
+        <line id="lBad" x1="300" y1="65" x2="700" y2="65" stroke="#f85149" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#ar-r)" style="opacity:0;animation:dashMove 1s linear infinite;"></line>
+      </svg>
+      <div style="display:flex;align-items:center;">
+        <div style="width:280px;background:#1a0f10;border:1.5px solid #f85149;border-radius:9px;padding:16px 18px;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#c76b66;">ANYONE ELSE</div>
+          <div style="font-size:20px;font-weight:600;margin-top:4px;color:#ffb3af;">eez.executeCrossChainCall()</div>
+        </div>
+        <div style="flex:1;"></div>
+        <div id="badTo" style="width:280px;background:#141b2b;border:1.5px solid #7c83ff;border-radius:9px;padding:16px 18px;opacity:.35;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#7782b8;">EEZ MANAGER</div>
+          <div id="badToText" style="font-size:20px;font-weight:600;margin-top:4px;color:#eef1ff;">?</div>
+        </div>
+      </div>
     </div>
 
-    <div id="note" style="position:absolute;left:0px;top:440px;width:1080px;opacity:0;font-size:16px;color:#9aa4b1;">The guard checks the registry on every call — not a bug, the whole point of the registry.</div>
+    <div style="position:relative;height:130px;">
+      <svg viewBox="0 0 1080 130" style="position:absolute;inset:0;width:1080px;height:130px;pointer-events:none;">
+        <defs><marker id="ar-g" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#3fb950"></path></marker></defs>
+        <line id="lGood" x1="300" y1="65" x2="700" y2="65" stroke="#3fb950" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#ar-g)" style="opacity:0;animation:dashMove 1s linear infinite;"></line>
+      </svg>
+      <div style="display:flex;align-items:center;">
+        <div style="width:280px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:16px 18px;opacity:.35;" id="goodFrom">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#a98ad0;">A REAL PROXY</div>
+          <div style="font-size:20px;font-weight:600;margin-top:4px;color:#f1e8ff;">fallback → executeCrossChainCall</div>
+        </div>
+        <div style="flex:1;"></div>
+        <div id="goodTo" style="width:280px;background:rgba(63,185,80,0.07);border:1.5px solid #3fb950;border-radius:9px;padding:16px 18px;opacity:.35;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#5e9e6b;">EEZ MANAGER</div>
+          <div style="font-size:20px;font-weight:600;margin-top:4px;color:#7ee08c;">executes it</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="note" style="font-size:16px;color:#7d8798;max-width:900px;"></div>
   </div>
 
   <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0d1219;border:1px solid #1c232d;border-radius:10px;overflow:hidden;">
@@ -69,7 +82,7 @@
       <div style="width:9px;height:9px;border-radius:50%;background:#3fb950;"></div>
       <div style="font-family:var(--mono);font-size:14px;color:#8b95a3;letter-spacing:0.02em;">EEZ.sol:786</div>
     </div>
-    <div id="codePanel" style="height:660px;overflow:hidden;scroll-behavior:smooth;padding:18px 8px;font-family:var(--mono);font-size:19px;line-height:32px;"></div>
+    <div id="codePanel" style="height:660px;overflow:hidden;padding:22px 26px;font-family:var(--mono);font-size:20px;line-height:36px;"></div>
   </div>
 
   <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1c232d;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
@@ -92,7 +105,7 @@
 
 <script>
 (function(){
-  var N = 3, STEP_MS = 2600;
+  var N = 3, STEP_MS = 3000;
   var step = 0, playing = false, timer = null;
 
   var kickers = ["ONLY A REAL PROXY", "THE GUARD", "CHECKED EVERY CALL"];
@@ -101,55 +114,70 @@
     "It reverts — UnauthorizedProxy(). Only a real proxy gets through.",
     "The registry check runs on every call, by design."
   ];
-
-  var code = [
-    "function executeCrossChainCall(",
-    "    address sourceAddress,",
-    "    bytes calldata callData",
-    ") external payable returns (bytes memory) {",
+  var notes = [
     "",
-    "    ProxyInfo storage proxyInfo =",
-    "        authorizedProxies[msg.sender];",
     "",
-    "    if (!proxyInfo.isProxy)",
-    "        revert UnauthorizedProxy();",
-    "",
-    "    // msg.sender must be a real proxy —",
-    "    // never the caller's own address",
-    "}"
+    "The guard checks the registry every time — not a bug, the whole point of it."
   ];
-  var hlByStep = [ [0,1,2,3], [5,6,7,8,9], [5,6,7,8,9,10,11] ];
 
-  var els = {};
-  ["badCaller","badManager","goodCaller","goodManager","note","aBad","aGood"].forEach(function(id){ els[id]=document.getElementById(id); });
-  function riseShow(el, cond){ el.style.opacity = cond ? "1" : "0"; if(cond) el.style.animation="riseIn .5s ease"; }
-  function fade(el, cond){ el.style.opacity = cond ? "1" : "0"; }
+  var codeByStep = [
+    [
+      "function executeCrossChainCall(",
+      "    address sourceAddress,",
+      "    bytes calldata callData",
+      ") external payable returns (bytes memory) {"
+    ],
+    [
+      "ProxyInfo storage proxyInfo =",
+      "    authorizedProxies[msg.sender];",
+      "",
+      "if (!proxyInfo.isProxy)",
+      "    revert UnauthorizedProxy();"
+    ],
+    [
+      "ProxyInfo storage proxyInfo =",
+      "    authorizedProxies[msg.sender];",
+      "",
+      "if (!proxyInfo.isProxy)",
+      "    revert UnauthorizedProxy();",
+      "",
+      "// msg.sender must be a real proxy —",
+      "// never the caller's own address"
+    ]
+  ];
+  var hlByStep = [ [0,1,2,3], [0,1,3,4], [6,7] ];
+
+  var els = {
+    lBad: document.getElementById('lBad'), badTo: document.getElementById('badTo'), badToText: document.getElementById('badToText'),
+    lGood: document.getElementById('lGood'), goodFrom: document.getElementById('goodFrom'), goodTo: document.getElementById('goodTo'),
+    note: document.getElementById('note')
+  };
 
   function render(){
-    var on = function(s){ return step >= s; };
     document.getElementById("stepLabel").textContent = String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
     document.getElementById("kicker").textContent = kickers[step];
     document.getElementById("caption").textContent = captions[step];
     document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
+    els.note.textContent = notes[step];
 
-    riseShow(els.badCaller, on(0));
-    riseShow(els.badManager, on(1));
-    fade(els.aBad, on(1));
-    riseShow(els.goodCaller, on(2));
-    riseShow(els.goodManager, on(2));
-    fade(els.aGood, on(2));
-    riseShow(els.note, on(2));
+    els.lBad.style.opacity = step >= 0 ? "1" : "0";
+    els.badTo.style.opacity = step >= 1 ? "1" : ".35";
+    els.badToText.textContent = step >= 1 ? "revert UnauthorizedProxy()" : "?";
+    els.badToText.style.color = step >= 1 ? "#ff6b63" : "#eef1ff";
 
+    els.lGood.style.opacity = step >= 2 ? "1" : "0";
+    els.goodFrom.style.opacity = step >= 2 ? "1" : ".35";
+    els.goodTo.style.opacity = step >= 2 ? "1" : ".35";
+
+    var code = codeByStep[step];
     var hl = hlByStep[step] || [];
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
       var t = code[i].length ? code[i] : " ";
-      html += '<div style="display:flex;align-items:stretch;padding:0 14px;'
+      html += '<div style="display:flex;align-items:stretch;padding:1px 12px;'
         + (lit ? "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;" : "background:transparent;") + '">'
-        + '<span style="width:34px;flex:none;text-align:right;padding-right:18px;user-select:none;'
-        + (lit ? "color:#3fb950;" : "color:#46505c;") + '">' + String(i+1).padStart(2,"0") + '</span>'
-        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#9aa4b1;") + '">'
+        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#7d8798;") + '">'
         + t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span></div>';
     }
     document.getElementById("codePanel").innerHTML = html;
