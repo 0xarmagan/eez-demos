@@ -58,6 +58,8 @@ pre .s{color:#a98ad0}
 .cite{font-family:var(--mono);font-size:11px;color:#4d5866;display:flex;align-items:center;justify-content:space-between;gap:8px}
 .cite a{color:#5b6bd6;text-decoration:none}
 .cite a:hover{text-decoration:underline}
+.watch{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--c);text-decoration:none;margin-top:-2px}
+.watch:hover{text-decoration:underline}
 
 .soon{background:#0d1117;border:1px dashed #262f3d;border-radius:10px;padding:22px 24px;font-size:14px;color:#7d8798;line-height:1.6}
 .soon b{color:#c3ccd6}
@@ -118,6 +120,7 @@ pre .s{color:#a98ad0}
 );
 <span class="c">// same inputs, same manager -> same output, always</span></pre>
         <div class="cite"><span>EEZBase.sol:176</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/EEZBase.sol#L176" target="_blank">source ↗</a></div>
+        <a class="watch" href="./q1-compute-your-cross-chain-address.html">▶ Watch the walkthrough</a>
       </div>
 
       <div class="card" style="--c:#3fb950">
@@ -129,6 +132,7 @@ pre .s{color:#a98ad0}
 (<span class="k">bool</span> ok, ) = proxyAddress.<span class="f">call</span>(data);
 <span class="c">// destination sees this as a plain call</span></pre>
         <div class="cite"><span>CrossChainProxy.sol:39</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/CrossChainProxy.sol#L39" target="_blank">source ↗</a></div>
+        <a class="watch" href="./q2-send-a-cross-chain-call.html">▶ Watch the walkthrough</a>
       </div>
 
       <div class="card" style="--c:#f0a83c">
@@ -142,6 +146,7 @@ pre .s{color:#a98ad0}
 <span class="k">address</span> a = eez.<span class="f">computeCrossChainProxyAddress</span>(owner, rid);
 <span class="k">require</span>(msg.sender == a);</pre>
         <div class="cite"><span>CrossChainProxy.executeOnBehalf</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/CrossChainProxy.sol" target="_blank">source ↗</a></div>
+        <a class="watch" href="./q3-fix-the-msg-sender-gotcha.html">▶ Watch the walkthrough</a>
       </div>
 
       <div class="card" style="--c:#3fb950">
@@ -154,6 +159,7 @@ pre .s{color:#a98ad0}
 );
 <span class="c">// isProxy -> a real proxy for origAddr@origRid</span></pre>
         <div class="cite"><span>IEEZ.sol · ProxyInfo</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/interfaces/IEEZ.sol" target="_blank">source ↗</a></div>
+        <a class="watch" href="./q4-check-if-an-address-is-a-proxy.html">▶ Watch the walkthrough</a>
       </div>
 
       <div class="card" style="--c:#b478f0">
@@ -165,6 +171,7 @@ pre .s{color:#a98ad0}
     value, callGas, data
 );</pre>
         <div class="cite"><span>EEZBase.sol:198</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/EEZBase.sol#L198" target="_blank">source ↗</a></div>
+        <a class="watch" href="./q5-encode-a-calls-content-hash.html">▶ Watch the walkthrough</a>
       </div>
 
       <div class="card" style="--c:#f85149">
@@ -174,6 +181,7 @@ pre .s{color:#a98ad0}
 ProxyInfo storage proxyInfo = authorizedProxies[msg.sender];
 <span class="k">if</span> (!proxyInfo.isProxy) <span class="k">revert</span> UnauthorizedProxy();</pre>
         <div class="cite"><span>EEZ.sol:786</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/EEZ.sol#L786" target="_blank">source ↗</a></div>
+        <a class="watch" href="./q6-why-you-cant-call-the-manager-directly.html">▶ Watch the walkthrough</a>
       </div>
 
     </div>

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Why You Can't Call the Manager Directly — EEZ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:#0b0f14;}
+  :root{ --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
+  @keyframes riseIn{ from{transform:translateY(12px);} to{transform:translateY(0);} }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
+  button{font-family:var(--mono);}
+  button:focus-visible{outline:2px solid #3fb950;outline-offset:2px;}
+  .btn:hover{background:#1e2630 !important;}
+  .btn-play:hover{background:#4fce61 !important;}
+  a.back{font-family:var(--mono);font-size:12px;color:#8b95a3;text-decoration:none;}
+  a.back:hover{color:#cdd5e0;}
+</style>
+</head>
+<body>
+<div style="position:fixed;inset:0;background:#0b0f14;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
+<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background:#0b0f14;color:#e6edf3;transform-origin:center center;">
+
+  <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1c232d;">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <a class="back" href="./index.html">← Quickstarts</a>
+      <div style="width:5px;height:5px;border-radius:50%;background:#2c3543;"></div>
+      <div style="font-size:22px;font-weight:600;color:#e6edf3;">Why You Can't Call the Manager Directly</div>
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#e8b15e;background:rgba(240,168,60,0.12);border:1px solid #463a1e;border-radius:5px;padding:4px 9px;">SPEC · NOT LIVE</div>
+    </div>
+    <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#8b95a3;letter-spacing:0.06em;">01 / 03</div>
+  </div>
+
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;">
+    <svg viewBox="0 0 1112 712" style="position:absolute;inset:0;width:1112px;height:712px;z-index:1;pointer-events:none;overflow:visible;">
+      <defs><marker id="ar-r" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f85149"></path></marker>
+      <marker id="ar-g" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#3fb950"></path></marker></defs>
+      <path id="aBad" d="M300,146 L556,146" stroke="#f85149" stroke-width="2.5" fill="none" marker-end="url(#ar-r)" style="opacity:0;"></path>
+      <path id="aGood" d="M300,320 L556,320" stroke="#3fb950" stroke-width="2.5" fill="none" marker-end="url(#ar-g)" style="opacity:0;"></path>
+    </svg>
+
+    <div id="badCaller" style="position:absolute;left:0px;top:70px;width:280px;height:130px;background:#1a0f10;border:1.5px solid #f85149;border-radius:9px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;opacity:0;">
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#c76b66;">ANYONE ELSE</div>
+      <div style="font-size:22px;font-weight:600;margin-top:4px;color:#ffb3af;">eez.executeCrossChainCall()</div>
+    </div>
+    <div id="badManager" style="position:absolute;left:556px;top:70px;width:280px;height:130px;background:#141b2b;border:1.5px solid #7c83ff;border-radius:9px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;opacity:0;">
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#7782b8;">EEZ MANAGER</div>
+      <div style="font-size:22px;font-weight:600;margin-top:4px;color:#ff6b63;">revert UnauthorizedProxy()</div>
+    </div>
+
+    <div id="goodCaller" style="position:absolute;left:0px;top:244px;width:280px;height:130px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;opacity:0;">
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#a98ad0;">A REAL PROXY</div>
+      <div style="font-size:22px;font-weight:600;margin-top:4px;color:#f1e8ff;">fallback → executeCrossChainCall</div>
+    </div>
+    <div id="goodManager" style="position:absolute;left:556px;top:244px;width:280px;height:130px;background:rgba(63,185,80,0.07);border:1.5px solid #3fb950;border-radius:9px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;opacity:0;">
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#5e9e6b;">EEZ MANAGER</div>
+      <div style="font-size:22px;font-weight:600;margin-top:4px;color:#7ee08c;">executes it</div>
+    </div>
+
+    <div id="note" style="position:absolute;left:0px;top:440px;width:1080px;opacity:0;font-size:16px;color:#9aa4b1;">The guard checks the registry on every call — not a bug, the whole point of the registry.</div>
+  </div>
+
+  <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0d1219;border:1px solid #1c232d;border-radius:10px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:9px;padding:16px 22px;border-bottom:1px solid #1c232d;">
+      <div style="width:9px;height:9px;border-radius:50%;background:#3fb950;"></div>
+      <div style="font-family:var(--mono);font-size:14px;color:#8b95a3;letter-spacing:0.02em;">EEZ.sol:786</div>
+    </div>
+    <div id="codePanel" style="height:660px;overflow:hidden;scroll-behavior:smooth;padding:18px 8px;font-family:var(--mono);font-size:19px;line-height:32px;"></div>
+  </div>
+
+  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1c232d;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
+    <div style="flex:1;max-width:1180px;">
+      <div id="kicker" style="font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:#3fb950;margin-bottom:11px;"></div>
+      <div id="caption" style="font-size:25px;line-height:1.4;color:#c3ccd6;text-wrap:pretty;"></div>
+    </div>
+    <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button id="btnPrev" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;">‹ Prev</button>
+        <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:#06210c;background:#3fb950;border:1px solid #3fb950;border-radius:8px;padding:12px 26px;cursor:pointer;min-width:120px;">▶ Play</button>
+        <button id="btnNext" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;">Next ›</button>
+      </div>
+      <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+(function(){
+  var N = 3, STEP_MS = 2600;
+  var step = 0, playing = false, timer = null;
+
+  var kickers = ["ONLY A REAL PROXY", "THE GUARD", "CHECKED EVERY CALL"];
+  var captions = [
+    "Anyone can try calling the manager's entry point directly.",
+    "It reverts — UnauthorizedProxy(). Only a real proxy gets through.",
+    "The registry check runs on every call, by design."
+  ];
+
+  var code = [
+    "function executeCrossChainCall(",
+    "    address sourceAddress,",
+    "    bytes calldata callData",
+    ") external payable returns (bytes memory) {",
+    "",
+    "    ProxyInfo storage proxyInfo =",
+    "        authorizedProxies[msg.sender];",
+    "",
+    "    if (!proxyInfo.isProxy)",
+    "        revert UnauthorizedProxy();",
+    "",
+    "    // msg.sender must be a real proxy —",
+    "    // never the caller's own address",
+    "}"
+  ];
+  var hlByStep = [ [0,1,2,3], [5,6,7,8,9], [5,6,7,8,9,10,11] ];
+
+  var els = {};
+  ["badCaller","badManager","goodCaller","goodManager","note","aBad","aGood"].forEach(function(id){ els[id]=document.getElementById(id); });
+  function riseShow(el, cond){ el.style.opacity = cond ? "1" : "0"; if(cond) el.style.animation="riseIn .5s ease"; }
+  function fade(el, cond){ el.style.opacity = cond ? "1" : "0"; }
+
+  function render(){
+    var on = function(s){ return step >= s; };
+    document.getElementById("stepLabel").textContent = String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
+    document.getElementById("kicker").textContent = kickers[step];
+    document.getElementById("caption").textContent = captions[step];
+    document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
+
+    riseShow(els.badCaller, on(0));
+    riseShow(els.badManager, on(1));
+    fade(els.aBad, on(1));
+    riseShow(els.goodCaller, on(2));
+    riseShow(els.goodManager, on(2));
+    fade(els.aGood, on(2));
+    riseShow(els.note, on(2));
+
+    var hl = hlByStep[step] || [];
+    var html = "";
+    for(var i=0;i<code.length;i++){
+      var lit = hl.indexOf(i) !== -1;
+      var t = code[i].length ? code[i] : " ";
+      html += '<div style="display:flex;align-items:stretch;padding:0 14px;'
+        + (lit ? "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;" : "background:transparent;") + '">'
+        + '<span style="width:34px;flex:none;text-align:right;padding-right:18px;user-select:none;'
+        + (lit ? "color:#3fb950;" : "color:#46505c;") + '">' + String(i+1).padStart(2,"0") + '</span>'
+        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#9aa4b1;") + '">'
+        + t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span></div>';
+    }
+    document.getElementById("codePanel").innerHTML = html;
+
+    var d = "";
+    for(var j=0;j<N;j++){
+      var st = j===step ? "width:30px;background:#3fb950;" : (j<step ? "width:13px;background:#3a4250;" : "width:13px;background:#222a35;");
+      d += '<div style="height:6px;border-radius:3px;transition:width .2s,background .2s;'+st+'"></div>';
+    }
+    document.getElementById("dots").innerHTML = d;
+  }
+
+  function scaleStage(){ var s = Math.min(window.innerWidth/1920, window.innerHeight/1080); document.getElementById("stage").style.transform = "scale("+s+")"; }
+  function schedule(){ clearTimeout(timer); timer = setTimeout(function(){ if(!playing) return; if(step >= N-1){ playing=false; render(); return; } step++; render(); schedule(); }, STEP_MS); }
+  function togglePlay(){ if(playing){ clearTimeout(timer); playing=false; render(); return; } if(step >= N-1) step = 0; playing = true; render(); schedule(); }
+  function next(){ clearTimeout(timer); playing=false; step=Math.min(N-1,step+1); render(); }
+  function prev(){ clearTimeout(timer); playing=false; step=Math.max(0,step-1); render(); }
+
+  document.getElementById("btnPrev").addEventListener("click", prev);
+  document.getElementById("btnNext").addEventListener("click", next);
+  document.getElementById("btnPlay").addEventListener("click", togglePlay);
+  window.addEventListener("keydown", function(e){
+    if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
+    else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
+    else if(e.key===" "){ e.preventDefault(); togglePlay(); }
+  });
+  window.addEventListener("resize", scaleStage);
+  scaleStage(); render();
+})();
+</script>
+</body></html>
