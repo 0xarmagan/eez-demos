@@ -2,11 +2,23 @@
 
 This repo is internal team + core contributors. PRs go through review before merge.
 
-## Format (changed 2026-08-18 — read this before touching the old style)
+## Format (settled 2026-08-18)
 
-This is **not** the animated step-through demo format anymore. It's one page, one example card per topic: a title, a one-line description, a real code snippet, and a `file:line` citation. Less text, more code. If you find yourself writing more than 2-3 sentences of description on a card, the example is probably trying to teach two things — split it.
+Two layers, both required for a new example:
+
+1. **A card on `index.html`** — title, one-line description, a real code snippet, a `file:line` citation. If you're writing more than 2-3 sentences of description, the example is teaching two things — split it.
+2. **A short animated walkthrough** (`qN-slug.html`) the card links to — same stage/diagram/code/caption format as the original demos, 3 steps, one sentence per caption. See "Animated walkthrough rules" below before building one.
 
 Before you start a new example, open (or claim) a GitHub Issue for the topic first.
+
+## Animated walkthrough rules (learned from a real audit — apply to every one, Rollup0 included)
+
+Copy `q1-compute-your-cross-chain-address.html` as your structural template. Two things that make a walkthrough weak, checked in that audit and fixed everywhere:
+
+1. **Code panel shows only the current step's lines, revealed progressively.** Never dump the whole function/file grayed out from step 1 — that reads as a wall of dead text. Use a `codeByStep` array (one array of lines per step), not one static array highlighted in place.
+2. **The diagram must show real data, not just labeled boxes.** Actual bytes, actual values, actual state transforming across steps — not two empty boxes and an arrow. If a topic's diagram would otherwise be sparse, find the real data to visualize (a block, a batch, an event) instead of settling for placeholders.
+
+Keep the stage/panel/control structure (fixed 1920×1080, diagram left, code right, caption bottom, Prev/Play/Next) — that part isn't up for redesign per demo.
 
 ## The one hard rule: verify against real source, don't paraphrase
 

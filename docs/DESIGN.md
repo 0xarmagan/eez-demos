@@ -66,3 +66,13 @@ The animated-demo format above (all 14 A–N demos) was **deleted**, not iterate
 Dapp-developer audience shipped first with 6 basic examples (computing a proxy address, sending a cross-chain call, the msg.sender gotcha + fix, checking if an address is a proxy, encoding a call hash, why direct manager calls revert) — all re-verified against a fresh `eez-core-protocol` pull at pivot time. Rollup-operator and protocol-researcher sections are honest "coming soon" placeholders, not fabricated content.
 
 Everything else in this doc (source-of-truth split, collaboration model, branch-protection gap, three-audience boundary) still holds — only the presentation format changed, not the underlying rules.
+
+---
+
+## Revision 2 (2026-08-18, same day) — animated walkthroughs came back, then got fixed
+
+Feedback: cards alone weren't enough, bring the animated step-through format back per example — but adapted to the new card content, not restored as-is.
+
+Then a direct audit (`q1-compute-your-cross-chain-address.html`, flagged as "weak") found the real problem: not the animation format itself, but two execution flaws inherited from the old A–N demos — a mostly-empty diagram panel (two small labeled boxes in a huge void) and a code panel dumping the entire function grayed out from step 1. Fixed both, kept the format: diagrams now show real transforming data (actual hex bytes packing/hashing/extracting an address, an actual mapping lookup), code panels reveal only the current step's lines. Applied to all 6. Rule captured in `CONTRIBUTING.md`'s "Animated walkthrough rules" so Rollup0 examples inherit the fix, not the original flaw.
+
+**Current format, settled:** a card on `index.html` (title, description, snippet, citation) links to a short (3-step) animated walkthrough. Both layers required per example.
