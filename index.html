@@ -55,10 +55,10 @@ pre .c{color:#5c6673}
 pre .k{color:#e8b15e}
 pre .f{color:#7ee08c}
 pre .s{color:#a98ad0}
-.cite{font-family:var(--mono);font-size:11px;color:#4d5866;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.cite a{color:#5b6bd6;text-decoration:none}
-.cite a:hover{text-decoration:underline}
-.watch{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--c);text-decoration:none;margin-top:-2px}
+.foot-row{font-family:var(--mono);font-size:11px;color:#4d5866;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:-2px}
+.foot-row a{color:#5b6bd6;text-decoration:none}
+.foot-row a:hover{text-decoration:underline}
+.watch{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--c);text-decoration:none;font-weight:600}
 .watch:hover{text-decoration:underline}
 
 .soon{background:#0d1117;border:1px dashed #262f3d;border-radius:10px;padding:22px 24px;font-size:14px;color:#7d8798;line-height:1.6}
@@ -83,7 +83,7 @@ pre .s{color:#a98ad0}
   </div>
 
   <h1>Real EEZ code, by what you're trying to do</h1>
-  <p class="lede">Every example on this page is verbatim from <a href="https://github.com/eez-association/eez-core-protocol">eez-core-protocol</a> or <a href="https://github.com/eez-association/eez-rollup0">eez-rollup0</a> — copy it, adapt it, ship it. EEZ is pre-audit and not deployed; these show the design.</p>
+  <p class="lede">Verbatim from <a href="https://github.com/eez-association/eez-core-protocol">eez-core-protocol</a> and <a href="https://github.com/eez-association/eez-rollup0">eez-rollup0</a>. Copy it, adapt it, ship it.</p>
 
   <div class="audiences">
     <a class="aud" href="#dapp-developers" style="--c:#3fb950">
@@ -94,50 +94,45 @@ pre .s{color:#a98ad0}
     <a class="aud" href="#rollup-operators" style="--c:#7c83ff">
       <div class="k">Coming soon</div>
       <div class="t">Rollup Operators</div>
-      <div class="n">registration, thresholds, deploying a manager</div>
     </a>
     <a class="aud" href="#protocol-researchers" style="--c:#b478f0">
       <div class="k">Coming soon</div>
       <div class="t">Protocol Researchers</div>
-      <div class="n">execution model, settlement, invariants</div>
     </a>
   </div>
 
   <!-- ================= DAPP DEVELOPERS ================= -->
   <section class="sec" id="dapp-developers">
     <div class="sec-head">
-      <div class="sec-title" style="--c:#3fb950">Dapp Developers <span class="n">— building a contract that makes or receives cross-chain calls</span></div>
+      <div class="sec-title" style="--c:#3fb950">Dapp Developers</div>
     </div>
 
     <div class="grid">
 
       <div class="card" style="--c:#3fb950">
         <div class="card-head"><div class="card-title">Compute your cross-chain address</div><span class="badge quick">2 min</span></div>
-        <p class="card-desc">Every (address, rollup) pair has one deterministic alias on every other chain — computable before anything is deployed.</p>
         <pre>address alias = eez.<span class="f">computeCrossChainProxyAddress</span>(
     myContract,
     <span class="k">uint64</span>(originRollupId)
 );
 <span class="c">// same inputs, same manager -> same output, always</span></pre>
-        <div class="cite"><span>EEZBase.sol:176</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/EEZBase.sol#L176" target="_blank">source ↗</a></div>
+        <div class="foot-row"><span>EEZBase.sol:176</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/EEZBase.sol#L176" target="_blank">source ↗</a></div>
         <a class="watch" href="./q1-compute-your-cross-chain-address.html">▶ Watch the walkthrough</a>
       </div>
 
       <div class="card" style="--c:#3fb950">
         <div class="card-head"><div class="card-title">Send a cross-chain call</div><span class="badge quick">3 min</span></div>
-        <p class="card-desc">You don't call a special function. Send a normal encoded call to the target's proxy address — the proxy's fallback forwards it.</p>
         <pre><span class="k">bytes memory</span> data = <span class="f">abi.encodeCall</span>(
     IRemoteContract.setValue, (<span class="k">42</span>)
 );
 (<span class="k">bool</span> ok, ) = proxyAddress.<span class="f">call</span>(data);
 <span class="c">// destination sees this as a plain call</span></pre>
-        <div class="cite"><span>CrossChainProxy.sol:39</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/CrossChainProxy.sol#L39" target="_blank">source ↗</a></div>
+        <div class="foot-row"><span>CrossChainProxy.sol:39</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/CrossChainProxy.sol#L39" target="_blank">source ↗</a></div>
         <a class="watch" href="./q2-send-a-cross-chain-call.html">▶ Watch the walkthrough</a>
       </div>
 
       <div class="card" style="--c:#f0a83c">
         <div class="card-head"><div class="card-title">Fix the msg.sender gotcha</div><span class="badge medium">5 min</span></div>
-        <p class="card-desc">The destination sees the <b style="color:#c3ccd6">alias</b> as msg.sender, never your real address. A same-chain owner check silently breaks.</p>
         <pre><span class="c">// wrong: passes locally,
 // reverts cross-chain</span>
 <span class="k">require</span>(msg.sender == owner);
@@ -145,42 +140,40 @@ pre .s{color:#a98ad0}
 <span class="c">// right — whitelist the alias itself</span>
 <span class="k">address</span> a = eez.<span class="f">computeCrossChainProxyAddress</span>(owner, rid);
 <span class="k">require</span>(msg.sender == a);</pre>
-        <div class="cite"><span>CrossChainProxy.executeOnBehalf</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/CrossChainProxy.sol" target="_blank">source ↗</a></div>
+        <div class="foot-row"><span>CrossChainProxy.executeOnBehalf</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/CrossChainProxy.sol" target="_blank">source ↗</a></div>
         <a class="watch" href="./q3-fix-the-msg-sender-gotcha.html">▶ Watch the walkthrough</a>
       </div>
 
       <div class="card" style="--c:#3fb950">
         <div class="card-head"><div class="card-title">Check if an address is a proxy</div><span class="badge quick">2 min</span></div>
-        <p class="card-desc">Read the registry directly instead of guessing — every proxy is recorded when it's created.</p>
         <pre>(<span class="k">bool</span> isProxy,
  <span class="k">address</span> origAddr,
  <span class="k">uint64</span> origRid) = eez.<span class="f">authorizedProxies</span>(
     someAddress
 );
 <span class="c">// isProxy -> a real proxy for origAddr@origRid</span></pre>
-        <div class="cite"><span>IEEZ.sol · ProxyInfo</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/interfaces/IEEZ.sol" target="_blank">source ↗</a></div>
+        <div class="foot-row"><span>IEEZ.sol · ProxyInfo</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/interfaces/IEEZ.sol" target="_blank">source ↗</a></div>
         <a class="watch" href="./q4-check-if-an-address-is-a-proxy.html">▶ Watch the walkthrough</a>
       </div>
 
       <div class="card" style="--c:#b478f0">
         <div class="card-head"><div class="card-title">Encode a call's content hash</div><span class="badge medium">4 min</span></div>
-        <p class="card-desc">Useful if you're building tooling that needs to independently reproduce what the protocol hashes. Argument order is load-bearing — don't reorder it.</p>
         <pre>bytes32 h = eez.<span class="f">computeCrossChainCallHash</span>(
     isStatic, sourceAddress, sourceRollupId,
     targetAddress, targetRollupId,
     value, callGas, data
-);</pre>
-        <div class="cite"><span>EEZBase.sol:198</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/EEZBase.sol#L198" target="_blank">source ↗</a></div>
+);
+<span class="c">// order is load-bearing — don't reorder</span></pre>
+        <div class="foot-row"><span>EEZBase.sol:198</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/EEZBase.sol#L198" target="_blank">source ↗</a></div>
         <a class="watch" href="./q5-encode-a-calls-content-hash.html">▶ Watch the walkthrough</a>
       </div>
 
       <div class="card" style="--c:#f85149">
         <div class="card-head"><div class="card-title">Why you can't call the manager directly</div><span class="badge quick">2 min</span></div>
-        <p class="card-desc">Only a real proxy can trigger a cross-chain call. Calling the manager's entry point yourself reverts — this is the guard, not a bug.</p>
         <pre><span class="c">// EEZ.sol — inside executeCrossChainCall</span>
 ProxyInfo storage proxyInfo = authorizedProxies[msg.sender];
 <span class="k">if</span> (!proxyInfo.isProxy) <span class="k">revert</span> UnauthorizedProxy();</pre>
-        <div class="cite"><span>EEZ.sol:786</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/EEZ.sol#L786" target="_blank">source ↗</a></div>
+        <div class="foot-row"><span>EEZ.sol:786</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/EEZ.sol#L786" target="_blank">source ↗</a></div>
         <a class="watch" href="./q6-why-you-cant-call-the-manager-directly.html">▶ Watch the walkthrough</a>
       </div>
 
@@ -192,7 +185,7 @@ ProxyInfo storage proxyInfo = authorizedProxies[msg.sender];
     <div class="sec-head">
       <div class="sec-title" style="--c:#7c83ff">Rollup Operators <span class="n">— standing up or running a rollup on EEZ</span></div>
     </div>
-    <div class="soon"><b>Coming soon.</b> Registering a rollup manager, setting your multi-prover threshold, running the Kurtosis devnet, and the deploy-protocol flow — tracked as Issues on <a href="https://github.com/0xarmagan/eez-demos/issues" style="color:#7c85f4">eez-demos</a>, grounded in <code>eez-core-protocol</code> + <code>eez-rollup0</code>.</div>
+    <div class="soon"><b>Coming soon.</b> Tracked as <a href="https://github.com/0xarmagan/eez-demos/issues" style="color:#7c85f4">Issues</a>.</div>
   </section>
 
   <!-- ================= PROTOCOL RESEARCHERS ================= -->
@@ -200,7 +193,7 @@ ProxyInfo storage proxyInfo = authorizedProxies[msg.sender];
     <div class="sec-head">
       <div class="sec-title" style="--c:#b478f0">Protocol Researchers <span class="n">— execution model, settlement, and invariants</span></div>
     </div>
-    <div class="soon"><b>Coming soon.</b> The execution-table model, nested/reentrant call resolution, the commit-first/repair-if-needed settlement guarantee, and the deriver's trustless re-derivation — tracked as Issues on <a href="https://github.com/0xarmagan/eez-demos/issues" style="color:#7c85f4">eez-demos</a>.</div>
+    <div class="soon"><b>Coming soon.</b> Tracked as <a href="https://github.com/0xarmagan/eez-demos/issues" style="color:#7c85f4">Issues</a>.</div>
   </section>
 
   <div class="foot">
