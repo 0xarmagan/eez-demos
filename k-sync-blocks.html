@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K · Sync Blocks — EEZ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:#0b0f14;}
+  :root{
+    --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  }
+  /* entrance touches transform only — opacity is always set instantly, so a stuck / non-ticking
+     animation under the scaled stage can never leave content invisible (fail-safe reveal). */
+  @keyframes riseIn{ from{transform:translateY(12px);} to{transform:translateY(0);} }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
+  button{font-family:var(--mono);}
+  .btn:hover{background:#1e2630 !important;}
+  .btn-play:hover{background:#4fce61 !important;}
+  .info-btn{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:#8b95a3;background:#141b2b;border:1px solid #2a323d;border-radius:100px;padding:5px 12px;cursor:pointer;transition:border-color .15s,color .15s;}
+  .info-btn:hover{border-color:#3fb950;color:#cdd5e0;}
+  .info-btn .dot2{width:6px;height:6px;border-radius:50%;background:#3fb950;flex:none;}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(6,9,13,0.72);backdrop-filter:blur(2px);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s ease;}
+  .modal-backdrop.open{opacity:1;pointer-events:auto;}
+  .modal-card{width:640px;max-width:90vw;max-height:82vh;overflow-y:auto;background:#0e1420;border:1px solid #262f45;border-radius:14px;padding:32px 36px;transform:translateY(10px);transition:transform .2s ease;}
+  .modal-backdrop.open .modal-card{transform:translateY(0);}
+  .modal-eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#3fb950;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+  .modal-close{cursor:pointer;color:#6e7a89;font-family:var(--mono);font-size:12px;background:none;border:1px solid #2a323d;border-radius:6px;padding:4px 9px;}
+  .modal-close:hover{color:#cdd5e0;border-color:#3fb950;}
+  .modal-h{font-size:24px;font-weight:600;color:#eef1f6;margin:0 0 16px;line-height:1.3;}
+  .modal-p{font-size:15.5px;line-height:1.6;color:#c3ccd6;margin:0 0 22px;}
+  .modal-sub{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#6e7a89;margin:0 0 12px;}
+  .modal-list{margin:0 0 26px;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;}
+  .modal-list li{display:flex;gap:11px;font-size:14.5px;color:#c3ccd6;line-height:1.5;}
+  .modal-list li::before{content:"→";color:#3fb950;flex:none;font-family:var(--mono);}
+  .modal-start{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:14px;font-weight:600;color:#06210c;background:#3fb950;border:1px solid #3fb950;border-radius:8px;padding:11px 20px;cursor:pointer;}
+  .modal-start:hover{background:#4fce61;}
+  @media(max-width:640px){.modal-card{padding:24px 22px;}}
+</style>
+</head>
+<body>
+<div id="infoModal" class="modal-backdrop open" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+  <div class="modal-card">
+    <div class="modal-eyebrow"><span>WHY THIS DEMO</span><button id="infoClose" class="modal-close" type="button" aria-label="Close">✕ Close</button></div>
+    <h2 id="infoTitle" class="modal-h">K · Sync Blocks</h2>
+    <p class="modal-p">For a node operator (or anyone reading a Rollup0 block explorer) wondering why the block cadence looks the way it does — most blocks are ordinary, but every so often one looks different. This is that scheduling decision, at the level the sequencer actually makes it: not the cross-chain call format itself (demo C) and not the ingress fronts that feed it (demo L).</p>
+    <div class="modal-sub">What you should walk away understanding</div>
+    <ul class="modal-list">
+      <li>A Sync block isn't special content bolted onto a normal block — <code style="font-family:var(--mono);">SlotKind::Sync</code> is just a label; whether it actually carries cross-chain work is a separate, per-trigger decision.</li>
+      <li>The trigger is anchored to an L1 head, not a fixed L2 timer: it fires at <code style="font-family:var(--mono);">L1.timestamp + proof_window_open</code>, derived from four config numbers.</li>
+      <li>The schedule never skips a beat — a late trigger or a failed compose still produces a Sync block, just an empty one; cross-chain work waits for the next on-time slot.</li>
+    </ul>
+    <button id="infoStart" class="modal-start" type="button">Start the walkthrough →</button>
+  </div>
+</div>
+<div style="position:fixed;inset:0;background:#0b0f14;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
+<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background:#0b0f14;color:#e6edf3;transform-origin:center center;">
+
+  <!-- ===== TOP CHROME ===== -->
+  <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1c232d;">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:18px;height:18px;background:#3fb950;border-radius:3px;"></div>
+      <div style="font-family:var(--mono);font-size:16px;letter-spacing:0.04em;color:#6e7a89;">EEZ // ROLLUP0 SEQUENCING</div>
+      <div style="width:5px;height:5px;border-radius:50%;background:#2c3543;"></div>
+      <div style="font-size:23px;font-weight:600;color:#e6edf3;">K · Sync Blocks</div>
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#e8b15e;background:rgba(240,168,60,0.12);border:1px solid #463a1e;border-radius:5px;padding:4px 9px;">SPEC · NOT LIVE</div>
+      <button id="infoBtn" class="info-btn" type="button"><span class="dot2"></span>Why this demo</button>
+    </div>
+    <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#8b95a3;letter-spacing:0.06em;">01 / 06</div>
+  </div>
+
+  <!-- ===== DIAGRAM ===== -->
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;">
+
+    <!-- arrows overlay -->
+    <svg viewBox="0 0 1112 712" style="position:absolute;inset:0;width:1112px;height:712px;z-index:1;pointer-events:none;overflow:visible;">
+      <defs>
+        <marker id="ar-i" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7c83ff"></path></marker>
+      </defs>
+      <!-- Sync block -> next L1 block: postBatch pinned to l1_head+1 -->
+      <path id="pinArrow" d="M1010,300 C1040,220 990,140 967,112" stroke="#7c83ff" stroke-width="2.5" stroke-dasharray="5 5" fill="none" marker-end="url(#ar-i)" style="opacity:0;"></path>
+    </svg>
+
+    <!-- L1 block N -->
+    <div id="l1BoxN" style="position:absolute;left:40px;top:24px;width:210px;height:88px;background:rgba(124,131,255,0.06);border:1.5px solid #7c83ff;border-radius:9px;padding:13px 16px;z-index:2;">
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#8b93e0;">ETHEREUM · L1</div>
+      <div style="font-size:19px;font-weight:600;margin-top:4px;color:#eef0ff;">block #N</div>
+      <div style="font-size:12px;color:#8790bc;margin-top:4px;">anchors this trigger</div>
+    </div>
+
+    <!-- L1 block N+1 -->
+    <div id="l1BoxN1" style="position:absolute;left:862px;top:24px;width:210px;height:88px;background:rgba(124,131,255,0.06);border:1.5px solid #7c83ff;border-radius:9px;padding:13px 16px;z-index:2;">
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#8b93e0;">ETHEREUM · L1</div>
+      <div style="font-size:19px;font-weight:600;margin-top:4px;color:#eef0ff;">block #N+1</div>
+      <div id="n1Sub" style="font-size:12px;color:#8790bc;margin-top:4px;opacity:0;">postBatch target</div>
+    </div>
+
+    <!-- connector between L1 boxes -->
+    <div style="position:absolute;left:250px;top:66px;width:612px;height:0;border-top:1.5px dashed #2a3550;z-index:1;"></div>
+    <div style="position:absolute;left:490px;top:44px;font-family:var(--mono);font-size:12px;color:#6e7a89;background:#0b0f14;padding:0 8px;z-index:2;">l1_block_time</div>
+
+    <!-- K formula chip -->
+    <div id="kFormula" style="position:absolute;left:40px;top:132px;z-index:3;font-family:var(--mono);font-size:14px;color:#cdd5e0;background:#10151c;border:1px solid #2a323d;border-radius:6px;padding:7px 14px;opacity:0;">K&nbsp;=&nbsp;l1_block_time&nbsp;/&nbsp;l2_block_time&nbsp;=&nbsp;5&nbsp;&nbsp;<span style="color:#6e7a89;">(chiado-fast)</span></div>
+
+    <!-- trigger marker -->
+    <div id="triggerLine" style="position:absolute;left:628px;top:24px;width:0;height:296px;border-left:1.5px dashed #f0a83c;z-index:3;opacity:0;"></div>
+    <div id="triggerLabel" style="position:absolute;left:648px;top:96px;width:230px;z-index:3;font-family:var(--mono);font-size:12.5px;color:#e8b15e;opacity:0;">trigger fires:<br>L1.timestamp + proof_window_open<br><span style="color:#8b7451;">(+3s on chiado-fast)</span></div>
+
+    <!-- L2 block row -->
+    <div id="blk0" style="position:absolute;left:40px;top:220px;width:170px;height:100px;background:rgba(240,168,60,0.07);border:1.5px solid #f0a83c;border-radius:9px;padding:14px 16px;z-index:2;opacity:0;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.08em;color:#e8b15e;font-weight:600;">LIVE</div>
+      <div style="font-size:13px;color:#b79a6a;margin-top:8px;line-height:1.4;">wall-clock cadence</div>
+    </div>
+    <div id="blk1" style="position:absolute;left:242px;top:220px;width:170px;height:100px;background:rgba(240,168,60,0.07);border:1.5px solid #f0a83c;border-radius:9px;padding:14px 16px;z-index:2;opacity:0;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.08em;color:#e8b15e;font-weight:600;">LIVE</div>
+      <div style="font-size:13px;color:#b79a6a;margin-top:8px;line-height:1.4;">ordinary block</div>
+    </div>
+    <div id="blk2" style="position:absolute;left:444px;top:220px;width:170px;height:100px;background:rgba(240,168,60,0.07);border:1.5px solid #f0a83c;border-radius:9px;padding:14px 16px;z-index:2;opacity:0;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.08em;color:#e8b15e;font-weight:600;">LIVE</div>
+      <div style="font-size:13px;color:#b79a6a;margin-top:8px;line-height:1.4;">head, right before trigger</div>
+    </div>
+    <div id="blk3" style="position:absolute;left:646px;top:220px;width:170px;height:100px;background:rgba(240,168,60,0.04);border:1.5px dashed #f0a83c;border-radius:9px;padding:14px 16px;z-index:2;opacity:0;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.08em;color:#e8b15e;font-weight:600;">FUTURE</div>
+      <div style="font-size:13px;color:#b79a6a;margin-top:8px;line-height:1.4;">proof-window padding</div>
+    </div>
+    <div id="blk4" style="position:absolute;left:848px;top:220px;width:170px;height:100px;background:#0f1f14;border:2px solid #3fb950;border-radius:9px;padding:14px 16px;z-index:2;opacity:0;box-shadow:0 0 0 3px rgba(63,185,80,0.12);">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.08em;color:#7ee08c;font-weight:600;">SYNC</div>
+      <div style="font-size:13px;color:#8fb89a;margin-top:8px;line-height:1.4;">cross-chain work lands here</div>
+    </div>
+
+    <!-- payload badge on the Sync block -->
+    <div id="payloadBadge" style="position:absolute;left:848px;top:334px;width:224px;z-index:3;font-family:var(--mono);font-size:12px;color:#7ee08c;background:rgba(63,185,80,0.10);border:1px solid #2f6b3a;border-radius:6px;padding:8px 12px;line-height:1.5;opacity:0;">drains HeldPool →<br>held txs become system txs</div>
+
+    <!-- pin label -->
+    <div id="pinLabel" style="position:absolute;left:660px;top:400px;width:340px;z-index:3;font-family:var(--mono);font-size:12.5px;color:#9aa4f0;opacity:0;">postBatch target: <span style="color:#eef0ff;">Some(l1_head&nbsp;+&nbsp;1)</span> — pinned, not "next available"</div>
+
+    <!-- SlotKind legend strip -->
+    <div id="slotKindNote" style="position:absolute;left:40px;top:440px;width:1032px;z-index:3;font-family:var(--mono);font-size:13px;color:#6e7a89;opacity:0;">every block above carries a real <code style="color:#9aa4b1;">SlotKind</code> — Live · Future · Sync — logged on commit so dashboards can show the mix.</div>
+
+    <!-- GUARD overlay (final step): what happens when it doesn't go to plan -->
+    <div id="guardCard" style="position:absolute;left:40px;top:210px;width:1032px;height:478px;background:#17130a;border:1.5px solid #f0a83c;border-radius:10px;padding:22px 26px;z-index:6;opacity:0;pointer-events:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-family:var(--mono);font-size:15px;color:#e8b15e;">the Sync block always ships   //   sometimes empty</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#e8b15e;background:rgba(240,168,60,0.14);border:1px solid #463a1e;border-radius:5px;padding:4px 10px;">two catches</div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-top:24px;">
+        <div style="font-family:var(--mono);font-size:22px;line-height:1;color:#e8b15e;">a.</div>
+        <div>
+          <div style="font-family:var(--mono);font-size:19px;font-weight:600;color:#ffd699;">the trigger itself runs late</div>
+          <div style="font-size:14.5px;color:#c7ad83;margin-top:4px;line-height:1.55;">If the proof bundle can't reach the relay before the next L1 slot, <code style="color:#ffe1ad;">sync_block_misses_l1_slot</code> catches it and the Sequencer commits an <b>empty</b> Sync block under <code style="color:#ffe1ad;">SyncSlotMode::Empty</code>. Nothing is lost — the held cross-chain work just waits for the next on-time slot.</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-top:22px;">
+        <div style="font-family:var(--mono);font-size:22px;line-height:1;color:#f85149;">b.</div>
+        <div>
+          <div style="font-family:var(--mono);font-size:19px;font-weight:600;color:#ff6b63;">the compose step itself errors</div>
+          <div style="font-size:14.5px;color:#c79490;margin-top:4px;line-height:1.55;">If <code style="color:#ff9f99;">compose_cross_chain_batch</code> fails (a simulation error, say), the composer pushes the whole held batch back onto the pool and returns <code style="color:#ff9f99;">None</code> — the Sequencer still commits a fallback Sync block, just without the cross-chain content this slot.</div>
+        </div>
+      </div>
+      <div style="margin-top:24px;padding-top:18px;border-top:1px solid #2a2313;font-size:14px;color:#b79a6a;line-height:1.55;">
+        Either way the schedule never skips a beat. What happens if a Sync block's <i>postBatch</i> then fails to land on L1 — after it's already been committed to L2 — is a different question: see <b style="color:#e8b15e;">demo M · Commit-First, Repair-If-Needed</b>.
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== CODE PANEL ===== -->
+  <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0d1219;border:1px solid #1c232d;border-radius:10px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:9px;padding:16px 22px;border-bottom:1px solid #1c232d;">
+      <div style="width:9px;height:9px;border-radius:50%;background:#3fb950;"></div>
+      <div style="font-family:var(--mono);font-size:13.5px;color:#8b95a3;letter-spacing:0.02em;">eez-driver: slot.rs · timing.rs · sequencer.rs · eez-composer: composer.rs</div>
+    </div>
+    <div id="codePanel" style="height:660px;overflow:hidden;scroll-behavior:smooth;padding:18px 8px;font-family:var(--mono);font-size:16.5px;line-height:27px;"></div>
+  </div>
+
+  <!-- ===== BOTTOM BAR ===== -->
+  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1c232d;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
+    <div style="flex:1;max-width:1180px;">
+      <div id="kicker" style="font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:#3fb950;margin-bottom:11px;"></div>
+      <div id="caption" style="font-size:24px;line-height:1.48;color:#c3ccd6;text-wrap:pretty;"></div>
+    </div>
+    <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button id="btnPrev" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;transition:background .2s;">‹ Prev</button>
+        <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:#06210c;background:#3fb950;border:1px solid #3fb950;border-radius:8px;padding:12px 26px;cursor:pointer;min-width:120px;transition:background .2s;">▶ Play</button>
+        <button id="btnNext" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;transition:background .2s;">Next ›</button>
+      </div>
+      <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
+      <div style="display:flex;align-items:center;gap:18px;font-family:var(--mono);font-size:13px;color:#6e7a89;">
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:2px;background:#7c83ff;"></span>L1 block</div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:2px;background:#f0a83c;"></span>ordinary L2 block</div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:2px;background:#3fb950;"></span>Sync block</div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:2px;background:#f85149;"></span>compose failure</div>
+      </div>
+      <div id="remixTeaser" style="display:none;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;color:#6e7a89;">
+        <span>🔧</span><span>Coming soon: the official <b style="color:#9aa4b1;font-weight:600;">EEZ Remix plugin</b> — try this live, no wallet setup.</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+(function(){
+  var N = 6, STEP_MS = 3400;
+  var step = 0, playing = false, timer = null;
+
+  var kickers = [
+    "MOST BLOCKS ARE ORDINARY. ONE ISN'T.",
+    "AN L1 HEAD ARMS THE NEXT TRIGGER",
+    "K L2 BLOCKS PER L1 BLOCK, ONE OF THEM SYNC",
+    "THE SYNC BLOCK DRAINS THE CROSS-CHAIN POOL",
+    "THE POSTBATCH IS PINNED TO L1_HEAD + 1",
+    "LATE OR FAILED — STILL A SYNC BLOCK, JUST EMPTY",
+  ];
+  var captions = [
+    "Rollup0's sequencer produces two kinds of L2 block. Most are Live blocks — ordinary, wall-clock-paced, nothing cross-chain about them. Once per L1 block, one block in the sequence is a Sync block: the one where cross-chain system transactions and their matching ExecutionEntries land. The distinction is a real type in the code, SlotKind::{Live, Future, Sync} — logged on every commit so dashboards can show the mix.",
+    "The trigger is anchored to L1, not just a timer. spawn_l1_anchored subscribes to the L1 head stream; on every new L1 block it computes the deterministic sync-slot height and arms a wall-clock trigger at L1.timestamp + proof_window_open — the instant the prover needs to start so its bundle reaches the relay before the next L1 slot. Between triggers, a separate ticker emits ordinary LiveTicks so the head keeps advancing one Live block at a time.",
+    "How many blocks that trigger actually produces is RollupTiming::per_trigger_composition doing arithmetic on four config numbers: K = l1_block_time / l2_block_time is how many L2 blocks fit in one L1 block; future_count reserves room for the prover's wall-clock budget; live_count = K − future − 1 is what's left over. On the chiado-fast timing exercised in the code's own tests (L1=5s, L2=1s, proof=200ms, slack=1.7s) that's K=5: 3 Live blocks, 1 Future padding block, 1 Sync block — every single L1 block.",
+    "What actually makes a block a Sync block is a return value. The Sequencer calls SyncSlotComposer::compose_sync_slot right before building it. The production implementation, eez-composer's Composer, drains its HeldPool of transactions waiting on a cross-chain proxy call, resolves each into system transactions, and hands back a fully built block. None just means an ordinary pool-driven commit — the cross-chain path is a per-slot decision, not a separate pipeline bolted on afterward.",
+    "The Sync block isn't just timed near an L1 block — its content is addressed at one. In steady state the Sequencer calls compose_sync_slot with target_l1_block: Some(l1_head + 1): the matching postBatch is meant to land in the very next L1 block after the one that woke the trigger. The block's own timestamp is pinned the same way, parent timestamp plus one l2_block_time, so a re-deriving follower can reproduce the exact same value from L1 alone.",
+    "Two things can knock a Sync block off its steady-state path, and neither one skips it. A late-firing trigger gets caught by sync_block_misses_l1_slot and produces an empty Sync block under SyncSlotMode::Empty. A failed compose gets caught in the composer itself, which requeues the held batch and still lets the Sequencer commit a fallback Sync block. What happens after that — if the postBatch a committed Sync block was building toward then fails to land on L1 — is a separate mechanism; see demo M for it.",
+  ];
+
+  // right-panel source excerpt — verbatim from eez-rollup0 @ the commit read for this demo
+  var code = [
+    "// crates/eez-driver/src/slot.rs:49-62",
+    "#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]",
+    "pub enum SlotKind {",
+    "    /// Normal block at current wall-clock cadence.",
+    "    Live,",
+    "    /// Proof-window padding block — timestamp is in the",
+    "    /// future relative to wall-clock at production time;",
+    "    /// reth accepts as long as timestamps strictly increase.",
+    "    Future,",
+    "    /// Sync block — last block of a sync slot, where",
+    "    /// cross-chain system txs and the matching",
+    "    /// `ExecutionEntries` land. Timestamp matches the L1",
+    "    /// block that will carry the corresponding `postBatch`.",
+    "    Sync,",
+    "}",
+    "",
+    "// crates/eez-driver/src/slot.rs:12-17 (module doc)",
+    "//! - [`SlotEvent::SyncSlot`] — L1-anchored sync-slot",
+    "//!   trigger. Produced by [`spawn_l1_anchored`], which",
+    "//!   subscribes to an [`eez_l1::L1HeadStream`] and sleeps",
+    "//!   until `L1.timestamp + proof_window_open` after each",
+    "//!   head — i.e. the wall-clock moment when the prover",
+    "//!   should start so the postBatch bundle reaches the",
+    "//!   relay before the next L1 block.",
+    "",
+    "// crates/eez-driver/src/slot.rs:75-90",
+    "#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]",
+    "pub enum SlotEvent {",
+    "    SyncSlot {",
+    "        /// L2 block height the Sync block will land at.",
+    "        block_height: u64,",
+    "        /// Wall-clock unix timestamp the Sync block will",
+    "        /// advertise.",
+    "        timestamp: u64,",
+    "        /// L1 block this slot is anchored to; the postBatch",
+    "        /// targets `l1_head + 1` in steady state.",
+    "        l1_head: u64,",
+    "    },",
+    "",
+    "// crates/eez-driver/src/timing.rs:219-244",
+    "    /// L2 blocks per sync slot. `K = L1_block_time /",
+    "    /// L2_block_time`.",
+    "    pub const fn k(self) -> u32 {",
+    "        self.l1_block_time_ms / self.l2_block_time_ms",
+    "    }",
+    "",
+    "    /// Future blocks per slot: `ceil((proof_time +",
+    "    /// submission_slack) / l2) − 1`.",
+    "    pub const fn future_count(self) -> u32 {",
+    "        let budget_ms = self.proof_time_ms",
+    "            .saturating_add(self.submission_slack_ms);",
+    "        let blocks = budget_ms",
+    "            .saturating_add(self.l2_block_time_ms)",
+    "            .saturating_sub(1)",
+    "            / self.l2_block_time_ms;",
+    "        blocks.saturating_sub(1)",
+    "    }",
+    "",
+    "    /// Live blocks per slot — the L2 blocks already",
+    "    /// produced on wall-clock cadence by the time the",
+    "    /// trigger fires.",
+    "    pub const fn live_count(self) -> u32 {",
+    "        self.k() - self.future_count() - 1",
+    "    }",
+    "",
+    "// crates/eez-driver/src/slot.rs:154-175",
+    "/// Per-Sync-slot block producer for cross-chain content.",
+    "///",
+    "/// Called by the Sequencer before each Sync block. The",
+    "/// production impl (`eez-composer::Composer`) drains its",
+    "/// `HeldPool`, resolves each held tx into system txs,",
+    "/// builds the Sync block in-process, and returns it.",
+    "/// `None` = no content → the Sequencer does a",
+    "/// pool-driven Sync commit.",
+    "#[async_trait]",
+    "pub trait SyncSlotComposer: Send + Sync + 'static {",
+    "    async fn compose_sync_slot(",
+    "        &self,",
+    "        rollup_id: u64,",
+    "        parent: ParentContext,",
+    "        timestamp: u64,",
+    "        target_l1_block: Option<u64>,",
+    "        mode: SyncSlotMode,",
+    "    ) -> Option<SyncSlotBlock>;",
+    "",
+    "// crates/eez-driver/src/sequencer.rs:624-638",
+    "                } else if let Some((rollup_id, composer))",
+    "                    = self.sync_slot_composer.as_ref() {",
+    "                    let parent = crate::slot::ParentContext {",
+    "                        header: last_header.clone(),",
+    "                    };",
+    "                    composer",
+    "                        // Steady: aim the immediate next L1",
+    "                        // block, pinned to expected_sync_ts.",
+    "                        .compose_sync_slot(",
+    "                            *rollup_id,",
+    "                            parent,",
+    "                            expected_sync_ts,",
+    "                            Some(l1_head + 1),",
+    "                            SyncSlotMode::Steady,",
+    "                        )",
+    "                        .await",
+    "",
+    "// crates/eez-driver/src/slot.rs:141-152",
+    "#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]",
+    "pub enum SyncSlotMode {",
+    "    /// Caught-up, aim-ahead slot — drains the pool.",
+    "    Steady,",
+    "    /// Behind-the-wall-clock catchup — empty Sync block.",
+    "    Catchup,",
+    "    /// Deterministic EMPTY block, no emission",
+    "    /// (deferred-late slots).",
+    "    Empty,",
+    "}",
+    "",
+    "// crates/eez-driver/src/sequencer.rs:595-603",
+    "                let prebuilt = if self",
+    "                    .sync_block_misses_l1_slot(expected_sync_ts) {",
+    "                    event!(",
+    "                        name: \"eez.sequencer.sync_slot.deferred_late\",",
+    "                        \"trigger too late for the immediate L1",
+    "                         slot; committing an empty block and",
+    "                         holding the pool — next slot's batch",
+    "                         covers it\",",
+    "                    );",
+    "",
+    "// crates/eez-composer/src/composer.rs:1076-1089",
+    "            Err(err) => {",
+    "                // Errors occur before drain classification,",
+    "                // so requeueing the complete original batch",
+    "                // is safe.",
+    "                event!(",
+    "                    name: \"eez.composer.cc_compose.failed\",",
+    "                    \"cross-chain compose failed; retaining",
+    "                     held transactions while Sequencer commits",
+    "                     a fallback Sync block\",",
+    "                );",
+    "                pool.push_front_batch(drained);",
+    "                None",
+    "            }",
+  ];
+  var hlByStep = [
+    [1,2,3,4,5,6,7,8,9,10,11,12,13,14],
+    [17,18,19,20,21,22,23,26,27,28,29,30,31,32,33,34,35,36,37],
+    [40,41,42,43,44,46,47,48,49,50,51,52,53,54,55,56,58,59,60,61,62,63],
+    [66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83],
+    [86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101],
+    [104,105,106,107,108,109,110,111,112,113,116,117,118,119,120,121,122,123,124,127,128,129,130,131,132,133,134,135,136,137,138,139],
+  ];
+
+  // element visibility per step: fn(step)->bool
+  var els = {};
+  ["l1BoxN","l1BoxN1","n1Sub","kFormula","triggerLine","triggerLabel",
+   "blk0","blk1","blk2","blk3","blk4","payloadBadge","pinArrow","pinLabel",
+   "slotKindNote","guardCard"].forEach(function(id){ els[id]=document.getElementById(id); });
+
+  function riseShow(el, cond){ el.style.opacity = cond ? "1" : "0"; if(cond) el.style.animation="riseIn .5s ease"; }
+  function fade(el, cond){ el.style.opacity = cond ? "1" : "0"; }
+
+  function render(){
+    var on = function(s){ return step >= s; };
+    var pl = step !== N-1;              // machinery hidden on the guard step
+
+    // chrome
+    document.getElementById("stepLabel").textContent =
+      String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
+    document.getElementById("kicker").textContent = kickers[step];
+    document.getElementById("caption").textContent = captions[step];
+    document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
+
+    // base entities (L1 boxes) — always present once the walkthrough starts
+    riseShow(els.l1BoxN, true);
+    riseShow(els.l1BoxN1, true);
+
+    // step 0: the block row exists (undifferentiated intro is skipped —
+    // SlotKind is introduced immediately since it's the organizing idea)
+    riseShow(els.blk0, on(0) && pl);
+    riseShow(els.blk1, on(0) && pl);
+    riseShow(els.blk2, on(0) && pl);
+    riseShow(els.blk3, on(0) && pl);
+    riseShow(els.blk4, on(0) && pl);
+    fade(els.slotKindNote, on(0) && pl);
+
+    // step 1: trigger
+    fade(els.triggerLine, on(1) && pl);
+    fade(els.triggerLabel, on(1) && pl);
+    fade(els.kFormula, on(1) && pl);
+
+    // step 3: payload
+    fade(els.payloadBadge, on(3) && pl);
+
+    // step 4: pinned to L1
+    fade(els.pinArrow, on(4) && pl);
+    fade(els.pinLabel, on(4) && pl);
+    fade(els.n1Sub, on(4) && pl);
+
+    // guard (final step)
+    if(step === N-1){ els.guardCard.style.opacity="1"; els.guardCard.style.animation="riseIn .45s ease"; }
+    else { els.guardCard.style.opacity="0"; }
+    document.getElementById("remixTeaser").style.display = (step === N-1) ? "flex" : "none";
+
+    // right panel
+    var hl = hlByStep[step] || [];
+    var html = "";
+    for(var i=0;i<code.length;i++){
+      var lit = hl.indexOf(i) !== -1;
+      var t = code[i].length ? code[i] : " ";
+      var isHeader = code[i].indexOf("// crates/") === 0;
+      html += '<div ' + (lit?"data-hl ":"") + 'style="display:flex;align-items:stretch;padding:0 14px;'
+        + (lit ? "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;" : "background:transparent;") + '">'
+        + '<span style="width:34px;flex:none;text-align:right;padding-right:18px;user-select:none;'
+        + (lit ? "color:#3fb950;" : "color:#46505c;") + '">' + String(i+1).padStart(2,"0") + '</span>'
+        + '<span style="white-space:pre-wrap;' + (isHeader ? "color:#5e6a78;font-style:italic;" : (lit ? "color:#eef3f8;" : "color:#9aa4b1;")) + '">'
+        + t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span></div>';
+    }
+    document.getElementById("codePanel").innerHTML = html;
+    var _cp = document.getElementById("codePanel");
+    var _fh = _cp.querySelector("[data-hl]");
+    _cp.scrollTop = _fh ? Math.max(0, _fh.offsetTop - 48) : 0;
+
+    // dots
+    var d = "";
+    for(var j=0;j<N;j++){
+      var st = j===step ? "width:30px;background:#3fb950;"
+        : (j<step ? "width:13px;background:#3a4250;" : "width:13px;background:#222a35;");
+      d += '<div style="height:6px;border-radius:3px;transition:width .2s,background .2s;'+st+'"></div>';
+    }
+    document.getElementById("dots").innerHTML = d;
+  }
+
+  function scaleStage(){
+    var s = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+    document.getElementById("stage").style.transform = "scale("+s+")";
+  }
+
+  function schedule(){
+    clearTimeout(timer);
+    timer = setTimeout(function(){
+      if(!playing) return;
+      if(step >= N-1){ playing=false; render(); return; }
+      step++; render(); schedule();
+    }, STEP_MS);
+  }
+  function togglePlay(){
+    if(playing){ clearTimeout(timer); playing=false; render(); return; }
+    if(step >= N-1) step = 0;
+    playing = true; render(); schedule();
+  }
+  function next(){ clearTimeout(timer); playing=false; step=Math.min(N-1,step+1); render(); }
+  function prev(){ clearTimeout(timer); playing=false; step=Math.max(0,step-1); render(); }
+
+  document.getElementById("btnPrev").addEventListener("click", prev);
+  document.getElementById("btnNext").addEventListener("click", next);
+  document.getElementById("btnPlay").addEventListener("click", togglePlay);
+  window.addEventListener("keydown", function(e){
+    if(infoModal.classList.contains('open')){
+      if(e.key==="Escape"){ e.preventDefault(); closeInfo(); }
+      return;
+    }
+    if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
+    else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
+    else if(e.key===" "){ e.preventDefault(); togglePlay(); }
+  });
+  window.addEventListener("resize", scaleStage);
+
+  var infoModal = document.getElementById('infoModal');
+  function openInfo(){ infoModal.classList.add('open'); }
+  function closeInfo(){ infoModal.classList.remove('open'); }
+  document.getElementById('infoBtn').addEventListener('click', openInfo);
+  document.getElementById('infoClose').addEventListener('click', closeInfo);
+  document.getElementById('infoStart').addEventListener('click', closeInfo);
+  infoModal.addEventListener('click', function(e){ if(e.target === infoModal) closeInfo(); });
+
+  scaleStage();
+  render();
+})();
+</script>
+</body></html>

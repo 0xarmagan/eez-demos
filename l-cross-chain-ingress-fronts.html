@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>L · Cross-Chain Ingress Fronts — EEZ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:#0b0f14;}
+  :root{
+    --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  }
+  /* entrance touches transform only — opacity is always set instantly, so a stuck / non-ticking
+     animation under the scaled stage can never leave content invisible (fail-safe reveal). */
+  @keyframes riseIn{ from{transform:translateY(12px);} to{transform:translateY(0);} }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
+  button{font-family:var(--mono);}
+  .btn:hover{background:#1e2630 !important;}
+  .btn-play:hover{background:#4fce61 !important;}
+  .info-btn{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:#8b95a3;background:#141b2b;border:1px solid #2a323d;border-radius:100px;padding:5px 12px;cursor:pointer;transition:border-color .15s,color .15s;}
+  .info-btn:hover{border-color:#3fb950;color:#cdd5e0;}
+  .info-btn .dot2{width:6px;height:6px;border-radius:50%;background:#3fb950;flex:none;}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(6,9,13,0.72);backdrop-filter:blur(2px);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s ease;}
+  .modal-backdrop.open{opacity:1;pointer-events:auto;}
+  .modal-card{width:640px;max-width:90vw;max-height:82vh;overflow-y:auto;background:#0e1420;border:1px solid #262f45;border-radius:14px;padding:32px 36px;transform:translateY(10px);transition:transform .2s ease;}
+  .modal-backdrop.open .modal-card{transform:translateY(0);}
+  .modal-eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#3fb950;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+  .modal-close{cursor:pointer;color:#6e7a89;font-family:var(--mono);font-size:12px;background:none;border:1px solid #2a323d;border-radius:6px;padding:4px 9px;}
+  .modal-close:hover{color:#cdd5e0;border-color:#3fb950;}
+  .modal-h{font-size:24px;font-weight:600;color:#eef1f6;margin:0 0 16px;line-height:1.3;}
+  .modal-p{font-size:15.5px;line-height:1.6;color:#c3ccd6;margin:0 0 22px;}
+  .modal-sub{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#6e7a89;margin:0 0 12px;}
+  .modal-list{margin:0 0 26px;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;}
+  .modal-list li{display:flex;gap:11px;font-size:14.5px;color:#c3ccd6;line-height:1.5;}
+  .modal-list li::before{content:"→";color:#3fb950;flex:none;font-family:var(--mono);}
+  .modal-start{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:14px;font-weight:600;color:#06210c;background:#3fb950;border:1px solid #3fb950;border-radius:8px;padding:11px 20px;cursor:pointer;}
+  .modal-start:hover{background:#4fce61;}
+  @media(max-width:640px){.modal-card{padding:24px 22px;}}
+</style>
+</head>
+<body>
+<div id="infoModal" class="modal-backdrop open" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+  <div class="modal-card">
+    <div class="modal-eyebrow"><span>WHY THIS DEMO</span><button id="infoClose" class="modal-close" type="button" aria-label="Close">✕ Close</button></div>
+    <h2 id="infoTitle" class="modal-h">L · Cross-Chain Ingress Fronts</h2>
+    <p class="modal-p">Builders coming from message-passing bridges tend to picture a cross-chain call as "just hit the RPC." In eez-rollup0 there are exactly two doors a real cross-chain transaction can walk through — an L1→L2 front and an L2→L1 front — and both are narrow: they hold one method, forward everything else, and only resolve once a composer bundles the tx into the next Sync block. This demo walks through what those two proxies actually do, port by port.</p>
+    <div class="modal-sub">What you should walk away understanding</div>
+    <ul class="modal-list">
+      <li>A front is a transparent proxy, not a mempool: only eth_sendRawTransaction is intercepted and held; every other eth_* is forwarded verbatim to that front's own source-chain RPC.</li>
+      <li>Direction is fixed by which port you hit, not by the tx's own chain id — the L1 front is always Inbound, the L2 front is always Outbound — and a held tx only resolves when the composer drains it into the next Sync block's bundle.</li>
+      <li>These fronts exist only in composer mode. Follower and standalone nodes never open either port, and EEZ_MAX_USER_TXS_PER_BUNDLE (default 3) is a real cap worth checking against your builder before raising it.</li>
+    </ul>
+    <button id="infoStart" class="modal-start" type="button">Start the walkthrough →</button>
+  </div>
+</div>
+<div style="position:fixed;inset:0;background:#0b0f14;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
+<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background:#0b0f14;color:#e6edf3;transform-origin:center center;">
+
+  <!-- ===== TOP CHROME ===== -->
+  <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1c232d;">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:18px;height:18px;background:#3fb950;border-radius:3px;"></div>
+      <div style="font-family:var(--mono);font-size:16px;letter-spacing:0.04em;color:#6e7a89;">EEZ // ROLLUP0 INGRESS</div>
+      <div style="width:5px;height:5px;border-radius:50%;background:#2c3543;"></div>
+      <div style="font-size:23px;font-weight:600;color:#e6edf3;">L · Cross-Chain Ingress Fronts</div>
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#e8b15e;background:rgba(240,168,60,0.12);border:1px solid #463a1e;border-radius:5px;padding:4px 9px;">SPEC · NOT LIVE</div>
+      <button id="infoBtn" class="info-btn" type="button"><span class="dot2"></span>Why this demo</button>
+    </div>
+    <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#8b95a3;letter-spacing:0.06em;">01 / 07</div>
+  </div>
+
+  <!-- ===== DIAGRAM ===== -->
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;">
+
+    <!-- arrows overlay -->
+    <svg viewBox="0 0 1112 712" style="position:absolute;inset:0;width:1112px;height:712px;z-index:1;pointer-events:none;overflow:visible;">
+      <defs>
+        <marker id="ar-g" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#3fb950"></path></marker>
+        <marker id="ar-i" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7c83ff"></path></marker>
+        <marker id="ar-a" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f0a83c"></path></marker>
+      </defs>
+      <!-- raw tx (L1 front, inbound) -> HeldPool -->
+      <path id="aInToPool" d="M158,332 C220,360 380,392 470,420" stroke="#7c83ff" stroke-width="2.5" fill="none" marker-end="url(#ar-i)" style="opacity:0;"></path>
+      <!-- raw tx (L2 front, outbound) -> HeldPool -->
+      <path id="aOutToPool" d="M956,332 C890,360 730,392 642,420" stroke="#f0a83c" stroke-width="2.5" fill="none" marker-end="url(#ar-a)" style="opacity:0;"></path>
+      <!-- HeldPool -> next Sync block bundle -->
+      <path id="aPoolToBundle" d="M556,500 L556,556" stroke="#3fb950" stroke-width="2.5" fill="none" marker-end="url(#ar-g)" style="opacity:0;"></path>
+    </svg>
+
+    <!-- L1 front panel -->
+    <div id="l1Panel" style="position:absolute;left:0;top:0;width:512px;height:220px;background:#0e1420;border:1px solid #262f45;border-radius:10px;z-index:2;opacity:0;">
+      <div style="position:absolute;left:18px;top:16px;display:flex;align-items:center;gap:9px;">
+        <div style="width:10px;height:10px;border-radius:2px;background:#7c83ff;"></div>
+        <div style="font-family:var(--mono);font-size:15px;letter-spacing:0.08em;color:#9aa4f0;">ETHEREUM · L1 · SOURCE CHAIN</div>
+      </div>
+      <div style="position:absolute;left:20px;top:56px;width:472px;">
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#7d86c9;">L1 → L2 FRONT · INBOUND</div>
+        <div style="font-size:26px;font-weight:600;margin-top:4px;color:#eef0ff;">localhost:<span style="color:#aeb4ff;">18999</span></div>
+        <div id="l1EnvLine" style="font-family:var(--mono);font-size:14px;color:#9aa4f0;margin-top:8px;padding:6px 10px;background:rgba(124,131,255,0.08);border:1px solid rgba(124,131,255,0.25);border-radius:6px;display:inline-block;">EEZ_L1_XCHAIN_PORT → EEZ_L1_RPC_URL</div>
+        <div id="l1FwdNote" style="font-size:13px;color:#8891c9;margin-top:10px;opacity:0;">every other eth_* → forwarded verbatim to this upstream</div>
+      </div>
+    </div>
+
+    <!-- L2 front panel -->
+    <div id="l2Panel" style="position:absolute;left:600px;top:0;width:512px;height:220px;background:#16120a;border:1px solid #463a1e;border-radius:10px;z-index:2;opacity:0;">
+      <div style="position:absolute;left:18px;top:16px;display:flex;align-items:center;gap:9px;">
+        <div style="width:10px;height:10px;border-radius:2px;background:#f0a83c;"></div>
+        <div style="font-family:var(--mono);font-size:15px;letter-spacing:0.08em;color:#e8b15e;">ROLLUP · L2 · SOURCE CHAIN</div>
+      </div>
+      <div style="position:absolute;left:20px;top:56px;width:472px;">
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#b9863a;">L2 → L1 FRONT · OUTBOUND</div>
+        <div style="font-size:26px;font-weight:600;margin-top:4px;color:#fff2dc;">localhost:<span style="color:#f3c37e;">18998</span></div>
+        <div id="l2EnvLine" style="font-family:var(--mono);font-size:14px;color:#e8b15e;margin-top:8px;padding:6px 10px;background:rgba(240,168,60,0.08);border:1px solid rgba(240,168,60,0.25);border-radius:6px;display:inline-block;">EEZ_L2_XCHAIN_PORT → EEZ_L2_RPC_URL</div>
+        <div id="l2FwdNote" style="font-size:13px;color:#b79a6a;margin-top:10px;opacity:0;">every other eth_* → forwarded verbatim to this upstream</div>
+      </div>
+    </div>
+
+    <!-- raw tx chip (hits L1 front) -->
+    <div id="rawTxIn" style="position:absolute;left:24px;top:250px;width:230px;height:70px;background:#10151c;border:1px solid #3a4173;border-radius:9px;padding:11px 15px;display:flex;flex-direction:column;justify-content:center;z-index:3;opacity:0;">
+      <div style="font-family:var(--mono);font-size:11.5px;letter-spacing:0.06em;color:#7782b8;">eth_sendRawTransaction</div>
+      <div style="font-size:13px;color:#c3ccd6;margin-top:5px;">sent to the L1 front</div>
+    </div>
+
+    <!-- raw tx chip (hits L2 front) -->
+    <div id="rawTxOut" style="position:absolute;left:858px;top:250px;width:230px;height:70px;background:#10151c;border:1px solid #6b4f26;border-radius:9px;padding:11px 15px;display:flex;flex-direction:column;justify-content:center;z-index:3;opacity:0;">
+      <div style="font-family:var(--mono);font-size:11.5px;letter-spacing:0.06em;color:#b9863a;">eth_sendRawTransaction</div>
+      <div style="font-size:13px;color:#c3ccd6;margin-top:5px;">sent to the L2 front</div>
+    </div>
+
+    <!-- HeldPool box -->
+    <div id="heldPool" style="position:absolute;left:356px;top:392px;width:400px;height:108px;background:rgba(63,185,80,0.06);border:1.5px dashed #3fb950;border-radius:9px;padding:14px 20px;display:flex;flex-direction:column;justify-content:center;z-index:3;opacity:0;">
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#5e9e6b;">SHARED HELDPOOL · PER ROLLUP</div>
+      <div style="font-size:20px;font-weight:600;color:#cfe9d4;margin-top:4px;">held &amp; direction-tagged</div>
+      <div style="font-size:13px;color:#8fae95;margin-top:6px;">Inbound / Outbound — nonces isolated per direction, per source chain</div>
+    </div>
+
+    <!-- next Sync block bundle -->
+    <div id="bundleWrap" style="position:absolute;left:156px;top:556px;width:800px;height:132px;border:1.5px dashed #3f5a45;border-radius:12px;z-index:2;opacity:0;">
+      <div style="position:absolute;left:16px;top:-11px;background:#0b0f14;padding:0 10px;font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#5e9e6b;">NEXT SYNC BLOCK · postBatch BUNDLE</div>
+      <div style="position:absolute;left:20px;top:24px;right:20px;font-size:14.5px;color:#a9c2ad;line-height:1.5;">Up to <b style="color:#7ee08c;">EEZ_MAX_USER_TXS_PER_BUNDLE</b> held txs (default <b style="color:#7ee08c;">3</b>) drained, simulated, and submitted with the L1 postBatch — one atomic unit, all or nothing.</div>
+      <div id="bundleCapBadge" style="position:absolute;left:20px;bottom:14px;font-family:var(--mono);font-size:13px;color:#3fb950;background:rgba(63,185,80,0.12);border:1px solid #2f6b3a;border-radius:5px;padding:5px 11px;">cap = 3 · composed atomically</div>
+    </div>
+
+    <!-- GUARD 1: composer-mode-only overlay -->
+    <div id="guardComposer" style="position:absolute;left:-16px;top:230px;width:1144px;background:#181206;border:1.5px solid #f0a83c;border-radius:10px;padding:26px 30px;z-index:6;opacity:0;pointer-events:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-family:var(--mono);font-size:15px;color:#f3c37e;">eez-node/src/main.rs — startup, per mode</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#f3c37e;background:rgba(240,168,60,0.14);border:1px solid #5a4420;border-radius:5px;padding:4px 10px;">follower / standalone</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:18px;">
+        <div style="font-size:34px;line-height:1;color:#f0a83c;">⏸</div>
+        <div>
+          <div style="font-family:var(--mono);font-size:21px;font-weight:600;color:#f3c37e;">both ports stay closed — no front ever binds</div>
+          <div style="font-size:15px;color:#c9b48a;margin-top:6px;line-height:1.55;">Both cross-chain fronts are spawned inside the same block that also spawns the Sequencer and the Composer umbrella — reachable only when <b>Mode::Composer</b> holds. A <b>follower</b> has no Sequencer; <b>standalone</b> has neither L1 nor a Composer. Neither mode's startup path ever reaches that block, so <code>run_cross_chain_front</code> is never called and <code>EEZ_L1_XCHAIN_PORT</code> / <code>EEZ_L2_XCHAIN_PORT</code> simply go unused.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GUARD 2: bundle-cap gotcha overlay -->
+    <div id="guardBundle" style="position:absolute;left:-16px;top:230px;width:1144px;background:#1a0f10;border:1.5px solid #f85149;border-radius:10px;padding:26px 30px;z-index:6;opacity:0;pointer-events:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;">
+        <div style="font-family:var(--mono);font-size:15px;color:#ff8a84;">EEZ_MAX_USER_TXS_PER_BUNDLE · default 3</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#ff8a84;background:rgba(248,81,73,0.14);border:1px solid #5a2826;border-radius:5px;padding:4px 10px;">rbuilder-chiado, not this repo</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;margin-top:18px;">
+        <div style="font-size:34px;line-height:1;color:#f85149;">⦸</div>
+        <div>
+          <div style="font-family:var(--mono);font-size:21px;font-weight:600;color:#ff6b63;">beyond ~3, the excess is silently dropped</div>
+          <div style="font-size:15px;color:#c79490;margin-top:6px;line-height:1.55;">In code the cap is a re-queue blast-radius control, not a protocol limit — overflow just drains over later Sync slots (<code>pool.pop_n(max_user_txs)</code>). The sharper trap is operational: the README documents that <b>rbuilder-chiado</b>, the external block builder the chiado stack submits bundles to, drops txs beyond roughly 3 instead of erroring — lost tx inclusion, no revert to see. That drop path lives in rbuilder itself, outside this repo, so it's reported here as the README's documented behavior, not verified against rbuilder's own source. Raise the cap only against a builder proven to include larger bundles atomically.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== BUNDLE / TRACE PANEL ===== -->
+  <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0d1219;border:1px solid #1c232d;border-radius:10px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:9px;padding:16px 22px;border-bottom:1px solid #1c232d;">
+      <div style="width:9px;height:9px;border-radius:50%;background:#3fb950;"></div>
+      <div style="font-family:var(--mono);font-size:14px;color:#8b95a3;letter-spacing:0.02em;">eez-node/eez-composer source — real excerpts</div>
+    </div>
+    <div id="codePanel" style="height:660px;overflow:hidden;scroll-behavior:smooth;padding:18px 8px;font-family:var(--mono);font-size:17px;line-height:27px;"></div>
+  </div>
+
+  <!-- ===== BOTTOM BAR ===== -->
+  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1c232d;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
+    <div style="flex:1;max-width:1180px;">
+      <div id="kicker" style="font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:#3fb950;margin-bottom:11px;"></div>
+      <div id="caption" style="font-size:24px;line-height:1.48;color:#c3ccd6;text-wrap:pretty;"></div>
+    </div>
+    <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button id="btnPrev" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;transition:background .2s;">‹ Prev</button>
+        <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:#06210c;background:#3fb950;border:1px solid #3fb950;border-radius:8px;padding:12px 26px;cursor:pointer;min-width:120px;transition:background .2s;">▶ Play</button>
+        <button id="btnNext" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;transition:background .2s;">Next ›</button>
+      </div>
+      <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
+      <div style="display:flex;align-items:center;gap:18px;font-family:var(--mono);font-size:13px;color:#6e7a89;">
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:2px;background:#7c83ff;"></span>L1 · inbound</div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:2px;background:#f0a83c;"></span>L2 · outbound</div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:2px;background:#3fb950;"></span>composed</div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:2px;background:#f85149;"></span>dropped</div>
+      </div>
+      <div id="remixTeaser" style="display:none;align-items:center;gap:8px;font-family:var(--mono);font-size:12.5px;color:#6e7a89;">
+        <span>🔧</span><span>Coming soon: the official <b style="color:#9aa4b1;font-weight:600;">EEZ Remix plugin</b> — try this live, no wallet setup.</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+(function(){
+  var N = 7, STEP_MS = 3000;
+  var step = 0, playing = false, timer = null;
+
+  var kickers = [
+    "TWO FRONTS, ONE SHARED HELD POOL",
+    "A RAW TX SENT HERE IS HELD, NOT RUN",
+    "EVERYTHING ELSE JUST FORWARDS",
+    "HELD TXS DRAIN INTO THE NEXT SYNC BLOCK",
+    "THE REAL PORTS & ENV VARS",
+    "GUARD · ONLY COMPOSER MODE OPENS THESE PORTS",
+    "GUARD · THE BUNDLE CAP CAN SILENTLY DROP TXS",
+  ];
+  var captions = [
+    "Two transparent RPC proxies sit at the edge of the rollup, one per source chain: an L1→L2 front for inbound cross-chain calls, an L2→L1 front for outbound ones. Each is a thin proxy in front of the composer's shared HeldPool — no state, no logic of its own, just a gate (eez-node/src/ingress.rs, eez-composer/src/ingress.rs).",
+    "Send eth_sendRawTransaction to a front and it never reaches that chain's mempool. gate_and_hold() recovers the signer, checks nonce and balance against the source chain, and pushes the tx into the shared HeldPool tagged with the front's fixed Direction — Inbound for the L1 front, Outbound for the L2 front. The front returns the tx hash at once; the receipt only resolves once the held tx actually lands.",
+    "Every other eth_* call — eth_call, eth_getBalance, eth_chainId, anything that isn't eth_sendRawTransaction — is forwarded verbatim to that front's own upstream RPC and the response relayed straight back. A JSON-RPC batch carrying eth_sendRawTransaction is rejected outright, so batching can't sneak a held tx past the intercept.",
+    "At the next Sync slot the composer drains held txs from the pool, simulates them, and packs them into the same postBatch bundle it submits to L1 — one atomic, all-or-nothing unit. Direction decides how each tx settles: inbound txs execute through the L1 bundle, outbound txs execute as the user half of an L2 Sync pair.",
+    "The wiring is concrete, not illustrative. L1 front: EEZ_L1_XCHAIN_PORT (18999 in the chiado stack) forwarding to EEZ_L1_RPC_URL, direction Inbound. L2 front: EEZ_L2_XCHAIN_PORT (18998) forwarding to EEZ_L2_RPC_URL, direction Outbound. Both ports are required together in composer mode — configuring only one is a startup error.",
+    "Only composer mode spawns these fronts. eez-node's startup wires the Sequencer, the Composer umbrella, and both cross-chain fronts inside the same code path — reachable only when Mode::Composer holds. A follower has no Sequencer; standalone has neither L1 nor a Composer. No composer running means no ingress front listening, on either port.",
+    "EEZ_MAX_USER_TXS_PER_BUNDLE caps how many held txs ride in one bundle — 3 by default — and in code it's a re-queue blast-radius control, not a hard protocol limit: overflow just drains over later slots. The README calls out a sharper real-world trap, though: rbuilder-chiado, the external builder the chiado stack submits bundles to, silently drops txs beyond roughly 3 instead of erroring. That drop path lives in rbuilder, outside this repo — reported here as documented behavior, not independently verified.",
+  ];
+
+  // right-panel source excerpts, with real file:line citations
+  var code = [
+    "// eez-composer/src/ingress.rs:1-11",
+    "//! Transparent cross-chain RPC fronts — one per",
+    "//! SOURCE chain. L1 front -> Inbound, L2 front ->",
+    "//! Outbound. No state, no logic — just a gate.",
+    "",
+    "// eez-node/src/ingress.rs:403-421 (handle)",
+    "if method == \"eth_sendRawTransaction\" {",
+    "    if let Some(resp) =",
+    "        intercept_send_raw(&ctx, raw_hex, &json)",
+    "            .await",
+    "    { return Ok(resp); }        // HELD, not run",
+    "}",
+    "if !all_forwarded_methods_are_eth(&json) {",
+    "    return Ok(rpc_error(id, -32601,",
+    "        \"front forwards only eth_* JSON-RPC\"));",
+    "}",
+    "Ok(forward(&ctx, body_bytes.to_vec()).await)",
+    "",
+    "// eez-node/src/ingress.rs:433-444 (gate_and_hold)",
+    "let resp = match gate_and_hold(",
+    "    &envelope, &raw, ctx.direction,",
+    "    &ctx.held_pool, ctx.expected_source_chain_id,",
+    "    &ctx.validation_provider,",
+    ").await {",
+    "    Admission::Held(hash) => json!({\"result\":hash}),",
+    "    Admission::Rejected(msg) => json!({\"error\":msg}),",
+    "};",
+    "",
+    "// eez-node/src/main.rs:952-963 (composer-only)",
+    "for (spec, port, url, vp) in xchain_fronts {",
+    "  task_executor.spawn_critical_task(spec.task,",
+    "    async move { ingress::run_cross_chain_front(",
+    "        port, url, spec.direction, pool, vp,",
+    "        spec.expected_source_chain_id).await ... });",
+    "}",
+    "// ^ inside: if let (Some(sequencer), Some(composer))",
+    "//   = Mode::Composer only. Follower/standalone",
+    "//   never reach this block — no front spawns.",
+    "",
+    "// eez-node/src/main.rs:1053-1066",
+    "XchainFrontSpec{ port_env:\"EEZ_L1_XCHAIN_PORT\",",
+    "  url_env:\"EEZ_L1_RPC_URL\", direction:Inbound, .. }",
+    "XchainFrontSpec{ port_env:\"EEZ_L2_XCHAIN_PORT\",",
+    "  url_env:\"EEZ_L2_RPC_URL\", direction:Outbound, .. }",
+    "",
+    "// eez-composer/src/composer.rs:1013-1020",
+    "let max_user_txs = std::env::var(",
+    "    \"EEZ_MAX_USER_TXS_PER_BUNDLE\")",
+    "    .ok().and_then(|v| v.parse::<usize>().ok())",
+    "    .filter(|&n| n >= 1).unwrap_or(3);",
+    "let drained = pool.pop_n(max_user_txs);",
+    "// builder-side: rbuilder-chiado silently drops",
+    "//   excess beyond ~3 (README, not this repo's Rust)",
+  ];
+  var hlByStep = [
+    [1, 2, 3],
+    [6, 7, 8, 9, 10, 19, 20, 21, 24],
+    [12, 13, 14, 15, 16],
+    [45, 46, 47, 48, 49],
+    [39, 40, 41, 42],
+    [28, 29, 30, 31, 32, 35, 36, 37],
+    [45, 46, 47, 48, 49, 50, 51],
+  ];
+
+  // element visibility per step: fn(step)->bool
+  var els = {};
+  ["aInToPool","aOutToPool","aPoolToBundle","l1Panel","l2Panel","l1FwdNote","l2FwdNote",
+   "rawTxIn","rawTxOut","heldPool","bundleWrap","bundleCapBadge","guardComposer","guardBundle",
+   "remixTeaser"].forEach(function(id){ els[id]=document.getElementById(id); });
+
+  function riseShow(el, cond){ el.style.opacity = cond ? "1" : "0"; if(cond) el.style.animation="riseIn .5s ease"; }
+  function fade(el, cond){ el.style.opacity = cond ? "1" : "0"; }
+
+  function render(){
+    var on = function(s){ return step >= s; };
+    var pl = step < 5;              // main diagram hidden under the two guard overlays
+
+    // chrome
+    document.getElementById("stepLabel").textContent =
+      String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
+    document.getElementById("kicker").textContent = kickers[step];
+    document.getElementById("caption").textContent = captions[step];
+    document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
+
+    // diagram reveals
+    riseShow(els.l1Panel, on(0) && pl);
+    riseShow(els.l2Panel, on(0) && pl);
+
+    riseShow(els.rawTxIn, on(1) && pl);
+    riseShow(els.rawTxOut, on(1) && pl);
+    fade(els.aInToPool, on(1) && pl);
+    fade(els.aOutToPool, on(1) && pl);
+    riseShow(els.heldPool, on(1) && pl);
+
+    fade(els.l1FwdNote, on(2) && pl);
+    fade(els.l2FwdNote, on(2) && pl);
+
+    fade(els.aPoolToBundle, on(3) && pl);
+    riseShow(els.bundleWrap, on(3) && pl);
+    fade(els.bundleCapBadge, on(3) && pl);
+
+    // step 4: emphasize the env-line chips already on screen
+    document.getElementById("l1EnvLine").style.boxShadow = (on(4) && pl) ? "0 0 0 1px #7c83ff" : "none";
+    document.getElementById("l2EnvLine").style.boxShadow = (on(4) && pl) ? "0 0 0 1px #f0a83c" : "none";
+
+    // guards
+    els.guardComposer.style.opacity = (step === 5) ? "1" : "0";
+    if(step === 5) els.guardComposer.style.animation = "riseIn .45s ease";
+    els.guardBundle.style.opacity = (step === 6) ? "1" : "0";
+    if(step === 6) els.guardBundle.style.animation = "riseIn .45s ease";
+
+    els.remixTeaser.style.display = (step === N-1) ? "flex" : "none";
+
+    // right panel
+    var hl = hlByStep[step] || [];
+    var html = "";
+    for(var i=0;i<code.length;i++){
+      var lit = hl.indexOf(i) !== -1;
+      var t = code[i].length ? code[i] : " ";
+      html += '<div ' + (lit?"data-hl ":"") + 'style="display:flex;align-items:stretch;padding:0 14px;'
+        + (lit ? "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;" : "background:transparent;") + '">'
+        + '<span style="width:34px;flex:none;text-align:right;padding-right:18px;user-select:none;'
+        + (lit ? "color:#3fb950;" : "color:#46505c;") + '">' + String(i+1).padStart(2,"0") + '</span>'
+        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#9aa4b1;") + '">'
+        + t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span></div>';
+    }
+    document.getElementById("codePanel").innerHTML = html;
+    var _cp = document.getElementById("codePanel");
+    var _fh = _cp.querySelector("[data-hl]");
+    _cp.scrollTop = _fh ? Math.max(0, _fh.offsetTop - 48) : 0;
+
+    // dots
+    var d = "";
+    for(var j=0;j<N;j++){
+      var st = j===step ? "width:30px;background:#3fb950;"
+        : (j<step ? "width:13px;background:#3a4250;" : "width:13px;background:#222a35;");
+      d += '<div style="height:6px;border-radius:3px;transition:width .2s,background .2s;'+st+'"></div>';
+    }
+    document.getElementById("dots").innerHTML = d;
+  }
+
+  function scaleStage(){
+    var s = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+    document.getElementById("stage").style.transform = "scale("+s+")";
+  }
+
+  function schedule(){
+    clearTimeout(timer);
+    timer = setTimeout(function(){
+      if(!playing) return;
+      if(step >= N-1){ playing=false; render(); return; }
+      step++; render(); schedule();
+    }, STEP_MS);
+  }
+  function togglePlay(){
+    if(playing){ clearTimeout(timer); playing=false; render(); return; }
+    if(step >= N-1) step = 0;
+    playing = true; render(); schedule();
+  }
+  function next(){ clearTimeout(timer); playing=false; step=Math.min(N-1,step+1); render(); }
+  function prev(){ clearTimeout(timer); playing=false; step=Math.max(0,step-1); render(); }
+
+  document.getElementById("btnPrev").addEventListener("click", prev);
+  document.getElementById("btnNext").addEventListener("click", next);
+  document.getElementById("btnPlay").addEventListener("click", togglePlay);
+  window.addEventListener("keydown", function(e){
+    if(infoModal.classList.contains('open')){
+      if(e.key==="Escape"){ e.preventDefault(); closeInfo(); }
+      return;
+    }
+    if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
+    else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
+    else if(e.key===" "){ e.preventDefault(); togglePlay(); }
+  });
+  window.addEventListener("resize", scaleStage);
+
+  var infoModal = document.getElementById('infoModal');
+  function openInfo(){ infoModal.classList.add('open'); }
+  function closeInfo(){ infoModal.classList.remove('open'); }
+  document.getElementById('infoBtn').addEventListener('click', openInfo);
+  document.getElementById('infoClose').addEventListener('click', closeInfo);
+  document.getElementById('infoStart').addEventListener('click', closeInfo);
+  infoModal.addEventListener('click', function(e){ if(e.target === infoModal) closeInfo(); });
+
+  scaleStage();
+  render();
+})();
+</script>
+</body></html>
