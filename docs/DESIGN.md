@@ -46,7 +46,7 @@ Both move fast. Every code panel cites a real `file:line`; nothing is paraphrase
 
 - Private repo, internal team + core contributors.
 - GitHub Issues for topic proposals/tracking (not a markdown backlog — more discoverable for multiple contributors).
-- Branch protection on `main`: PR + review required, no direct pushes.
+- Branch protection on `main` (PR + review required, no direct pushes) is the intent, but **not currently enforced** — GitHub requires a paid plan to set branch protection on a private repo, and this account is on the free tier. Until that's resolved (upgrade, or make the repo public), this is a convention everyone needs to actually follow, not a guardrail GitHub enforces. Revisit once the plan situation changes.
 - House style is written down (`CONTRIBUTING.md`), not tribal knowledge — the point of writing it down is that a new contributor's first demo should already look like it belongs.
 
 ## What's explicitly out of scope for this phase
