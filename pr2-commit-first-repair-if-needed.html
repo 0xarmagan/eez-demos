@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Commit-First, Repair-If-Needed — EEZ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:#0b0f14;}
+  :root{ --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
+  @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  @keyframes flowByte{ from{transform:translateX(-14px);opacity:0;} to{transform:translateX(0);opacity:1;} }
+  @keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 rgba(232,177,94,0.4);} 50%{box-shadow:0 0 0 8px rgba(232,177,94,0);} }
+  @keyframes pulseGreen{ 0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,0.4);} 50%{box-shadow:0 0 0 8px rgba(63,185,80,0);} }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
+  button{font-family:var(--mono);}
+  button:focus-visible{outline:2px solid #3fb950;outline-offset:2px;}
+  .btn:hover{background:#1e2630 !important;}
+  .btn-play:hover{background:#4fce61 !important;}
+  a.back{font-family:var(--mono);font-size:12px;color:#8b95a3;text-decoration:none;}
+  a.back:hover{color:#cdd5e0;}
+  .pill{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;border-radius:6px;padding:8px 13px;}
+</style>
+</head>
+<body>
+<div style="position:fixed;inset:0;background:#0b0f14;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
+<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background:#0b0f14;color:#e6edf3;transform-origin:center center;">
+
+  <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1c232d;">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <a class="back" href="./index.html">← Quickstarts</a>
+      <div style="width:5px;height:5px;border-radius:50%;background:#2c3543;"></div>
+      <div style="font-size:22px;font-weight:600;color:#e6edf3;">Commit-First, Repair-If-Needed</div>
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#e8b15e;background:rgba(240,168,60,0.12);border:1px solid #463a1e;border-radius:5px;padding:4px 9px;">SPEC · NOT LIVE</div>
+    </div>
+    <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#8b95a3;letter-spacing:0.06em;">01 / 03</div>
+  </div>
+
+  <!-- ===== DIAGRAM — real state machine: optimistic → settled | failed ===== -->
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
+
+    <!-- STEP 1: call arrives, begin() fires, optimistic state appears -->
+    <div id="s1" style="display:flex;flex-direction:column;gap:28px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">L2 BLOCK PRODUCTION · BLOCK #48,120</div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div class="pill" style="color:#c3ccd6;background:#10151c;border:1px solid #232b36;">cross-chain call</div>
+        <div style="font-size:22px;color:#4d5866;">→</div>
+        <div class="pill" style="color:#7ee08c;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;font-weight:600;">begin()</div>
+        <div style="font-size:26px;color:#3fb950;">→</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#4d5866;">optimistic.rs:117</div>
+      </div>
+      <div style="background:rgba(232,177,94,0.07);border:1.5px dashed #8a6a2e;border-radius:10px;padding:20px 24px;display:flex;flex-direction:column;gap:10px;max-width:820px;animation:riseIn .4s ease both;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-size:19px;font-weight:600;color:#f2dfb3;">OptimisticallyIncluded</div>
+          <div style="width:7px;height:7px;border-radius:50%;background:#e8b15e;animation:pulse 1.8s ease-in-out infinite;"></div>
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;">OPTIMISTIC</div>
+        </div>
+        <div style="font-size:15px;color:#a99a75;">Committed to the block now — not yet checked against L1.</div>
+      </div>
+      <div style="font-size:16px;color:#7d8798;max-width:820px;">The L2 doesn't wait for L1 — it commits to the call and moves on immediately.</div>
+    </div>
+
+    <!-- STEP 2: L1 catches up, state waits at a sync_height, unresolved -->
+    <div id="s2" style="display:none;flex-direction:column;gap:28px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">WAITING ON L1 SYNC</div>
+      <div style="background:rgba(232,177,94,0.07);border:1.5px dashed #8a6a2e;border-radius:10px;padding:20px 24px;display:flex;flex-direction:column;gap:10px;max-width:820px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-size:19px;font-weight:600;color:#f2dfb3;">OptimisticallyIncluded</div>
+          <div style="width:7px;height:7px;border-radius:50%;background:#e8b15e;animation:pulse 1.8s ease-in-out infinite;"></div>
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;">OPTIMISTIC</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="font-family:var(--mono);font-size:13px;color:#8b95a3;">sync_height =</div>
+          <div style="font-family:var(--mono);font-size:16px;font-weight:600;color:#f2dfb3;">8,241</div>
+          <div style="font-size:15px;color:#a99a75;">— unresolved until L1's history reaches it</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:40px;margin-top:4px;">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div style="font-size:26px;color:#4d5866;">↙</div>
+          <div class="pill" style="color:#5e9e6b;background:rgba(63,185,80,0.06);border:1px dashed #2f6b3a;">mark_settled?</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
+          <div style="font-size:26px;color:#4d5866;">↘</div>
+          <div class="pill" style="color:#c89a5e;background:rgba(232,177,94,0.06);border:1px dashed #8a6a2e;">mark_failed?</div>
+        </div>
+      </div>
+      <div style="font-size:16px;color:#7d8798;max-width:820px;">Two real outcomes are possible from here — nothing decides which until L1 reports back.</div>
+    </div>
+
+    <!-- STEP 3: two real, named outcomes side by side -->
+    <div id="s3" style="display:none;flex-direction:column;gap:24px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;">L1 CONFIRMS · TWO NAMED PATHS</div>
+      <div style="display:flex;align-items:stretch;gap:22px;">
+        <div style="flex:1;background:rgba(63,185,80,0.07);border:1.5px solid #2f6b3a;border-radius:10px;padding:20px 22px;display:flex;flex-direction:column;gap:12px;animation:riseIn .4s ease both;">
+          <div class="pill" style="color:#7ee08c;background:rgba(63,185,80,0.12);border:1px solid #2f6b3a;font-weight:600;align-self:flex-start;">mark_settled(sync_height)</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="font-size:18px;font-weight:600;color:#cfe9d4;">OptimisticallyIncluded</div>
+            <div style="width:7px;height:7px;border-radius:50%;background:#3fb950;animation:pulseGreen 1.8s ease-in-out infinite;"></div>
+            <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#3fb950;">SETTLED</div>
+          </div>
+          <div style="font-size:14px;color:#7d9e83;">L1 confirmed the call went through — the optimistic state is now permanent.</div>
+        </div>
+        <div style="flex:1;background:rgba(232,177,94,0.07);border:1.5px solid #8a6a2e;border-radius:10px;padding:20px 22px;display:flex;flex-direction:column;gap:12px;animation:riseIn .4s .1s ease both;">
+          <div class="pill" style="color:#f2dfb3;background:rgba(232,177,94,0.12);border:1px solid #8a6a2e;font-weight:600;align-self:flex-start;">mark_failed(sync_height, slot_skipped)</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="font-size:18px;font-weight:600;color:#f2dfb3;">OptimisticallyIncluded</div>
+            <div style="width:7px;height:7px;border-radius:50%;background:#e8b15e;animation:pulse 1.8s ease-in-out infinite;"></div>
+            <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;">REPAIRED</div>
+          </div>
+          <div style="font-size:14px;color:#a99a75;">L1 shows it didn't go through — <span style="font-family:var(--mono);color:#f2dfb3;">slot_skipped: true</span> flags the block for reconciliation.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0d1219;border:1px solid #1c232d;border-radius:10px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:9px;padding:16px 22px;border-bottom:1px solid #1c232d;">
+      <div style="width:9px;height:9px;border-radius:50%;background:#3fb950;"></div>
+      <div style="font-family:var(--mono);font-size:14px;color:#8b95a3;letter-spacing:0.02em;">eez-composer/src/optimistic.rs</div>
+    </div>
+    <div id="codePanel" style="height:660px;overflow:hidden;padding:22px 26px;font-family:var(--mono);font-size:20px;line-height:36px;"></div>
+  </div>
+
+  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1c232d;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
+    <div style="flex:1;max-width:1180px;">
+      <div id="kicker" style="font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:#3fb950;margin-bottom:11px;"></div>
+      <div id="caption" style="font-size:25px;line-height:1.4;color:#c3ccd6;text-wrap:pretty;"></div>
+    </div>
+    <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button id="btnPrev" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;">‹ Prev</button>
+        <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:#06210c;background:#3fb950;border:1px solid #3fb950;border-radius:8px;padding:12px 26px;cursor:pointer;min-width:120px;">▶ Play</button>
+        <button id="btnNext" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;">Next ›</button>
+      </div>
+      <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+(function(){
+  var N = 3, STEP_MS = 3200;
+  var step = 0, playing = false, timer = null;
+
+  var kickers = ["COMMIT FIRST", "L1 CATCHES UP", "SETTLED, OR REPAIRED"];
+  var captions = [
+    "begin() commits the L2 block to a cross-chain call before L1 has confirmed anything.",
+    "The optimistic state sits at a fixed sync_height, unresolved until L1's history reaches it.",
+    "L1 confirmation calls mark_settled to finalize it, or mark_failed to trigger a repair."
+  ];
+
+  // Progressive code reveal: each step shows only the lines relevant so far,
+  // so the panel never dumps the full file ungrouped. Only optimistic.rs:101,
+  // 117, 177 and 191 are verified verbatim quotes; everything else is an
+  // explicit "not verified" annotation, never an invented body.
+  var codeByStep = [
+    [
+      "// optimistic.rs:101",
+      "pub struct OptimisticallyIncluded {",
+      "    // fields omitted — signature verified, body not",
+      "}",
+      "",
+      "// optimistic.rs:117",
+      "pub fn begin(",
+      "    // params omitted — signature verified, body not",
+      ") -> OptimisticallyIncluded {"
+    ],
+    [
+      "// optimistic.rs:101",
+      "pub struct OptimisticallyIncluded {",
+      "    // fields omitted — signature verified, body not",
+      "}",
+      "",
+      "// optimistic.rs:117",
+      "pub fn begin(",
+      "    // params omitted — signature verified, body not",
+      ") -> OptimisticallyIncluded {",
+      "",
+      "// L2 keeps producing blocks here — this state sits",
+      "// at a fixed sync_height until L1 catches up to it."
+    ],
+    [
+      "// optimistic.rs:177",
+      "pub fn mark_settled(&self, sync_height: u64) {",
+      "    // marks the block permanent — no longer optimistic",
+      "}",
+      "",
+      "// optimistic.rs:191",
+      "pub fn mark_failed(&self, sync_height: u64, slot_skipped: bool) {",
+      "    // triggers a repair; slot_skipped flags a skipped slot",
+      "}"
+    ]
+  ];
+  var hlByStep = [
+    [1,6],
+    [1,6],
+    [1,5]
+  ];
+
+  var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
+
+  function render(){
+    document.getElementById("stepLabel").textContent = String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
+    document.getElementById("kicker").textContent = kickers[step];
+    document.getElementById("caption").textContent = captions[step];
+    document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
+
+    els.s1.style.display = step === 0 ? "flex" : "none";
+    els.s2.style.display = step === 1 ? "flex" : "none";
+    els.s3.style.display = step === 2 ? "flex" : "none";
+
+    var code = codeByStep[step];
+    var hl = hlByStep[step] || [];
+    var html = "";
+    for(var i=0;i<code.length;i++){
+      var lit = hl.indexOf(i) !== -1;
+      var t = code[i].length ? code[i] : " ";
+      html += '<div style="display:flex;align-items:stretch;padding:1px 12px;'
+        + (lit ? "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;" : "background:transparent;") + '">'
+        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#7d8798;") + '">'
+        + t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span></div>';
+    }
+    document.getElementById("codePanel").innerHTML = html;
+
+    var d = "";
+    for(var j=0;j<N;j++){
+      var st = j===step ? "width:30px;background:#3fb950;" : (j<step ? "width:13px;background:#3a4250;" : "width:13px;background:#222a35;");
+      d += '<div style="height:6px;border-radius:3px;transition:width .2s,background .2s;'+st+'"></div>';
+    }
+    document.getElementById("dots").innerHTML = d;
+  }
+
+  function scaleStage(){ var s = Math.min(window.innerWidth/1920, window.innerHeight/1080); document.getElementById("stage").style.transform = "scale("+s+")"; }
+  function schedule(){ clearTimeout(timer); timer = setTimeout(function(){ if(!playing) return; if(step >= N-1){ playing=false; render(); return; } step++; render(); schedule(); }, STEP_MS); }
+  function togglePlay(){ if(playing){ clearTimeout(timer); playing=false; render(); return; } if(step >= N-1) step = 0; playing = true; render(); schedule(); }
+  function next(){ clearTimeout(timer); playing=false; step=Math.min(N-1,step+1); render(); }
+  function prev(){ clearTimeout(timer); playing=false; step=Math.max(0,step-1); render(); }
+
+  document.getElementById("btnPrev").addEventListener("click", prev);
+  document.getElementById("btnNext").addEventListener("click", next);
+  document.getElementById("btnPlay").addEventListener("click", togglePlay);
+  window.addEventListener("keydown", function(e){
+    if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
+    else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
+    else if(e.key===" "){ e.preventDefault(); togglePlay(); }
+  });
+  window.addEventListener("resize", scaleStage);
+  scaleStage(); render();
+})();
+</script>
+</body></html>

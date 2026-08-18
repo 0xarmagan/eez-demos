@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Four Components of Rollup0 — EEZ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:#0b0f14;}
+  :root{ --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; }
+  @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  @keyframes flowByte{ from{transform:translateX(-14px);opacity:0;} to{transform:translateX(0);opacity:1;} }
+  @keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,0.4);} 50%{box-shadow:0 0 0 8px rgba(63,185,80,0);} }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
+  button{font-family:var(--mono);}
+  button:focus-visible{outline:2px solid #3fb950;outline-offset:2px;}
+  .btn:hover{background:#1e2630 !important;}
+  .btn-play:hover{background:#4fce61 !important;}
+  a.back{font-family:var(--mono);font-size:12px;color:#8b95a3;text-decoration:none;}
+  a.back:hover{color:#cdd5e0;}
+  .sublabel{font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:#6e7a89;}
+  .component-box{display:flex;flex-direction:column;gap:8px;border:1px solid #232b36;border-radius:10px;padding:16px 20px;min-width:230px;animation:riseIn .35s ease both;}
+  .component-box.small{min-width:170px;padding:12px 16px;}
+  .comp-file{font-family:var(--mono);font-size:12px;color:#5b6572;}
+  .comp-sig{font-family:var(--mono);font-size:15px;font-weight:600;}
+  .comp-desc{font-size:14px;color:#8b95a3;}
+  .arrow{font-size:26px;color:#3fb950;flex:none;}
+  .footnote{font-size:16px;color:#7d8798;max-width:820px;}
+  .cite-chip{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;padding:5px 10px;border-radius:6px;border:1px solid transparent;color:#5b6572;transition:background .2s,border-color .2s,color .2s;}
+  .cite-dot{width:7px;height:7px;border-radius:50%;flex:none;}
+</style>
+</head>
+<body>
+<div style="position:fixed;inset:0;background:#0b0f14;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
+<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background:#0b0f14;color:#e6edf3;transform-origin:center center;">
+
+  <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1c232d;">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <a class="back" href="./index.html">← Quickstarts</a>
+      <div style="width:5px;height:5px;border-radius:50%;background:#2c3543;"></div>
+      <div style="font-size:22px;font-weight:600;color:#e6edf3;">The Four Components of Rollup0</div>
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#e8b15e;background:rgba(240,168,60,0.12);border:1px solid #463a1e;border-radius:5px;padding:4px 9px;">SPEC · NOT LIVE</div>
+    </div>
+    <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#8b95a3;letter-spacing:0.06em;">01 / 03</div>
+  </div>
+
+  <!-- ===== DIAGRAM — real struct/fn signatures flowing through the pipeline ===== -->
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
+
+    <!-- STEP 1: Sequencer -> Composer, the live path -->
+    <div id="s1" style="display:flex;flex-direction:column;gap:26px;">
+      <div class="sublabel">LIVE PATH · SEQUENCER → COMPOSER</div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div class="component-box" style="border-color:#3a4173;background:rgba(124,131,255,0.10);">
+          <div class="comp-file">sequencer.rs:159</div>
+          <div class="comp-sig" style="color:#aeb6ec;">pub struct Sequencer&lt;T, ChainSpec&gt;</div>
+          <div class="comp-desc">builds L2 blocks</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="component-box" style="border-color:#2f6b3a;background:rgba(63,185,80,0.10);">
+          <div class="comp-file">composer.rs:514</div>
+          <div class="comp-sig" style="color:#8fe0a0;">pub struct Composer&lt;L2: BlockReader&gt;</div>
+          <div class="comp-desc">settles cross-chain calls in that block</div>
+        </div>
+      </div>
+      <div class="footnote">Two components, running block by block — this is the live chain, before anything is attested.</div>
+    </div>
+
+    <!-- STEP 2: Composer's output -> Attester struct + sign() -->
+    <div id="s2" style="display:none;flex-direction:column;gap:26px;">
+      <div class="sublabel">ATTESTATION · COMPOSER → PROOF-SIGNER</div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div class="component-box small" style="border-color:#2f6b3a;background:rgba(63,185,80,0.10);">
+          <div class="comp-file">composer.rs:514</div>
+          <div class="comp-sig" style="color:#8fe0a0;">Composer&lt;L2&gt;</div>
+        </div>
+        <div class="arrow">→</div>
+        <div class="component-box" style="border-color:#8a6f2e;background:rgba(232,177,94,0.10);">
+          <div class="comp-file">attest.rs:52</div>
+          <div class="comp-sig" style="color:#f0cf8f;">pub(crate) struct Attester</div>
+          <div class="comp-desc">attests to the result for the proof system</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div class="comp-file">attest.rs:134</div>
+        <div style="font-family:var(--mono);font-size:16px;color:#f0cf8f;background:#10151c;border:1px solid #3a2e12;border-radius:8px;padding:14px 18px;line-height:1.6;animation:riseIn .35s ease both;">
+          fn sign(&amp;self, public_inputs_hash: AttestablePublicInputsHash)<br>
+          &nbsp;&nbsp;-&gt; Result&lt;Bytes, SignerError&gt;
+        </div>
+      </div>
+      <div class="footnote">The signed attestation is what lets everything downstream trust Composer's output without redoing the work.</div>
+    </div>
+
+    <!-- STEP 3: full pipeline, Deriver as the trustless backstop -->
+    <div id="s3" style="display:none;flex-direction:column;gap:24px;">
+      <div class="sublabel">FULL PIPELINE · DERIVER TRUSTS NOTHING</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div class="component-box small" style="border-color:#3a4173;background:rgba(124,131,255,0.10);">
+          <div class="comp-file">sequencer.rs:159</div>
+          <div class="comp-sig" style="color:#aeb6ec;font-size:13px;">Sequencer&lt;T, ChainSpec&gt;</div>
+        </div>
+        <div class="arrow" style="font-size:20px;">→</div>
+        <div class="component-box small" style="border-color:#2f6b3a;background:rgba(63,185,80,0.10);">
+          <div class="comp-file">composer.rs:514</div>
+          <div class="comp-sig" style="color:#8fe0a0;font-size:13px;">Composer&lt;L2&gt;</div>
+        </div>
+        <div class="arrow" style="font-size:20px;">→</div>
+        <div class="component-box small" style="border-color:#8a6f2e;background:rgba(232,177,94,0.10);">
+          <div class="comp-file">attest.rs:52</div>
+          <div class="comp-sig" style="color:#f0cf8f;font-size:13px;">Attester</div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:18px;margin-top:6px;">
+        <div class="component-box small" style="border-color:#3a3f4d;background:#10151c;">
+          <div class="comp-file">L1</div>
+          <div class="comp-sig" style="color:#c3ccd6;font-size:13px;">settled calldata</div>
+        </div>
+        <div style="font-size:26px;color:#c89cf5;flex:none;">⇢</div>
+        <div class="component-box" style="border-color:#8a5fc9;border-style:dashed;background:rgba(200,150,245,0.08);">
+          <div class="comp-file">deriver.rs:36</div>
+          <div class="comp-sig" style="color:#e3cdff;">pub struct Deriver&lt;L2&gt;</div>
+          <div class="comp-desc" style="color:#c8adf0;">independently re-derives state — trusts none of the three above</div>
+        </div>
+      </div>
+      <div class="footnote">Three components run the live chain; the fourth can rebuild the same state from L1 alone, without trusting any of them.</div>
+    </div>
+
+  </div>
+
+  <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0d1219;border:1px solid #1c232d;border-radius:10px;overflow:hidden;">
+    <div id="citeRow" style="display:flex;align-items:center;gap:6px;padding:14px 20px;border-bottom:1px solid #1c232d;flex-wrap:wrap;"></div>
+    <div id="codePanel" style="height:626px;overflow:hidden;padding:22px 26px;font-family:var(--mono);font-size:19px;line-height:32px;"></div>
+  </div>
+
+  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1c232d;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
+    <div style="flex:1;max-width:1180px;">
+      <div id="kicker" style="font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:#3fb950;margin-bottom:11px;"></div>
+      <div id="caption" style="font-size:25px;line-height:1.4;color:#c3ccd6;text-wrap:pretty;"></div>
+    </div>
+    <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button id="btnPrev" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;">‹ Prev</button>
+        <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:#06210c;background:#3fb950;border:1px solid #3fb950;border-radius:8px;padding:12px 26px;cursor:pointer;min-width:120px;">▶ Play</button>
+        <button id="btnNext" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;">Next ›</button>
+      </div>
+      <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+(function(){
+  var N = 3, STEP_MS = 3600;
+  var step = 0, playing = false, timer = null;
+
+  var kickers = ["THE LIVE PATH", "ATTESTATION", "THE TRUSTLESS BACKSTOP"];
+  var captions = [
+    "Sequencer builds the block, then Composer settles any cross-chain calls inside it — the live path runs on just these two.",
+    "Once Composer finishes, the Attester signs a hash of the result so the block can be trusted downstream.",
+    "Deriver never trusts any of the three — it independently re-derives the same state from L1 alone, the trustless backstop."
+  ];
+
+  // All four real components, cited by exact file:line. Rotated/highlighted per step below.
+  var citations = [
+    { label: "Sequencer", loc: "sequencer.rs:159", color: "#7c83ff" },
+    { label: "Composer", loc: "composer.rs:514", color: "#3fb950" },
+    { label: "Proof-signer", loc: "attest.rs:52 / :134", color: "#e8b15e" },
+    { label: "Deriver", loc: "deriver.rs:36", color: "#c89cf5" }
+  ];
+  var citeHlByStep = [ [0,1], [2], [3] ];
+
+  // Progressive code reveal: each step shows only the signatures relevant so far,
+  // so the panel never dumps all four components ungrouped.
+  var codeByStep = [
+    [
+      "pub struct Sequencer<T, ChainSpec> { ... }",
+      "",
+      "pub struct Composer<L2: BlockReader> { ... }"
+    ],
+    [
+      "pub struct Sequencer<T, ChainSpec> { ... }",
+      "",
+      "pub struct Composer<L2: BlockReader> { ... }",
+      "",
+      "pub(crate) struct Attester { ... }",
+      "",
+      "pub(crate) fn sign(&self, public_inputs_hash: AttestablePublicInputsHash)",
+      "    -> Result<Bytes, SignerError> {",
+      "    self.signer.sign_prehash(public_inputs_hash.into_inner())",
+      "}"
+    ],
+    [
+      "pub struct Sequencer<T, ChainSpec> { ... }",
+      "",
+      "pub struct Composer<L2: BlockReader> { ... }",
+      "",
+      "pub(crate) struct Attester { ... }",
+      "",
+      "pub(crate) fn sign(&self, public_inputs_hash: AttestablePublicInputsHash)",
+      "    -> Result<Bytes, SignerError> {",
+      "    self.signer.sign_prehash(public_inputs_hash.into_inner())",
+      "}",
+      "",
+      "pub struct Deriver<L2> { ... }"
+    ]
+  ];
+  var hlByStep = [
+    [0,2],
+    [4,6,7,8,9],
+    [11]
+  ];
+
+  var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
+
+  function render(){
+    document.getElementById("stepLabel").textContent = String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
+    document.getElementById("kicker").textContent = kickers[step];
+    document.getElementById("caption").textContent = captions[step];
+    document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
+
+    els.s1.style.display = step === 0 ? "flex" : "none";
+    els.s2.style.display = step === 1 ? "flex" : "none";
+    els.s3.style.display = step === 2 ? "flex" : "none";
+
+    var citeHl = citeHlByStep[step] || [];
+    var citeHtml = "";
+    for(var c=0;c<citations.length;c++){
+      var on = citeHl.indexOf(c) !== -1;
+      var cite = citations[c];
+      citeHtml += '<div class="cite-chip" style="'
+        + (on ? "background:" + cite.color + "1a;border-color:" + cite.color + "66;color:#e6edf3;" : "background:transparent;border-color:#1c232d;color:#5b6572;")
+        + '"><span class="cite-dot" style="background:' + cite.color + (on ? ";opacity:1;" : ";opacity:0.4;") + '"></span>'
+        + cite.label + ' <span style="opacity:0.7;">· ' + cite.loc + '</span></div>';
+    }
+    document.getElementById("citeRow").innerHTML = citeHtml;
+
+    var code = codeByStep[step];
+    var hl = hlByStep[step] || [];
+    var html = "";
+    for(var i=0;i<code.length;i++){
+      var lit = hl.indexOf(i) !== -1;
+      var t = code[i].length ? code[i] : " ";
+      html += '<div style="display:flex;align-items:stretch;padding:1px 12px;'
+        + (lit ? "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;" : "background:transparent;") + '">'
+        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#7d8798;") + '">'
+        + t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span></div>';
+    }
+    document.getElementById("codePanel").innerHTML = html;
+
+    var d = "";
+    for(var j=0;j<N;j++){
+      var st = j===step ? "width:30px;background:#3fb950;" : (j<step ? "width:13px;background:#3a4250;" : "width:13px;background:#222a35;");
+      d += '<div style="height:6px;border-radius:3px;transition:width .2s,background .2s;'+st+'"></div>';
+    }
+    document.getElementById("dots").innerHTML = d;
+  }
+
+  function scaleStage(){ var s = Math.min(window.innerWidth/1920, window.innerHeight/1080); document.getElementById("stage").style.transform = "scale("+s+")"; }
+  function schedule(){ clearTimeout(timer); timer = setTimeout(function(){ if(!playing) return; if(step >= N-1){ playing=false; render(); return; } step++; render(); schedule(); }, STEP_MS); }
+  function togglePlay(){ if(playing){ clearTimeout(timer); playing=false; render(); return; } if(step >= N-1) step = 0; playing = true; render(); schedule(); }
+  function next(){ clearTimeout(timer); playing=false; step=Math.min(N-1,step+1); render(); }
+  function prev(){ clearTimeout(timer); playing=false; step=Math.max(0,step-1); render(); }
+
+  document.getElementById("btnPrev").addEventListener("click", prev);
+  document.getElementById("btnNext").addEventListener("click", next);
+  document.getElementById("btnPlay").addEventListener("click", togglePlay);
+  window.addEventListener("keydown", function(e){
+    if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
+    else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
+    else if(e.key===" "){ e.preventDefault(); togglePlay(); }
+  });
+  window.addEventListener("resize", scaleStage);
+  scaleStage(); render();
+})();
+</script>
+</body></html>

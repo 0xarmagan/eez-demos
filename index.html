@@ -2,7 +2,7 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EEZ Quickstarts</title>
-<meta name="description" content="Real, verbatim EEZ code examples — by audience. Compute a proxy address, send a cross-chain call, fix the msg.sender gotcha.">
+<meta name="description" content="Real, verbatim EEZ walkthroughs — by audience. Dapp developers, rollup operators, protocol researchers.">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -39,29 +39,29 @@ h1{font-size:34px;font-weight:600;margin:22px 0 8px;letter-spacing:-.01em;text-w
 .sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:44px 0 16px;flex-wrap:wrap}
 .sec-title{font-family:var(--mono);font-size:13px;letter-spacing:.12em;color:var(--c);text-transform:uppercase;display:flex;align-items:center;gap:10px}
 .sec-title .n{color:#4d5866;font-weight:400}
-.sec-sub{font-size:13.5px;color:#7d8798}
 
-/* example card */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:14px}
-.card{background:#10151d;border:1px solid #1c232d;border-left:3px solid var(--c);border-radius:11px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+/* example card — whole card is the link, no code shown, clear CTA */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{display:flex;flex-direction:column;gap:14px;text-decoration:none;color:inherit;background:#10151d;border:1px solid #1c232d;border-left:3px solid var(--c);border-radius:11px;padding:20px 22px;min-width:0;transition:border-color .15s,background .15s,transform .15s}
+.card:hover{background:#131a24;border-color:#2a3444;transform:translateY(-2px)}
+.card:hover .cta{color:#eef1f6}
+.card:hover .cta .arrow{transform:translateX(3px)}
 .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.card-title{font-size:16px;font-weight:600;color:#eef1f6;line-height:1.3}
+.card-title{font-size:17px;font-weight:600;color:#eef1f6;line-height:1.35}
 .badge{flex:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;padding:3px 8px;border-radius:100px;white-space:nowrap}
 .badge.quick{background:rgba(63,185,80,.15);color:#5fd576}
 .badge.medium{background:rgba(240,168,60,.15);color:#f0b45c}
-pre{margin:0;padding:12px 14px;background:#0a0e14;border:1px solid #1c232d;border-radius:8px;font-family:var(--mono);font-size:12.5px;line-height:1.55;color:#c9d1d9;white-space:pre-wrap;word-break:break-word;overflow-wrap:anywhere;min-width:0}
-pre .c{color:#5c6673}
-pre .k{color:#e8b15e}
-pre .f{color:#7ee08c}
-pre .s{color:#a98ad0}
-.foot-row{font-family:var(--mono);font-size:11px;color:#4d5866;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:-2px}
-.foot-row a{color:#5b6bd6;text-decoration:none}
-.foot-row a:hover{text-decoration:underline}
-.watch{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:12px;color:var(--c);text-decoration:none;font-weight:600}
-.watch:hover{text-decoration:underline}
+.card-hook{font-size:14px;line-height:1.5;color:#9aa4b1;margin:0}
+.cta{margin-top:auto;padding-top:4px;display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:13px;font-weight:600;color:var(--c);transition:color .15s}
+.cta .arrow{display:inline-block;transition:transform .15s}
 
-.soon{background:#0d1117;border:1px dashed #262f3d;border-radius:10px;padding:22px 24px;font-size:14px;color:#7d8798;line-height:1.6}
-.soon b{color:#c3ccd6}
+.soon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.soon-card{background:#0d1117;border:1px dashed #262f3d;border-radius:11px;padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.soon-card .t{font-size:15.5px;font-weight:600;color:#aeb7c2}
+.soon-card .n{font-size:13px;color:#5c6673}
+.soon-note{font-family:var(--mono);font-size:12px;color:#4d5866;margin-top:14px}
+.soon-note a{color:#5b6bd6;text-decoration:none}
+.soon-note a:hover{text-decoration:underline}
 
 .foot{margin-top:56px;padding-top:20px;border-top:1px solid #1c232d;font-family:var(--mono);font-size:11.5px;color:#4d5866;line-height:1.7}
 .foot a{color:#5b6bd6;text-decoration:none}
@@ -82,7 +82,7 @@ pre .s{color:#a98ad0}
   </div>
 
   <h1>Real EEZ code, by what you're trying to do</h1>
-  <p class="lede">Verbatim from <a href="https://github.com/eez-association/eez-core-protocol">eez-core-protocol</a> and <a href="https://github.com/eez-association/eez-rollup0">eez-rollup0</a>. Copy it, adapt it, ship it.</p>
+  <p class="lede">Verbatim from <a href="https://github.com/eez-association/eez-core-protocol">eez-core-protocol</a> and <a href="https://github.com/eez-association/eez-rollup0">eez-rollup0</a>. Pick a card, watch the walkthrough.</p>
 
   <div class="audiences">
     <a class="aud" href="#dapp-developers" style="--c:#3fb950">
@@ -91,12 +91,14 @@ pre .s{color:#a98ad0}
       <div class="n">6 examples</div>
     </a>
     <a class="aud" href="#rollup-operators" style="--c:#7c83ff">
-      <div class="k">Coming soon</div>
+      <div class="k">Operate</div>
       <div class="t">Rollup Operators</div>
+      <div class="n">2 examples</div>
     </a>
     <a class="aud" href="#protocol-researchers" style="--c:#b478f0">
-      <div class="k">Coming soon</div>
+      <div class="k">Go deep</div>
       <div class="t">Protocol Researchers</div>
+      <div class="n">3 examples</div>
     </a>
   </div>
 
@@ -108,73 +110,41 @@ pre .s{color:#a98ad0}
 
     <div class="grid">
 
-      <div class="card" style="--c:#3fb950">
+      <a class="card" style="--c:#3fb950" href="./q1-compute-your-cross-chain-address.html">
         <div class="card-head"><div class="card-title">Compute your cross-chain address</div><span class="badge quick">2 min</span></div>
-        <pre>address alias = eez.<span class="f">computeCrossChainProxyAddress</span>(
-    myContract,
-    <span class="k">uint64</span>(originRollupId)
-);
-<span class="c">// same inputs, same manager -> same output, always</span></pre>
-        <div class="foot-row"><span>EEZBase.sol:176</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/EEZBase.sol#L176" target="_blank">source ↗</a></div>
-        <a class="watch" href="./q1-compute-your-cross-chain-address.html">▶ Watch the walkthrough</a>
-      </div>
+        <p class="card-hook">Your alias exists before anything is deployed.</p>
+        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+      </a>
 
-      <div class="card" style="--c:#3fb950">
+      <a class="card" style="--c:#3fb950" href="./q2-send-a-cross-chain-call.html">
         <div class="card-head"><div class="card-title">Send a cross-chain call</div><span class="badge quick">3 min</span></div>
-        <pre><span class="k">bytes memory</span> data = <span class="f">abi.encodeCall</span>(
-    IRemoteContract.setValue, (<span class="k">42</span>)
-);
-(<span class="k">bool</span> ok, ) = proxyAddress.<span class="f">call</span>(data);
-<span class="c">// destination sees this as a plain call</span></pre>
-        <div class="foot-row"><span>CrossChainProxy.sol:39</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/CrossChainProxy.sol#L39" target="_blank">source ↗</a></div>
-        <a class="watch" href="./q2-send-a-cross-chain-call.html">▶ Watch the walkthrough</a>
-      </div>
+        <p class="card-hook">No special function — just call the proxy.</p>
+        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+      </a>
 
-      <div class="card" style="--c:#f0a83c">
+      <a class="card" style="--c:#f0a83c" href="./q3-fix-the-msg-sender-gotcha.html">
         <div class="card-head"><div class="card-title">Fix the msg.sender gotcha</div><span class="badge medium">5 min</span></div>
-        <pre><span class="c">// wrong: passes locally,
-// reverts cross-chain</span>
-<span class="k">require</span>(msg.sender == owner);
+        <p class="card-hook">The #1 mistake every cross-chain dev makes.</p>
+        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+      </a>
 
-<span class="c">// right — whitelist the alias itself</span>
-<span class="k">address</span> a = eez.<span class="f">computeCrossChainProxyAddress</span>(owner, rid);
-<span class="k">require</span>(msg.sender == a);</pre>
-        <div class="foot-row"><span>CrossChainProxy.executeOnBehalf</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/CrossChainProxy.sol" target="_blank">source ↗</a></div>
-        <a class="watch" href="./q3-fix-the-msg-sender-gotcha.html">▶ Watch the walkthrough</a>
-      </div>
-
-      <div class="card" style="--c:#3fb950">
+      <a class="card" style="--c:#3fb950" href="./q4-check-if-an-address-is-a-proxy.html">
         <div class="card-head"><div class="card-title">Check if an address is a proxy</div><span class="badge quick">2 min</span></div>
-        <pre>(<span class="k">bool</span> isProxy,
- <span class="k">address</span> origAddr,
- <span class="k">uint64</span> origRid) = eez.<span class="f">authorizedProxies</span>(
-    someAddress
-);
-<span class="c">// isProxy -> a real proxy for origAddr@origRid</span></pre>
-        <div class="foot-row"><span>IEEZ.sol · ProxyInfo</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/interfaces/IEEZ.sol" target="_blank">source ↗</a></div>
-        <a class="watch" href="./q4-check-if-an-address-is-a-proxy.html">▶ Watch the walkthrough</a>
-      </div>
+        <p class="card-hook">Read the registry directly, don't guess.</p>
+        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+      </a>
 
-      <div class="card" style="--c:#b478f0">
+      <a class="card" style="--c:#b478f0" href="./q5-encode-a-calls-content-hash.html">
         <div class="card-head"><div class="card-title">Encode a call's content hash</div><span class="badge medium">4 min</span></div>
-        <pre>bytes32 h = eez.<span class="f">computeCrossChainCallHash</span>(
-    isStatic, sourceAddress, sourceRollupId,
-    targetAddress, targetRollupId,
-    value, callGas, data
-);
-<span class="c">// order is load-bearing — don't reorder</span></pre>
-        <div class="foot-row"><span>EEZBase.sol:198</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/EEZBase.sol#L198" target="_blank">source ↗</a></div>
-        <a class="watch" href="./q5-encode-a-calls-content-hash.html">▶ Watch the walkthrough</a>
-      </div>
+        <p class="card-hook">One hash, eight fields, in this exact order.</p>
+        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+      </a>
 
-      <div class="card" style="--c:#f85149">
+      <a class="card" style="--c:#f85149" href="./q6-why-you-cant-call-the-manager-directly.html">
         <div class="card-head"><div class="card-title">Why you can't call the manager directly</div><span class="badge quick">2 min</span></div>
-        <pre><span class="c">// EEZ.sol — inside executeCrossChainCall</span>
-ProxyInfo storage proxyInfo = authorizedProxies[msg.sender];
-<span class="k">if</span> (!proxyInfo.isProxy) <span class="k">revert</span> UnauthorizedProxy();</pre>
-        <div class="foot-row"><span>EEZ.sol:786</span><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/EEZ.sol#L786" target="_blank">source ↗</a></div>
-        <a class="watch" href="./q6-why-you-cant-call-the-manager-directly.html">▶ Watch the walkthrough</a>
-      </div>
+        <p class="card-hook">Only a real proxy gets through.</p>
+        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+      </a>
 
     </div>
   </section>
@@ -182,17 +152,53 @@ ProxyInfo storage proxyInfo = authorizedProxies[msg.sender];
   <!-- ================= ROLLUP OPERATORS ================= -->
   <section class="sec" id="rollup-operators">
     <div class="sec-head">
-      <div class="sec-title" style="--c:#7c83ff">Rollup Operators <span class="n">— standing up or running a rollup on EEZ</span></div>
+      <div class="sec-title" style="--c:#7c83ff">Rollup Operators</div>
     </div>
-    <div class="soon"><b>Coming soon.</b> Tracked as <a href="https://github.com/0xarmagan/eez-demos/issues" style="color:#7c85f4">Issues</a>.</div>
+
+    <div class="grid">
+
+      <a class="card" style="--c:#7c83ff" href="./ro1-run-the-devnet-with-kurtosis.html">
+        <div class="card-head"><div class="card-title">Run the EEZ devnet with Kurtosis</div><span class="badge quick">3 min</span></div>
+        <p class="card-hook">One command: sequencer, composer, proof-signer, embedded L1.</p>
+        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" style="--c:#7c83ff" href="./ro2-deploy-the-protocol.html">
+        <div class="card-head"><div class="card-title">Deploy the protocol</div><span class="badge medium">4 min</span></div>
+        <p class="card-hook">One script: EEZ, the proof system, and your manager.</p>
+        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+      </a>
+
+    </div>
   </section>
 
   <!-- ================= PROTOCOL RESEARCHERS ================= -->
   <section class="sec" id="protocol-researchers">
     <div class="sec-head">
-      <div class="sec-title" style="--c:#b478f0">Protocol Researchers <span class="n">— execution model, settlement, and invariants</span></div>
+      <div class="sec-title" style="--c:#b478f0">Protocol Researchers</div>
     </div>
-    <div class="soon"><b>Coming soon.</b> Tracked as <a href="https://github.com/0xarmagan/eez-demos/issues" style="color:#7c85f4">Issues</a>.</div>
+
+    <div class="grid">
+
+      <a class="card" style="--c:#b478f0" href="./pr1-the-four-components-of-rollup0.html">
+        <div class="card-head"><div class="card-title">The four components of Rollup0</div><span class="badge quick">3 min</span></div>
+        <p class="card-hook">Sequencer, composer, proof-signer, deriver — who does what.</p>
+        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" style="--c:#b478f0" href="./pr2-commit-first-repair-if-needed.html">
+        <div class="card-head"><div class="card-title">Commit-first, repair-if-needed</div><span class="badge medium">4 min</span></div>
+        <p class="card-hook">L2 commits immediately. L1 is still the source of truth.</p>
+        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+      </a>
+
+      <a class="card" style="--c:#b478f0" href="./pr3-the-deriver.html">
+        <div class="card-head"><div class="card-title">The deriver: trustless re-derivation</div><span class="badge medium">4 min</span></div>
+        <p class="card-hook">Rebuild the whole L2 chain from L1 alone.</p>
+        <div class="cta">Open the walkthrough <span class="arrow">→</span></div>
+      </a>
+
+    </div>
   </section>
 
   <div class="foot">
