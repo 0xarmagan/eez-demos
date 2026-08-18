@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EEZ Demos</title>
+<meta name="description" content="Interactive EEZ explainers — contract mechanics and Rollup0 infra, flow + verbatim code, side by side.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>*{box-sizing:border-box}html,body{margin:0;background:#0b0f14}
+:root{--sans:'IBM Plex Sans',system-ui,-apple-system,sans-serif;--mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,monospace}
+.wrap{min-height:100vh;background:#0b0f14;color:#e6edf3;font-family:var(--sans);padding:56px 40px 72px}
+.inner{max-width:1200px;margin:0 auto}
+.ey{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+.ey .sq{width:16px;height:16px;background:#3fb950;border-radius:3px}
+.ey .lb{font-family:var(--mono);font-size:14px;letter-spacing:.06em;color:#6e7a89}
+h1{font-size:38px;font-weight:600;margin:0 0 14px;letter-spacing:-.01em;text-wrap:balance}
+.lede{font-size:17px;line-height:1.6;color:#aeb7c2;max-width:760px;margin:0 0 10px}
+.meta{font-family:var(--mono);font-size:12.5px;color:#6e7a89;line-height:1.7;margin:14px 0 40px;border-left:2px solid #1c232d;padding-left:14px}
+.meta b{color:#8b95a3;font-weight:500}.meta a{color:#7782b8}
+.sec{font-family:var(--mono);font-size:13px;letter-spacing:.14em;color:#3fb950;margin:36px 0 16px;text-transform:uppercase}
+.sec.alt{color:#7c83ff}
+.sec.infra{color:#f0a83c}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.card{position:relative;display:block;text-decoration:none;color:inherit;background:#0e1420;border:1px solid #1c232d;border-left:3px solid var(--c);border-radius:11px;padding:18px 20px 16px;transition:border-color .18s,transform .18s,background .18s}
+.card:hover{background:#111826;border-color:#2a3444;transform:translateY(-2px)}
+.card:focus-visible{outline:2px solid var(--c);outline-offset:2px}
+.rk{position:absolute;top:16px;right:18px;font-family:var(--mono);font-size:12px;color:var(--c);opacity:.85}
+.hd{display:flex;align-items:baseline;gap:11px;margin-bottom:9px;padding-right:34px}
+.lt{font-family:var(--mono);font-size:15px;font-weight:600;color:#0b0f14;background:var(--c);border-radius:6px;padding:2px 9px;flex:none}
+.ti{font-size:19px;font-weight:600;color:#eef1f6;line-height:1.25;text-wrap:balance}
+.cv{font-size:14.5px;line-height:1.55;color:#aeb7c2;margin-bottom:12px}
+.sr{font-family:var(--mono);font-size:12px;color:#7782b8;background:#10151c;border:1px solid #1c232d;border-radius:6px;padding:6px 9px;word-break:break-word;margin-bottom:13px}
+.op{font-family:var(--mono);font-size:12.5px;color:var(--c)}
+.soon{font-family:var(--mono);font-size:13px;color:#8b95a3;line-height:1.9;background:#0e1420;border:1px dashed #2a3444;border-radius:10px;padding:16px 20px}
+.soon .h{color:#6e7a89;letter-spacing:.1em;display:block;margin-bottom:6px}
+.foot{margin-top:44px;font-family:var(--mono);font-size:12px;color:#55606d;line-height:1.7}
+.pill{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:#e8b15e;background:rgba(240,168,60,.12);border:1px solid #463a1e;border-radius:5px;padding:3px 8px}
+.info-btn{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:#8b95a3;background:#141b2b;border:1px solid #2a323d;border-radius:100px;padding:5px 12px;cursor:pointer;transition:border-color .15s,color .15s}
+.info-btn:hover{border-color:#3fb950;color:#cdd5e0}
+.info-btn .dot2{width:6px;height:6px;border-radius:50%;background:#3fb950;flex:none}
+.modal-backdrop{position:fixed;inset:0;background:rgba(6,9,13,0.72);backdrop-filter:blur(2px);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s ease}
+.modal-backdrop.open{opacity:1;pointer-events:auto}
+.modal-card{width:640px;max-width:90vw;max-height:82vh;overflow-y:auto;background:#0e1420;border:1px solid #262f45;border-radius:14px;padding:32px 36px;transform:translateY(10px);transition:transform .2s ease}
+.modal-backdrop.open .modal-card{transform:translateY(0)}
+.modal-eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#3fb950;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.modal-close{cursor:pointer;color:#6e7a89;font-family:var(--mono);font-size:12px;background:none;border:1px solid #2a323d;border-radius:6px;padding:4px 9px}
+.modal-close:hover{color:#cdd5e0;border-color:#3fb950}
+.modal-h{font-size:24px;font-weight:600;color:#eef1f6;margin:0 0 16px;line-height:1.3}
+.modal-p{font-size:15.5px;line-height:1.6;color:#c3ccd6;margin:0 0 26px}
+.modal-actions{display:flex;gap:12px;flex-wrap:wrap}
+.modal-start{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:14px;font-weight:600;color:#06210c;background:#3fb950;border:1px solid #3fb950;border-radius:8px;padding:11px 20px;cursor:pointer;text-decoration:none}
+.modal-start:hover{background:#4fce61}
+.modal-skip{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:14px;font-weight:600;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:11px 20px;cursor:pointer}
+.modal-skip:hover{border-color:#3fb950;color:#eef1f6}
+@media(max-width:640px){.wrap{padding:36px 20px 56px}h1{font-size:29px}.modal-card{padding:24px 22px}}</style></head>
+<body>
+<div id="infoModal" class="modal-backdrop open" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+  <div class="modal-card">
+    <div class="modal-eyebrow"><span>NEW TO EEZ?</span><button id="infoClose" class="modal-close" type="button" aria-label="Close">✕</button></div>
+    <h2 id="infoTitle" class="modal-h">Two demos, five minutes: what makes EEZ different</h2>
+    <p class="modal-p">There's a lot here — contract mechanics and the actual rollup infra. If this is your first time, skip straight to the two that matter most — the cross-chain mistake every developer makes, and the one capability no bridge can offer.</p>
+    <div class="modal-actions">
+      <a id="infoStart" class="modal-start" href="./start-here.html">Start here →</a>
+      <button id="infoSkip" class="modal-skip" type="button">Skip — see all demos</button>
+    </div>
+  </div>
+</div>
+<div class="wrap"><div class="inner">
+  <div class="ey"><span class="sq"></span><span class="lb">EEZ // DEMOS</span><span class="pill">SPEC · NOT LIVE</span><button id="reopenInfoBtn" class="info-btn" type="button"><span class="dot2"></span>New to EEZ?</button></div>
+  <h1>Interactive explainers for the Ethereum Economic Zone</h1>
+  <p class="lede">Each demo is a short, stepped walkthrough that pairs a plain-English explanation of one EEZ mechanic with <b style="color:#cdd5e0">verbatim code</b> from the real source — the flow and the code, in the same frame. Play, step with &larr; / &rarr;, and watch the highlighted code follow the narration.</p>
+  <div class="meta">
+    <b>Contract layer:</b> <a href="https://github.com/eez-association/eez-core-protocol">github.com/eez-association/eez-core-protocol</a> @ main.<br>
+    <b>Infra layer:</b> <a href="https://github.com/eez-association/eez-rollup0">github.com/eez-association/eez-rollup0</a> @ main — the sequencer, composer, proof-signer, and deriver that actually run a chain.<br>
+    <b>Status:</b> EEZ is pre-audit and not deployed; these show the design, not a live network.<br>
+    <b>Contributing:</b> see <a href="https://github.com/0xarmagan/eez-demos/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> — internal team + core contributors, PR + review required.
+  </div>
+  <div class="sec">Builder track</div>
+  <div class="grid">
+<a class="card" href="./f-nested-reentrant-calls.html" style="--c:#3fb950">
+  <div class="rk">#1</div>
+  <div class="hd"><span class="lt">F</span><span class="ti">Nested &amp; Reentrant Calls</span></div>
+  <div class="cv">A cross-rollup call that calls back across rollups — each reentrant hop resolved from its own pre-committed frame, verified atomically by one rolling hash.</div>
+  <div class="sr">IEEZ.sol · ExecutionEntry / ExpectedL1ToL2Call</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+<a class="card" href="./c-cross-chain-call-encoder.html" style="--c:#3fb950">
+  <div class="rk">#2</div>
+  <div class="hd"><span class="lt">C</span><span class="ti">Cross-Chain Call Encoder</span></div>
+  <div class="cv">How you encode a call to a contract on another rollup: target is its L1 proxy, standard ABI calldata, native ETH on the value field.</div>
+  <div class="sr">EEZBase.computeCrossChainCallHash + CrossChainCall</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+<a class="card" href="./g-registering-a-rollup.html" style="--c:#f0a83c">
+  <div class="rk">#3</div>
+  <div class="hd"><span class="lt">G</span><span class="ti">Registering a Rollup</span></div>
+  <div class="cv">Permissionlessly register a rollup manager (its proof systems + M-of-N threshold). The rollupId-0-is-L1 gotcha.</div>
+  <div class="sr">EEZ.registerRollup + Rollup.sol</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+<a class="card" href="./b-bundle-only-proxy-call.html" style="--c:#b478f0">
+  <div class="rk">#4</div>
+  <div class="hd"><span class="lt">B</span><span class="ti">Bundle-Only Proxy Calls</span></div>
+  <div class="cv">Proxy calls resolve only inside a composer bundle, matched by content hash. Outside the bundle they revert.</div>
+  <div class="sr">CrossChainProxy._fallback → EEZ.executeCrossChainCall</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+<a class="card" href="./d-msg-sender-through-proxy.html" style="--c:#b478f0">
+  <div class="rk">#5</div>
+  <div class="hd"><span class="lt">D</span><span class="ti">msg.sender Through the Proxy</span></div>
+  <div class="cv">Cross-chain, the destination sees your alias (not your EOA) as msg.sender — so naive access control silently breaks.</div>
+  <div class="sr">CrossChainProxy.executeOnBehalf</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+<a class="card" href="./h-l1-l2-direction-split.html" style="--c:#3fb950">
+  <div class="rk">#6</div>
+  <div class="hd"><span class="lt">H</span><span class="ti">The L1 ↔ L2 Direction Split</span></div>
+  <div class="cv">Which entry point runs depends on where the trigger originates: executeL2TX (L1) vs executeIncomingCrossChainCall (L2).</div>
+  <div class="sr">EEZ.executeL2TX / EEZL2.executeIncomingCrossChainCall</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+<a class="card" href="./a-deterministic-address-derivation.html" style="--c:#b478f0">
+  <div class="rk">✦</div>
+  <div class="hd"><span class="lt">A</span><span class="ti">Deterministic Address Derivation</span></div>
+  <div class="cv">A proxy&#x27;s address is fixed in advance by CREATE2 from (rollupId, address) — derivable off-chain before any bytecode is deployed.</div>
+  <div class="sr">EEZBase.computeCrossChainProxyAddress</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+  </div>
+  <div class="sec alt">Rollup-integrator track</div>
+  <div class="grid">
+<a class="card" href="./e-multi-prover-threshold.html" style="--c:#7c83ff">
+  <div class="rk">⚙</div>
+  <div class="hd"><span class="lt">E</span><span class="ti">Multi-Prover Threshold</span></div>
+  <div class="cv">Each rollup sets its own M-of-N proof threshold (any value, including 0) — multi-prover is a capability, not a protocol floor.</div>
+  <div class="sr">Rollup.checkProofSystemsAndGetVkeys</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+  </div>
+  <div class="sec infra">Node-operator / Rollup0 track</div>
+  <div class="grid">
+<a class="card" href="./i-running-the-devnet-with-kurtosis.html" style="--c:#f0a83c">
+  <div class="rk">#1</div>
+  <div class="hd"><span class="lt">I</span><span class="ti">Running the EEZ Devnet with Kurtosis</span></div>
+  <div class="cv">Spin up a full local chain — sequencer, composer, proof-signer, embedded L1 — with one Kurtosis command. The actual runnable starting point.</div>
+  <div class="sr">testing/kurtosis/</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+<a class="card" href="./j-the-four-components-of-rollup0.html" style="--c:#f0a83c">
+  <div class="rk">#2</div>
+  <div class="hd"><span class="lt">J</span><span class="ti">The Four Components of Rollup0</span></div>
+  <div class="cv">Sequencer, composer, proof-signer, deriver — what each one does and how they hand off to each other. The orientation map for everything else in this track.</div>
+  <div class="sr">crates/eez-node, eez-composer, eez-proof-signer, eez-deriver</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+<a class="card" href="./k-sync-blocks.html" style="--c:#f0a83c">
+  <div class="rk">#3</div>
+  <div class="hd"><span class="lt">K</span><span class="ti">Sync Blocks</span></div>
+  <div class="cv">One special L2 block per L1 block carries all the cross-chain work. Ordinary blocks the rest of the time.</div>
+  <div class="sr">crates/eez-node</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+<a class="card" href="./l-cross-chain-ingress-fronts.html" style="--c:#f0a83c">
+  <div class="rk">#4</div>
+  <div class="hd"><span class="lt">L</span><span class="ti">Cross-Chain Ingress Fronts</span></div>
+  <div class="cv">Two transparent RPC proxies — inbound (L1→L2) and outbound (L2→L1) — are where a real cross-chain transaction actually enters the system.</div>
+  <div class="sr">crates/eez-l1, eez-driver</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+<a class="card" href="./m-commit-first-repair-if-needed.html" style="--c:#f0a83c">
+  <div class="rk">#5</div>
+  <div class="hd"><span class="lt">M</span><span class="ti">Commit-First, Repair-If-Needed</span></div>
+  <div class="cv">The Sync block lands on L2 immediately. The L1 submission is watched in the background — if it misses, L2 rolls the block back. L1 is the source of truth.</div>
+  <div class="sr">crates/eez-composer</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+<a class="card" href="./n-the-deriver.html" style="--c:#f0a83c">
+  <div class="rk">#6</div>
+  <div class="hd"><span class="lt">N</span><span class="ti">The Deriver</span></div>
+  <div class="cv">A follower node rebuilds the entire L2 chain from L1 alone — reading BatchPosted events and re-running the same transactions. No trust in the sequencer required.</div>
+  <div class="sr">crates/eez-deriver</div>
+  <div class="op">Open the demo &#8599;</div>
+</a>
+  </div>
+  <div class="sec" style="color:#6e7a89">Coming next</div>
+  <div class="soon"><span class="h">WAVE 2 — TRACKED AS ISSUES, NOT PRE-COMMITTED</span>Proof-signer internals &nbsp;·&nbsp; The deploy-protocol flow &nbsp;·&nbsp; The xchain-test.sh driver &nbsp;·&nbsp; Revert-continue / failed-reentrant &nbsp;·&nbsp; Forced-revert (revertSpan) &nbsp;·&nbsp; ETH-delta invariant</div>
+  <div class="foot">14 demos · A&ndash;N · &larr;/&rarr; to step, space to play/pause.</div>
+</div></div>
+<script>
+(function(){
+  var modal = document.getElementById('infoModal');
+  function openInfo(){ modal.classList.add('open'); }
+  function closeInfo(){ modal.classList.remove('open'); }
+  document.getElementById('infoClose').addEventListener('click', closeInfo);
+  document.getElementById('infoSkip').addEventListener('click', closeInfo);
+  document.getElementById('reopenInfoBtn').addEventListener('click', openInfo);
+  modal.addEventListener('click', function(e){ if(e.target === modal) closeInfo(); });
+  window.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeInfo(); });
+})();
+</script>
+</body></html>

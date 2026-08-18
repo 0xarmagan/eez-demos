@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>E · Multi-Prover Threshold — EEZ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:#0b0f14;}
+  :root{
+    --sans:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  }
+  /* entrance touches transform only — opacity is always set instantly, so a stuck / non-ticking
+     animation under the scaled stage can never leave content invisible (fail-safe reveal). */
+  @keyframes riseIn{ from{transform:translateY(12px);} to{transform:translateY(0);} }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
+  button{font-family:var(--mono);}
+  .btn:hover{background:#1e2630 !important;}
+  .btn-play:hover{background:#4fce61 !important;}
+  .info-btn{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:#8b95a3;background:#141b2b;border:1px solid #2a323d;border-radius:100px;padding:5px 12px;cursor:pointer;transition:border-color .15s,color .15s;}
+  .info-btn:hover{border-color:#3fb950;color:#cdd5e0;}
+  .info-btn .dot2{width:6px;height:6px;border-radius:50%;background:#3fb950;flex:none;}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(6,9,13,0.72);backdrop-filter:blur(2px);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s ease;}
+  .modal-backdrop.open{opacity:1;pointer-events:auto;}
+  .modal-card{width:640px;max-width:90vw;max-height:82vh;overflow-y:auto;background:#0e1420;border:1px solid #262f45;border-radius:14px;padding:32px 36px;transform:translateY(10px);transition:transform .2s ease;}
+  .modal-backdrop.open .modal-card{transform:translateY(0);}
+  .modal-eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#3fb950;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+  .modal-close{cursor:pointer;color:#6e7a89;font-family:var(--mono);font-size:12px;background:none;border:1px solid #2a323d;border-radius:6px;padding:4px 9px;}
+  .modal-close:hover{color:#cdd5e0;border-color:#3fb950;}
+  .modal-h{font-size:24px;font-weight:600;color:#eef1f6;margin:0 0 16px;line-height:1.3;}
+  .modal-p{font-size:15.5px;line-height:1.6;color:#c3ccd6;margin:0 0 22px;}
+  .modal-sub{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:#6e7a89;margin:0 0 12px;}
+  .modal-list{margin:0 0 26px;padding:0;list-style:none;display:flex;flex-direction:column;gap:11px;}
+  .modal-list li{display:flex;gap:11px;font-size:14.5px;color:#c3ccd6;line-height:1.5;}
+  .modal-list li::before{content:"→";color:#3fb950;flex:none;font-family:var(--mono);}
+  .modal-start{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:14px;font-weight:600;color:#06210c;background:#3fb950;border:1px solid #3fb950;border-radius:8px;padding:11px 20px;cursor:pointer;}
+  .modal-start:hover{background:#4fce61;}
+  @media(max-width:640px){.modal-card{padding:24px 22px;}}
+</style>
+</head>
+<body>
+<div id="infoModal" class="modal-backdrop open" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+  <div class="modal-card">
+    <div class="modal-eyebrow"><span>WHY THIS DEMO</span><button id="infoClose" class="modal-close" type="button" aria-label="Close">✕ Close</button></div>
+    <h2 id="infoTitle" class="modal-h">E · Multi-Prover Threshold</h2>
+    <p class="modal-p">How much proof security a rollup wants isn't fixed by the protocol — it's a dial the rollup's own manager owner sets. This demo makes that configurability, and its extremes, visible.</p>
+    <div class="modal-sub">What you should walk away understanding</div>
+    <ul class="modal-list">
+      <li>Threshold (M-of-N proof systems) is set per-rollup, not protocol-wide.</li>
+      <li>Threshold 0 disables the proof floor entirely; above N locks the rollup permanently.</li>
+      <li>What ships today is a single-signer ECDSA validator, not a ZK verifier — treat as dev-grade.</li>
+    </ul>
+    <button id="infoStart" class="modal-start" type="button">Start the walkthrough →</button>
+  </div>
+</div>
+<div style="position:fixed;inset:0;background:#0b0f14;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
+<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background:#0b0f14;color:#e6edf3;transform-origin:center center;">
+
+  <!-- ===== TOP CHROME ===== -->
+  <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1c232d;">
+    <div style="display:flex;align-items:center;gap:18px;">
+      <div style="width:18px;height:18px;background:#3fb950;border-radius:3px;"></div>
+      <div style="font-family:var(--mono);font-size:16px;letter-spacing:0.04em;color:#6e7a89;">EEZ // PROOF SYSTEMS · FOR ROLLUP INTEGRATORS</div>
+      <div style="width:5px;height:5px;border-radius:50%;background:#2c3543;"></div>
+      <div style="font-size:23px;font-weight:600;color:#e6edf3;">E · Multi-Prover Threshold</div>
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#e8b15e;background:rgba(240,168,60,0.12);border:1px solid #463a1e;border-radius:5px;padding:4px 9px;">SPEC · NOT LIVE</div>
+      <button id="infoBtn" class="info-btn" type="button"><span class="dot2"></span>Why this demo</button>
+    </div>
+    <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:#8b95a3;letter-spacing:0.06em;">01 / 07</div>
+  </div>
+
+  <!-- ===== DIAGRAM ===== -->
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;">
+
+    <!-- arrows overlay -->
+    <svg viewBox="0 0 1112 712" style="position:absolute;inset:0;width:1112px;height:712px;z-index:1;pointer-events:none;overflow:visible;">
+      <defs>
+        <marker id="ar-g" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#3fb950"></path></marker>
+        <marker id="ar-a" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f0a83c"></path></marker>
+        <marker id="ar-i" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7c83ff"></path></marker>
+        <marker id="ar-p" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#b478f0"></path></marker>
+      </defs>
+      <!-- incoming proofs -> check gate -->
+      <path id="aProofs" d="M478,372 C566,318 600,210 632,152" stroke="#3fb950" stroke-width="2.5" fill="none" marker-end="url(#ar-g)" style="opacity:0;"></path>
+      <!-- gate -> ACCEPT -->
+      <path id="aAccept" d="M812,190 C752,204 706,208 690,210" stroke="#3fb950" stroke-width="2.5" fill="none" marker-end="url(#ar-g)" style="opacity:0;"></path>
+    </svg>
+
+    <!-- MANAGER CONFIG panel -->
+    <div style="position:absolute;left:0;top:0;width:512px;height:300px;background:#0d1219;border:1px solid #262f45;border-radius:10px;z-index:2;">
+      <div style="position:absolute;left:18px;top:16px;display:flex;align-items:center;gap:9px;">
+        <div style="width:10px;height:10px;border-radius:2px;background:#b478f0;"></div>
+        <div style="font-family:var(--mono);font-size:15px;letter-spacing:0.08em;color:#c79cf5;">ROLLUP MANAGER · SOVEREIGN CONFIG</div>
+      </div>
+      <!-- accepted systems list -->
+      <div id="sysList" style="position:absolute;left:18px;top:52px;width:476px;opacity:0;">
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#7a8493;margin-bottom:12px;">ACCEPTED PROOF SYSTEMS · N = 4</div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:9px;">
+          <div style="font-family:var(--mono);font-size:12px;color:#6e7a89;width:26px;">[0]</div>
+          <div style="font-family:var(--mono);font-size:12px;color:#9aa4f0;background:rgba(124,131,255,0.12);border:1px solid #3a4173;border-radius:5px;padding:3px 10px;width:88px;text-align:center;">ZK</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#cdd5e0;">ZisK</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:9px;">
+          <div style="font-family:var(--mono);font-size:12px;color:#6e7a89;width:26px;">[1]</div>
+          <div style="font-family:var(--mono);font-size:12px;color:#9aa4f0;background:rgba(124,131,255,0.12);border:1px solid #3a4173;border-radius:5px;padding:3px 10px;width:88px;text-align:center;">ZK</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#cdd5e0;">SP1</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:9px;">
+          <div style="font-family:var(--mono);font-size:12px;color:#6e7a89;width:26px;">[2]</div>
+          <div style="font-family:var(--mono);font-size:12px;color:#e8b15e;background:rgba(240,168,60,0.12);border:1px solid #463a1e;border-radius:5px;padding:3px 10px;width:88px;text-align:center;">MULTISIG</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#cdd5e0;">validators</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-family:var(--mono);font-size:12px;color:#6e7a89;width:26px;">[3]</div>
+          <div style="font-family:var(--mono);font-size:12px;color:#e8b15e;background:rgba(240,168,60,0.12);border:1px solid #463a1e;border-radius:5px;padding:3px 10px;width:88px;text-align:center;">TEE</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#cdd5e0;">enclave</div>
+        </div>
+      </div>
+      <!-- threshold badge -->
+      <div id="thBadge" style="position:absolute;left:18px;top:212px;display:flex;align-items:center;gap:12px;opacity:0;">
+        <div style="font-family:var(--mono);font-size:14px;color:#c79cf5;background:rgba(180,120,240,0.12);border:1px solid #4a3568;border-radius:6px;padding:6px 13px;">threshold&nbsp; M = 2 of 4</div>
+        <div style="font-size:12.5px;color:#8a7ba0;line-height:1.4;">owner-set, on the manager<br>not the zone registry</div>
+      </div>
+      <!-- threshold "any value" slider -->
+      <div id="thSlider" style="position:absolute;left:18px;top:258px;width:476px;display:flex;align-items:center;gap:11px;opacity:0;">
+        <div style="font-family:var(--mono);font-size:12px;color:#8a7ba0;">M can be</div>
+        <div style="display:flex;gap:6px;">
+          <span style="font-family:var(--mono);font-size:13px;color:#8a7ba0;border:1px solid #4a3568;border-radius:4px;padding:3px 9px;">1</span>
+          <span style="font-family:var(--mono);font-size:13px;color:#8a7ba0;border:1px solid #4a3568;border-radius:4px;padding:3px 9px;">2</span>
+          <span style="font-family:var(--mono);font-size:13px;color:#8a7ba0;border:1px solid #4a3568;border-radius:4px;padding:3px 9px;">3</span>
+          <span style="font-family:var(--mono);font-size:13px;color:#8a7ba0;border:1px solid #4a3568;border-radius:4px;padding:3px 9px;">4</span>
+        </div>
+        <div style="font-size:12.5px;color:#b478f0;">any value — 0 to N and beyond</div>
+      </div>
+    </div>
+
+    <!-- VERIFICATION panel -->
+    <div style="position:absolute;left:600px;top:0;width:512px;height:300px;background:#0e1420;border:1px solid #262f45;border-radius:10px;z-index:2;">
+      <div style="position:absolute;left:18px;top:16px;display:flex;align-items:center;gap:9px;">
+        <div style="width:10px;height:10px;border-radius:2px;background:#3fb950;"></div>
+        <div style="font-family:var(--mono);font-size:15px;letter-spacing:0.08em;color:#7ee08c;">VERIFICATION · PER BATCH</div>
+      </div>
+      <!-- check gate -->
+      <div id="gateBox" style="position:absolute;left:36px;top:60px;width:440px;height:124px;background:#10151c;border:1.5px solid #2f6b3a;border-radius:9px;padding:16px 18px;display:flex;flex-direction:column;justify-content:center;opacity:0;">
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.06em;color:#5e9e6b;">CHECK · manager</div>
+        <div style="font-family:var(--mono);font-size:16px;color:#cfe9d4;margin-top:6px;">checkProofSystemsAndGetVkeys(...)</div>
+        <div style="font-size:14px;color:#8fae95;margin-top:9px;line-height:1.45;">enough valid proofs, from allowed systems, to meet M?</div>
+      </div>
+      <!-- ACCEPT decision -->
+      <div id="acceptTag" style="position:absolute;left:36px;top:210px;display:flex;align-items:center;gap:14px;opacity:0;">
+        <div style="font-size:30px;line-height:1;color:#3fb950;">✓</div>
+        <div>
+          <div style="font-family:var(--mono);font-size:20px;font-weight:600;color:#7ee08c;">ACCEPT — threshold met</div>
+          <div style="font-size:14px;color:#8fae95;margin-top:4px;">2 valid proofs from [0],[1] &nbsp;≥&nbsp; M = 2 · batch settles</div>
+          <div style="font-size:12px;color:#5f7566;margin-top:5px;">illustrative — no production ZK verifier is live yet</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INCOMING PROOFS row -->
+    <div id="proofsRow" style="position:absolute;left:0;top:330px;width:512px;opacity:0;">
+      <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#7a8493;margin-bottom:12px;">INCOMING PROOFS · this batch</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;background:rgba(63,185,80,0.10);border:1px solid #2f6b3a;border-radius:6px;padding:7px 12px;">ZisK ✓</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;background:rgba(63,185,80,0.10);border:1px solid #2f6b3a;border-radius:6px;padding:7px 12px;">SP1 ✓</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#8b95a3;background:rgba(110,122,137,0.08);border:1px dashed #3a434f;border-radius:6px;padding:7px 12px;">?? not declared</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#ff8a84;background:rgba(248,81,73,0.10);border:1px solid #5a2826;border-radius:6px;padding:7px 12px;">corrupt ✗</div>
+      </div>
+    </div>
+
+    <!-- REJECT / REVERT card -->
+    <div id="rejectCard" style="position:absolute;left:0;top:430px;width:1112px;background:#1a0f10;border:1.5px solid #f85149;border-radius:10px;padding:16px 24px;z-index:5;opacity:0;">
+      <div style="display:flex;align-items:flex-start;gap:14px;">
+        <div style="font-size:24px;line-height:1.1;color:#f85149;">⦸</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--mono);font-size:16px;color:#ff8a84;">count &lt; M &nbsp;→&nbsp; revert ThresholdNotMet(submitted, required)</div>
+          <div style="font-size:14px;color:#c79490;margin-top:3px;">Fewer valid proofs than the rollup's chosen threshold. The batch does not settle.</div>
+        </div>
+      </div>
+      <div style="height:1px;background:#3a1c1d;margin:12px 0;"></div>
+      <div style="display:flex;align-items:flex-start;gap:14px;">
+        <div style="font-size:24px;line-height:1.1;color:#f85149;">⦸</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--mono);font-size:16px;color:#ff8a84;">proof from an undeclared system (or systems not in strictly ascending order) &nbsp;→&nbsp; ProofSystemNotAllowed</div>
+          <div style="font-size:14px;color:#c79490;margin-top:3px;">A proof from a system this rollup never listed is rejected before it can count.</div>
+        </div>
+      </div>
+      <div style="font-family:var(--mono);font-size:11.5px;color:#8a6260;margin-top:12px;">error names current as of June 2026 · unaudited contract · semantics may change</div>
+    </div>
+
+    <!-- HETEROGENEOUS TRUST card -->
+    <div id="heteroCard" style="position:absolute;left:0;top:556px;width:1112px;background:#100e18;border:1.5px solid #3a4173;border-radius:10px;padding:18px 24px;z-index:3;opacity:0;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.06em;color:#9aa4f0;">HETEROGENEOUS TRUST · M ≥ 2</div>
+        <div style="font-family:var(--mono);font-size:12px;color:#9aa4f0;background:rgba(124,131,255,0.12);border:1px solid #3a4173;border-radius:5px;padding:3px 10px;">ZK verifier</div>
+        <div style="color:#46505c;font-size:15px;">+</div>
+        <div style="font-family:var(--mono);font-size:12px;color:#e8b15e;background:rgba(240,168,60,0.12);border:1px solid #463a1e;border-radius:5px;padding:3px 10px;">validator multisig</div>
+        <div style="color:#46505c;font-size:15px;">·</div>
+        <div style="font-family:var(--mono);font-size:12px;color:#ff8a84;background:rgba(248,81,73,0.10);border:1px solid #5a2826;border-radius:5px;padding:3px 10px;text-decoration:line-through;">one compromised</div>
+        <div style="color:#46505c;font-size:15px;">→</div>
+        <div style="font-family:var(--mono);font-size:12px;color:#7ee08c;">others still agree · safe</div>
+      </div>
+      <div style="font-size:15px;color:#b9c2cf;margin-top:12px;line-height:1.5;">A rollup can mix families: a ZK verifier alongside a validator multisig. With M ≥ 2, one compromised prover cannot push an invalid state — the others must still agree before a batch settles.</div>
+      <div style="font-size:13px;color:#7a8493;margin-top:9px;line-height:1.45;">Reality check: the reference prover shipping today is a single-signer ECDSA validator, not a ZK verifier. No production ZK verifier is live yet.</div>
+    </div>
+
+    <!-- MYTH-BUSTER card (guard step) -->
+    <div id="mythCard" style="position:absolute;left:8px;top:150px;width:1096px;height:432px;background:#160f1e;border:1.5px solid #b478f0;border-radius:12px;padding:34px 44px;z-index:6;opacity:0;pointer-events:none;display:flex;flex-direction:column;justify-content:center;">
+      <div style="font-family:var(--mono);font-size:14px;letter-spacing:0.14em;color:#c79cf5;">MYTH</div>
+      <div style="display:flex;align-items:center;gap:18px;margin-top:14px;">
+        <div style="font-size:40px;font-weight:700;color:#6e5a86;text-decoration:line-through;">EEZ requires ≥ 2 provers</div>
+        <div style="font-family:var(--mono);font-size:15px;color:#ff8a84;background:rgba(248,81,73,0.14);border:1px solid #5a2826;border-radius:6px;padding:6px 14px;">FALSE</div>
+      </div>
+      <div style="font-size:23px;color:#d8cfe6;margin-top:22px;line-height:1.5;max-width:940px;">A rollup can set <b style="color:#f1e8ff;">M = 1</b> — a single prover as its <b style="color:#f1e8ff;">entire trust root</b> — or even <b style="color:#f1e8ff;">M = 0</b>, which sets no proof floor at all. Nothing in the zone forbids it. Multi-prover is a capability, never a floor.</div>
+      <div style="margin-top:24px;background:rgba(180,120,240,0.07);border:1px solid #4a3568;border-radius:10px;padding:18px 22px;max-width:940px;">
+        <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.06em;color:#c79cf5;">BEFORE YOU BUILD</div>
+        <div style="font-size:18px;color:#e6ddf2;margin-top:8px;line-height:1.5;">Read the rollup's actual accepted-systems list and its threshold M. The number of provers is the rollup's sovereign choice, not the zone's.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== CONFIG / TRACE PANEL ===== -->
+  <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0d1219;border:1px solid #1c232d;border-radius:10px;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:9px;padding:16px 22px;border-bottom:1px solid #1c232d;">
+      <div style="width:9px;height:9px;border-radius:50%;background:#3fb950;"></div>
+      <div style="font-family:var(--mono);font-size:14px;color:#8b95a3;letter-spacing:0.02em;">Rollup.sol · threshold + checkProofSystemsAndGetVkeys()</div>
+    </div>
+    <div id="codePanel" style="height:660px;overflow:hidden;scroll-behavior:smooth;padding:18px 8px;font-family:var(--mono);font-size:18px;line-height:30px;"></div>
+  </div>
+
+  <!-- ===== BOTTOM BAR ===== -->
+  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1c232d;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
+    <div style="flex:1;max-width:1180px;">
+      <div id="kicker" style="font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:#3fb950;margin-bottom:11px;"></div>
+      <div id="caption" style="font-size:24px;line-height:1.48;color:#c3ccd6;text-wrap:pretty;"></div>
+    </div>
+    <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button id="btnPrev" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;transition:background .2s;">‹ Prev</button>
+        <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:#06210c;background:#3fb950;border:1px solid #3fb950;border-radius:8px;padding:12px 26px;cursor:pointer;min-width:120px;transition:background .2s;">▶ Play</button>
+        <button id="btnNext" class="btn" style="font-size:16px;color:#c3ccd6;background:#161c25;border:1px solid #2a323d;border-radius:8px;padding:12px 20px;cursor:pointer;transition:background .2s;">Next ›</button>
+      </div>
+      <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
+      <div style="display:flex;align-items:center;gap:18px;font-family:var(--mono);font-size:13px;color:#6e7a89;">
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:2px;background:#7c83ff;"></span>ZK family</div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:2px;background:#f0a83c;"></span>multisig / TEE</div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:2px;background:#b478f0;"></span>threshold</div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:2px;background:#3fb950;"></span>valid / accepted</div>
+        <div style="display:flex;align-items:center;gap:6px;"><span style="width:9px;height:9px;border-radius:2px;background:#f85149;"></span>rejected</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+(function(){
+  var N = 7, STEP_MS = 3000;
+  var step = 0, playing = false, timer = null;
+
+  var kickers = [
+    "EEZ IS PROOF-SYSTEM AGNOSTIC",
+    "VERIFICATION IS M-OF-N",
+    "THE THRESHOLD CAN BE ANY VALUE",
+    "SUBMIT PROOFS → THE CONTRACT CHECKS",
+    "TOO FEW, OR DISALLOWED → IT FAILS",
+    "HETEROGENEOUS TRUST",
+    "GUARD · THE ≥2-PROVER MYTH IS FALSE",
+  ];
+  var captions = [
+    "EEZ does not mandate one prover. The zone is proof-system agnostic: each rollup declares which proof systems it accepts — a ZK system, a TEE, a validator multisig — and the zone verifies whatever that rollup declared, rather than forcing a single house standard.",
+    "Verification is M-of-N. A rollup's own manager contract sets a threshold M over the N systems it accepts. This is per-rollup configuration held on that manager, not a global protocol floor — the zone registry does not impose it.",
+    "The owner sets the threshold to any value. Zero means every batch passes — no proof requirement, a footgun; a value above N locks the rollup. Multi-prover is a capability, not a required minimum — there is no protocol-enforced floor, and whatever the owner picks is what the zone enforces.",
+    "When a batch is submitted, the manager checks one question: are there enough valid proofs, from systems this rollup actually declared, to meet the threshold M? Meet it and the batch is accepted and settles.",
+    "Too few valid proofs and the batch reverts — the threshold is not met (checkProofSystemsAndGetVkeys reverts ThresholdNotMet). A proof from a system the rollup never declared is rejected (ProofSystemNotAllowed). Error names are current as of June 2026 against an unaudited contract and may change.",
+    "Because the systems are heterogeneous, a rollup can mix families — for example a ZK verifier alongside a validator multisig. With M ≥ 2, one compromised prover does not break safety: the others still have to agree before a batch settles. Note the reference prover shipping today is a single-signer ECDSA validator, not a ZK verifier; there is no production ZK verifier live yet.",
+    "The common claim that EEZ requires two or more provers is false. A rollup can set M = 1 — a single prover as its entire trust root — or even M = 0, which sets no proof floor at all. Read the rollup's real config — its accepted-systems list and threshold — before you build on it; the number is the rollup's choice, not the zone's.",
+  ];
+
+  // right-panel "config + check trace" lines
+  var code = [
+    "// Rollup.sol \u2014 per-rollup manager,",
+    "    owner-configured",
+    "",
+    "uint256 public threshold;   // M-of-N; owner",
+    "    picks ANY value",
+    "",
+    "function setThreshold(uint256 newThreshold)",
+    "    external onlyOwner {",
+    "    threshold = newThreshold;",
+    "    // any value: 0 = every batch passes (no",
+    "        proof floor),",
+    "    // > N = locks the rollup. Owner must pick a",
+    "        sane value.",
+    "}",
+    "",
+    "function checkProofSystemsAndGetVkeys(address[]",
+    "    calldata proofSystems)",
+    "    external view returns (bytes32[] memory vkeys)",
+    "{",
+    "    if (proofSystems.length < threshold)",
+    "        revert ThresholdNotMet(",
+    "            proofSystems.length, threshold);",
+    "",
+    "    address prev = address(0);",
+    "    for (uint256 i = 0; i < proofSystems.length;",
+    "        i++) {",
+    "        address ps = proofSystems[i];",
+    "        if (uint160(ps) <= uint160(prev))",
+    "            revert ProofSystemNotAllowed(ps);",
+    "                // dup or out-of-order",
+    "        bytes32 vk = verificationKey[ps];",
+    "        if (vk == bytes32(0))",
+    "            revert ProofSystemNotAllowed(ps);",
+    "                // system not declared",
+    "        vkeys[i] = vk; prev = ps;",
+    "    }",
+    "}",
+  ];
+  var hlByStep = [
+    [3, 4],
+    [15, 16, 17, 19, 20, 21],
+    [6, 7, 8, 9, 10, 11, 12],
+    [15, 16, 17, 18],
+    [19, 20, 21, 27, 28, 29, 31, 32, 33],
+    [23, 24, 25, 26, 34],
+    [3, 4, 8, 9, 10],
+  ];
+
+  // element visibility per step: fn(step)->bool
+  var els = {};
+  ["aProofs","aAccept","sysList","thBadge","thSlider","gateBox","acceptTag",
+   "proofsRow","rejectCard","heteroCard","mythCard"].forEach(function(id){ els[id]=document.getElementById(id); });
+
+  function riseShow(el, cond){ el.style.opacity = cond ? "1" : "0"; if(cond) el.style.animation="riseIn .5s ease"; }
+  function fade(el, cond){ el.style.opacity = cond ? "1" : "0"; }
+
+  function render(){
+    var on = function(s){ return step >= s; };
+    var pl = step !== 6;              // machinery hidden on the guard step
+
+    // chrome
+    document.getElementById("stepLabel").textContent =
+      String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
+    document.getElementById("kicker").textContent = kickers[step];
+    document.getElementById("caption").textContent = captions[step];
+    document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
+
+    // diagram reveals
+    riseShow(els.sysList, on(0) && pl);
+    riseShow(els.thBadge, on(1) && pl);
+    riseShow(els.thSlider, on(2) && pl);
+
+    riseShow(els.gateBox, on(3) && pl);
+    fade(els.proofsRow, on(3) && pl);
+    fade(els.aProofs, on(3) && pl);
+    riseShow(els.acceptTag, on(3) && pl);
+    fade(els.aAccept, on(3) && pl);
+
+    fade(els.rejectCard, on(4) && pl);
+
+    fade(els.heteroCard, on(5) && pl);
+
+    // guard
+    if(step === 6){ els.mythCard.style.opacity="1"; els.mythCard.style.animation="riseIn .45s ease"; }
+    else { els.mythCard.style.opacity="0"; }
+
+    // right panel
+    var hl = hlByStep[step] || [];
+    var html = "";
+    for(var i=0;i<code.length;i++){
+      var lit = hl.indexOf(i) !== -1;
+      var t = code[i].length ? code[i] : " ";
+      html += '<div ' + (lit?"data-hl ":"") + 'style="display:flex;align-items:stretch;padding:0 14px;'
+        + (lit ? "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;" : "background:transparent;") + '">'
+        + '<span style="width:34px;flex:none;text-align:right;padding-right:18px;user-select:none;'
+        + (lit ? "color:#3fb950;" : "color:#46505c;") + '">' + String(i+1).padStart(2,"0") + '</span>'
+        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:#9aa4b1;") + '">'
+        + t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span></div>';
+    }
+    document.getElementById("codePanel").innerHTML = html;
+    var _cp = document.getElementById("codePanel");
+    var _fh = _cp.querySelector("[data-hl]");
+    _cp.scrollTop = _fh ? Math.max(0, _fh.offsetTop - 48) : 0;
+
+    // dots
+    var d = "";
+    for(var j=0;j<N;j++){
+      var st = j===step ? "width:30px;background:#3fb950;"
+        : (j<step ? "width:13px;background:#3a4250;" : "width:13px;background:#222a35;");
+      d += '<div style="height:6px;border-radius:3px;transition:width .2s,background .2s;'+st+'"></div>';
+    }
+    document.getElementById("dots").innerHTML = d;
+  }
+
+  function scaleStage(){
+    var s = Math.min(window.innerWidth/1920, window.innerHeight/1080);
+    document.getElementById("stage").style.transform = "scale("+s+")";
+  }
+
+  function schedule(){
+    clearTimeout(timer);
+    timer = setTimeout(function(){
+      if(!playing) return;
+      if(step >= N-1){ playing=false; render(); return; }
+      step++; render(); schedule();
+    }, STEP_MS);
+  }
+  function togglePlay(){
+    if(playing){ clearTimeout(timer); playing=false; render(); return; }
+    if(step >= N-1) step = 0;
+    playing = true; render(); schedule();
+  }
+  function next(){ clearTimeout(timer); playing=false; step=Math.min(N-1,step+1); render(); }
+  function prev(){ clearTimeout(timer); playing=false; step=Math.max(0,step-1); render(); }
+
+  document.getElementById("btnPrev").addEventListener("click", prev);
+  document.getElementById("btnNext").addEventListener("click", next);
+  document.getElementById("btnPlay").addEventListener("click", togglePlay);
+  window.addEventListener("keydown", function(e){
+    if(infoModal.classList.contains('open')){
+      if(e.key==="Escape"){ e.preventDefault(); closeInfo(); }
+      return;
+    }
+    if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
+    else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
+    else if(e.key===" "){ e.preventDefault(); togglePlay(); }
+  });
+  window.addEventListener("resize", scaleStage);
+
+  var infoModal = document.getElementById('infoModal');
+  function openInfo(){ infoModal.classList.add('open'); }
+  function closeInfo(){ infoModal.classList.remove('open'); }
+  document.getElementById('infoBtn').addEventListener('click', openInfo);
+  document.getElementById('infoClose').addEventListener('click', closeInfo);
+  document.getElementById('infoStart').addEventListener('click', closeInfo);
+  infoModal.addEventListener('click', function(e){ if(e.target === infoModal) closeInfo(); });
+
+  scaleStage();
+  render();
+})();
+</script>
+</body></html>
