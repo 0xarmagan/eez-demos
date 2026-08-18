@@ -179,7 +179,7 @@
   var kickers = ["ONE STREAM, ONE JOB", "THE PROVER RE-EXECUTES", "SIGN & RETURN"];
   var captions = [
     "The composer opens one gRPC stream to the proof-signer and sends a ProveHeader first — blocks always follow in order.",
-    "For each BlockWitness the prover decodes PostBatch's calldata and replays the block against its execution witness to independently recompute the hash.",
+    "For each BlockWitness the prover (still the proof-signer from step 1) decodes PostBatch's calldata and replays the block to independently recompute the hash.",
     "The prover signs the recomputed hash and returns it — the composer only trusts it once the signature recovers to the registered attester."
   ];
 
