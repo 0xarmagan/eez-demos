@@ -10,19 +10,19 @@ assignees: ''
 
 What EEZ mechanic does this demo teach? One sentence.
 
-## Track
+## Audience
 
-- [ ] Builder track (contract layer, dapp-developer facing)
-- [ ] Rollup-integrator track (contract layer, rollup-operator facing)
-- [ ] Node-operator / Rollup0 track (infra layer)
+- [ ] Dapp developers
+- [ ] Rollup operators
+- [ ] Protocol researchers
 
 ## Source of truth
 
-Which real file(s)/crate(s)/contract(s) will the code panels cite? (`eez-core-protocol` or `eez-rollup0`, with path if known)
+Real file(s)/crate(s) the code panel will cite, inside `eez-rollup0` — either directly (infra) or under `eez-core-protocol/` (contracts, a submodule pinned to a specific commit — see `CONTRIBUTING.md`).
 
 ## Why it matters
 
-What should someone walk away understanding? (this becomes the demo's own "why this demo" modal copy)
+What should someone walk away understanding? This becomes the card's one-sentence hook.
 
 ## Claiming this
 

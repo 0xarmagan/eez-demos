@@ -1,61 +1,35 @@
 # Contributing to eez-demos
 
-This repo is internal team + core contributors. PRs go through review before merge.
+Internal team + core contributors. PRs go through review before merge. Claim a topic via GitHub Issue before starting.
 
-## Format (settled 2026-08-18, revised same day)
+## Format
 
-Two layers, both required for a new example:
+Every example is two layers:
 
-1. **A card on `index.html`** — title + a one-sentence hook that states the *consequence*, not just the mechanic (compare "one hash, eight fields" to "reorder the fields and you get a silently different hash" — the second is why anyone should care). No code snippet on the card itself — that lives in the walkthrough. Whole card is a clickable link.
-2. **A short animated walkthrough** (`qN-slug.html`) the card links to — same stage/diagram/code/caption format as the original demos, 3 steps, one sentence per caption. See "Animated walkthrough rules" below before building one.
+1. **A card** on `index.html` — action-oriented title (what you're doing, not the mechanic's internal name) + a one-sentence hook stating the *consequence*, not the mechanic ("reorder the fields and you get a silently different hash," not "eight fields in order"). No code on the card. Badge is time to *watch the walkthrough*, not to complete the real process — don't blur those for an infra example with real setup cost. CTA is always `WATCH THE 3-STEP WALKTHROUGH →`.
+2. **An animated walkthrough** (`qN-slug.html`) — copy `q1-compute-your-cross-chain-address.html` as the template and keep:
+   - Fixed 1920×1080 stage, diagram left / code right / caption bottom / Prev-Play-Next — not up for redesign.
+   - `codeByStep`: progressive reveal per step, never a full file dumped at once.
+   - Real data in the diagram (actual bytes, values, state) — never placeholder boxes.
+   - The `PRE-MAINNET` label, the header's `NEXT: <title> →` link (through the fixed sequence on `index.html`; the last example links back to the index instead), and `scaleStage()`'s mobile floor (`s < 0.58`, switches to a scrollable layout) — all already in `q1`. Copy them, don't reinvent.
 
-Before you start a new example, open (or claim) a GitHub Issue for the topic first.
+## Source of truth — verify against real code, not memory
 
-## Animated walkthrough rules (learned from a real audit — apply to every one, Rollup0 included)
+Every snippet is **verbatim**, cited by exact `file:line`. This repo is strictly `eez-rollup0`:
 
-Copy `q1-compute-your-cross-chain-address.html` as your structural template. Two things that make a walkthrough weak, checked in that audit and fixed everywhere:
+- **Infra** — cite `eez-rollup0` @ `main` directly.
+- **Contracts** — `eez-core-protocol` is a **submodule** of `eez-rollup0`, pinned to a commit, not tracking `main`. Cite it as `eez-core-protocol/<path>:<line>` and verify against that *pinned* commit (`git ls-tree HEAD eez-core-protocol`) — not `eez-core-protocol`'s own `main`. They drift; a citation can be accurate against one and wrong against the other.
 
-1. **Code panel shows only the current step's lines, revealed progressively.** Never dump the whole function/file grayed out from step 1 — that reads as a wall of dead text. Use a `codeByStep` array (one array of lines per step), not one static array highlighted in place.
-2. **The diagram must show real data, not just labeled boxes.** Actual bytes, actual values, actual state transforming across steps — not two empty boxes and an arrow. If a topic's diagram would otherwise be sparse, find the real data to visualize (a block, a batch, an event) instead of settling for placeholders.
+Re-pull fresh before writing anything, and again before merge if a PR sat open a few days. If you can't verify something, say so in the PR rather than inventing a plausible signature.
 
-Keep the stage/panel/control structure (fixed 1920×1080, diagram left, code right, caption bottom, Prev/Play/Next) — that part isn't up for redesign per demo.
+## Honesty
 
-Three more things every walkthrough needs, all already in `q1`'s header/`scaleStage()` — copy them, don't reinvent:
-
-3. **A `PRE-MAINNET` label** next to the title. Removing the old `SPEC · NOT LIVE` badge site-wide (2026-08-18) left zero honesty signal anywhere — this is its quieter replacement. Every page needs it, not just `index.html`, since links get shared directly to a single walkthrough.
-4. **A `NEXT: <title> →`** link on the header's right side, pointing to the next example in the fixed sequence (dapp devs → rollup operators → protocol researchers, in the order they appear on `index.html`). The last example (`pr3-the-deriver.html`) links to `index.html` instead ("ALL 14 EXAMPLES →"). Update the chain when you insert a new example — check both neighbors.
-5. **The `scaleStage()` mobile floor.** Below `s < 0.58` the fixed-1920px stage scaled to fit becomes unreadably small on a phone. `q1`'s version clamps to `0.58` and switches the wrapper to a scrollable block instead of a centered fixed frame, so mobile gets a pannable-but-legible view instead of illegible text. Copy the whole function, not just the transform line.
-
-## The one hard rule: verify against real source, don't paraphrase
-
-Every snippet must be **verbatim** from the actual source, cited by exact `file:line`. This repo is strictly about **`eez-rollup0`** — every example, dapp-dev included, has to trace back to something inside that one repository:
-
-- **Infra layer** — cite `eez-rollup0` @ `main` directly (e.g. `crates/eez-deriver/src/deriver.rs:164`).
-- **Contract layer** — `eez-core-protocol` is a **git submodule of `eez-rollup0`** (`git submodule update --init --recursive eez-core-protocol`, pinned by a gitlink commit, not by `main`). Cite it as `eez-core-protocol/<path>:<line>` — the path as it actually sits inside `eez-rollup0` — and verify against **the exact pinned commit** (`git ls-tree HEAD eez-core-protocol` in a fresh `eez-rollup0` clone, then check out that commit inside the submodule), not against `eez-core-protocol`'s own independently-moving `main`.
-
-This distinction is not pedantic — it broke a real citation once: `eez-core-protocol`'s `main` had moved two weeks ahead of the commit `eez-rollup0` actually pins, and a function had shifted by 4 lines in between. The demo was accurate against the wrong ground truth and wrong against the right one. Always resolve the pinned commit first.
-
-Everything moves fast — re-resolve the pin and re-pull fresh before writing anything, and re-check before merge if a PR sat open more than a few days. If you can't verify something, say so in the PR description rather than inventing a plausible-looking signature.
-
-## Card format
-
-Each example is a `.card` in `index.html`'s grid, under the right audience section:
-
-- **Title** — action-oriented, states what you're doing ("Compute your cross-chain address"), not the mechanic's internal name.
-- **A one-sentence hook** — the consequence or reason to care, not a restatement of the title. Ask "so what?" before shipping it — if the answer isn't in the sentence, it's still a mechanic description, not a hook.
-- **A time badge** — this is time to *watch the 3-step walkthrough*, not time to complete the real process it depicts. For a contract-level snippet those are close enough not to matter; for an infra walkthrough (deploying a real testnet, running a load test) they are NOT the same number, and the badge must not blur them. If a walkthrough depicts something that takes real setup time (docker builds, funding a faucet, a multi-minute sync), say so honestly in the hook or caption rather than let the badge imply otherwise.
-- **CTA** — "WATCH THE 3-STEP WALKTHROUGH →", exactly, on every card. Consistency here is deliberate — 14 cards with 14 different CTAs would cost more scanability than it buys in novelty.
-
-Match the existing cards' visual style exactly — same palette, same card shape. Don't introduce a new look per contributor.
-
-## The "coming soon" honesty rule
-
-An audience section with no examples yet gets an honest "coming soon" note, not empty space or a fabricated example. Never write a card or caption that implies something works, or takes less time/effort, than it really does.
+No card or caption implies something works, or costs less time, than it does. An empty audience section gets a plain "coming soon" note, never a fabricated example.
 
 ## Before opening a PR
 
-- [ ] Every snippet cites real `file:line`, checked against a fresh pull
-- [ ] Description is 1-2 sentences, not a paragraph
-- [ ] Card matches the existing visual style
-- [ ] Added under the correct audience section
-- [ ] No horizontal overflow — check the card renders cleanly at ~360px wide (the grid's minimum column width)
+- [ ] Every snippet verified against a fresh pull — against the pinned commit for anything under `eez-core-protocol`
+- [ ] Hook states a consequence, not a restatement of the title
+- [ ] Card matches the existing visual style; walkthrough matches `q1`'s structure exactly
+- [ ] Filed under the correct audience section; `NEXT:` chain updated on both neighbors
+- [ ] Renders cleanly at ~360px wide, no horizontal overflow
