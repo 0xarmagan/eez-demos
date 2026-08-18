@@ -64,13 +64,13 @@
       <div style="font-family:var(--mono);font-size:18px;color:#ff8a84;">require(msg.sender == owner);</div>
       <div style="display:flex;align-items:center;gap:12px;margin-top:16px;">
         <div style="font-size:30px;line-height:1;color:#f85149;">⦸</div>
-        <div style="font-size:16px;color:#c79490;">Passes on the same chain. Reverts every time cross-chain — msg.sender is the alias, not owner.</div>
+        <div style="font-size:16px;color:#c79490;">Passes on the same chain. Reverts every time cross-chain — msg.sender is the proxy, not owner.</div>
       </div>
     </div>
 
     <div id="fixCard" style="display:none;background:rgba(63,185,80,0.06);border:1.5px solid #3fb950;border-radius:10px;padding:22px 26px;">
-      <div style="font-family:var(--mono);font-size:18px;color:#7ee08c;">require(msg.sender == alias);</div>
-      <div style="font-size:16px;color:#a9b6ac;margin-top:14px;">Whitelist the alias itself — derive it with computeCrossChainProxyAddress.</div>
+      <div style="font-family:var(--mono);font-size:18px;color:#7ee08c;">require(msg.sender == proxy);</div>
+      <div style="font-size:16px;color:#a9b6ac;margin-top:14px;">Whitelist the proxy itself — derive it with computeCrossChainProxyAddress.</div>
     </div>
 
   </div>
@@ -112,9 +112,9 @@
 
   var kickers = ["WHO ACTUALLY CALLS", "THE TRAP", "THE FIX"];
   var captions = [
-    "Cross-chain, the destination sees the alias — not your EOA.",
+    "Cross-chain, the destination sees the proxy — not your EOA.",
     "A same-chain owner check passes locally, reverts every time cross-chain.",
-    "Whitelist the alias itself instead."
+    "Whitelist the proxy itself instead."
   ];
 
   var codeByStep = [
@@ -127,11 +127,11 @@
       "require(msg.sender == owner);"
     ],
     [
-      "// right — whitelist the alias:",
-      "address a = eez.computeCrossChainProxyAddress(",
+      "// right — whitelist the proxy:",
+      "address proxy = eez.computeCrossChainProxyAddress(",
       "    owner, originRollupId",
       ");",
-      "require(msg.sender == a);"
+      "require(msg.sender == proxy);"
     ]
   ];
   var hlByStep = [ [0,1], [1], [0,1,2,3,4] ];
