@@ -103,37 +103,37 @@ h1 .l{font-weight:300;color:#dcdcdc}
 
       <a class="card" href="./q1-compute-your-cross-chain-address.html">
         <div class="card-head"><div class="card-title">Compute your cross-chain address</div><span class="badge">2 MIN</span></div>
-        <p class="card-hook">Your alias exists before anything is deployed.</p>
+        <p class="card-hook">Every contract gets one deterministic address on every other rollup.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./q2-send-a-cross-chain-call.html">
         <div class="card-head"><div class="card-title">Send a cross-chain call</div><span class="badge">3 MIN</span></div>
-        <p class="card-hook">No special function — just call the proxy.</p>
+        <p class="card-hook">Call the proxy like a normal contract — EEZ handles the routing.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./q3-fix-the-msg-sender-gotcha.html">
-        <div class="card-head"><div class="card-title">Fix the msg.sender gotcha</div><span class="badge">5 MIN</span></div>
-        <p class="card-hook">The #1 mistake every cross-chain dev makes.</p>
+        <div class="card-head"><div class="card-title">How msg.sender resolves across chains</div><span class="badge">5 MIN</span></div>
+        <p class="card-hook">The destination always sees the proxy, never your original address.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./q4-check-if-an-address-is-a-proxy.html">
-        <div class="card-head"><div class="card-title">Check if an address is a proxy</div><span class="badge">2 MIN</span></div>
-        <p class="card-hook">Read the registry directly, don't guess.</p>
+        <div class="card-head"><div class="card-title">How the proxy registry works</div><span class="badge">2 MIN</span></div>
+        <p class="card-hook">Every real proxy is recorded on-chain, and anyone can read it directly.</p>
+        <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
+      </a>
+
+      <a class="card" href="./q6-why-you-cant-call-the-manager-directly.html">
+        <div class="card-head"><div class="card-title">Why the manager only accepts proxy calls</div><span class="badge">2 MIN</span></div>
+        <p class="card-hook">Direct calls revert — only a registered proxy reaches execution.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./q5-encode-a-calls-content-hash.html">
         <div class="card-head"><div class="card-title">Encode a call's content hash</div><span class="badge">4 MIN</span></div>
         <p class="card-hook">Reorder the fields and you get a silently different hash.</p>
-        <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
-      </a>
-
-      <a class="card" href="./q6-why-you-cant-call-the-manager-directly.html">
-        <div class="card-head"><div class="card-title">Why you can't call the manager directly</div><span class="badge">2 MIN</span></div>
-        <p class="card-hook">Only a real proxy gets through.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
