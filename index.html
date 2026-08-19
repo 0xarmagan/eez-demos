@@ -47,20 +47,25 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .sec{margin-top:8px}
 .sec-head{margin:56px 0 18px}
 
-/* card grid — flat hairline grid, no colored rail; gradient reserved for hover accent */
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1px;background:#1a1a1a;border:1px solid #1a1a1a;border-radius:14px;overflow:hidden}
+/* card grid — individual elevated cards, gradient reserved for hover accent */
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
 .grid.cols-2{grid-template-columns:repeat(2,1fr)}
 @media(max-width:700px){.grid.cols-2{grid-template-columns:1fr}}
-.card{text-decoration:none;color:inherit;background:#050505;padding:26px 24px;display:flex;flex-direction:column;gap:14px;min-width:0;transition:background .15s}
-.card:hover{background:#0d0d0d}
+.card{position:relative;text-decoration:none;color:inherit;background:#0a0a0a;border:1px solid #1e1e1e;border-radius:16px;padding:28px 26px 26px;display:flex;flex-direction:column;gap:16px;min-width:0;overflow:hidden;transition:transform .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad);opacity:0;transition:opacity .25s ease}
+.card:hover{transform:translateY(-4px);background:#0d0d0d;border-color:#333;box-shadow:0 20px 44px -20px rgba(0,0,0,.75)}
+.card:hover::before{opacity:1}
+.card:hover .card-num{color:#aaa}
 .card:hover .cta{color:#fff}
 .card:hover .cta .circ{background:var(--grad);border-color:transparent;color:#000}
 .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.card-title{font-size:16.5px;font-weight:600;color:#fff;line-height:1.35}
+.card-title{font-size:17.5px;font-weight:600;color:#fff;line-height:1.35}
+.card-num{font-family:var(--mono);font-size:12px;font-weight:500;color:#4d4d4d;letter-spacing:.03em;margin-right:9px;transition:color .2s ease}
 .badge{flex:none;font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:#7a7a7a;border:1px solid #2a2a2a;border-radius:100px;padding:3px 9px;white-space:nowrap}
-.card-hook{font-size:13.5px;line-height:1.5;color:#888;margin:0}
+.card-hook{font-size:13.5px;line-height:1.55;color:#8f8f8f;margin:0}
 .cta{margin-top:auto;padding-top:2px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:11.5px;font-weight:500;color:#767676;letter-spacing:.02em;transition:color .15s}
-.cta .circ{width:26px;height:26px;border-radius:50%;border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none;transition:background .15s,border-color .15s,color .15s;color:#fff}
+.cta .circ{width:26px;height:26px;border-radius:50%;border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none;color:#fff;transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease}
+.card:hover .cta .circ{transform:translateX(2px)}
 
 
 @media(max-width:640px){.wrap{padding:32px 18px 72px}h1{font-size:32px}}
@@ -98,37 +103,37 @@ h1 .l{font-weight:300;color:#dcdcdc}
     <div class="grid">
 
       <a class="card" href="./dapp-developers/q1-compute-your-cross-chain-address.html">
-        <div class="card-head"><div class="card-title">Compute your cross-chain address</div><span class="badge">2 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">01</span>Compute your cross-chain address</div><span class="badge">2 MIN</span></div>
         <p class="card-hook">Every contract gets one deterministic address on every other rollup.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./dapp-developers/q2-send-a-cross-chain-call.html">
-        <div class="card-head"><div class="card-title">Send a cross-chain call</div><span class="badge">3 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">02</span>Send a cross-chain call</div><span class="badge">3 MIN</span></div>
         <p class="card-hook">Call the proxy like a normal contract — EEZ handles the routing.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./dapp-developers/q3-fix-the-msg-sender-gotcha.html">
-        <div class="card-head"><div class="card-title">How msg.sender resolves across chains</div><span class="badge">5 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">03</span>How msg.sender resolves across chains</div><span class="badge">5 MIN</span></div>
         <p class="card-hook">The destination always sees the proxy, never your original address.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./dapp-developers/q4-check-if-an-address-is-a-proxy.html">
-        <div class="card-head"><div class="card-title">How the proxy registry works</div><span class="badge">2 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">04</span>How the proxy registry works</div><span class="badge">2 MIN</span></div>
         <p class="card-hook">Every real proxy is recorded on-chain, and anyone can read it directly.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./dapp-developers/q6-why-you-cant-call-the-manager-directly.html">
-        <div class="card-head"><div class="card-title">Why the manager only accepts proxy calls</div><span class="badge">2 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">05</span>Why the manager only accepts proxy calls</div><span class="badge">2 MIN</span></div>
         <p class="card-hook">Direct calls revert — only a registered proxy reaches execution.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./dapp-developers/q5-encode-a-calls-content-hash.html">
-        <div class="card-head"><div class="card-title">Encode a call's content hash</div><span class="badge">4 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">06</span>Encode a call's content hash</div><span class="badge">4 MIN</span></div>
         <p class="card-hook">Reorder the fields and you get a silently different hash.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
@@ -145,25 +150,25 @@ h1 .l{font-weight:300;color:#dcdcdc}
     <div class="grid cols-2">
 
       <a class="card" href="./rollup-operators/ro1-run-the-devnet-with-kurtosis.html">
-        <div class="card-head"><div class="card-title">Run the EEZ devnet with Kurtosis</div><span class="badge">3 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">01</span>Run the EEZ devnet with Kurtosis</div><span class="badge">3 MIN</span></div>
         <p class="card-hook">One command: sequencer, composer, proof-signer, embedded L1.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./rollup-operators/ro2-deploy-the-protocol.html">
-        <div class="card-head"><div class="card-title">Deploy the protocol</div><span class="badge">4 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">02</span>Deploy the protocol</div><span class="badge">4 MIN</span></div>
         <p class="card-hook">One script: EEZ, the proof system, and your manager.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./rollup-operators/ro3-run-a-real-chiado-l2.html">
-        <div class="card-head"><div class="card-title">Run a real Chiado L2</div><span class="badge">5 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">03</span>Run a real Chiado L2</div><span class="badge">5 MIN</span></div>
         <p class="card-hook">Same stack, a real testnet instead of a sandbox.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./rollup-operators/ro4-send-and-test-cross-chain-calls.html">
-        <div class="card-head"><div class="card-title">Send &amp; test cross-chain calls</div><span class="badge">5 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">04</span>Send &amp; test cross-chain calls</div><span class="badge">5 MIN</span></div>
         <p class="card-hook">Two ports, four op types, real pass/fail metrics.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
@@ -180,25 +185,25 @@ h1 .l{font-weight:300;color:#dcdcdc}
     <div class="grid cols-2">
 
       <a class="card" href="./protocol-researchers/pr1-the-four-components-of-rollup0.html">
-        <div class="card-head"><div class="card-title">The four components of Rollup0</div><span class="badge">3 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">01</span>The four components of Rollup0</div><span class="badge">3 MIN</span></div>
         <p class="card-hook">Sequencer, composer, proof-signer, deriver — who does what.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./protocol-researchers/pr2-commit-first-repair-if-needed.html">
-        <div class="card-head"><div class="card-title">Commit-first, repair-if-needed</div><span class="badge">4 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">02</span>Commit-first, repair-if-needed</div><span class="badge">4 MIN</span></div>
         <p class="card-hook">L2 commits immediately. L1 is still the source of truth.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./protocol-researchers/pr4-how-the-composer-proves-a-batch.html">
-        <div class="card-head"><div class="card-title">How the composer proves a batch</div><span class="badge">4 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">03</span>How the composer proves a batch</div><span class="badge">4 MIN</span></div>
         <p class="card-hook">One gRPC stream: header, then blocks, then a signature.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
       <a class="card" href="./protocol-researchers/pr3-the-deriver.html">
-        <div class="card-head"><div class="card-title">The deriver: trustless re-derivation</div><span class="badge">4 MIN</span></div>
+        <div class="card-head"><div class="card-title"><span class="card-num">04</span>The deriver: trustless re-derivation</div><span class="badge">4 MIN</span></div>
         <p class="card-hook">Rebuild the whole L2 chain from L1 alone.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
