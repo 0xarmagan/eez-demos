@@ -1,6 +1,28 @@
 # Contributing to eez-demos
 
-Internal team + core contributors. PRs go through review before merge. Claim a topic via GitHub Issue before starting.
+Internal team + core contributors. PRs go through review before merge. Open (or claim) a GitHub Issue for the topic first if you want to avoid overlap — not a hard gate for a quick addition.
+
+## Run it locally
+
+The site uses a few absolute paths (`/favicon.svg`, the analytics script), so opening `index.html` straight from disk breaks the favicon. Serve it instead:
+
+```bash
+git clone git@github.com:0xarmagan/eez-demos.git
+cd eez-demos
+npx serve .          # or: python3 -m http.server 8000
+```
+
+No install, no build step, no dependencies — just a static file server rooted at the repo. Open the printed localhost URL and click through everything before opening a PR.
+
+## Add a new example
+
+```bash
+scripts/new-demo.sh <dapp-developers|rollup-operators|protocol-researchers> <slug> "<Title>"
+# e.g.
+scripts/new-demo.sh rollup-operators ro5-my-new-topic "My New Topic"
+```
+
+This scaffolds a structurally-correct file from the `q1` template — fixed stage, terminal code panel, `PRE-MAINNET` label, mobile floor, all already wired — with every piece of *topic-specific* content (diagram, `codeByStep`, citation, kickers, captions) replaced with an obvious `TODO`. It does not touch `index.html` or the `NEXT:` chain; that's still on you, see the checklist below.
 
 ## Format
 
@@ -30,7 +52,10 @@ No card or caption implies something works, or costs less time, than it does. An
 ## Before opening a PR
 
 - [ ] Every snippet verified against a fresh pull — against the pinned commit for anything under `eez-core-protocol`
+- [ ] No `TODO` left over from `scripts/new-demo.sh`
 - [ ] Hook states a consequence, not a restatement of the title
 - [ ] Card matches the existing visual style; walkthrough matches `q1`'s structure exactly
-- [ ] Filed under the correct audience section; `NEXT:` chain updated on both neighbors
+- [ ] Added a card on `index.html`, under the correct audience section
+- [ ] `NEXT:` chain updated on both neighbors (the demo before it, and this one's own link)
+- [ ] Served locally and clicked through all 3 steps — not just eyeballed the source
 - [ ] Renders cleanly at ~360px wide, no horizontal overflow
