@@ -16,11 +16,23 @@ Every code panel cites a real, verified `file:line` — pre-mainnet, every page 
 
 ## Contributing
 
+Run it locally:
+
 ```bash
-git clone git@github.com:0xarmagan/eez-demos.git && cd eez-demos
-npx serve .                                          # run it locally, no build step
-scripts/new-demo.sh rollup-operators ro5-my-topic "My Topic"   # scaffold a new one
-scripts/audit.sh                                      # broken links, invalid JS, leftover TODOs, marketing language
+git clone https://github.com/0xarmagan/eez-demos.git && cd eez-demos
+npx serve .   # or: python3 -m http.server 8000 — no build step either way
+```
+
+Add a new example — scaffolds the file only, doesn't wire it into `index.html` or the `NEXT:` chain (that's still manual, see `CONTRIBUTING.md`):
+
+```bash
+scripts/new-demo.sh rollup-operators ro5-my-topic "My Topic"
+```
+
+Before opening a PR:
+
+```bash
+scripts/audit.sh   # broken links, invalid JS, leftover TODOs, marketing language
 ```
 
 PRs are reviewed before merge — see `CONTRIBUTING.md` for the full checklist, the citation rules (`eez-core-protocol` is pinned, not tracking `main`), and the independent audit pass every new example gets before it ships.
