@@ -51,11 +51,24 @@ No card or caption implies something works, or costs less time, than it does. An
 
 ## Before opening a PR
 
+Run `scripts/audit.sh` first — it's a fast automated pass (broken links, invalid JS, leftover `TODO`s, marketing language, missing citation paths) that catches the mechanical stuff so the human audit below can focus on what can't be scripted.
+
+- [ ] `scripts/audit.sh` passes
 - [ ] Every snippet verified against a fresh pull — against the pinned commit for anything under `eez-core-protocol`
-- [ ] No `TODO` left over from `scripts/new-demo.sh`
 - [ ] Hook states a consequence, not a restatement of the title
 - [ ] Card matches the existing visual style; walkthrough matches `q1`'s structure exactly
 - [ ] Added a card on `index.html`, under the correct audience section
 - [ ] `NEXT:` chain updated on both neighbors (the demo before it, and this one's own link)
 - [ ] Served locally and clicked through all 3 steps — not just eyeballed the source
-- [ ] Renders cleanly at ~360px wide, no horizontal overflow
+
+## Audit, before merge
+
+This is a second, independent pass — done by whoever reviews the PR, not just the author re-reading their own checklist. Every real bug found in this repo so far (a submodule-pinned citation that had drifted, a `deployments.env` preview with invented variable names, "alias" used as an undefined synonym for "proxy" in two demos, a leftover marketing word) survived the author's own read-through and was only caught by someone re-checking against the actual source with fresh eyes. Don't skip this because the diff looks clean.
+
+1. **Re-run `scripts/audit.sh` yourself** — don't trust that the author ran it, or that nothing changed since they did.
+2. **Re-verify every citation against a fresh clone** — not the PR's word for it. For anything under `eez-core-protocol`, check out the exact commit `eez-rollup0` pins (`git ls-tree HEAD eez-core-protocol`), not `main` — they drift.
+3. **Check the diagram against the code panel** — does the diagram show the same real function, struct, or value the citation points at, or does it just *look* plausible?
+4. **Grep the term across all 14 demos** before accepting a new name for something — a second name for a concept that already has one is exactly how "alias" vs "proxy" happened.
+5. **Serve it locally and click through all 3 steps yourself** — a diff review alone won't catch a broken `NEXT:` link or a step that renders wrong.
+
+If any of these turn up something, fix it before merge — don't file a follow-up issue for a page that's already live.
