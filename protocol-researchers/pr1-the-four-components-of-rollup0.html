@@ -99,7 +99,7 @@
       <div class="footnote">The signed attestation is what lets everything downstream trust Composer's output without redoing the work.</div>
     </div>
 
-    <!-- STEP 3: full pipeline, Deriver as the trustless backstop -->
+    <!-- STEP 3: full pipeline, Deriver as the independent backstop -->
     <div id="s3" style="display:none;flex-direction:column;gap:24px;">
       <div class="sublabel">FULL PIPELINE · DERIVER TRUSTS NOTHING</div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
@@ -170,11 +170,11 @@
   var N = 3, STEP_MS = 3600;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["THE LIVE PATH", "ATTESTATION", "THE TRUSTLESS BACKSTOP"];
+  var kickers = ["THE LIVE PATH", "ATTESTATION", "THE INDEPENDENT BACKSTOP"];
   var captions = [
     "Sequencer builds the block, then Composer settles any cross-chain calls inside it — the live path runs on just these two.",
     "Once Composer finishes, the Attester signs a hash of the result so the block can be trusted downstream.",
-    "Deriver never trusts any of the three — it independently re-derives the same state from L1 alone, the trustless backstop."
+    "Deriver never trusts any of the three — it independently re-derives the same state from L1 alone."
   ];
 
   // All four real components, cited by exact file:line. Rotated/highlighted per step below.

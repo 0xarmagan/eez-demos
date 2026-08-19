@@ -196,7 +196,7 @@
 
   var kickers = ["TWO FRONTS, ONE JOB", "MIND THE BUNDLE SIZE", "EXERCISE IT FOR REAL"];
   var captions = [
-    "Two transparent proxy fronts sit in front of L1 and L2 — sendRawTransaction gets held for the next Sync block (once per L1 block, reserved for cross-chain work); everything else just passes through.",
+    "Two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block — once per L1 block, for cross-chain work — while everything else passes straight through.",
     "EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it, so measure before you raise it.",
     "xchain-test.sh drives both fronts through the full op × direction × direct/wrapper matrix and reports real pipeline metrics."
   ];
