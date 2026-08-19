@@ -55,6 +55,21 @@ if [ -n "$hits" ]; then
   FAIL=1
 fi
 
+echo "== Infra-layer .rs citations (the authoritative one, not diagram shorthand) use the crates/ path =="
+# The .sol check above only ever covered eez-core-protocol; this is its
+# equivalent for eez-rollup0's Rust crates (missed a real bug this way once —
+# a bare "eez-deriver/src/deriver.rs" header with no crates/ prefix). Scoped to
+# the code-panel header div and pr1's citation-chip data, same as every other
+# demo's single authoritative citation — small in-diagram "file.rs:N" badges
+# are an intentional shorthand that points back at that one, not a citation
+# of their own, so they're not checked here.
+hits=$( { grep -nE 'letter-spacing:0.02em;">[^<]*\.rs' dapp-developers/*.html rollup-operators/*.html protocol-researchers/*.html; \
+          grep -nE 'loc: "[^"]*\.rs' dapp-developers/*.html rollup-operators/*.html protocol-researchers/*.html; } 2>/dev/null | grep -v "crates/" || true)
+if [ -n "$hits" ]; then
+  echo "$hits" | sed 's/^/  /'
+  FAIL=1
+fi
+
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo "Structural audit passed."

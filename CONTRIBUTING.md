@@ -1,6 +1,6 @@
 # Contributing to eez-demos
 
-Internal team + core contributors. PRs go through review before merge. Open (or claim) a GitHub Issue for the topic first if you want to avoid overlap — not a hard gate for a quick addition.
+Public repo, core-team maintained. Right now it's a single maintainer with no enforced branch protection — the review/audit sections below are the target process for once a second contributor is added, and worth self-applying with fresh eyes even solo in the meantime. Open (or claim) a GitHub Issue for the topic first if you want to avoid overlap — not a hard gate for a quick addition.
 
 ## Run it locally
 
@@ -63,7 +63,7 @@ Run `scripts/audit.sh` first — it's a fast automated pass (broken links, inval
 
 ## Audit, before merge
 
-This is a second, independent pass — done by whoever reviews the PR, not just the author re-reading their own checklist. Every real bug found in this repo so far (a submodule-pinned citation that had drifted, a `deployments.env` preview with invented variable names, "alias" used as an undefined synonym for "proxy" in two demos, a leftover marketing word) survived the author's own read-through and was only caught by someone re-checking against the actual source with fresh eyes. Don't skip this because the diff looks clean.
+This is meant as a second, independent pass — done by whoever reviews the PR, not just the author re-reading their own checklist. With a second contributor, that's literally who this is. Solo, it's still worth doing as a deliberate second look with fresh eyes, not folded into the checklist above — every real bug found in this repo so far (a submodule-pinned citation that had drifted, a `deployments.env` preview with invented variable names, "alias" used as an undefined synonym for "proxy" in two demos, a leftover marketing word, and a batch of infra-layer citations missing their `crates/` path or pointing at a line that had since moved) survived the first read-through and was only caught on a re-check against the actual source. Don't skip this because the diff looks clean.
 
 1. **Re-run `scripts/audit.sh` yourself** — don't trust that the author ran it, or that nothing changed since they did.
 2. **Re-verify every citation against a fresh clone** — not the PR's word for it. For anything under `eez-core-protocol`, check out the exact commit `eez-rollup0` pins (`git ls-tree HEAD eez-core-protocol`), not `main` — they drift.

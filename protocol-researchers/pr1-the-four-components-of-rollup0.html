@@ -70,7 +70,7 @@
         </div>
         <div class="arrow">→</div>
         <div class="component-box" style="border-color:#2f6b3a;background:rgba(63,185,80,0.10);">
-          <div class="comp-file">composer.rs:514</div>
+          <div class="comp-file">composer.rs:515</div>
           <div class="comp-sig" style="color:#8fe0a0;">pub struct Composer&lt;L2: BlockReader&gt;</div>
           <div class="comp-desc">settles cross-chain calls in that block</div>
         </div>
@@ -83,7 +83,7 @@
       <div class="sublabel">ATTESTATION · COMPOSER → PROOF-SIGNER</div>
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
         <div class="component-box small" style="border-color:#2f6b3a;background:rgba(63,185,80,0.10);">
-          <div class="comp-file">composer.rs:514</div>
+          <div class="comp-file">composer.rs:515</div>
           <div class="comp-sig" style="color:#8fe0a0;">Composer&lt;L2&gt;</div>
         </div>
         <div class="arrow">→</div>
@@ -113,7 +113,7 @@
         </div>
         <div class="arrow" style="font-size:20px;">→</div>
         <div class="component-box small" style="border-color:#2f6b3a;background:rgba(63,185,80,0.10);">
-          <div class="comp-file">composer.rs:514</div>
+          <div class="comp-file">composer.rs:515</div>
           <div class="comp-sig" style="color:#8fe0a0;font-size:13px;">Composer&lt;L2&gt;</div>
         </div>
         <div class="arrow" style="font-size:20px;">→</div>
@@ -129,7 +129,7 @@
         </div>
         <div style="font-size:26px;color:#c89cf5;flex:none;">⇢</div>
         <div class="component-box" style="border-color:#8a5fc9;border-style:dashed;background:rgba(200,150,245,0.08);">
-          <div class="comp-file">deriver.rs:36</div>
+          <div class="comp-file">deriver.rs:45</div>
           <div class="comp-sig" style="color:#e3cdff;">pub struct Deriver&lt;L2&gt;</div>
           <div class="comp-desc" style="color:#c8adf0;">independently re-derives state — trusts none of the three above</div>
         </div>
@@ -183,10 +183,10 @@
 
   // All four real components, cited by exact file:line. Rotated/highlighted per step below.
   var citations = [
-    { label: "Sequencer", loc: "sequencer.rs:159", color: "#7c83ff" },
-    { label: "Composer", loc: "composer.rs:514", color: "#3fb950" },
-    { label: "Proof-signer", loc: "attest.rs:52 / :134", color: "#e8b15e" },
-    { label: "Deriver", loc: "deriver.rs:36", color: "#c89cf5" }
+    { label: "Sequencer", loc: "crates/eez-driver/src/sequencer.rs:159", color: "#7c83ff" },
+    { label: "Composer", loc: "crates/eez-composer/src/composer.rs:515", color: "#3fb950" },
+    { label: "Proof-signer", loc: "crates/eez-proof-signer/src/attest.rs:52 / :134", color: "#e8b15e" },
+    { label: "Deriver", loc: "crates/eez-deriver/src/deriver.rs:45", color: "#c89cf5" }
   ];
   var citeHlByStep = [ [0,1], [2], [3] ];
 
