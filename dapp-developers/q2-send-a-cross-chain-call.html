@@ -21,7 +21,10 @@
   .btn:hover{background:#1a1a1a !important;}
   .btn-play:hover{background:#4fce61 !important;}
   a.back{font-family:var(--mono);font-size:12px;color:#9a9a9a;text-decoration:none;}
+  a.back{transition:color .15s ease,transform .15s ease;}
   a.back:hover{color:#fff;}
+  a.back:not([style]):hover{transform:translateX(-3px);}
+  a.back[style]:hover{transform:translateX(3px);}
   .byte{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;border-radius:4px;padding:5px 8px;}
 </style>
 </head>

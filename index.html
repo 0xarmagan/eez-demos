@@ -39,7 +39,8 @@ h1 .l{font-weight:300;color:#dcdcdc}
 /* pill CTAs */
 .pill-row{display:flex;gap:12px;margin-bottom:60px;flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:11px;background:#fff;color:#000;border-radius:100px;padding:5px 5px 5px 20px;font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.03em;text-decoration:none}
-.pill .circ{width:30px;height:30px;border-radius:50%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none}
+.pill .circ{width:30px;height:30px;border-radius:50%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none;transition:transform .2s ease}
+.pill:hover .circ{transform:translateX(3px)}
 .pill.outline{background:transparent;color:#fff;border:1px solid #2e2e2e;padding:5px 5px 5px 20px}
 .pill.outline .circ{background:#141414;border:1px solid #2e2e2e}
 
