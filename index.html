@@ -68,15 +68,8 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .cta .circ{width:26px;height:26px;border-radius:50%;border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none;color:#fff;transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease}
 .card:hover .cta .circ{transform:translateX(2px)}
 
-/* intro banner — dismissible, explains what this page is */
-.intro{position:relative;display:flex;align-items:center;gap:20px;background:#0a0a0a;border:1px solid #1e1e1e;border-radius:14px;padding:20px 52px 20px 24px;margin-bottom:56px}
-.intro::before{content:"";position:absolute;top:0;bottom:0;left:0;width:3px;border-radius:14px 0 0 14px;background:var(--grad)}
-.intro-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:#7a7a7a;flex:none;white-space:nowrap}
-.intro-body{font-size:14px;line-height:1.5;color:#b0b0b0;margin:0}
-.intro-body b{color:#e8e8e8;font-weight:500}
-.intro-close{position:absolute;top:14px;right:16px;width:26px;height:26px;border-radius:50%;border:1px solid #2a2a2a;background:transparent;color:#8a8a8a;font-size:15px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:color .15s ease,border-color .15s ease}
-.intro-close:hover{color:#fff;border-color:#444}
-@media(max-width:700px){.intro{flex-direction:column;align-items:flex-start;gap:8px}}
+/* first-time-here: one pick per audience, same card as the grids below */
+.starter{margin-bottom:56px}
 
 
 @media(max-width:640px){.wrap{padding:32px 18px 72px}h1{font-size:32px}}
@@ -104,12 +97,31 @@ h1 .l{font-weight:300;color:#dcdcdc}
     <a class="pill outline" href="#protocol-researchers">PROTOCOL RESEARCHERS <span class="circ">→</span></a>
   </div>
 
-  <div class="intro" id="intro">
-    <div class="intro-label">WHAT'S HERE</div>
-    <p class="intro-body"><b>New here?</b> Pick whichever sounds like you — dapp developer, rollup operator, or protocol researcher — and watch one of 14 animated EEZ walkthroughs.</p>
-    <button class="intro-close" id="introClose" aria-label="Dismiss">×</button>
+  <!-- ================= FIRST TIME HERE ================= -->
+  <div class="sec-head" style="margin:0 0 18px">
+    <div class="eyebrow">[ FIRST TIME HERE? TRY THESE ]</div>
   </div>
-  <script>if(localStorage.getItem('eezIntroDismissed'))document.getElementById('intro').style.display='none';</script>
+  <div class="grid starter">
+
+    <a class="card" href="./dapp-developers/q1-compute-your-cross-chain-address.html">
+      <div class="card-head"><div class="card-title">Compute your cross-chain address</div><span class="badge">DAPP DEVS</span></div>
+      <p class="card-hook">Every contract gets one deterministic address on every other rollup.</p>
+      <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
+    </a>
+
+    <a class="card" href="./rollup-operators/ro1-run-the-devnet-with-kurtosis.html">
+      <div class="card-head"><div class="card-title">Run the EEZ devnet with Kurtosis</div><span class="badge">ROLLUP OPS</span></div>
+      <p class="card-hook">One command: sequencer, composer, proof-signer, embedded L1.</p>
+      <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
+    </a>
+
+    <a class="card" href="./protocol-researchers/pr1-the-four-components-of-rollup0.html">
+      <div class="card-head"><div class="card-title">The four components of Rollup0</div><span class="badge">RESEARCH</span></div>
+      <p class="card-hook">Sequencer, composer, proof-signer, deriver — who does what.</p>
+      <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
+    </a>
+
+  </div>
 
   <!-- ================= DAPP DEVELOPERS ================= -->
   <section class="sec" id="dapp-developers">
@@ -229,11 +241,5 @@ h1 .l{font-weight:300;color:#dcdcdc}
   </section>
 
 </div>
-<script>
-  document.getElementById('introClose').addEventListener('click', function(){
-    document.getElementById('intro').style.display = 'none';
-    localStorage.setItem('eezIntroDismissed', '1');
-  });
-</script>
 <script defer src="/_vercel/insights/script.js"></script>
 </body></html>
