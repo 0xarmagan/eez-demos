@@ -184,13 +184,14 @@
   </div>
 
   <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0a0a0a;border:1px solid #262626;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);">
-    <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid #1a1a1a;background:#111;">
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 66px 14px 20px;border-bottom:1px solid #1a1a1a;background:#111;position:relative;">
       <div style="display:flex;gap:7px;">
         <div style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#28c840;"></div>
       </div>
       <div style="font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/main/src/base/EEZBase.sol#L176" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:176 ↗</a></div>
+      <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:10px;line-height:13px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:hidden;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
   </div>
@@ -276,32 +277,96 @@
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
 
   
+  // Single-pass tokenizer: strings and comments are consumed before identifiers,
+  // so keywords inside a string literal are never colorized and the highlighter
+  // never re-scans its own injected markup.
+  var HL_KW = {
+    // Solidity
+    "pragma":1,"import":1,"contract":1,"interface":1,"library":1,"abstract":1,
+    "function":1,"constructor":1,"modifier":1,"fallback":1,"receive":1,
+    "event":1,"emit":1,"error":1,"revert":1,"require":1,"assert":1,
+    "return":1,"returns":1,"if":1,"else":1,"for":1,"while":1,"do":1,
+    "break":1,"continue":1,"try":1,"catch":1,"unchecked":1,"assembly":1,
+    "new":1,"delete":1,"using":1,"is":1,"struct":1,"enum":1,"mapping":1,
+    "public":1,"private":1,"internal":1,"external":1,
+    "pure":1,"view":1,"payable":1,"nonpayable":1,
+    "immutable":1,"constant":1,"override":1,"virtual":1,"indexed":1,"anonymous":1,
+    "memory":1,"storage":1,"calldata":1,"transient":1,
+    // Rust
+    "pub":1,"fn":1,"let":1,"mut":1,"match":1,"impl":1,"trait":1,"mod":1,
+    "use":1,"async":1,"await":1,"where":1,"crate":1,"dyn":1,"ref":1,"move":1,
+    // protobuf / gRPC
+    "service":1,"rpc":1,"message":1,"syntax":1,"repeated":1,"optional":1
+  };
+  var HL_BI = {
+    "keccak256":1,"sha256":1,"ripemd160":1,"ecrecover":1,
+    "abi":1,"encode":1,"encodePacked":1,"encodeCall":1,
+    "encodeWithSelector":1,"encodeWithSignature":1,"decode":1,
+    "msg":1,"block":1,"tx":1,"gasleft":1,"blockhash":1,"selfdestruct":1,
+    "type":1,"creationCode":1,"runtimeCode":1,
+    "call":1,"staticcall":1,"delegatecall":1,"transfer":1,"send":1,
+    "computeCrossChainProxyAddress":1,"computeCrossChainCallHash":1,
+    "executeCrossChainCall":1,"staticCrossChainCall":1,"executeOnBehalf":1
+  };
+  function hlIsType(w) {
+    return /^(address|bool|string|byte)$/.test(w)
+      || /^u?int([0-9]+)?$/.test(w)
+      || /^bytes([0-9]+)?$/.test(w);
+  }
+  function hlEsc(s) {
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  function hlSpan(color, text, italic) {
+    return '<span style="color:' + color + (italic ? ";font-style:italic" : "") + '">'
+      + hlEsc(text) + '</span>';
+  }
   function highlightCode(line) {
-    var escaped = line.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-    if (escaped.trim().startsWith("//")) {
-      return '<span style="color:#6e7681;font-style:italic;">' + escaped + '</span>';
+    var C_KW = "#ff7b72", C_TY = "#79c0ff", C_BI = "#d2a8ff",
+        C_ST = "#a5d6ff", C_CM = "#6e7681", C_NM = "#79c0ff";
+    var out = "", i = 0, n = line.length;
+    while (i < n) {
+      var ch = line.charAt(i);
+      // line comment — consumes the rest of the line
+      if (ch === "/" && line.charAt(i + 1) === "/") {
+        out += hlSpan(C_CM, line.slice(i), true);
+        break;
+      }
+      // string literal
+      if (ch === '"' || ch === "'") {
+        var q = ch, j = i + 1;
+        while (j < n && line.charAt(j) !== q) {
+          if (line.charAt(j) === "\\") { j++; }
+          j++;
+        }
+        var end = Math.min(j + 1, n);
+        out += hlSpan(C_ST, line.slice(i, end));
+        i = end;
+        continue;
+      }
+      // identifier
+      if (/[A-Za-z_$]/.test(ch)) {
+        var k = i;
+        while (k < n && /[A-Za-z0-9_$]/.test(line.charAt(k))) { k++; }
+        var w = line.slice(i, k);
+        if (HL_KW[w]) { out += hlSpan(C_KW, w); }
+        else if (hlIsType(w)) { out += hlSpan(C_TY, w); }
+        else if (HL_BI[w]) { out += hlSpan(C_BI, w); }
+        else { out += hlEsc(w); }
+        i = k;
+        continue;
+      }
+      // numeric literal (incl. hex)
+      if (/[0-9]/.test(ch)) {
+        var m = i;
+        while (m < n && /[0-9a-fA-FxX_.]/.test(line.charAt(m))) { m++; }
+        out += hlSpan(C_NM, line.slice(i, m));
+        i = m;
+        continue;
+      }
+      out += hlEsc(ch);
+      i++;
     }
-    if (escaped.trim().startsWith("- ")) {
-      return '<span style="color:#ff7b72;background:rgba(255,123,114,0.15);padding:1px 4px;border-radius:3px;">' + escaped + '</span>';
-    }
-    if (escaped.trim().startsWith("+ ")) {
-      return '<span style="color:#7ee08c;background:rgba(63,185,80,0.15);padding:1px 4px;border-radius:3px;">' + escaped + '</span>';
-    }
-    var kw = ["function","public","view","pure","returns","internal","external","memory","storage","require","if","else","return","struct","contract","event","emit","pub","fn","let","mut","match","impl","service","rpc","message"];
-    var types = ["uint64","uint256","uint160","bytes32","bytes","address","bool","string"];
-    var builtins = ["keccak256","abi","encodePacked","encodeCall","encode","type","computeCrossChainProxyAddress","executeCrossChainCall","staticCrossChainCall"];
-
-    var res = escaped;
-    kw.forEach(function(k) {
-      res = res.replace(new RegExp('\\b(' + k + ')\\b', 'g'), '<span style="color:#ff7b72;font-weight:500;">$1</span>');
-    });
-    types.forEach(function(t) {
-      res = res.replace(new RegExp('\\b(' + t + ')\\b', 'g'), '<span style="color:#79c0ff;">$1</span>');
-    });
-    builtins.forEach(function(b) {
-      res = res.replace(new RegExp('\\b(' + b + ')\\b', 'g'), '<span style="color:#d2a8ff;">$1</span>');
-    });
-    return res;
+    return out;
   }
 
   function render(){
@@ -316,18 +381,27 @@
 
     var code = codeByStep[step];
     var hl = hlByStep[step] || [];
+    var dm = (typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {};
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
+      var d = dm[i] || "";
       var t = code[i].length ? code[i] : " ";
-      html += '<div style="display:flex;align-items:stretch;padding:1px 16px;white-space:nowrap;'
-        + (lit ? "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;" : "background:transparent;") + '">'
-        + '<span style="width:26px;flex:none;text-align:right;padding-right:14px;color:#3a3a3a;user-select:none;">' + (i+1) + '</span>'
-        + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:var(--muted);") + '">'
+      var bg = "background:transparent;";
+      if (d === "del") { bg = "background:rgba(248,81,73,0.13);box-shadow:inset 3px 0 0 #f85149;"; }
+      else if (d === "add") { bg = "background:rgba(63,185,80,0.13);box-shadow:inset 3px 0 0 #3fb950;"; }
+      else if (lit) { bg = "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;"; }
+      var mark = (d === "del") ? "-" : ((d === "add") ? "+" : " ");
+      var mcol = (d === "del") ? "#f85149" : ((d === "add") ? "#3fb950" : "#3a3a3a");
+      html += '<div style="display:flex;align-items:stretch;padding:1px 16px;white-space:nowrap;' + bg + '">'
+        + '<span style="width:26px;flex:none;text-align:right;padding-right:8px;color:#3a3a3a;user-select:none;">' + (i+1) + '</span>'
+        + '<span style="width:12px;flex:none;text-align:center;color:' + mcol + ';user-select:none;">' + mark + '</span>'
+        + '<span style="white-space:pre;' + ((lit || d) ? "color:#eef3f8;" : "color:var(--muted);") + '">'
         + highlightCode(t) + '</span></div>';
     }
     html += '<div style="display:flex;align-items:stretch;padding:1px 16px;">'
       + '<span style="width:26px;flex:none;"></span>'
+      + '<span style="width:12px;flex:none;"></span>'
       + '<span style="display:inline-block;width:10px;height:20px;background:#3fb950;animation:blink 1s step-end infinite;vertical-align:middle;"></span></div>';
     document.getElementById("codePanel").innerHTML = html;
 
@@ -377,6 +451,44 @@
   document.getElementById("btnPrev").addEventListener("click", prev);
   document.getElementById("btnNext").addEventListener("click", next);
   document.getElementById("btnPlay").addEventListener("click", togglePlay);
+
+  function copyFallback(text, done){
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.top = "-1000px";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      done(ok);
+    } catch (e) { done(false); }
+  }
+  var btnCopy = document.getElementById("btnCopy");
+  if (btnCopy) {
+    btnCopy.addEventListener("click", function(){
+      var lines = codeByStep[step] || [];
+      var text = lines.join("\n").replace(/[ \t]+$/gm, "").replace(/\n+$/, "") + "\n";
+      var done = function(ok){
+        btnCopy.textContent = ok ? "COPIED" : "COPY FAILED";
+        btnCopy.style.color = ok ? "#3fb950" : "#f85149";
+        btnCopy.style.borderColor = ok ? "#2c6b3c" : "#6b2c2c";
+        setTimeout(function(){
+          btnCopy.textContent = "COPY";
+          btnCopy.style.color = "var(--muted)";
+          btnCopy.style.borderColor = "#2e2e2e";
+        }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function(){ done(true); },
+                                                function(){ copyFallback(text, done); });
+      } else {
+        copyFallback(text, done);
+      }
+    });
+  }
   window.addEventListener("keydown", function(e){
     if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
     else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
