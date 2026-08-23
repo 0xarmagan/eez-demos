@@ -80,8 +80,7 @@
       <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
       <div style="font-size:22px;font-weight:600;color:#fff;">The Four Components of Rollup0</div>
-      <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:var(--muted);">PRE-MAINNET</div>
-    </div>
+      </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
       <a class="back" href="pr2-commit-first-repair-if-needed.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Commit-First, Repair-If-Needed →</a>
@@ -265,6 +264,35 @@
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
 
+  
+  function highlightCode(line) {
+    var escaped = line.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    if (escaped.trim().startsWith("//")) {
+      return '<span style="color:#6e7681;font-style:italic;">' + escaped + '</span>';
+    }
+    if (escaped.trim().startsWith("- ")) {
+      return '<span style="color:#ff7b72;background:rgba(255,123,114,0.15);padding:1px 4px;border-radius:3px;">' + escaped + '</span>';
+    }
+    if (escaped.trim().startsWith("+ ")) {
+      return '<span style="color:#7ee08c;background:rgba(63,185,80,0.15);padding:1px 4px;border-radius:3px;">' + escaped + '</span>';
+    }
+    var kw = ["function","public","view","pure","returns","internal","external","memory","storage","require","if","else","return","struct","contract","event","emit","pub","fn","let","mut","match","impl","service","rpc","message"];
+    var types = ["uint64","uint256","uint160","bytes32","bytes","address","bool","string"];
+    var builtins = ["keccak256","abi","encodePacked","encodeCall","encode","type","computeCrossChainProxyAddress","executeCrossChainCall","staticCrossChainCall"];
+
+    var res = escaped;
+    kw.forEach(function(k) {
+      res = res.replace(new RegExp('\\b(' + k + ')\\b', 'g'), '<span style="color:#ff7b72;font-weight:500;">$1</span>');
+    });
+    types.forEach(function(t) {
+      res = res.replace(new RegExp('\\b(' + t + ')\\b', 'g'), '<span style="color:#79c0ff;">$1</span>');
+    });
+    builtins.forEach(function(b) {
+      res = res.replace(new RegExp('\\b(' + b + ')\\b', 'g'), '<span style="color:#d2a8ff;">$1</span>');
+    });
+    return res;
+  }
+
   function render(){
     document.getElementById("stepLabel").textContent = String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
     document.getElementById("kicker").textContent = kickers[step];
@@ -297,7 +325,7 @@
         + (lit ? "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 #3fb950;" : "background:transparent;") + '">'
         + '<span style="width:24px;flex:none;text-align:right;padding-right:14px;color:#3a3a3a;user-select:none;">' + (i+1) + '</span>'
         + '<span style="white-space:pre;' + (lit ? "color:#eef3f8;" : "color:var(--muted);") + '">'
-        + t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;") + '</span></div>';
+        + highlightCode(t) + '</span></div>';
     }
     html += '<div style="display:flex;align-items:stretch;padding:1px 16px;">'
       + '<span style="width:24px;flex:none;"></span>'
@@ -354,6 +382,8 @@
     if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
     else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
     else if(e.key===" "){ e.preventDefault(); togglePlay(); }
+    else if(e.key==="Escape"){ window.location.href = "../index.html"; }
+    else if(e.key==="r"||e.key==="R"){ clearTimeout(timer); step = 0; playing = true; render(); schedule(); }
   });
   window.addEventListener("resize", scaleStage);
   scaleStage(); render(); staticBar();
