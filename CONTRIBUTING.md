@@ -39,10 +39,18 @@ No card or caption implies something works, or costs less time, than it does. An
 
 ## Before opening a PR
 
-Run `scripts/audit.sh` first — it catches broken links, invalid JS, leftover `TODO`s, marketing language, and missing citation paths mechanically, so the human pass below can focus on what a script can't check.
+Run the three checks first — they catch mechanically what the human pass below shouldn't spend attention on. CI runs the same three.
+
+```bash
+bash scripts/audit.sh                    # links, JS syntax, TODOs, citation paths
+python3 scripts/verify-citations.py      # every citation vs real source at its pinned SHA
+python3 scripts/check-panel-drift.py     # every panel line vs a compilable snippet
+cd snippets && forge build && forge test # snippets compile, q3 test passes
+```
 
 - [ ] `scripts/audit.sh` passes
-- [ ] Every snippet verified against a fresh pull (pinned commit for anything under `eez-core-protocol`)
+- [ ] `scripts/verify-citations.py` passes — this replaces re-checking citations by hand
+- [ ] `scripts/check-panel-drift.py` passes; new Solidity pages registered in its `SNIPPET_MAP`
 - [ ] Hook states a consequence, not a restatement of the title
 - [ ] Card matches the existing visual style; walkthrough matches `q1`'s structure
 - [ ] Added a card on `index.html`, under the correct audience section
@@ -54,7 +62,7 @@ Run `scripts/audit.sh` first — it catches broken links, invalid JS, leftover `
 A second, independent pass — every real bug in this repo so far (a drifted submodule citation, an invented variable name, an undefined synonym used for an existing term, a stray marketing word, infra citations missing their `crates/` path) survived the first read and was only caught here. Don't skip it because the diff looks clean.
 
 1. Re-run `scripts/audit.sh` yourself — don't trust that it was run, or that nothing changed since.
-2. Re-verify every citation against a fresh clone — for `eez-core-protocol`, check out the exact pinned commit (`git ls-tree HEAD eez-core-protocol`), not `main`.
+2. Re-run `scripts/verify-citations.py` — it fetches each cited file at the SHA in `scripts/citation-pins.json` and asserts the line and symbol still match, so citations no longer need checking by hand. What still needs judgment: whether the cited line is the *right* line to point at. The verifier accepts any line whose symbol matches within a few lines; it caught `EEZ.sol:790` pointing 10 lines into a function body, but it can't tell you a citation is pedagogically misaimed.
 3. Check the diagram against the code panel — same real function/struct/value, or just plausible-looking?
 4. Grep the term across all 14 demos before accepting a new name for something already named.
 5. Serve it locally and click through all 3 steps yourself — a diff review won't catch a broken `NEXT:` link or a step that renders wrong.

@@ -1,3 +1,6 @@
 .vercel
 .env*
 .impeccable
+.citation-cache/
+snippets/out/
+snippets/cache/

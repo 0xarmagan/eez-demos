@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 # Structural audit — a fast automated first pass for a new/changed demo.
 #
-# This does NOT verify citations against real source (that needs a fresh
-# clone of eez-rollup0/eez-core-protocol and can't be scripted) — it only
-# catches what's checkable from the repo alone. See CONTRIBUTING.md's
-# "Audit, before merge" section for the manual steps this doesn't cover.
+# This checks only what's verifiable from the repo alone. Two companion
+# scripts cover the rest, and CI runs all three:
+#
+#   scripts/verify-citations.py    fetches each cited file at its pinned SHA
+#                                  and asserts the line and symbol still match
+#   scripts/check-panel-drift.py   asserts every Solidity line in a code panel
+#                                  exists verbatim in a compilable snippet
+#
+# See CONTRIBUTING.md's "Audit, before merge" section for what remains manual.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 FAIL=0
@@ -73,7 +78,8 @@ fi
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo "Structural audit passed."
-  echo "This does NOT verify citations against real source — do that part by hand."
+  echo "Next: python3 scripts/verify-citations.py  (citations vs real source)"
+  echo "      python3 scripts/check-panel-drift.py (panels vs compilable snippets)"
 else
   echo "Structural audit FAILED — see above."
   exit 1

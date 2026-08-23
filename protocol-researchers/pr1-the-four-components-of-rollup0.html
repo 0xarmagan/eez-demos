@@ -215,10 +215,14 @@
 
   // All four real components, cited by exact file:line. Rotated/highlighted per step below.
   var citations = [
-    { label: "Sequencer", loc: "crates/eez-driver/src/sequencer.rs:159", color: "#7c83ff" },
-    { label: "Composer", loc: "crates/eez-composer/src/composer.rs:515", color: "#3fb950" },
-    { label: "Proof-signer", loc: "crates/eez-proof-signer/src/attest.rs:52 / :134", color: "#e8b15e" },
-    { label: "Deriver", loc: "crates/eez-deriver/src/deriver.rs:45", color: "#c89cf5" }
+    { label: "Sequencer", loc: "crates/eez-driver/src/sequencer.rs:159", color: "#7c83ff",
+      url: "https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-driver/src/sequencer.rs#L159" },
+    { label: "Composer", loc: "crates/eez-composer/src/composer.rs:515", color: "#3fb950",
+      url: "https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-composer/src/composer.rs#L515" },
+    { label: "Proof-signer", loc: "crates/eez-proof-signer/src/attest.rs:52 / :134", color: "#e8b15e",
+      url: "https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-proof-signer/src/attest.rs#L52" },
+    { label: "Deriver", loc: "crates/eez-deriver/src/deriver.rs:45", color: "#c89cf5",
+      url: "https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-deriver/src/deriver.rs#L45" }
   ];
   var citeHlByStep = [ [0,1], [2], [3] ];
 
@@ -373,10 +377,10 @@
     for(var c=0;c<citations.length;c++){
       var on = citeHl.indexOf(c) !== -1;
       var cite = citations[c];
-      citeHtml += '<div class="cite-chip" style="'
+      citeHtml += '<a class="cite-chip" href="' + cite.url + '" target="_blank" title="View source on GitHub" style="text-decoration:none;'
         + (on ? "background:" + cite.color + "1a;border-color:" + cite.color + "66;color:#fff;" : "background:transparent;border-color:#1a1a1a;color:#5b6572;")
         + '"><span class="cite-dot" style="background:' + cite.color + (on ? ";opacity:1;" : ";opacity:0.4;") + '"></span>'
-        + cite.label + ' <span style="opacity:0.7;">· ' + cite.loc + '</span></div>';
+        + cite.label + ' <span style="opacity:0.7;">· ' + cite.loc + ' \u2197</span></a>';
     }
     document.getElementById("citeRow").innerHTML = citeHtml;
 
