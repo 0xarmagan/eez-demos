@@ -56,13 +56,29 @@
     };
   }
 
+  /* The walkthroughs render into a scale-transformed #stage; index.html is an
+     ordinary scrolling document. Page mode pins the layer to the viewport, so
+     rects can be used as-is and there is no transform to undo. */
+  function isPageMode() { return !$("stage"); }
+
+  function rectFor(el) {
+    if (isPageMode()) {
+      var r = el.getBoundingClientRect();
+      return { left: r.left, top: r.top, width: r.width, height: r.height };
+    }
+    return rectIn($("stage"), el);
+  }
+
+  function boundsW() { return isPageMode() ? (root.innerWidth || STAGE_W) : STAGE_W; }
+  function boundsH() { return isPageMode() ? (root.innerHeight || 1080) : 1080; }
+
   /* Smallest rect covering every element given. Used for the button cluster,
      which is several separately-positioned buttons. */
   function unionIn(stage, els) {
     var out = null;
     for (var i = 0; i < els.length; i++) {
       if (!els[i]) { continue; }
-      var r = rectIn(stage, els[i]);
+      var r = rectFor(els[i]);
       if (!out) { out = { left: r.left, top: r.top, right: r.left + r.width, bottom: r.top + r.height }; }
       else {
         out.left = Math.min(out.left, r.left);
@@ -75,7 +91,39 @@
     return { left: out.left, top: out.top, width: out.right - out.left, height: out.bottom - out.top };
   }
 
+  function buildIndexSteps() {
+    var steps = [];
+    var q = function (sel) { return document.querySelector(sel); };
+
+    if (q(".search-box-row")) {
+      steps.push({ els: [q(".search-box-row")], pad: 10,
+        kicker: "FIND ONE",
+        body: "Search all 14 walkthroughs by keyword \u2014 try msg.sender, CREATE2 or Kurtosis. " +
+              "Pressing / jumps here from anywhere on the page." });
+    }
+    if (q(".filter-tabs")) {
+      steps.push({ els: [q(".filter-tabs")], pad: 10,
+        kicker: "OR BROWSE BY AUDIENCE",
+        body: "Three tracks: 6 for dapp developers, 4 for rollup operators, 4 for protocol " +
+              "researchers. The counts are live, so a filter never lands you on an empty list." });
+    }
+    var firstTime = q(".sec-head");
+    if (firstTime) {
+      steps.push({ els: [firstTime], pad: 12,
+        kicker: "NOT SURE WHERE TO START",
+        body: "These three are the ones to open first, one per audience. Each takes about a minute." });
+    }
+    if (q(".card")) {
+      steps.push({ els: [q(".card")], pad: 8,
+        kicker: "WHAT A CARD IS",
+        body: "Every card is a 3-step walkthrough built on real, cited protocol source \u2014 not " +
+              "pseudocode. The line under the title tells you what you will come away knowing." });
+    }
+    return steps;
+  }
+
   function buildSteps() {
+    if (isPageMode()) { return buildIndexSteps(); }
     var steps = [];
 
     if ($("stageCol")) {
@@ -149,7 +197,8 @@
   }
 
   function start(opts) {
-    var stage = $("stage");
+    var pageMode = isPageMode();
+    var stage = pageMode ? document.body : $("stage");
     if (!stage) { return; }
     var steps = buildSteps();
     if (!steps.length) { return; }
@@ -161,7 +210,9 @@
     layer.id = "tourLayer";
     layer.setAttribute("role", "dialog");
     layer.setAttribute("aria-label", "How to read this page");
-    layer.style.cssText = "position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:200;";
+    layer.style.cssText = pageMode
+      ? "position:fixed;left:0;top:0;right:0;bottom:0;z-index:2000;"
+      : "position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:200;";
 
     var hole = document.createElement("div");
     // One element makes the whole spotlight: a transparent box with an
@@ -189,6 +240,10 @@
     function close() {
       if (layer.parentNode) { layer.parentNode.removeChild(layer); }
       document.removeEventListener("keydown", onKey, true);
+      if (onReflow) {
+        root.removeEventListener("scroll", onReflow, true);
+        root.removeEventListener("resize", onReflow);
+      }
       markSeen();
       onDone();
     }
@@ -208,6 +263,13 @@
 
     function draw() {
       var st = steps[idx];
+      // On a scrolling page the target may be below the fold; centre it first,
+      // then measure, or the spotlight lands on empty space.
+      if (pageMode && st.els[0] && st.els[0].scrollIntoView) {
+        try { st.els[0].scrollIntoView({ block: "center", inline: "nearest" }); } catch (e) {
+          st.els[0].scrollIntoView();
+        }
+      }
       var r = unionIn(stage, st.els);
       if (!r) { go(1); return; }
       var pad = st.pad || 10;
@@ -235,18 +297,42 @@
       // Place the card beside the spotlight, then clamp it inside the stage.
       var ch = card.offsetHeight || 190;
       var cx, cy;
-      if (hx + hw + GAP + CARD_W <= STAGE_W - 24) { cx = hx + hw + GAP; }
-      else if (hx - GAP - CARD_W >= 24) { cx = hx - GAP - CARD_W; }
-      else { cx = Math.min(Math.max(24, hx), STAGE_W - CARD_W - 24); }
-      cy = hy + hh / 2 - ch / 2;
+      var BW = boundsW(), BH = boundsH();
+      if (hx + hw + GAP + CARD_W <= BW - 24) {
+        // beside, to the right
+        cx = hx + hw + GAP;
+        cy = hy + hh / 2 - ch / 2;
+      } else if (hx - GAP - CARD_W >= 24) {
+        // beside, to the left
+        cx = hx - GAP - CARD_W;
+        cy = hy + hh / 2 - ch / 2;
+      } else if (hy + hh + GAP + ch <= BH - 24) {
+        // A wide target leaves no room either side, so go under it. Without
+        // this the card fell back to overlapping the very thing it describes.
+        cx = Math.min(Math.max(24, hx), BW - CARD_W - 24);
+        cy = hy + hh + GAP;
+      } else if (hy - GAP - ch >= 24) {
+        cx = Math.min(Math.max(24, hx), BW - CARD_W - 24);
+        cy = hy - GAP - ch;
+      } else {
+        cx = Math.min(Math.max(24, hx), BW - CARD_W - 24);
+        cy = hy + hh / 2 - ch / 2;
+      }
       if (cy < 24) { cy = 24; }
-      if (cy + ch > 1080 - 24) { cy = 1080 - 24 - ch; }
+      if (cy + ch > BH - 24) { cy = BH - 24 - ch; }
       card.style.left = cx + "px";
       card.style.top = cy + "px";
 
       $("tourNext").addEventListener("click", function () { go(1); });
       $("tourSkip").addEventListener("click", close);
       if ($("tourPrev")) { $("tourPrev").addEventListener("click", function () { go(-1); }); }
+    }
+
+    var onReflow = null;
+    if (pageMode) {
+      onReflow = function () { if (layer.parentNode) { draw(); } };
+      root.addEventListener("scroll", onReflow, true);
+      root.addEventListener("resize", onReflow);
     }
 
     document.addEventListener("keydown", onKey, true);
@@ -262,7 +348,7 @@
        and "left / right" would be a lie. */
     maybeStart: function (opts) {
       if (hasSeen()) { return false; }
-      if (root.innerWidth && root.innerWidth <= 820) { return false; }
+      if (!isPageMode() && root.innerWidth && root.innerWidth <= 820) { return false; }
       start(opts);
       return true;
     }
