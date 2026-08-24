@@ -11,7 +11,7 @@
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#000}
-:root{--sans:'Geist',system-ui,-apple-system,sans-serif;--mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;--muted:#9aa3b3}
+:root{--sans:'Geist',system-ui,-apple-system,sans-serif;--mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;--muted:#9aa3b3; --eez-green:#3BE57E; --eez-grad:linear-gradient(90deg,#8AE5AC 0%,#6283BD 55%,#4439CB 100%); --eez-grad-btn:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%); --eez-ink-on-grad:#0A0A0A; }
 body{
   color:#fff;font-family:var(--sans);
   background-color:#000;
@@ -19,14 +19,14 @@ body{
   background-size:42px 42px;
   min-height:100vh;display:flex;align-items:center;justify-content:center;
 }
-a:focus-visible{outline:2px solid #3fb950;outline-offset:2px;border-radius:4px}
+a:focus-visible{outline:2px solid var(--eez-green);outline-offset:2px;border-radius:4px}
 .wrap{max-width:560px;padding:32px;text-align:center}
 .brand{display:flex;justify-content:center;margin-bottom:40px}
 .brand svg{width:auto;height:34px}
 h1{font-size:32px;line-height:1.2;margin:0 0 16px;letter-spacing:-.01em}
 p.lead{font-size:15px;color:var(--muted);line-height:1.6;margin:0 0 36px}
 .back{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:13px;font-weight:500;color:#fff;text-decoration:none;border:1px solid #262626;border-radius:100px;padding:11px 22px;transition:border-color .2s ease,background .2s ease}
-.back:hover{border-color:#3fb950;background:#0d0d0d}
+.back:hover{border-color:var(--eez-green);background:#0d0d0d}
 @media(max-width:480px){h1{font-size:26px}}
 </style>
 </head>

@@ -4,18 +4,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
-<title>How Msg.sender Resolves Across Chains — EEZ</title>
+<title>Test Demo — EEZ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;}
-  @keyframes blink{ 0%,49%{opacity:1;} 50%,100%{opacity:0;} }
   html,body{margin:0;background:#000;}
   :root{ --sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; --muted:#9aa3b3; --label:#9ba6d6; --eez-green:#3BE57E; --eez-grad:linear-gradient(90deg,#8AE5AC 0%,#6283BD 55%,#4439CB 100%); --eez-grad-btn:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%); --eez-ink-on-grad:#0A0A0A; }
   @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
-  @keyframes dashMove{ to{stroke-dashoffset:-24;} }
-  @keyframes shake{ 0%,100%{transform:translateX(0);} 20%{transform:translateX(-4px);} 40%{transform:translateX(4px);} 60%{transform:translateX(-3px);} 80%{transform:translateX(3px);} }
+  @keyframes flowByte{ from{transform:translateX(-14px);opacity:0;} to{transform:translateX(0);opacity:1;} }
+  @keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,0.4);} 50%{box-shadow:0 0 0 8px rgba(63,185,80,0);} }
+  @keyframes blink{ 0%,49%{opacity:1;} 50%,100%{opacity:0;} }
   @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
   button{font-family:var(--mono);}
   button:focus-visible{outline:2px solid var(--eez-green);outline-offset:2px;}
@@ -26,6 +26,7 @@
   a.back:hover{color:#fff;}
   a.back:not([style]):hover{transform:translateX(-3px);}
   a.back[style]:hover{transform:translateX(3px);}
+  .byte{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;border-radius:4px;padding:5px 8px;}
 
   /* Mobile reflow: below 820px, the fixed 1920x1080 stage becomes a normal
      stacked document instead of a scaled-and-panned deck. !important is
@@ -69,59 +70,128 @@
     <div style="display:flex;align-items:center;gap:18px;">
       <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-      <div style="font-size:22px;font-weight:600;color:#fff;">How Msg.sender Resolves Across Chains</div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">Test Demo</div>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
-      <a class="back" href="q4-check-if-an-address-is-a-proxy.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: How the Proxy Registry Works →</a>
+      <a class="back" href="q2-send-a-cross-chain-call.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Send a Cross-Chain Call →</a>
     </div>
   </div>
 
-  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:36px;">
+  <!-- ===== DIAGRAM — TODO: replace steps s1/s2/s3 below entirely. This is still q1's byte-packing diagram. ===== -->
+  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
 
-    <div style="display:flex;align-items:center;gap:0;position:relative;height:130px;">
-      <svg viewBox="0 0 1080 130" style="position:absolute;inset:0;width:1080px;height:130px;pointer-events:none;">
-        <defs><marker id="ari" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7c83ff"></path></marker></defs>
-        <line x1="300" y1="65" x2="700" y2="65" stroke="#7c83ff" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#ari)" style="animation:dashMove 1s linear infinite;"></line>
-      </svg>
-      <div style="width:280px;background:#141b2b;border:1.5px solid #7c83ff;border-radius:9px;padding:16px 18px;">
-        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:var(--label);">YOUR EOA</div>
-        <div style="font-size:24px;font-weight:600;margin-top:4px;color:#eef1ff;">owner</div>
+    <!-- STEP 1: two inputs, rendered as real byte blocks -->
+    <div id="s1" style="display:flex;flex-direction:column;gap:22px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">INPUTS · ONLY TWO</div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="display:flex;align-items:center;gap:18px;">
+          <div style="width:170px;font-family:var(--mono);font-size:14px;color:var(--label);flex:none;">originRollupId</div>
+          <div style="display:flex;gap:4px;">
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">00</div>
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">00</div>
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">00</div>
+            <div class="byte" style="background:#141b2b;color:var(--muted);border:1px solid #232b36;">⋯</div>
+            <div class="byte" style="background:rgba(124,131,255,0.22);color:#eef1ff;border:1px solid #5561c9;font-weight:600;">01</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:13px;color:var(--muted);">8 bytes (uint64)</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:18px;">
+          <div style="width:170px;font-family:var(--mono);font-size:14px;color:var(--label);flex:none;">myContract</div>
+          <div style="display:flex;gap:4px;">
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">c0</div>
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">ff</div>
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">ee</div>
+            <div class="byte" style="background:#141b2b;color:var(--muted);border:1px solid #232b36;">⋯</div>
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">00</div>
+            <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">42</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:13px;color:var(--muted);">20 bytes (address)</div>
+        </div>
       </div>
-      <div style="flex:1;"></div>
-      <div style="width:280px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:16px 18px;">
-        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#a98ad0;">WHAT ARRIVES</div>
-        <div style="font-size:24px;font-weight:600;margin-top:4px;color:#f1e8ff;">proxy(owner)</div>
-        <div style="font-size:13px;color:#9b8bb8;margin-top:6px;">this is msg.sender there</div>
-      </div>
+      <div style="font-size:16px;color:var(--muted);max-width:820px;">Nothing else. No nonce, no deployment order — just these two values, always.</div>
     </div>
 
-    <div id="revertCard" style="display:none;background:#1a0f10;border:1.5px solid #f85149;border-radius:10px;padding:22px 26px;">
-      <div style="font-family:var(--mono);font-size:18px;color:#ff8a84;">require(msg.sender == owner);</div>
-      <div style="display:flex;align-items:center;gap:12px;margin-top:16px;">
-        <div style="font-size:30px;line-height:1;color:#f85149;">⦸</div>
-        <div style="font-size:16px;color:#c79490;">Passes on the same chain. Reverts every time cross-chain — msg.sender is the proxy, not owner.</div>
+    <!-- STEP 2: bytes packed + hashed into salt -->
+    <div id="s2" style="display:none;flex-direction:column;gap:26px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">PACK + HASH</div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="display:flex;gap:3px;">
+          <div class="byte" style="background:rgba(124,131,255,0.22);color:#eef1ff;border:1px solid #5561c9;">01</div>
+        </div>
+        <div style="font-size:22px;color:var(--muted);">+</div>
+        <div style="display:flex;gap:3px;">
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">c0</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">ff</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">ee</div>
+          <div class="byte" style="background:#141b2b;color:var(--muted);border:1px solid #232b36;">⋯</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">42</div>
+        </div>
+        <div style="font-size:26px;color:var(--eez-green);margin:0 8px;">→</div>
+        <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:#7ee08c;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:10px 16px;">keccak256</div>
       </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="font-family:var(--mono);font-size:13px;color:#5e9e6b;width:80px;">salt =</div>
+        <div style="display:flex;gap:3px;">
+          <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;animation:flowByte .4s ease both;">9a</div>
+          <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;animation:flowByte .4s .05s ease both;">2c</div>
+          <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;animation:flowByte .4s .1s ease both;">7f</div>
+          <div class="byte" style="background:#141b2b;color:var(--muted);border:1px solid #232b36;">⋯</div>
+          <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;animation:flowByte .4s .15s ease both;">f1</div>
+          <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;animation:flowByte .4s .2s ease both;">d0</div>
+        </div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--muted);">32 bytes</div>
+      </div>
+      <div style="font-size:16px;color:var(--muted);max-width:820px;">Same two inputs, on any chain running this manager, always produce this same salt.</div>
     </div>
 
-    <div id="fixCard" style="display:none;background:rgba(63,185,80,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:22px 26px;">
-      <div style="font-family:var(--mono);font-size:18px;color:#7ee08c;">require(msg.sender == proxy);</div>
-      <div style="font-size:16px;color:#a9b6ac;margin-top:14px;">Whitelist the proxy itself — derive it with computeCrossChainProxyAddress.</div>
+    <!-- STEP 3: CREATE2 assembly -> final address, last 20 bytes highlighted -->
+    <div id="s3" style="display:none;flex-direction:column;gap:24px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">CREATE2 → ONE ADDRESS</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div style="font-family:var(--mono);font-size:14px;color:#c3ccd6;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 13px;">0xff</div>
+        <div style="font-size:18px;color:var(--muted);">+</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#9aa4f0;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 13px;">manager</div>
+        <div style="font-size:18px;color:var(--muted);">+</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#7ee08c;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 13px;">salt</div>
+        <div style="font-size:18px;color:var(--muted);">+</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#c89cf5;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 13px;">bytecodeHash</div>
+        <div style="font-size:26px;color:var(--eez-green);margin:0 4px;">→</div>
+        <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:#7ee08c;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:8px 15px;">keccak256</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--muted);width:80px;">32 bytes</div>
+        <div style="display:flex;gap:3px;">
+          <div class="byte" style="background:#141b2b;color:var(--muted);border:1px solid #232b36;">7f</div>
+          <div class="byte" style="background:#141b2b;color:var(--muted);border:1px solid #232b36;">a1</div>
+          <div class="byte" style="background:#141b2b;color:var(--muted);border:1px solid #232b36;">⋯</div>
+          <div class="byte" style="background:rgba(180,120,240,0.28);color:#f1e8ff;border:1.5px solid #b478f0;font-weight:600;">7d</div>
+          <div class="byte" style="background:rgba(180,120,240,0.28);color:#f1e8ff;border:1.5px solid #b478f0;font-weight:600;">3f</div>
+          <div class="byte" style="background:rgba(180,120,240,0.28);color:#f1e8ff;border:1.5px solid #b478f0;font-weight:600;">9b</div>
+          <div class="byte" style="background:rgba(180,120,240,0.28);color:#f1e8ff;border:1.5px solid #b478f0;font-weight:600;">a1</div>
+        </div>
+        <div style="font-family:var(--mono);font-size:13px;color:#c89cf5;">← last 20 bytes = the address</div>
+      </div>
+      <div id="proxyResult" style="margin-top:6px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:16px 22px;display:inline-flex;align-items:center;gap:16px;animation:riseIn .4s ease both;">
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#a98ad0;">YOUR PROXY</div>
+        <div style="font-size:24px;font-weight:600;color:#f1e8ff;">proxy(myContract)</div>
+        <div style="font-family:var(--mono);font-size:17px;color:#c89cf5;">0x7d3F…9bA1</div>
+        <div style="width:6px;height:6px;border-radius:50%;background:#e8b15e;animation:pulse 1.8s ease-in-out infinite;"></div>
+        <div style="font-family:var(--mono);font-size:13px;color:#e8b15e;">not deployed yet</div>
+      </div>
     </div>
 
   </div>
 
   <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0a0a0a;border:1px solid #262626;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);">
-    <div style="display:flex;align-items:center;gap:14px;padding:14px 164px 14px 20px;border-bottom:1px solid #1a1a1a;background:#111;position:relative;">
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 66px 14px 20px;border-bottom:1px solid #1a1a1a;background:#111;position:relative;">
       <div style="display:flex;gap:7px;">
         <div style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#28c840;"></div>
       </div>
-      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L39&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/CrossChainProxy.sol:39 · fallback ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:0.02em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L39" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:39 · fallback ↗</a></div>
-      <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:114px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
-      <button id="btnTest" type="button" title="Show the runnable Foundry test for this gotcha" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TEST</button>
-      <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L176" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:176 ↗</a></div>
+      <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:10px;line-height:13px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
   </div>
@@ -146,126 +216,65 @@
 
 <script>
 (function(){
-  var N = 3, STEP_MS = 3000;
+  var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["WHO ACTUALLY CALLS", "THE TRAP", "THE FIX"];
+  var kickers = ["TODO STEP 1", "TODO STEP 2", "TODO STEP 3"];
   var captions = [
-    "Cross-chain, the destination sees the proxy — not your EOA.",
-    "A same-chain owner check passes locally, reverts every time cross-chain.",
-    "Whitelist the proxy itself instead."
+    "TODO: step 1 caption — one sentence.",
+    "TODO: step 2 caption — one sentence.",
+    "TODO: step 3 caption — one sentence."
   ];
 
+  // Progressive code reveal: each step shows only the lines relevant so far,
+  // so the panel never dumps the full function ungrouped.
   var codeByStep = [
     [
-      "// CrossChainProxy.sol \u2014 the manager forwards;",
-      "// destination sees msg.sender = proxy(owner)."
+      "function computeCrossChainProxyAddress(",
+      "    address originalAddress,",
+      "    uint64 originalRollupId",
+      ") public view returns (address) {"
     ],
     [
-      "// same-chain owner check \u2014 reverts cross-chain:",
-      "require(msg.sender == owner);"
-    ],
-    [
-      "// whitelist the proxy, not the owner:",
-      "address proxy = eez.computeCrossChainProxyAddress(",
-      "    owner, originRollupId",
-      ");",
+      "function computeCrossChainProxyAddress(",
+      "    address originalAddress,",
+      "    uint64 originalRollupId",
+      ") public view returns (address) {",
       "",
-      "require(msg.sender == owner);",
-      "require(msg.sender == proxy);"
+      "    bytes32 salt = keccak256(",
+      "        abi.encodePacked(",
+      "            originalRollupId, originalAddress",
+      "        )",
+      "    );"
+    ],
+    [
+      "    bytes32 salt = keccak256(",
+      "        abi.encodePacked(",
+      "            originalRollupId, originalAddress",
+      "        )",
+      "    );",
+      "",
+      "    bytes32 bytecodeHash = keccak256(abi.encodePacked(",
+      "        type(CrossChainProxy).creationCode,",
+      "        abi.encode(address(this))",
+      "    ));",
+      "",
+      "    return address(uint160(uint256(keccak256(",
+      "        abi.encodePacked(",
+      "            bytes1(0xff), address(this),",
+      "            salt, bytecodeHash",
+      "        )",
+      "    ))));",
+      "}"
     ]
   ];
-  var hlByStep = [ [0,1], [1], [1,2,3] ];
-  // Line-level diff overlay. Kept OUT of codeByStep so the COPY button
-  // yields compiling Solidity instead of literal +/- markers.
-  var diffByStep = [ null, { 1: "del" }, { 5: "del", 6: "add" } ];
-
-  // Verbatim slice of snippets/test/Q3MsgSender.t.sol (lines 69-87).
-  // scripts/check-panel-drift.py asserts these lines still match the file.
-  var testSnippet = [
-      "    /// @dev Why the bug ships: called directly by the owner, the check is fine.",
-      "    function test_sameChainCheck_passesOnSameChain() public {",
-      "        vm.prank(alice);",
-      "        gated.sameChainOnly();",
-      "    }",
-      "",
-      "    /// @dev The bug: the same call arriving through the proxy reverts, because",
-      "    ///      msg.sender is proxy(alice) and never alice.",
-      "    function test_sameChainCheck_revertsWhenCalledViaProxy() public {",
-      "        vm.prank(aliceProxy);",
-      "        vm.expectRevert();",
-      "        gated.sameChainOnly();",
-      "    }",
-      "",
-      "    /// @dev The fix: whitelist the derived proxy instead of the EOA.",
-      "    function test_proxyCheck_passesWhenCalledViaProxy() public {",
-      "        vm.prank(aliceProxy);",
-      "        gated.crossChainSafe();",
-      "    }"
-  ];
-  // Verbatim copy of snippets/q3-msg-sender.sol (the whole file, 47 lines).
-  // scripts/check-panel-drift.py asserts this array still equals that file
-  // line for line, so an embedded copy cannot rot unnoticed.
-  var fullSnippet = [
-      "// SPDX-License-Identifier: MIT",
-      "pragma solidity ^0.8.28;",
-      "",
-      "import {IEEZ} from \"./lib/IEEZ.sol\";",
-      "",
-      "// Panel source for: dapp-developers/q3-fix-the-msg-sender-gotcha.html",
-      "// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:39",
-      "// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda",
-      "//",
-      "// Cross-chain, the destination never sees your EOA. It sees the proxy the",
-      "// manager forwards through. So an owner check that passes on the same chain",
-      "// reverts every time it is reached cross-chain.",
-      "//",
-      "// WHY WHITELISTING THE PROXY IS SAFE, and not just a way to silence the revert:",
-      "// the proxy address is CREATE2-derived from exactly (owner, originRollupId)",
-      "// and the manager's own address, so one owner on one rollup maps to one",
-      "// address and nothing else can occupy it. Only the manager can forward",
-      "// through that proxy. Authorizing it therefore authorizes that one owner on",
-      "// that one rollup \u2014 not \"anyone who can reach the manager\".",
-      "",
-      "contract OwnerGated {",
-      "    IEEZ internal immutable eez;",
-      "    address internal immutable owner;",
-      "    uint64 internal immutable originRollupId;",
-      "",
-      "    constructor(IEEZ eez_, address owner_, uint64 originRollupId_) {",
-      "        eez = eez_;",
-      "        owner = owner_;",
-      "        originRollupId = originRollupId_;",
-      "    }",
-      "",
-      "    /// @dev The trap. Correct on one chain, unreachable across chains.",
-      "    function sameChainOnly() external view {",
-      "// same-chain owner check \u2014 reverts cross-chain:",
-      "require(msg.sender == owner);",
-      "    }",
-      "",
-      "    /// @dev The fix.",
-      "    function crossChainSafe() external view {",
-      "// whitelist the proxy, not the owner:",
-      "address proxy = eez.computeCrossChainProxyAddress(",
-      "    owner, originRollupId",
-      ");",
-      "",
-      "require(msg.sender == proxy);",
-      "    }",
-      "}"
+  var hlByStep = [
+    [0,1,2,3],
+    [5,6,7,8,9],
+    [10,11,12,13,14,15]
   ];
 
-  var showTest = false;
-  var showFull = false;
-  // FULL wins over TEST when both were somehow set; the handlers below keep
-  // them mutually exclusive so that never happens in practice.
-  function currentLines(){
-    if (showFull) return fullSnippet;
-    return showTest ? testSnippet : (codeByStep[step] || []);
-  }
-
-  var els = { revertCard: document.getElementById('revertCard'), fixCard: document.getElementById('fixCard') };
+  var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
 
   
   // Single-pass tokenizer: strings and comments are consumed before identifiers,
@@ -366,14 +375,13 @@
     document.getElementById("caption").textContent = captions[step];
     document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
 
-    els.revertCard.style.display = (step === 1) ? "block" : "none";
-    els.revertCard.style.animation = (step === 1) ? "riseIn .4s ease both" : "";
-    els.fixCard.style.display = (step === 2) ? "block" : "none";
-    els.fixCard.style.animation = (step === 2) ? "riseIn .4s ease both" : "";
+    els.s1.style.display = step === 0 ? "flex" : "none";
+    els.s2.style.display = step === 1 ? "flex" : "none";
+    els.s3.style.display = step === 2 ? "flex" : "none";
 
-    var code = currentLines();
-    var hl = (showTest || showFull) ? [] : (hlByStep[step] || []);
-    var dm = (showTest || showFull) ? {} : ((typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {});
+    var code = codeByStep[step];
+    var hl = hlByStep[step] || [];
+    var dm = (typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {};
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
@@ -444,59 +452,6 @@
   document.getElementById("btnNext").addEventListener("click", next);
   document.getElementById("btnPlay").addEventListener("click", togglePlay);
 
-  var btnTest = document.getElementById("btnTest");
-  var btnFull = document.getElementById("btnFull");
-  var citeEl = document.getElementById("srcCite");
-
-  // TEST and FULL are two alternative views of one panel, so both route through
-  // applyPanelMode instead of each poking the DOM. Whichever order they are
-  // clicked in, button chrome, citation, type size and scroll axis end up
-  // describing the same single state.
-  function applyPanelMode(){
-    if (btnTest) {
-      btnTest.textContent = showTest ? "DEMO" : "TEST";
-      btnTest.style.color = showTest ? "var(--eez-green)" : "var(--muted)";
-      btnTest.style.borderColor = showTest ? "#2c6b3c" : "#2e2e2e";
-      btnTest.title = showTest ? "Back to the walkthrough" : "Show the runnable Foundry test for this gotcha";
-    }
-    if (btnFull) {
-      btnFull.textContent = showFull ? "STEP" : "FULL";
-      btnFull.style.color = showFull ? "var(--eez-green)" : "var(--muted)";
-      btnFull.style.borderColor = showFull ? "#2c6b3c" : "#2e2e2e";
-      btnFull.title = showFull ? "Back to the step snippet" : "Show the full compilable file";
-    }
-    if (citeEl) {
-      citeEl.innerHTML = showFull
-        ? 'snippets/q3-msg-sender.sol \u00b7 solc 0.8.28'
-        : (showTest ? 'snippets/test/Q3MsgSender.t.sol \u00b7 forge test'
-                    : citeEl.getAttribute("data-demo-cite"));
-    }
-    // The whole file is longer and wider than the column, so full-context mode
-    // trades type size for reach and turns the vertical axis into a scroller
-    // instead of clipping the tail off unreachably.
-    var cp = document.getElementById("codePanel");
-    cp.style.fontSize = showFull ? "13px" : (showTest ? "15px" : "19px");
-    cp.style.lineHeight = showFull ? "20px" : (showTest ? "26px" : "34px");
-    cp.style.overflowY = "auto";
-    cp.scrollTop = 0;
-    cp.scrollLeft = 0;
-    render();
-  }
-  if (btnTest) {
-    btnTest.addEventListener("click", function(){
-      showTest = !showTest;
-      if (showTest) showFull = false;
-      applyPanelMode();
-    });
-  }
-  if (btnFull) {
-    btnFull.addEventListener("click", function(){
-      showFull = !showFull;
-      if (showFull) showTest = false;
-      applyPanelMode();
-    });
-  }
-
   function copyFallback(text, done){
     try {
       var ta = document.createElement("textarea");
@@ -514,7 +469,7 @@
   var btnCopy = document.getElementById("btnCopy");
   if (btnCopy) {
     btnCopy.addEventListener("click", function(){
-      var lines = currentLines();
+      var lines = codeByStep[step] || [];
       var text = lines.join("\n").replace(/[ \t]+$/gm, "").replace(/\n+$/, "") + "\n";
       var done = function(ok){
         btnCopy.textContent = ok ? "COPIED" : "COPY FAILED";
@@ -542,7 +497,7 @@
     else if(e.key==="r"||e.key==="R"){ clearTimeout(timer); step = 0; playing = true; render(); schedule(); }
   });
   window.addEventListener("resize", scaleStage);
-  scaleStage(); applyPanelMode(); staticBar();
+  scaleStage(); render(); staticBar();
 })();
 </script>
 </body></html>
