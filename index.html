@@ -9,13 +9,13 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="EEZ Quickstarts">
 <meta name="twitter:description" content="14 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#000}
-:root{--sans:'Geist',system-ui,-apple-system,sans-serif;--mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;--grad:linear-gradient(180deg,#8ce8ab,#3f2acd);--muted:#9aa3b3}
+:root{--sans:'Geist',system-ui,-apple-system,sans-serif;--mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;--grad:linear-gradient(180deg,#8ce8ab,#3f2acd);--muted:#9aa3b3; --eez-green:#3BE57E; --eez-grad:linear-gradient(90deg,#8AE5AC 0%,#6283BD 55%,#4439CB 100%); --eez-grad-btn:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%); --eez-ink-on-grad:#0A0A0A; }
 body{
   color:#fff;font-family:var(--sans);
   background-color:#000;
@@ -33,7 +33,7 @@ body{
 .navlinks{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:12px;flex-wrap:wrap}
 .navlinks a{color:#9a9a9a;text-decoration:none;white-space:nowrap}
 .navlinks a:hover{color:#fff}
-a:focus-visible,.card:focus-visible{outline:2px solid #3fb950;outline-offset:2px;border-radius:4px;}
+a:focus-visible,.card:focus-visible{outline:2px solid var(--eez-green);outline-offset:2px;border-radius:4px;}
 
 /* eyebrow — also used as an h2 section label, so UA heading defaults are neutralized */
 .eyebrow{font-family:var(--mono);font-size:12.5px;font-weight:400;letter-spacing:.1em;color:var(--muted);margin:0 0 18px}
@@ -87,6 +87,19 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .closer-links{display:flex;gap:18px;flex-wrap:wrap}
 .closer-links a{color:#9a9a9a;text-decoration:none}
 .closer-links a:hover{color:#fff}
+
+/* search and filters */
+.search-filter-wrap{display:flex;flex-direction:column;gap:14px;margin-bottom:44px}
+.search-box-row{position:relative;width:100%}
+.search-input{width:100%;background:#090909;border:1px solid #222;border-radius:12px;padding:13px 44px 13px 42px;color:#fff;font-family:var(--sans);font-size:14px;transition:border-color .2s ease,box-shadow .2s ease}
+.search-input:focus{outline:none;border-color:var(--eez-green);box-shadow:0 0 0 3px rgba(63,185,80,0.15)}
+.search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#666;pointer-events:none}
+.search-shortcut{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:11px;background:#161616;border:1px solid #2e2e2e;color:#888;border-radius:4px;padding:2px 7px;pointer-events:none}
+.filter-tabs{display:flex;gap:8px;flex-wrap:wrap}
+.filter-btn{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.04em;color:#888;background:#0d0d0d;border:1px solid #222;border-radius:100px;padding:6px 14px;cursor:pointer;transition:all .2s ease}
+.filter-btn:hover{color:#fff;border-color:#444}
+.filter-btn.active{color:#000;background:#fff;border-color:#fff;font-weight:600}
+.empty-state{display:none;padding:48px 24px;text-align:center;border:1px dashed #262626;border-radius:16px;color:#888;font-family:var(--mono);font-size:14px;margin-bottom:48px}
 </style>
 </head>
 <body><div class="wrap" role="main">
@@ -99,11 +112,28 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <a href="https://github.com/eez-association/eez-core-protocol">eez-core-protocol ↗</a>
       <a href="https://github.com/eez-association/eez-rollup0">eez-rollup0 ↗</a>
       <a href="https://github.com/0xarmagan/eez-demos/blob/main/CONTRIBUTING.md">Contribute ↗</a>
-      <span style="font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--muted);border:1px solid #262626;border-radius:100px;padding:4px 10px;white-space:nowrap;">PRE-MAINNET</span>
-    </nav>
+      </nav>
   </div>
 
   <h1><span class="w">Learn</span> <span class="l">how EEZ</span><br><span class="w">actually</span> <span class="l">works</span></h1>
+
+  <div class="search-filter-wrap">
+    <div class="search-box-row">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input id="searchInput" class="search-input" type="text" placeholder="Search 14 walkthroughs (e.g., msg.sender, Kurtosis, deriver, CREATE2)..." aria-label="Search walkthroughs">
+      <span class="search-shortcut">/</span>
+    </div>
+    <div class="filter-tabs">
+      <button class="filter-btn active" data-filter="all">ALL (14)</button>
+      <button class="filter-btn" data-filter="dapp-developers">DAPP DEVS (6)</button>
+      <button class="filter-btn" data-filter="rollup-operators">ROLLUP OPS (4)</button>
+      <button class="filter-btn" data-filter="protocol-researchers">PROTOCOL RESEARCHERS (4)</button>
+    </div>
+  </div>
+
+  <div id="emptyState" class="empty-state">
+    No walkthroughs found matching your search. Try another keyword or clear filters.
+  </div>
 
   <div class="pill-row">
     <a class="pill" href="#dapp-developers">DAPP DEVELOPERS <span class="circ">→</span></a>
@@ -263,5 +293,70 @@ h1 .l{font-weight:300;color:#dcdcdc}
   </footer>
 
 </div>
-<script defer src="/_vercel/insights/script.js"></script>
+<script>
+(function(){
+  var searchInput = document.getElementById("searchInput");
+  var filterBtns = document.querySelectorAll(".filter-btn");
+  var emptyState = document.getElementById("emptyState");
+  var activeFilter = "all";
+
+  function filterCards() {
+    var query = (searchInput.value || "").toLowerCase().trim();
+    var cards = document.querySelectorAll(".card");
+    var totalVisible = 0;
+
+    cards.forEach(function(card) {
+      var sec = card.closest("section");
+      var secId = sec ? sec.id : "";
+      var isStarter = card.closest(".starter") !== null;
+      var text = card.textContent.toLowerCase();
+
+      var matchesFilter = (activeFilter === "all") || (isStarter ? activeFilter === "all" : secId === activeFilter);
+      var matchesSearch = !query || text.indexOf(query) !== -1;
+
+      if (matchesFilter && matchesSearch) {
+        card.style.display = "";
+        totalVisible++;
+      } else {
+        card.style.display = "none";
+      }
+    });
+
+    document.querySelectorAll(".sec").forEach(function(sec) {
+      var visibleCards = sec.querySelectorAll('.card:not([style*="display: none"])');
+      sec.style.display = (visibleCards.length === 0) ? "none" : "";
+    });
+
+    var starter = document.querySelector(".starter");
+    var starterSecHead = starter ? starter.previousElementSibling : null;
+    if (starter) {
+      var visibleStarter = starter.querySelectorAll('.card:not([style*="display: none"])');
+      starter.style.display = (visibleStarter.length === 0) ? "none" : "";
+      if (starterSecHead) starterSecHead.style.display = (visibleStarter.length === 0) ? "none" : "";
+    }
+
+    emptyState.style.display = (totalVisible === 0) ? "block" : "none";
+  }
+
+  if (searchInput) {
+    searchInput.addEventListener("input", filterCards);
+  }
+
+  filterBtns.forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      filterBtns.forEach(function(b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      activeFilter = btn.getAttribute("data-filter");
+      filterCards();
+    });
+  });
+
+  window.addEventListener("keydown", function(e) {
+    if (e.key === "/" && document.activeElement !== searchInput) {
+      e.preventDefault();
+      if (searchInput) searchInput.focus();
+    }
+  });
+})();
+</script>
 </body></html>

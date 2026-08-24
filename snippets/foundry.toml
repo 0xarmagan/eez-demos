@@ -1,0 +1,8 @@
+# The snippets are deliberately dependency-free: no forge-std, no submodules,
+# so `forge build` and `forge test` work on a bare checkout.
+[profile.default]
+src = "."
+test = "test"
+out = "out"
+libs = []
+solc = "0.8.28"

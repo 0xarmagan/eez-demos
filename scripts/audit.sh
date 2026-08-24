@@ -1,14 +1,26 @@
 #!/usr/bin/env bash
 # Structural audit — a fast automated first pass for a new/changed demo.
 #
-# This does NOT verify citations against real source (that needs a fresh
-# clone of eez-rollup0/eez-core-protocol and can't be scripted) — it only
-# catches what's checkable from the repo alone. See CONTRIBUTING.md's
-# "Audit, before merge" section for the manual steps this doesn't cover.
+# This checks only what's verifiable from the repo alone. Two companion
+# scripts cover the rest, and CI runs all three:
+#
+#   scripts/verify-citations.py    fetches each cited file at its pinned SHA
+#                                  and asserts the line and symbol still match
+#   scripts/check-panel-drift.py   asserts every Solidity line in a code panel
+#                                  exists verbatim in a compilable snippet
+#
+# See CONTRIBUTING.md's "Audit, before merge" section for what remains manual.
 set -uo pipefail
 cd "$(dirname "$0")/.."
 FAIL=0
-HTML_FILES="index.html dapp-developers/*.html rollup-operators/*.html protocol-researchers/*.html"
+# Enumerate from git, not the filesystem, so the audit checks what actually
+# ships. Globbing the disk made this fail locally on an untracked scaffold file
+# that CI never sees, which is a difference that only ever wastes time.
+if git rev-parse --git-dir >/dev/null 2>&1; then
+  HTML_FILES=$(git ls-files 'index.html' 'dapp-developers/*.html' 'rollup-operators/*.html' 'protocol-researchers/*.html')
+else
+  HTML_FILES="index.html dapp-developers/*.html rollup-operators/*.html protocol-researchers/*.html"
+fi
 
 echo "== Internal links resolve =="
 for f in $HTML_FILES; do
@@ -35,7 +47,7 @@ for f in $HTML_FILES; do
 done
 
 echo "== No leftover scaffold TODOs =="
-hits=$(grep -l "TODO" dapp-developers/*.html rollup-operators/*.html protocol-researchers/*.html 2>/dev/null || true)
+hits=$(grep -l "TODO" $HTML_FILES 2>/dev/null || true)
 if [ -n "$hits" ]; then
   echo "$hits" | sed 's/^/  /'
   FAIL=1
@@ -49,7 +61,7 @@ if [ -n "$hits" ]; then
 fi
 
 echo "== Contract-layer citations use the eez-core-protocol/ path =="
-hits=$(grep -nE '>[A-Za-z]+\.sol:[0-9]' dapp-developers/*.html rollup-operators/*.html protocol-researchers/*.html 2>/dev/null | grep -v "eez-core-protocol/" || true)
+hits=$(grep -nE '>[A-Za-z]+\.sol:[0-9]' $HTML_FILES 2>/dev/null | grep -v "eez-core-protocol/" || true)
 if [ -n "$hits" ]; then
   echo "$hits" | sed 's/^/  /'
   FAIL=1
@@ -63,8 +75,8 @@ echo "== Infra-layer .rs citations (the authoritative one, not diagram shorthand
 # demo's single authoritative citation — small in-diagram "file.rs:N" badges
 # are an intentional shorthand that points back at that one, not a citation
 # of their own, so they're not checked here.
-hits=$( { grep -nE 'letter-spacing:0.02em;">[^<]*\.rs' dapp-developers/*.html rollup-operators/*.html protocol-researchers/*.html; \
-          grep -nE 'loc: "[^"]*\.rs' dapp-developers/*.html rollup-operators/*.html protocol-researchers/*.html; } 2>/dev/null | grep -v "crates/" || true)
+hits=$( { grep -nE 'letter-spacing:0.02em;">[^<]*\.rs' $HTML_FILES; \
+          grep -nE 'loc: "[^"]*\.rs' $HTML_FILES; } 2>/dev/null | grep -v "crates/" || true)
 if [ -n "$hits" ]; then
   echo "$hits" | sed 's/^/  /'
   FAIL=1
@@ -73,7 +85,8 @@ fi
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo "Structural audit passed."
-  echo "This does NOT verify citations against real source — do that part by hand."
+  echo "Next: python3 scripts/verify-citations.py  (citations vs real source)"
+  echo "      python3 scripts/check-panel-drift.py (panels vs compilable snippets)"
 else
   echo "Structural audit FAILED — see above."
   exit 1

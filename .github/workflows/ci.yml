@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  structure:
+    name: Structure, citations, panel drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Structural audit
+        run: bash scripts/audit.sh
+
+      # Asserts every Solidity line in a code panel also exists in a snippet
+      # that the compiler checks. Catches a panel edited into invalid Solidity.
+      - name: Panel drift
+        run: python3 scripts/check-panel-drift.py
+
+      # Fetches each cited file at its pinned SHA and asserts the line and
+      # symbol still match. This is the check that catches upstream drift.
+      - name: Citations resolve to real source
+        run: python3 scripts/verify-citations.py
+
+  solidity:
+    name: Snippets compile and tests pass
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Foundry
+        uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: nightly
+
+      - name: forge build
+        working-directory: snippets
+        run: forge build
+
+      - name: forge test
+        working-directory: snippets
+        run: forge test -vv
