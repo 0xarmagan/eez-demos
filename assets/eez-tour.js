@@ -179,6 +179,12 @@
     layer.appendChild(card);
     stage.appendChild(layer);
 
+    // The layer covers the stage, so it swallows clicks while the tour is up.
+    // Clicking the dimmed area is the obvious way out, so make it one.
+    layer.addEventListener("click", function (e) {
+      if (e.target === layer) { close(); }
+    });
+
     function close() {
       if (layer.parentNode) { layer.parentNode.removeChild(layer); }
       document.removeEventListener("keydown", onKey, true);
