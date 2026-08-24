@@ -171,12 +171,12 @@
 
   </div>
 
-  <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:var(--eez-chrome);border:1px solid var(--eez-edge);border-radius:10px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);">
+  <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:var(--eez-chrome);border:1px solid var(--eez-edge);border-radius:10px;overflow:hidden;">
+    <div aria-hidden="true" style="position:absolute;left:0;top:0;right:0;height:2px;background:var(--eez-grad);z-index:4;"></div>
     <div style="display:flex;align-items:center;gap:14px;padding:14px 66px 14px 20px;border-bottom:1px solid var(--eez-edge);background:var(--eez-chrome);position:relative;flex-wrap:wrap;">
-      <div style="display:flex;gap:7px;flex:none;">
-        <div style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></div>
-        <div style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></div>
-        <div style="width:11px;height:11px;border-radius:50%;background:#28c840;"></div>
+      <div style="display:flex;align-items:center;gap:8px;flex:none;" title="This source is cited at a pinned commit, not a moving branch">
+        <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
+        <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
       <div id="citeRow" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;"></div>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
@@ -402,13 +402,13 @@
       var mcol = (d === "del") ? "#f85149" : ((d === "add") ? "var(--eez-green)" : "#3a3a3a");
       html += '<div style="display:flex;align-items:stretch;padding:1px 16px;white-space:nowrap;' + bg + '">'
         + '<span style="width:24px;flex:none;text-align:right;padding-right:8px;color:#3a3a3a;user-select:none;">' + (i+1) + '</span>'
-        + '<span style="width:12px;flex:none;text-align:center;color:' + mcol + ';user-select:none;">' + mark + '</span>'
+        + '<span style="width:12px;flex:none;text-align:center;color:' + mcol + ';user-select:none;border-right:1px solid var(--eez-edge);margin-right:11px;">' + mark + '</span>'
         + '<span style="white-space:pre;' + ((lit || d) ? "color:#eef3f8;" : "color:var(--muted);") + '">'
         + highlightCode(t) + '</span></div>';
     }
     html += '<div style="display:flex;align-items:stretch;padding:1px 16px;">'
       + '<span style="width:24px;flex:none;"></span>'
-      + '<span style="width:12px;flex:none;"></span>'
+      + '<span style="width:12px;flex:none;border-right:1px solid var(--eez-edge);margin-right:11px;"></span>'
       + '<span style="display:inline-block;width:10px;height:20px;background:var(--eez-green);animation:blink 1s step-end infinite;vertical-align:middle;"></span></div>';
     document.getElementById("codePanel").innerHTML = html;
 
@@ -458,6 +458,18 @@
   document.getElementById("btnPrev").addEventListener("click", prev);
   document.getElementById("btnNext").addEventListener("click", next);
   document.getElementById("btnPlay").addEventListener("click", togglePlay);
+
+  // The pin is read out of whichever citation link the page has, deferred so it
+  // also catches pages that build their citation row during the first render.
+  setTimeout(function(){
+    var lbl = document.getElementById("pinLabel");
+    if (!lbl) { return; }
+    var links = document.querySelectorAll('a[href*="/blob/"]');
+    for (var i = 0; i < links.length; i++) {
+      var m = /\/blob\/([0-9a-f]{7,40})\//.exec(links[i].getAttribute("href") || "");
+      if (m) { lbl.textContent = "PINNED " + m[1].slice(0, 7); return; }
+    }
+  }, 0);
 
   var btnHelp = document.getElementById("btnHelp");
   function eezTour(){ return (typeof EEZTour !== "undefined") ? EEZTour : null; }
