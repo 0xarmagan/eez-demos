@@ -57,6 +57,14 @@ python3 scripts/sync-embedded-snippets.py          # re-embed where needed
 python3 scripts/sync-embedded-snippets.py --check  # report only
 ```
 
+Changed any page content, snippet or citation? `llms.txt` and `llms-full.txt` are
+generated from them, so rebuild or CI will fail:
+
+```bash
+python3 scripts/build-llms.py           # rebuild both
+python3 scripts/build-llms.py --check   # report only
+```
+
 - [ ] `scripts/audit.sh` passes
 - [ ] `scripts/verify-citations.py` passes — this replaces re-checking citations by hand
 - [ ] `scripts/check-panel-drift.py` passes; new Solidity pages registered in its `SNIPPET_MAP`

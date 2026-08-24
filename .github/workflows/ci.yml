@@ -32,6 +32,11 @@ jobs:
       - name: Citations resolve to real source
         run: python3 scripts/verify-citations.py
 
+      # llms.txt / llms-full.txt are generated from the pages and snippets, so a
+      # content edit without a rebuild leaves agents reading stale code.
+      - name: Agent-readable files are current
+        run: python3 scripts/build-llms.py --check
+
   solidity:
     name: Snippets compile and tests pass
     runs-on: ubuntu-latest
