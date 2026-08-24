@@ -112,6 +112,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <a href="https://github.com/eez-association/eez-core-protocol">eez-core-protocol ↗</a>
       <a href="https://github.com/eez-association/eez-rollup0">eez-rollup0 ↗</a>
       <a href="https://github.com/0xarmagan/eez-demos/blob/main/CONTRIBUTING.md">Contribute ↗</a>
+      <button id="btnHelp" type="button" title="How to use this page" aria-label="How to use this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       </nav>
   </div>
 
@@ -293,6 +294,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
   </footer>
 
 </div>
+<script src="assets/eez-tour.js"></script>
 <script>
 (function(){
   var searchInput = document.getElementById("searchInput");
@@ -357,6 +359,15 @@ h1 .l{font-weight:300;color:#dcdcdc}
       if (searchInput) searchInput.focus();
     }
   });
+
+  function eezTour(){ return (typeof EEZTour !== "undefined") ? EEZTour : null; }
+  var btnHelp = document.getElementById("btnHelp");
+  if (btnHelp) {
+    btnHelp.addEventListener("click", function(){ if (eezTour()) { eezTour().start(); } });
+  }
+  // Same site-wide key as the walkthroughs, so arriving here after seeing the
+  // tour on a walkthrough does not show it a second time.
+  if (eezTour()) { eezTour().maybeStart(); }
 })();
 </script>
 </body></html>
