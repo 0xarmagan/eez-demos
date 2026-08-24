@@ -11,6 +11,11 @@ non-blank line in each page's `codeByStep` appears verbatim in its snippet. So
 a panel edit that invents invalid Solidity fails here, and a panel edit that is
 genuine forces the same line into a file the compiler checks.
 
+Two embedded whole-file copies get a stricter treatment. Each page's FULL
+toggle, and q3's TEST tab, claim to be showing a real file verbatim rather than
+a hand-wrapped slice of one, so those are asserted equal to the file line for
+line — a claim that would otherwise rot the moment the .sol file is edited.
+
 Only the six dapp-developer pages are covered. The rollup-operator pages are
 shell and the protocol-researcher pages are Rust/protobuf — different
 toolchains, not in scope for this check.
@@ -49,6 +54,14 @@ TEST_SNIPPET_MAP = {
     "q3-fix-the-msg-sender-gotcha.html": "test/Q3MsgSender.t.sol",
 }
 
+# Every Solidity walkthrough also embeds its whole snippet behind the FULL
+# toggle, so a reader can go from the teaching slice to something that compiles.
+# That is a stricter claim than the panel check above: not "every line I show
+# exists in the file" but "this IS the file". So it gets the stricter check —
+# same lines, same order, same count. Derived from SNIPPET_MAP rather than
+# hand-listed, so a new page cannot ship the toggle without the check.
+FULL_SNIPPET_MAP = dict(SNIPPET_MAP)
+
 
 def panel_lines(html_path):
     src = open(html_path, encoding="utf-8").read()
@@ -69,6 +82,16 @@ def test_snippet_lines(html_path):
     m = re.search(r"var testSnippet = (\[.*?\n  \]);", src, re.S)
     if not m:
         return []
+    return [json.loads('"' + raw + '"')
+            for raw in re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(1))]
+
+
+def full_snippet_lines(html_path):
+    """The FULL toggle's embedded whole-file copy, or None if the page has none."""
+    src = open(html_path, encoding="utf-8").read()
+    m = re.search(r"var fullSnippet = (\[.*?\n  \]);", src, re.S)
+    if m is None:
+        return None
     return [json.loads('"' + raw + '"')
             for raw in re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(1))]
 
@@ -133,6 +156,41 @@ def main():
                 failures.append(
                     f"{page}: TEST tab line not in snippets/{rel}:\n"
                     f"        {ln.rstrip()!r}")
+
+    # The FULL toggle claims the panel is showing the snippet file itself. An
+    # embedded copy that nothing checks is a copy that silently rots, so this
+    # asserts equality line for line, including blanks and line count.
+    for page, rel in sorted(FULL_SNIPPET_MAP.items()):
+        page_path = os.path.join(pages_dir, page)
+        snippet_path = os.path.join(SNIPPETS, rel)
+        if not os.path.exists(page_path):
+            failures.append(f"{page}: registered in FULL_SNIPPET_MAP but the page is missing")
+            continue
+        if not os.path.exists(snippet_path):
+            failures.append(f"{page}: snippet missing at snippets/{rel}")
+            continue
+        embedded = full_snippet_lines(page_path)
+        if embedded is None:
+            failures.append(f"{page}: no fullSnippet array - the FULL toggle has nothing to show")
+            continue
+        actual = [ln.rstrip() for ln in
+                  open(snippet_path, encoding="utf-8").read().splitlines()]
+        if len(embedded) != len(actual):
+            failures.append(
+                f"{page}: fullSnippet has {len(embedded)} lines but "
+                f"snippets/{rel} has {len(actual)} - re-embed the file")
+        for i, actual_line in enumerate(actual):
+            checked += 1
+            if i >= len(embedded):
+                failures.append(
+                    f"{page}: fullSnippet is missing snippets/{rel}:{i + 1}:\n"
+                    f"        {actual_line!r}")
+                continue
+            if embedded[i].rstrip() != actual_line:
+                failures.append(
+                    f"{page}: fullSnippet line {i + 1} differs from snippets/{rel}:{i + 1}\n"
+                    f"        embedded: {embedded[i].rstrip()!r}\n"
+                    f"        file:     {actual_line!r}")
 
     print(f"pages checked: {len(SNIPPET_MAP)}   panel lines asserted: {checked}")
     if failures:

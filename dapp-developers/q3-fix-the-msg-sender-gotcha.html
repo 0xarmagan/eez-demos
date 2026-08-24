@@ -112,15 +112,16 @@
   </div>
 
   <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0a0a0a;border:1px solid #262626;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);">
-    <div style="display:flex;align-items:center;gap:14px;padding:14px 118px 14px 20px;border-bottom:1px solid #1a1a1a;background:#111;position:relative;">
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 164px 14px 20px;border-bottom:1px solid #1a1a1a;background:#111;position:relative;">
       <div style="display:flex;gap:7px;">
         <div style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#28c840;"></div>
       </div>
       <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L39&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/CrossChainProxy.sol:39 · fallback ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:0.02em;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L39" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:39 · fallback ↗</a></div>
-      <button id="btnTest" type="button" title="Show the runnable Foundry test for this gotcha" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:10px;line-height:13px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TEST</button>
-      <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:10px;line-height:13px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
+      <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:114px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
+      <button id="btnTest" type="button" title="Show the runnable Foundry test for this gotcha" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TEST</button>
+      <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:hidden;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
   </div>
@@ -202,8 +203,67 @@
       "        gated.crossChainSafe();",
       "    }"
   ];
+  // Verbatim copy of snippets/q3-msg-sender.sol (the whole file, 47 lines).
+  // scripts/check-panel-drift.py asserts this array still equals that file
+  // line for line, so an embedded copy cannot rot unnoticed.
+  var fullSnippet = [
+      "// SPDX-License-Identifier: MIT",
+      "pragma solidity ^0.8.28;",
+      "",
+      "import {IEEZ} from \"./lib/IEEZ.sol\";",
+      "",
+      "// Panel source for: dapp-developers/q3-fix-the-msg-sender-gotcha.html",
+      "// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:39",
+      "// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda",
+      "//",
+      "// Cross-chain, the destination never sees your EOA. It sees the proxy the",
+      "// manager forwards through. So an owner check that passes on the same chain",
+      "// reverts every time it is reached cross-chain.",
+      "//",
+      "// WHY WHITELISTING THE PROXY IS SAFE, and not just a way to silence the revert:",
+      "// the proxy address is CREATE2-derived from exactly (owner, originRollupId)",
+      "// and the manager's own address, so one owner on one rollup maps to one",
+      "// address and nothing else can occupy it. Only the manager can forward",
+      "// through that proxy. Authorizing it therefore authorizes that one owner on",
+      "// that one rollup \u2014 not \"anyone who can reach the manager\".",
+      "",
+      "contract OwnerGated {",
+      "    IEEZ internal immutable eez;",
+      "    address internal immutable owner;",
+      "    uint64 internal immutable originRollupId;",
+      "",
+      "    constructor(IEEZ eez_, address owner_, uint64 originRollupId_) {",
+      "        eez = eez_;",
+      "        owner = owner_;",
+      "        originRollupId = originRollupId_;",
+      "    }",
+      "",
+      "    /// @dev The trap. Correct on one chain, unreachable across chains.",
+      "    function sameChainOnly() external view {",
+      "// same-chain owner check \u2014 reverts cross-chain:",
+      "require(msg.sender == owner);",
+      "    }",
+      "",
+      "    /// @dev The fix.",
+      "    function crossChainSafe() external view {",
+      "// whitelist the proxy, not the owner:",
+      "address proxy = eez.computeCrossChainProxyAddress(",
+      "    owner, originRollupId",
+      ");",
+      "",
+      "require(msg.sender == proxy);",
+      "    }",
+      "}"
+  ];
+
   var showTest = false;
-  function currentLines(){ return showTest ? testSnippet : (codeByStep[step] || []); }
+  var showFull = false;
+  // FULL wins over TEST when both were somehow set; the handlers below keep
+  // them mutually exclusive so that never happens in practice.
+  function currentLines(){
+    if (showFull) return fullSnippet;
+    return showTest ? testSnippet : (codeByStep[step] || []);
+  }
 
   var els = { revertCard: document.getElementById('revertCard'), fixCard: document.getElementById('fixCard') };
 
@@ -312,8 +372,8 @@
     els.fixCard.style.animation = (step === 2) ? "riseIn .4s ease both" : "";
 
     var code = currentLines();
-    var hl = showTest ? [] : (hlByStep[step] || []);
-    var dm = showTest ? {} : ((typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {});
+    var hl = (showTest || showFull) ? [] : (hlByStep[step] || []);
+    var dm = (showTest || showFull) ? {} : ((typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {});
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
@@ -385,23 +445,55 @@
   document.getElementById("btnPlay").addEventListener("click", togglePlay);
 
   var btnTest = document.getElementById("btnTest");
+  var btnFull = document.getElementById("btnFull");
   var citeEl = document.getElementById("srcCite");
-  if (btnTest) {
-    btnTest.addEventListener("click", function(){
-      showTest = !showTest;
+
+  // TEST and FULL are two alternative views of one panel, so both route through
+  // applyPanelMode instead of each poking the DOM. Whichever order they are
+  // clicked in, button chrome, citation, type size and scroll axis end up
+  // describing the same single state.
+  function applyPanelMode(){
+    if (btnTest) {
       btnTest.textContent = showTest ? "DEMO" : "TEST";
       btnTest.style.color = showTest ? "#3fb950" : "var(--muted)";
       btnTest.style.borderColor = showTest ? "#2c6b3c" : "#2e2e2e";
       btnTest.title = showTest ? "Back to the walkthrough" : "Show the runnable Foundry test for this gotcha";
-      if (citeEl) {
-        citeEl.innerHTML = showTest
-          ? 'snippets/test/Q3MsgSender.t.sol \u00b7 forge test'
-          : citeEl.getAttribute("data-demo-cite");
-      }
-      var cp = document.getElementById("codePanel");
-      cp.style.fontSize = showTest ? "15px" : "19px";
-      cp.style.lineHeight = showTest ? "26px" : "34px";
-      render();
+    }
+    if (btnFull) {
+      btnFull.textContent = showFull ? "STEP" : "FULL";
+      btnFull.style.color = showFull ? "#3fb950" : "var(--muted)";
+      btnFull.style.borderColor = showFull ? "#2c6b3c" : "#2e2e2e";
+      btnFull.title = showFull ? "Back to the step snippet" : "Show the full compilable file";
+    }
+    if (citeEl) {
+      citeEl.innerHTML = showFull
+        ? 'snippets/q3-msg-sender.sol \u00b7 solc 0.8.28'
+        : (showTest ? 'snippets/test/Q3MsgSender.t.sol \u00b7 forge test'
+                    : citeEl.getAttribute("data-demo-cite"));
+    }
+    // The whole file is longer and wider than the column, so full-context mode
+    // trades type size for reach and turns the vertical axis into a scroller
+    // instead of clipping the tail off unreachably.
+    var cp = document.getElementById("codePanel");
+    cp.style.fontSize = showFull ? "13px" : (showTest ? "15px" : "19px");
+    cp.style.lineHeight = showFull ? "20px" : (showTest ? "26px" : "34px");
+    cp.style.overflowY = showFull ? "auto" : "hidden";
+    cp.scrollTop = 0;
+    cp.scrollLeft = 0;
+    render();
+  }
+  if (btnTest) {
+    btnTest.addEventListener("click", function(){
+      showTest = !showTest;
+      if (showTest) showFull = false;
+      applyPanelMode();
+    });
+  }
+  if (btnFull) {
+    btnFull.addEventListener("click", function(){
+      showFull = !showFull;
+      if (showFull) showTest = false;
+      applyPanelMode();
     });
   }
 
@@ -450,7 +542,7 @@
     else if(e.key==="r"||e.key==="R"){ clearTimeout(timer); step = 0; playing = true; render(); schedule(); }
   });
   window.addEventListener("resize", scaleStage);
-  scaleStage(); render(); staticBar();
+  scaleStage(); applyPanelMode(); staticBar();
 })();
 </script>
 <script defer src="/_vercel/insights/script.js"></script>

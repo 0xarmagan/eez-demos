@@ -149,14 +149,15 @@
   </div>
 
   <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0a0a0a;border:1px solid #262626;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);">
-    <div style="display:flex;align-items:center;gap:14px;padding:14px 66px 14px 20px;border-bottom:1px solid #1a1a1a;background:#111;position:relative;">
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 114px 14px 20px;border-bottom:1px solid #1a1a1a;background:#111;position:relative;">
       <div style="display:flex;gap:7px;">
         <div style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#28c840;"></div>
       </div>
-      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback ↗</a></div>
-      <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:10px;line-height:13px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
+      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback ↗</a></div>
+      <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
+      <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:hidden;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
   </div>
@@ -229,6 +230,88 @@
     ]
   ];
   var hlByStep = [ [0,1,2], [4,7,8,9], [1,2,3] ];
+
+  // Verbatim copy of snippets/q2-cross-chain-call.sol (the whole file, 74 lines).
+  // scripts/check-panel-drift.py asserts this array still equals that file
+  // line for line, so an embedded copy cannot rot unnoticed.
+  var fullSnippet = [
+      "// SPDX-License-Identifier: MIT",
+      "pragma solidity ^0.8.28;",
+      "",
+      "import {IEEZ} from \"./lib/IEEZ.sol\";",
+      "",
+      "// Panel source for: dapp-developers/q2-send-a-cross-chain-call.html",
+      "// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:39 and :89",
+      "// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda",
+      "//",
+      "// Caller side is ordinary: encode a call, send it to the proxy address like",
+      "// any other contract. The proxy has no matching function, so everything",
+      "// lands in fallback() and gets forwarded to the manager.",
+      "",
+      "interface IRemote {",
+      "    function setValue(uint256 v) external;",
+      "}",
+      "",
+      "/// @dev Caller side \u2014 this is all a dapp has to do.",
+      "contract Caller {",
+      "    address public proxyAddress;",
+      "",
+      "    function send() external {",
+      "bytes memory data = abi.encodeCall(",
+      "    IRemote.setValue, (42)",
+      ");",
+      "",
+      "(bool ok, ) = proxyAddress.call(data);",
+      "        ok;",
+      "    }",
+      "}",
+      "",
+      "/// @dev Proxy side \u2014 how the forward actually happens.",
+      "contract CrossChainProxySnippet {",
+      "    address internal immutable EEZ;",
+      "    uint256 internal constant STATIC_CHECK_GAS = 5000;",
+      "",
+      "    constructor(address eez_) {",
+      "        EEZ = eez_;",
+      "    }",
+      "",
+      "    /// @dev tstore reverts in a STATICCALL context, tload does not. A self-call",
+      "    ///      isolates the tstore so the revert can be caught instead of bubbling.",
+      "    function staticCheck() external {",
+      "        assembly { tstore(0, 1) }",
+      "    }",
+      "",
+      "// CrossChainProxy.sol",
+      "fallback() external payable {",
+      "    _fallback();",
+      "}",
+      "",
+      "function _fallback() internal {",
+      "    (bool success,) = address(this).call{",
+      "        gas: STATIC_CHECK_GAS",
+      "    }(abi.encodeCall(this.staticCheck, ()));",
+      "    bytes memory result;",
+      "    if (!success) {",
+      "        (success, result) = EEZ.staticcall(abi.encodeCall(",
+      "            IEEZ.staticCrossChainCall,",
+      "            (msg.sender, msg.data)));",
+      "    } else {",
+      "        (success, result) = EEZ.call{value: msg.value}(abi.encodeCall(",
+      "            IEEZ.executeCrossChainCall,",
+      "            (msg.sender, msg.data)));",
+      "    }",
+      "    if (success) result = abi.decode(result, (bytes));",
+      "",
+      "    assembly {",
+      "        switch success",
+      "        case 0 { revert(add(result, 0x20), mload(result)) }",
+      "        default { return(add(result, 0x20), mload(result)) }",
+      "    }",
+      "}",
+      "}"
+  ];
+  var showFull = false;
+  function currentLines(){ return showFull ? fullSnippet : (codeByStep[step] || []); }
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
 
@@ -335,9 +418,9 @@
     els.s2.style.display = step === 1 ? "flex" : "none";
     els.s3.style.display = step === 2 ? "flex" : "none";
 
-    var code = codeByStep[step];
-    var hl = hlByStep[step] || [];
-    var dm = (typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {};
+    var code = currentLines();
+    var hl = showFull ? [] : (hlByStep[step] || []);
+    var dm = showFull ? {} : ((typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {});
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
@@ -422,10 +505,41 @@
       done(ok);
     } catch (e) { done(false); }
   }
+  // Full-context toggle. The step snippets are hand-wrapped teaching slices with
+  // no pragma, no imports and no contract wrapper; FULL swaps in the whole
+  // compilable file so COPY yields something that actually builds.
+  var btnFull = document.getElementById("btnFull");
+  var citeEl = document.getElementById("srcCite");
+  function applyPanelMode(){
+    if (btnFull) {
+      btnFull.textContent = showFull ? "STEP" : "FULL";
+      btnFull.style.color = showFull ? "#3fb950" : "var(--muted)";
+      btnFull.style.borderColor = showFull ? "#2c6b3c" : "#2e2e2e";
+      btnFull.title = showFull ? "Back to the step snippet" : "Show the full compilable file";
+    }
+    if (citeEl) {
+      citeEl.innerHTML = showFull
+        ? 'snippets/q2-cross-chain-call.sol \u00b7 solc 0.8.28'
+        : citeEl.getAttribute("data-demo-cite");
+    }
+    // The whole file is longer and wider than the column, so full-context mode
+    // trades type size for reach and turns the vertical axis into a scroller
+    // instead of clipping the tail off unreachably.
+    var cp = document.getElementById("codePanel");
+    cp.style.fontSize = showFull ? "13px" : "19px";
+    cp.style.lineHeight = showFull ? "20px" : "34px";
+    cp.style.overflowY = showFull ? "auto" : "hidden";
+    cp.scrollTop = 0;
+    cp.scrollLeft = 0;
+    render();
+  }
+  if (btnFull) {
+    btnFull.addEventListener("click", function(){ showFull = !showFull; applyPanelMode(); });
+  }
   var btnCopy = document.getElementById("btnCopy");
   if (btnCopy) {
     btnCopy.addEventListener("click", function(){
-      var lines = codeByStep[step] || [];
+      var lines = currentLines();
       var text = lines.join("\n").replace(/[ \t]+$/gm, "").replace(/\n+$/, "") + "\n";
       var done = function(ok){
         btnCopy.textContent = ok ? "COPIED" : "COPY FAILED";
@@ -453,7 +567,7 @@
     else if(e.key==="r"||e.key==="R"){ clearTimeout(timer); step = 0; playing = true; render(); schedule(); }
   });
   window.addEventListener("resize", scaleStage);
-  scaleStage(); render(); staticBar();
+  scaleStage(); applyPanelMode(); staticBar();
 })();
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
