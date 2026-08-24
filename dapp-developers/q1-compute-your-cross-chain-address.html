@@ -11,7 +11,7 @@
 <style>
   *{box-sizing:border-box;}
   html,body{margin:0;background:#000;}
-  :root{ --sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; --muted:#9aa3b3; --label:#9ba6d6; --eez-green:#3BE57E; --eez-grad:linear-gradient(90deg,#8AE5AC 0%,#6283BD 55%,#4439CB 100%); --eez-grad-btn:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%); --eez-ink-on-grad:#0A0A0A; }
+  :root{ --sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; --muted:#9aa3b3; --label:#9ba6d6; --eez-green:#3BE57E; --eez-canvas:#0A0A0A; --eez-screen:#161616; --eez-chrome:#1F1F1F; --eez-edge:#2E2E2E; --eez-grad:linear-gradient(90deg,#8AE5AC 0%,#6283BD 55%,#4439CB 100%); --eez-grad-btn:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%); --eez-ink-on-grad:#0A0A0A; }
   @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
   @keyframes flowByte{ from{transform:translateX(-14px);opacity:0;} to{transform:translateX(0);opacity:1;} }
   @keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,0.4);} 50%{box-shadow:0 0 0 8px rgba(63,185,80,0);} }
@@ -63,7 +63,7 @@
 </head>
 <body>
 <div role="main" class="stage-wrap" style="position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
-<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background-color:#000;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:42px 42px;color:#fff;transform-origin:center center;">
+<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background-color:var(--eez-canvas);background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:42px 42px;color:#fff;transform-origin:center center;">
 
   <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1a1a1a;">
     <div style="position:absolute;left:0;bottom:0;width:100%;height:3px;background:#1a1a1a;"><div id="timebar" style="height:100%;width:100%;transform:scaleX(0);transform-origin:left;background:var(--eez-grad);"></div></div>
@@ -94,12 +94,12 @@
         <label style="flex:0 0 300px;display:flex;flex-direction:column;gap:9px;">
           <span style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#5b6572;">originRollupId &#183; uint64</span>
           <input id="calcRid" value="1" spellcheck="false" autocomplete="off"
-            style="background:#050505;border:1px solid #2e2e2e;border-radius:7px;color:#eef3f8;font-family:var(--mono);font-size:20px;padding:12px 14px;outline:none;width:100%;box-sizing:border-box;">
+            style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:7px;color:#eef3f8;font-family:var(--mono);font-size:20px;padding:12px 14px;outline:none;width:100%;box-sizing:border-box;">
         </label>
         <label style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:9px;">
           <span style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#5b6572;">myContract &#183; address</span>
           <input id="calcAddr" value="0xc0ffee254729296a45a3885639AC7E10F9d54979" spellcheck="false" autocomplete="off"
-            style="background:#050505;border:1px solid #2e2e2e;border-radius:7px;color:#eef3f8;font-family:var(--mono);font-size:20px;padding:12px 14px;outline:none;width:100%;box-sizing:border-box;">
+            style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:7px;color:#eef3f8;font-family:var(--mono);font-size:20px;padding:12px 14px;outline:none;width:100%;box-sizing:border-box;">
         </label>
       </div>
 
@@ -221,8 +221,8 @@
 
   </div>
 
-  <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0a0a0a;border:1px solid #262626;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);">
-    <div style="display:flex;align-items:center;gap:14px;padding:14px 114px 14px 20px;border-bottom:1px solid #1a1a1a;background:#111;position:relative;">
+  <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:var(--eez-chrome);border:1px solid var(--eez-edge);border-radius:10px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);">
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 114px 14px 20px;border-bottom:1px solid var(--eez-edge);background:var(--eez-chrome);position:relative;">
       <div style="display:flex;gap:7px;">
         <div style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></div>
@@ -232,7 +232,7 @@
       <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
-    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
+    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
   </div>
 
   <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">

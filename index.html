@@ -15,10 +15,10 @@
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#000}
-:root{--sans:'Geist',system-ui,-apple-system,sans-serif;--mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;--grad:linear-gradient(180deg,#8ce8ab,#3f2acd);--muted:#9aa3b3; --eez-green:#3BE57E; --eez-grad:linear-gradient(90deg,#8AE5AC 0%,#6283BD 55%,#4439CB 100%); --eez-grad-btn:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%); --eez-ink-on-grad:#0A0A0A; }
+:root{--sans:'Geist',system-ui,-apple-system,sans-serif;--mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;--grad:linear-gradient(180deg,#8ce8ab,#3f2acd);--muted:#9aa3b3; --eez-green:#3BE57E; --eez-canvas:#0A0A0A; --eez-screen:#161616; --eez-chrome:#1F1F1F; --eez-edge:#2E2E2E; --eez-grad:linear-gradient(90deg,#8AE5AC 0%,#6283BD 55%,#4439CB 100%); --eez-grad-btn:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%); --eez-ink-on-grad:#0A0A0A; }
 body{
   color:#fff;font-family:var(--sans);
-  background-color:#000;
+  background-color:var(--eez-canvas);
   background-image:
     linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
     linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
@@ -46,7 +46,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
 /* pill CTAs */
 .pill-row{display:flex;gap:12px;margin-bottom:60px;flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:11px;background:#fff;color:#000;border-radius:100px;padding:5px 5px 5px 20px;font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.03em;text-decoration:none}
-.pill .circ{width:30px;height:30px;border-radius:50%;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none;transition:transform .2s ease}
+.pill .circ{width:30px;height:30px;border-radius:50%;background:var(--eez-canvas);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none;transition:transform .2s ease}
 .pill:hover .circ{transform:translateX(3px)}
 .pill.outline{background:transparent;color:#fff;border:1px solid #2e2e2e;padding:5px 5px 5px 20px}
 .pill.outline .circ{background:#141414;border:1px solid #2e2e2e}
@@ -59,7 +59,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
 .grid.cols-2{grid-template-columns:repeat(2,1fr)}
 @media(max-width:700px){.grid.cols-2{grid-template-columns:1fr}}
-.card{position:relative;text-decoration:none;color:inherit;background:#0a0a0a;border:1px solid #1e1e1e;border-radius:16px;padding:28px 26px 26px;display:flex;flex-direction:column;gap:16px;min-width:0;overflow:hidden;transition:transform .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease}
+.card{position:relative;text-decoration:none;color:inherit;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:16px;padding:28px 26px 26px;display:flex;flex-direction:column;gap:16px;min-width:0;overflow:hidden;transition:transform .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease}
 .card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad);opacity:0;transition:opacity .25s ease}
 .card:hover{transform:translateY(-4px);background:#0d0d0d;border-color:#333;box-shadow:0 20px 44px -20px rgba(0,0,0,.75)}
 .card:visited .card-title{color:#b8b8b8}
