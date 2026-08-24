@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <title>Encode a Call's Content Hash — EEZ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -81,6 +81,82 @@
 
   <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:30px;">
 
+    <!-- TRY IT: live content hash, with the reorder lesson made literal.
+         Absolutely positioned overlay, so render() and the step diagram are untouched. -->
+    <button id="btnTry" type="button" title="Hash your own call fields"
+      style="position:absolute;top:-34px;right:0;z-index:4;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TRY IT</button>
+
+    <div id="calcPanel" style="display:none;position:absolute;inset:0;z-index:3;background:#000;flex-direction:column;justify-content:center;gap:18px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.16em;color:#5b6572;">YOUR CALL &#183; EIGHT FIELDS, THIS ORDER</div>
+
+      <div style="display:flex;gap:18px;">
+        <label style="flex:0 0 150px;display:flex;flex-direction:column;gap:6px;">
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">isStatic &#183; bool</span>
+          <select id="cIsStatic" style="background:#050505;border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
+            <option value="false">false</option><option value="true">true</option>
+          </select>
+        </label>
+        <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">value &#183; uint256</span>
+          <input id="cValue" value="0" spellcheck="false" autocomplete="off"
+            style="background:#050505;border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
+        </label>
+        <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">callGas &#183; uint64</span>
+          <input id="cCallGas" value="0" spellcheck="false" autocomplete="off"
+            style="background:#050505;border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
+        </label>
+      </div>
+
+      <div style="display:flex;gap:18px;">
+        <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">sourceAddress</span>
+          <input id="cSrc" value="0x1111111111111111111111111111111111111111" spellcheck="false" autocomplete="off"
+            style="background:#050505;border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
+        </label>
+        <label style="flex:0 0 150px;min-width:0;display:flex;flex-direction:column;gap:6px;">
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">sourceRollupId</span>
+          <input id="cSrid" value="1" spellcheck="false" autocomplete="off"
+            style="background:#050505;border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
+        </label>
+      </div>
+
+      <div style="display:flex;gap:18px;">
+        <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">targetAddress</span>
+          <input id="cTgt" value="0x2222222222222222222222222222222222222222" spellcheck="false" autocomplete="off"
+            style="background:#050505;border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
+        </label>
+        <label style="flex:0 0 150px;min-width:0;display:flex;flex-direction:column;gap:6px;">
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">targetRollupId</span>
+          <input id="cTrid" value="100" spellcheck="false" autocomplete="off"
+            style="background:#050505;border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
+        </label>
+      </div>
+
+      <div style="display:flex;gap:18px;">
+        <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">data &#183; bytes</span>
+          <input id="cData" value="0xa9059cbb" spellcheck="false" autocomplete="off"
+            style="background:#050505;border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
+        </label>
+      </div>
+
+      <div id="cErr" style="display:none;font-family:var(--mono);font-size:13px;color:#8B7B55;"></div>
+
+      <div style="display:flex;flex-direction:column;gap:6px;">
+        <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">keccak256(abi.encode(&#8943;)) &#183; <span id="cLen"></span></span>
+        <div id="cHash" style="font-family:var(--mono);font-size:20px;line-height:30px;color:#3fb950;word-break:break-all;"></div>
+      </div>
+
+      <div style="border-top:1px solid #1a1a1a;padding-top:14px;display:flex;flex-direction:column;gap:6px;">
+        <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#8B7B55;">SAME EIGHT VALUES, source &#8646; target SWAPPED</span>
+        <div id="cHashSwap" style="font-family:var(--mono);font-size:20px;line-height:30px;color:#8B7B55;word-break:break-all;"></div>
+        <div style="font-size:15px;color:var(--muted);">Nothing was added or removed &#8212; only the order changed. Every on-chain hash check and every off-chain tool that pre-computes this would disagree.</div>
+      </div>
+    </div>
+
+
     <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">8 FIELDS · THIS ORDER · LOAD-BEARING</div>
     <div id="fields" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
       <div class="chip" data-i="0">1. isStatic</div>
@@ -119,7 +195,7 @@
       <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
-    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:hidden;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
+    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
   </div>
 
   <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
@@ -140,6 +216,7 @@
 </div>
 </div>
 
+<script src="../assets/eez-hash.js"></script>
 <script>
 (function(){
   var N = 3, STEP_MS = 3200;
@@ -401,6 +478,66 @@
   document.getElementById("btnNext").addEventListener("click", next);
   document.getElementById("btnPlay").addEventListener("click", togglePlay);
 
+  var calcOn = false;
+  var CIDS = ["cIsStatic","cValue","cCallGas","cSrc","cSrid","cTgt","cTrid","cData"];
+  function calcRender(){
+    var g = function(id){ return document.getElementById(id); };
+    var err = g("cErr");
+    var base = {
+      isStatic: g("cIsStatic").value === "true",
+      sourceAddress: g("cSrc").value.trim(),
+      sourceRollupId: g("cSrid").value.trim(),
+      targetAddress: g("cTgt").value.trim(),
+      targetRollupId: g("cTrid").value.trim(),
+      value: g("cValue").value.trim(),
+      callGas: g("cCallGas").value.trim(),
+      data: g("cData").value.trim()
+    };
+    CIDS.forEach(function(id){ g(id).style.borderColor = "#2e2e2e"; });
+    try {
+      var enc = EEZHash.callHashEncoding(base);
+      g("cLen").textContent = enc.length + " bytes / " + (enc.length / 32) + " words";
+      g("cHash").textContent = "0x" + EEZHash.callHash(base);
+      // the whole point of this walkthrough: same values, order changed
+      var swapped = {
+        isStatic: base.isStatic,
+        sourceAddress: base.targetAddress, sourceRollupId: base.targetRollupId,
+        targetAddress: base.sourceAddress, targetRollupId: base.sourceRollupId,
+        value: base.value, callGas: base.callGas, data: base.data
+      };
+      g("cHashSwap").textContent = "0x" + EEZHash.callHash(swapped);
+      err.style.display = "none";
+    } catch (e) {
+      err.textContent = e.message;
+      err.style.display = "block";
+      g("cLen").textContent = "\u2014";
+      g("cHash").textContent = "\u2014";
+      g("cHashSwap").textContent = "\u2014";
+      var m = /^([A-Za-z]+)/.exec(e.message);
+      var key = m ? m[1].toLowerCase() : "";
+      var map = { sourceaddress:"cSrc", targetaddress:"cTgt", address:"cSrc",
+                  sourcerollupid:"cSrid", targetrollupid:"cTrid", rollupid:"cSrid",
+                  value:"cValue", callgas:"cCallGas", data:"cData" };
+      if (map[key]) { g(map[key]).style.borderColor = "#8B7B55"; }
+    }
+  }
+  var btnTry = document.getElementById("btnTry");
+  if (btnTry) {
+    btnTry.addEventListener("click", function(){
+      calcOn = !calcOn;
+      document.getElementById("calcPanel").style.display = calcOn ? "flex" : "none";
+      btnTry.textContent = calcOn ? "DIAGRAM" : "TRY IT";
+      btnTry.style.color = calcOn ? "#3fb950" : "var(--muted)";
+      btnTry.style.borderColor = calcOn ? "#2c6b3c" : "#2e2e2e";
+      if (calcOn) { if (playing) { togglePlay(); } calcRender(); }
+    });
+    CIDS.forEach(function(id){
+      var el = document.getElementById(id);
+      el.addEventListener("input", calcRender);
+      el.addEventListener("change", calcRender);
+    });
+  }
+
   function copyFallback(text, done){
     try {
       var ta = document.createElement("textarea");
@@ -438,7 +575,7 @@
     var cp = document.getElementById("codePanel");
     cp.style.fontSize = showFull ? "13px" : "19px";
     cp.style.lineHeight = showFull ? "20px" : "34px";
-    cp.style.overflowY = showFull ? "auto" : "hidden";
+    cp.style.overflowY = "auto";
     cp.scrollTop = 0;
     cp.scrollLeft = 0;
     render();
@@ -480,5 +617,4 @@
   scaleStage(); applyPanelMode(); staticBar();
 })();
 </script>
-<script defer src="/_vercel/insights/script.js"></script>
 </body></html>

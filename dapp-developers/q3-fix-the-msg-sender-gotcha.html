@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <title>How Msg.sender Resolves Across Chains — EEZ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -123,7 +123,7 @@
       <button id="btnTest" type="button" title="Show the runnable Foundry test for this gotcha" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TEST</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
-    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:hidden;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
+    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
   </div>
 
   <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
@@ -477,7 +477,7 @@
     var cp = document.getElementById("codePanel");
     cp.style.fontSize = showFull ? "13px" : (showTest ? "15px" : "19px");
     cp.style.lineHeight = showFull ? "20px" : (showTest ? "26px" : "34px");
-    cp.style.overflowY = showFull ? "auto" : "hidden";
+    cp.style.overflowY = "auto";
     cp.scrollTop = 0;
     cp.scrollLeft = 0;
     render();
@@ -545,5 +545,4 @@
   scaleStage(); applyPanelMode(); staticBar();
 })();
 </script>
-<script defer src="/_vercel/insights/script.js"></script>
 </body></html>
