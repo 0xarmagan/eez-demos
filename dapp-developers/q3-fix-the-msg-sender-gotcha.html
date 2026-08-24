@@ -98,7 +98,7 @@
     </div>
 
     <div id="revertCard" style="display:none;background:#1a0f10;border:1.5px solid #f85149;border-radius:10px;padding:22px 26px;">
-      <div style="font-family:var(--mono);font-size:18px;color:#ff8a84;">require(msg.sender == owner);</div>
+      <div style="font-family:var(--mono);font-size:18px;color:#ff8a84;">if (msg.sender != owner) revert NotOwner();</div>
       <div style="display:flex;align-items:center;gap:12px;margin-top:16px;">
         <div style="font-size:30px;line-height:1;color:#f85149;">⦸</div>
         <div style="font-size:16px;color:#c79490;">Passes on the same chain. Reverts every time cross-chain — msg.sender is the proxy, not owner.</div>
@@ -106,7 +106,7 @@
     </div>
 
     <div id="fixCard" style="display:none;background:rgba(63,185,80,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:22px 26px;">
-      <div style="font-family:var(--mono);font-size:18px;color:#7ee08c;">require(msg.sender == proxy);</div>
+      <div style="font-family:var(--mono);font-size:18px;color:#7ee08c;">if (msg.sender != proxy) revert NotProxy();</div>
       <div style="font-size:16px;color:#a9b6ac;margin-top:14px;">Whitelist the proxy itself — derive it with computeCrossChainProxyAddress.</div>
     </div>
 
@@ -165,7 +165,7 @@
     ],
     [
       "// same-chain owner check \u2014 reverts cross-chain:",
-      "require(msg.sender == owner);"
+      "if (msg.sender != owner) revert NotOwner();"
     ],
     [
       "// whitelist the proxy, not the owner:",
@@ -173,8 +173,8 @@
       "    owner, originRollupId",
       ");",
       "",
-      "require(msg.sender == owner);",
-      "require(msg.sender == proxy);"
+      "if (msg.sender != owner) revert NotOwner();",
+      "if (msg.sender != proxy) revert NotProxy();"
     ]
   ];
   var hlByStep = [ [0,1], [1], [1,2,3] ];
@@ -229,6 +229,13 @@
       "// through that proxy. Authorizing it therefore authorizes that one owner on",
       "// that one rollup \u2014 not \"anyone who can reach the manager\".",
       "",
+      "/// @dev Upstream uses custom errors throughout (EEZ.sol reverts",
+      "///      `UnauthorizedProxy()`), and they have been the idiom since 0.8.4.",
+      "///      A bare require here would be teaching an idiom the protocol itself",
+      "///      does not use.",
+      "error NotOwner();",
+      "error NotProxy();",
+      "",
       "contract OwnerGated {",
       "    IEEZ internal immutable eez;",
       "    address internal immutable owner;",
@@ -243,7 +250,7 @@
       "    /// @dev The trap. Correct on one chain, unreachable across chains.",
       "    function sameChainOnly() external view {",
       "// same-chain owner check \u2014 reverts cross-chain:",
-      "require(msg.sender == owner);",
+      "if (msg.sender != owner) revert NotOwner();",
       "    }",
       "",
       "    /// @dev The fix.",
@@ -253,7 +260,7 @@
       "    owner, originRollupId",
       ");",
       "",
-      "require(msg.sender == proxy);",
+      "if (msg.sender != proxy) revert NotProxy();",
       "    }",
       "}"
   ];

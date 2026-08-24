@@ -8,6 +8,7 @@
 #                                  and asserts the line and symbol still match
 #   scripts/check-panel-drift.py   asserts every Solidity line in a code panel
 #                                  exists verbatim in a compilable snippet
+#   scripts/sync-embedded-snippets.py  re-embeds a snippet after editing the .sol
 #
 # See CONTRIBUTING.md's "Audit, before merge" section for what remains manual.
 set -uo pipefail
@@ -87,6 +88,7 @@ if [ "$FAIL" -eq 0 ]; then
   echo "Structural audit passed."
   echo "Next: python3 scripts/verify-citations.py  (citations vs real source)"
   echo "      python3 scripts/check-panel-drift.py (panels vs compilable snippets)"
+  echo "If you edited a snippet: python3 scripts/sync-embedded-snippets.py"
 else
   echo "Structural audit FAILED — see above."
   exit 1

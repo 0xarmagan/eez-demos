@@ -45,7 +45,16 @@ Run the three checks first — they catch mechanically what the human pass below
 bash scripts/audit.sh                    # links, JS syntax, TODOs, citation paths
 python3 scripts/verify-citations.py      # every citation vs real source at its pinned SHA
 python3 scripts/check-panel-drift.py     # every panel line vs a compilable snippet
-cd snippets && forge build && forge test # snippets compile, q3 test passes
+cd snippets && forge build && forge test # snippets compile, the tests pass
+```
+
+Edited a `snippets/*.sol`? The FULL toggle embeds a verbatim copy of it in the page,
+and the drift check asserts the two match line for line. Re-embed rather than
+hand-syncing a 40-to-95-line array:
+
+```bash
+python3 scripts/sync-embedded-snippets.py          # re-embed where needed
+python3 scripts/sync-embedded-snippets.py --check  # report only
 ```
 
 - [ ] `scripts/audit.sh` passes

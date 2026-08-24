@@ -119,14 +119,15 @@
   </div>
 
   <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0a0a0a;border:1px solid #262626;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);">
-    <div style="display:flex;align-items:center;gap:14px;padding:14px 114px 14px 20px;border-bottom:1px solid #1a1a1a;background:#111;position:relative;">
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 164px 14px 20px;border-bottom:1px solid #1a1a1a;background:#111;position:relative;">
       <div style="display:flex;gap:7px;">
         <div style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></div>
         <div style="width:11px;height:11px;border-radius:50%;background:#28c840;"></div>
       </div>
       <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L780&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/EEZ.sol:780 · executeCrossChainCall ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L780" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:780 · executeCrossChainCall ↗</a></div>
-      <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
+      <button id="btnTest" type="button" title="Show the runnable Foundry test that direct calls revert" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TEST</button>
+      <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:114px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
@@ -156,11 +157,11 @@
   var N = 3, STEP_MS = 3000;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["ONLY A REAL PROXY", "THE GUARD", "CHECKED EVERY CALL"];
+  var kickers = ["ONLY A REAL PROXY", "THE GUARD", "NO WAY PAST IT"];
   var captions = [
     "Anyone can try calling the manager's entry point directly.",
     "It reverts — UnauthorizedProxy(). Only a real proxy gets through.",
-    "The registry check runs on every call, by design."
+    "Both proxy entry points open with this check, so no proxy-routed call reaches execution without it."
   ];
   var notes = [
     "",
@@ -238,8 +239,26 @@
       "}",
       "}"
   ];
+  // Verbatim slice of snippets/test/Q6ManagerDirect.t.sol (lines 37-49).
+  // check-panel-drift.py asserts these lines still match the file.
+  var testSnippet = [
+      "    /// @dev An ordinary EOA calling the entry point directly.",
+      "    function test_directCallFromEoaReverts() public {",
+      "        vm.prank(address(0xBEEF));",
+      "        vm.expectRevert(UnauthorizedProxy.selector);",
+      "        manager.executeCrossChainCall(address(0xBEEF), hex\"a9059cbb\");",
+      "    }",
+      "",
+      "    /// @dev A contract calling it is no different: the check is on msg.sender",
+      "    ///      being a registered proxy, not on being an EOA.",
+      "    function test_directCallFromContractReverts() public {",
+      "        vm.expectRevert(UnauthorizedProxy.selector);",
+      "        manager.executeCrossChainCall(address(this), hex\"a9059cbb\");",
+      "    }"
+  ];
+  var showTest = false;
   var showFull = false;
-  function currentLines(){ return showFull ? fullSnippet : (codeByStep[step] || []); }
+  function currentLines(){ return showFull ? fullSnippet : (showTest ? testSnippet : (codeByStep[step] || [])); }
 
   var els = {
     lBad: document.getElementById('lBad'), badTo: document.getElementById('badTo'), badToText: document.getElementById('badToText'),
@@ -459,6 +478,12 @@
   var btnFull = document.getElementById("btnFull");
   var citeEl = document.getElementById("srcCite");
   function applyPanelMode(){
+    if (btnTest) {
+      btnTest.textContent = showTest ? "DEMO" : "TEST";
+      btnTest.style.color = showTest ? "var(--eez-green)" : "var(--muted)";
+      btnTest.style.borderColor = showTest ? "#2c6b3c" : "#2e2e2e";
+      btnTest.title = showTest ? "Back to the walkthrough" : "Show the runnable Foundry test that direct calls revert";
+    }
     if (btnFull) {
       btnFull.textContent = showFull ? "STEP" : "FULL";
       btnFull.style.color = showFull ? "var(--eez-green)" : "var(--muted)";
@@ -468,21 +493,34 @@
     if (citeEl) {
       citeEl.innerHTML = showFull
         ? 'snippets/q6-manager-direct.sol \u00b7 solc 0.8.28'
-        : citeEl.getAttribute("data-demo-cite");
+        : (showTest ? 'snippets/test/Q6ManagerDirect.t.sol \u00b7 forge test'
+                    : citeEl.getAttribute("data-demo-cite"));
     }
     // The whole file is longer and wider than the column, so full-context mode
     // trades type size for reach and turns the vertical axis into a scroller
     // instead of clipping the tail off unreachably.
     var cp = document.getElementById("codePanel");
-    cp.style.fontSize = showFull ? "13px" : "19px";
-    cp.style.lineHeight = showFull ? "20px" : "34px";
+    cp.style.fontSize = showFull ? "13px" : (showTest ? "15px" : "19px");
+    cp.style.lineHeight = showFull ? "20px" : (showTest ? "26px" : "34px");
     cp.style.overflowY = "auto";
     cp.scrollTop = 0;
     cp.scrollLeft = 0;
     render();
   }
+  var btnTest = document.getElementById("btnTest");
+  if (btnTest) {
+    btnTest.addEventListener("click", function(){
+      showTest = !showTest;
+      if (showTest) showFull = false;
+      applyPanelMode();
+    });
+  }
   if (btnFull) {
-    btnFull.addEventListener("click", function(){ showFull = !showFull; applyPanelMode(); });
+    btnFull.addEventListener("click", function(){
+      showFull = !showFull;
+      if (showFull) showTest = false;
+      applyPanelMode();
+    });
   }
   var btnCopy = document.getElementById("btnCopy");
   if (btnCopy) {

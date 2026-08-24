@@ -4,6 +4,13 @@ on:
   push:
     branches: ["**"]
   pull_request:
+  # Citations are the one thing here that rots with nobody touching the repo:
+  # upstream adds an import, every line number below it shifts, and a pinned
+  # citation quietly stops pointing at what it claims. Push-triggered CI cannot
+  # catch that, so check daily. Scheduled runs execute on the default branch.
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
 
 jobs:
   structure:
