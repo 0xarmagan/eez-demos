@@ -82,13 +82,14 @@
       <div style="font-size:22px;font-weight:600;color:#fff;">The Four Components of Rollup0</div>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
+      <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
       <a class="back" href="pr2-commit-first-repair-if-needed.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Commit-First, Repair-If-Needed →</a>
     </div>
   </div>
 
   <!-- ===== DIAGRAM — real struct/fn signatures flowing through the pipeline ===== -->
-  <div style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
+  <div id="stageCol" style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
 
     <!-- STEP 1: Sequencer -> Composer, the live path -->
     <div id="s1" style="display:flex;flex-direction:column;gap:26px;">
@@ -170,7 +171,7 @@
 
   </div>
 
-  <div style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0a0a0a;border:1px solid #262626;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);">
+  <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0a0a0a;border:1px solid #262626;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);">
     <div style="display:flex;align-items:center;gap:14px;padding:14px 66px 14px 20px;border-bottom:1px solid #1a1a1a;background:#111;position:relative;flex-wrap:wrap;">
       <div style="display:flex;gap:7px;flex:none;">
         <div style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></div>
@@ -184,11 +185,11 @@
   </div>
 
   <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
-    <div style="flex:1;max-width:1180px;" aria-live="polite" aria-atomic="true">
+    <div id="narration" style="flex:1;max-width:1180px;" aria-live="polite" aria-atomic="true">
       <div id="kicker" style="font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:var(--eez-green);margin-bottom:11px;"></div>
       <div id="caption" style="font-size:25px;line-height:1.4;color:#d8d8d8;text-wrap:pretty;"></div>
     </div>
-    <div style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
+    <div id="stepNav" style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
       <div style="display:flex;align-items:center;gap:12px;">
         <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
         <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:1px solid #6283BD;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
@@ -201,6 +202,7 @@
 </div>
 </div>
 
+<script src="../assets/eez-tour.js"></script>
 <script>
 (function(){
   var N = 3, STEP_MS = 3600;
@@ -456,6 +458,16 @@
   document.getElementById("btnPrev").addEventListener("click", prev);
   document.getElementById("btnNext").addEventListener("click", next);
   document.getElementById("btnPlay").addEventListener("click", togglePlay);
+
+  var btnHelp = document.getElementById("btnHelp");
+  function eezTour(){ return (typeof EEZTour !== "undefined") ? EEZTour : null; }
+  if (btnHelp) {
+    btnHelp.addEventListener("click", function(){
+      if (playing) { togglePlay(); }
+      if (eezTour()) { eezTour().start(); }
+    });
+  }
+  if (eezTour()) { eezTour().maybeStart(); }
 
   function copyFallback(text, done){
     try {
