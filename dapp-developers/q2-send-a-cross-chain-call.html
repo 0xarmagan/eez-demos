@@ -219,7 +219,7 @@
       <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
-    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
+    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:17px;line-height:30px;background:var(--eez-screen);"></div>
   </div>
 
   <!-- ===== LEAD-IN SLIDE - shown before the walkthrough begins =====
@@ -301,13 +301,13 @@
       "    }(abi.encodeCall(this.staticCheck, ()));",
       "    bytes memory result;",
       "    if (!success) {",
-      "        (success, result) = EEZ.staticcall(abi.encodeCall(",
-      "            IEEZ.staticCrossChainCall,",
-      "            (msg.sender, msg.data)));",
+      "        (success, result) = EEZ.staticcall(",
+      "            abi.encodeCall(IEEZ.staticCrossChainCall,",
+      "                (msg.sender, msg.data)));",
       "    } else {",
-      "        (success, result) = EEZ.call{value: msg.value}(abi.encodeCall(",
-      "            IEEZ.executeCrossChainCall,",
-      "            (msg.sender, msg.data)));",
+      "        (success, result) = EEZ.call{value: msg.value}(",
+      "            abi.encodeCall(IEEZ.executeCrossChainCall,",
+      "                (msg.sender, msg.data)));",
       "    }",
       "    if (success) result = abi.decode(result, (bytes));",
       "}"
@@ -376,13 +376,13 @@
       "    }(abi.encodeCall(this.staticCheck, ()));",
       "    bytes memory result;",
       "    if (!success) {",
-      "        (success, result) = EEZ.staticcall(abi.encodeCall(",
-      "            IEEZ.staticCrossChainCall,",
-      "            (msg.sender, msg.data)));",
+      "        (success, result) = EEZ.staticcall(",
+      "            abi.encodeCall(IEEZ.staticCrossChainCall,",
+      "                (msg.sender, msg.data)));",
       "    } else {",
-      "        (success, result) = EEZ.call{value: msg.value}(abi.encodeCall(",
-      "            IEEZ.executeCrossChainCall,",
-      "            (msg.sender, msg.data)));",
+      "        (success, result) = EEZ.call{value: msg.value}(",
+      "            abi.encodeCall(IEEZ.executeCrossChainCall,",
+      "                (msg.sender, msg.data)));",
       "    }",
       "    if (success) result = abi.decode(result, (bytes));",
       "",
@@ -694,8 +694,12 @@
     // trades type size for reach and turns the vertical axis into a scroller
     // instead of clipping the tail off unreachably.
     var cp = document.getElementById("codePanel");
-    cp.style.fontSize = showFull ? "13px" : "19px";
-    cp.style.lineHeight = showFull ? "20px" : "34px";
+    // Step-mode type is 17px, not 19px: at 19px this page's widest teaching
+    // line (EEZ.call{value: msg.value}( ...) rendered 692px into a 662px
+    // column and was cut mid-identifier with no ellipsis. FULL mode already
+    // trades type size for reach; step mode needed the same trade, one notch.
+    cp.style.fontSize = showFull ? "13px" : "17px";
+    cp.style.lineHeight = showFull ? "20px" : "30px";
     cp.style.overflowY = "auto";
     cp.scrollTop = 0;
     cp.scrollLeft = 0;

@@ -220,13 +220,13 @@ function _fallback() internal {
     }(abi.encodeCall(this.staticCheck, ()));
     bytes memory result;
     if (!success) {
-        (success, result) = EEZ.staticcall(abi.encodeCall(
-            IEEZ.staticCrossChainCall,
-            (msg.sender, msg.data)));
+        (success, result) = EEZ.staticcall(
+            abi.encodeCall(IEEZ.staticCrossChainCall,
+                (msg.sender, msg.data)));
     } else {
-        (success, result) = EEZ.call{value: msg.value}(abi.encodeCall(
-            IEEZ.executeCrossChainCall,
-            (msg.sender, msg.data)));
+        (success, result) = EEZ.call{value: msg.value}(
+            abi.encodeCall(IEEZ.executeCrossChainCall,
+                (msg.sender, msg.data)));
     }
     if (success) result = abi.decode(result, (bytes));
 }
@@ -292,13 +292,13 @@ function _fallback() internal {
     }(abi.encodeCall(this.staticCheck, ()));
     bytes memory result;
     if (!success) {
-        (success, result) = EEZ.staticcall(abi.encodeCall(
-            IEEZ.staticCrossChainCall,
-            (msg.sender, msg.data)));
+        (success, result) = EEZ.staticcall(
+            abi.encodeCall(IEEZ.staticCrossChainCall,
+                (msg.sender, msg.data)));
     } else {
-        (success, result) = EEZ.call{value: msg.value}(abi.encodeCall(
-            IEEZ.executeCrossChainCall,
-            (msg.sender, msg.data)));
+        (success, result) = EEZ.call{value: msg.value}(
+            abi.encodeCall(IEEZ.executeCrossChainCall,
+                (msg.sender, msg.data)));
     }
     if (success) result = abi.decode(result, (bytes));
 
@@ -549,7 +549,9 @@ struct ProxyInfo {
     uint64 originalRollupId;
 }
 
-if (isProxy) { /* real proxy for origAddr@origRid */ }
+if (isProxy) {
+    /* real proxy for origAddr@origRid */
+}
 ```
 
 ### Full compilable source — snippets/q4-proxy-registry.sol
@@ -592,7 +594,9 @@ contract RegistryReader {
 (bool isProxy, address origAddr, uint64 origRid)
     = eez.authorizedProxies(someAddress);
 
-if (isProxy) { /* real proxy for origAddr@origRid */ }
+if (isProxy) {
+    /* real proxy for origAddr@origRid */
+}
         origAddr;
         origRid;
         return isProxy;
