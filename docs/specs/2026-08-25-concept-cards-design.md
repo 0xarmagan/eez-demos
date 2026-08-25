@@ -132,7 +132,8 @@ every existing URL to save nothing. **Do not "fix" this back.**
    `EEZBase.sol:166`.
 
 Requires a new compilable snippet (`snippets/q7-create-proxy.sol`) mirroring the cited
-functions, and new entries in `scripts/citation-pins.json` for the two new cited lines.
+functions. `scripts/citation-pins.json` needs no change — it pins one SHA per repo, not per
+citation, and `eez-core-protocol` is already pinned at the SHA these lines are read from.
 
 ### The fifteen cards
 
@@ -185,7 +186,7 @@ Adding the cards is half the work. Each of these reads something this change inv
 - **Every demo `<title>`** — must match its card's question.
 - **`scripts/check-panel-drift.py`** — `SNIPPET_MAP` is keyed by filename. The `q1` key breaks
   on the move and a `q7` key must be added, or its panels go unchecked.
-- **`scripts/citation-pins.json`** — two new cited lines.
+- **`scripts/new-demo.sh:29` and `CONTRIBUTING.md:26`** — both name `q1` as the scaffold template for every new walkthrough.
 - **`llms.txt` / `llms-full.txt`** — regenerate via `scripts/build-llms.py`; CI fails on drift.
 - **The `NEXT:` chain** — `q1` currently sits in the dapp sequence.
 - **`agent-mesh` KB, `kb/02-technical/EEZ-Demos-Walkthroughs.md`** — lists every slug and title
