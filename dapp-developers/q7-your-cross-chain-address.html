@@ -6,7 +6,7 @@
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
-<title>How to send and test a cross-chain call — EEZ</title>
+<title>How to get your contract's address on another rollup — EEZ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -28,33 +28,7 @@
   a.back:hover{color:#fff;}
   a.back:not([style]):hover{transform:translateX(-3px);}
   a.back[style]:hover{transform:translateX(3px);}
-  .lbl{font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);}
-  .term{font-family:var(--mono);font-size:16px;color:#7ee08c;background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 16px;}
-  .term-alt{font-family:var(--mono);font-size:16px;font-weight:600;color:#7ee08c;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:10px 16px;}
-  .arrow{font-size:24px;color:var(--eez-green);}
-  .note{font-size:16px;color:var(--muted);max-width:840px;}
-  .row{display:flex;align-items:center;gap:14px;}
-  .epname{width:238px;flex:none;font-family:var(--mono);font-size:14px;color:#aeb6ec;}
-  .epurl{font-family:var(--mono);font-size:14px;border-radius:7px;padding:8px 13px;border:1px solid;}
-  .epurl-rpc{background:rgba(124,131,255,0.14);color:#aeb6ec;border-color:#3a4173;}
-  .epurl-proxy{background:rgba(180,120,240,0.14);color:#e8d5fb;border-color:#5a3f7a;font-weight:600;}
-  .epuse{font-size:14px;color:var(--muted);}
-  .badge-proxy{font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#d9bdf5;background:rgba(180,120,240,0.14);border:1px solid #5a3f7a;border-radius:5px;padding:3px 8px;flex:none;}
-  .cfgbox{display:flex;align-items:center;gap:14px;background:#10151c;border:1px solid #232b36;border-radius:9px;padding:16px 20px;max-width:900px;}
-  .cfgkey{font-family:var(--mono);font-size:17px;color:#aeb6ec;}
-  .cfgval{font-family:var(--mono);font-size:17px;font-weight:700;color:#f1e8ff;background:rgba(180,120,240,0.16);border:1px solid #5a3f7a;border-radius:6px;padding:5px 12px;}
-  .warnbox{background:rgba(240,168,60,0.07);border:1.5px dashed #8b7b55;border-radius:10px;padding:16px 20px;max-width:900px;display:flex;flex-direction:column;gap:8px;}
-  .warnhdr{font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#e8b15e;}
-  .warntxt{font-size:15px;line-height:1.5;color:#d9c9a3;}
-  .mrow{display:flex;flex-wrap:wrap;gap:9px;align-items:center;}
-  .mchip{font-family:var(--mono);font-size:13px;border-radius:6px;padding:6px 11px;border:1px solid;}
-  .mchip-op{background:rgba(124,131,255,0.14);color:#aeb6ec;border-color:#3a4173;}
-  .mchip-dir{background:rgba(63,185,80,0.12);color:#9edba8;border-color:#2f6b3a;}
-  .mchip-mode{background:rgba(180,120,240,0.14);color:#d9bdf5;border-color:#5a3f7a;}
-  .mtimes{font-size:16px;color:var(--muted);flex:none;}
-  .metricbox{margin-top:2px;background:rgba(63,185,80,0.06);border:1.5px dashed var(--eez-green);border-radius:9px;padding:14px 22px;display:flex;flex-wrap:wrap;align-items:center;gap:14px;animation:riseIn .4s ease both;}
-  .metric{font-family:var(--mono);font-size:14px;color:#cfe9d4;}
-  .metric b{color:#eef3f8;font-weight:700;}
+  .byte{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;border-radius:4px;padding:5px 8px;}
 
   /* Mobile reflow: below 820px, the fixed 1920x1080 stage becomes a normal
      stacked document instead of a scaled-and-panned deck. !important is
@@ -95,7 +69,7 @@
      and no explanatory figure.)
 
      It is a <section>, and it is inserted as the FOURTH child of
-     #stage, on purpose: the shared <820px block above addresses
+     #stage, on purpose: the shared <820px block below addresses
      #stage > div:first-child / :nth-child(2) / :nth-child(3) /
      :last-child, and a non-div in slot 4 leaves all four of those
      resolving to exactly the same elements as before.
@@ -144,113 +118,108 @@
     <div style="display:flex;align-items:center;gap:18px;">
       <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-      <div style="font-size:22px;font-weight:600;color:#fff;">Send &amp; Test Cross-Chain Calls</div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">Your Cross-Chain Address</div>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
-      <a class="back" href="../protocol-researchers/pr1-the-four-components-of-rollup0.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: The Four Components of Rollup0 →</a>
+      <a class="back" href="q2-send-a-cross-chain-call.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Send a Cross-Chain Call →</a>
     </div>
   </div>
 
-  <!-- ===== DIAGRAM — real endpoints, real config, real command ===== -->
+  <!-- ===== DIAGRAM — one identity, two calls, one rule ===== -->
   <div id="stageCol" style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
 
-    <!-- STEP 1: the four real endpoints, two of them transparent proxy fronts -->
-    <div id="s1" style="display:flex;flex-direction:column;gap:20px;">
-      <div class="lbl">ENDPOINTS · README.md</div>
-      <div style="display:flex;flex-direction:column;gap:12px;">
-        <div class="row">
-          <div class="epname">L2 RPC</div>
-          <div class="epurl epurl-rpc">http://localhost:18688</div>
-          <div class="epuse">L2 eth_*</div>
+    <!-- STEP 1: create — the proxy exists and is registered -->
+    <div id="s1" style="display:flex;flex-direction:column;gap:34px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">CREATE · ONE CALL</div>
+      <div style="display:flex;align-items:center;">
+        <div style="flex:0 0 366px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:20px 22px;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">ROLLUP 1</div>
+          <div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">myContract</div>
+          <div style="font-family:var(--mono);font-size:16px;color:var(--muted);margin-top:6px;">0xC0ffEE…4979</div>
         </div>
-        <div class="row">
-          <div class="epname">Embedded chiado L1 RPC</div>
-          <div class="epurl epurl-rpc">http://localhost:18645</div>
-          <div class="epuse">L1 eth_* (the composer's L1 view)</div>
+        <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:9px;width:250px;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">createCrossChainProxy</div>
+          <div style="font-size:28px;line-height:1;color:var(--eez-green);">→</div>
         </div>
-        <div class="row">
-          <div class="epname">L1→L2 front (Inbound)</div>
-          <div class="epurl epurl-proxy">http://localhost:18999</div>
-          <div class="badge-proxy">PROXY</div>
-          <div class="epuse">send L1-origin cross-chain txs here</div>
-        </div>
-        <div class="row">
-          <div class="epname">L2→L1 front (Outbound)</div>
-          <div class="epurl epurl-proxy">http://localhost:18998</div>
-          <div class="badge-proxy">PROXY</div>
-          <div class="epuse">send L2-origin cross-chain txs here</div>
+        <div style="flex:0 0 366px;background:rgba(59,229,126,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:20px 22px;animation:riseIn .4s ease both;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#7ee08c;">ROLLUP 2 · THIS MANAGER</div>
+          <div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">proxy(myContract)</div>
+          <div style="font-family:var(--mono);font-size:16px;color:var(--eez-green);margin-top:6px;">0x7d3F…9bA1</div>
         </div>
       </div>
-      <div class="mrow" style="margin-top:2px;">
-        <div class="term-alt" style="color:#e8d5fb;background:rgba(180,120,240,0.1);border-color:#5a3f7a;">eth_sendRawTransaction</div>
-        <div class="arrow">→</div>
-        <div class="epuse" style="font-family:var(--mono);font-size:14px;color:#d9bdf5;">held, composed into the next Sync block</div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="font-family:var(--mono);font-size:13px;color:#5e9e6b;width:92px;flex:none;">returns</div>
+        <div style="font-family:var(--mono);font-size:19px;color:var(--eez-green);">0x7d3F…9bA1</div>
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--eez-green);animation:pulse 1.8s ease-in-out infinite;"></div>
+        <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">deployed · authorizedProxies[proxy] = true</div>
       </div>
-      <div class="mrow">
-        <div class="term">every other eth_*</div>
-        <div class="arrow">→</div>
-        <div class="epuse" style="font-family:var(--mono);font-size:14px;color:#9edba8;">forwarded to that front's source-chain RPC</div>
-      </div>
-      <div class="note">The two ingress fronts are transparent proxies sitting in front of L1 and L2, not separate chains of their own.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">One transaction. The manager on rollup 2 deploys the proxy and records it as authorized in the same call. You rarely have to: the protocol runs this same path itself the first time a call arrives from that address.</div>
     </div>
 
-    <!-- STEP 2: the bundle cap, and the silent-drop gotcha -->
-    <div id="s2" style="display:none;flex-direction:column;gap:24px;">
-      <div class="lbl">CONFIG · compose env</div>
-      <div class="cfgbox">
-        <div class="cfgkey">EEZ_MAX_USER_TXS_PER_BUNDLE</div>
-        <div style="font-size:18px;color:var(--muted);">=</div>
-        <div class="cfgval">3</div>
-        <div class="epuse" style="font-family:var(--mono);">default · caps user txs per postBatch bundle</div>
+    <!-- STEP 2: compute — same address, nothing deployed (outline, not solid) -->
+    <div id="s2" style="display:none;flex-direction:column;gap:34px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">COMPUTE · NOTHING DEPLOYED</div>
+      <div style="display:flex;align-items:center;">
+        <div style="flex:0 0 366px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:20px 22px;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">ROLLUP 1</div>
+          <div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">myContract</div>
+          <div style="font-family:var(--mono);font-size:16px;color:var(--muted);margin-top:6px;">0xC0ffEE…4979</div>
+        </div>
+        <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:9px;width:250px;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">computeCrossChainProxyAddress</div>
+          <div style="font-size:28px;line-height:1;color:var(--muted);">→</div>
+        </div>
+        <div style="flex:0 0 366px;background:transparent;border:1.5px dashed var(--eez-edge);border-radius:10px;padding:20px 22px;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--muted);">ROLLUP 2 · THIS MANAGER</div>
+          <div style="font-size:21px;font-weight:600;color:var(--muted);margin-top:12px;">proxy(myContract)</div>
+          <div style="font-family:var(--mono);font-size:16px;color:var(--eez-green);margin-top:6px;">0x7d3F…9bA1</div>
+        </div>
       </div>
-      <div class="warnbox">
-        <div class="warnhdr">⚠ FRICTION · rbuilder-chiado</div>
-        <div class="warntxt">rbuilder-chiado silently drops the excess beyond ~3 — that's lost tx inclusion, not a queued retry.</div>
-        <div class="warntxt">Raise this only against a builder proven to include larger bundles atomically. Measure before bumping.</div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--muted);width:92px;flex:none;">returns</div>
+        <div style="font-family:var(--mono);font-size:19px;color:var(--eez-green);">0x7d3F…9bA1</div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--muted);">same address · nothing written on chain</div>
       </div>
-      <div class="note">The cap is generous for one op — it's the first thing to check when a wave of txs comes up short.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">The outline has no code at it yet. The address is already the one the create call would return, because it is derived rather than assigned.</div>
     </div>
 
-    <!-- STEP 3: the real test driver, the full matrix, real reported metrics -->
-    <div id="s3" style="display:none;flex-direction:column;gap:24px;">
-      <div class="lbl">RUN · scripts/xchain-test.sh</div>
-      <div class="term-alt" style="display:inline-block;">$ EEZ_WAVE_COUNT=5 bash scripts/xchain-test.sh</div>
-      <div style="display:flex;flex-direction:column;gap:10px;">
-        <div class="mrow">
-          <div class="mchip mchip-op">setValue</div>
-          <div class="mchip mchip-op">setValueNoRet</div>
-          <div class="mchip mchip-op">deposit</div>
-          <div class="mchip mchip-op">withdraw</div>
-        </div>
-        <div class="mrow">
-          <div class="mtimes">×</div>
-          <div class="mchip mchip-dir">L1→L2</div>
-          <div class="mchip mchip-dir">L2→L1</div>
-          <div class="mtimes">×</div>
-          <div class="mchip mchip-mode">direct</div>
-          <div class="mchip mchip-mode">wrapper</div>
-        </div>
+    <!-- STEP 3: the one rule — a proxy stands in for a REMOTE address -->
+    <div id="s3" style="display:none;flex-direction:column;gap:26px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">REMOTE ADDRESSES ONLY</div>
+      <div style="display:flex;align-items:center;gap:18px;width:982px;max-width:100%;background:rgba(59,229,126,0.05);border:1px solid #2f6b3a;border-radius:10px;padding:16px 22px;">
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#7ee08c;flex:none;width:86px;">ALLOWED</div>
+        <div style="font-family:var(--mono);font-size:17px;color:#eef3f8;">createCrossChainProxy(0xC0ffEE…4979, 1)</div>
+        <div style="font-size:20px;color:var(--eez-green);">→</div>
+        <div style="font-family:var(--mono);font-size:17px;color:var(--eez-green);">0x7d3F…9bA1</div>
       </div>
-      <div class="metricbox">
-        <div class="metric">N+1 next-slot hit-rate <b>100%</b></div>
-        <div class="metric">bundle drops/evictions <b>0</b></div>
-        <div class="metric">divergence <b>none</b></div>
+      <div style="display:flex;align-items:center;gap:18px;width:982px;max-width:100%;background:rgba(139,123,85,0.08);border:1px solid #8B7B55;border-radius:10px;padding:16px 22px;">
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#8B7B55;flex:none;width:86px;">REVERTS</div>
+        <div style="font-family:var(--mono);font-size:17px;color:#8B7B55;text-decoration:line-through;">createCrossChainProxy(0xC0ffEE…4979, 2)</div>
+        <div style="font-size:20px;color:#8B7B55;">→</div>
+        <div style="font-family:var(--mono);font-size:17px;color:#8B7B55;">SameNetworkProxy(2)</div>
       </div>
-      <div class="note">Five waves of the full matrix, plus pure-L2 and one poison case, each run minting fresh senders and recipients.</div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--label);">_getRollupId()</div>
+        <div style="font-size:16px;color:var(--muted);">on this manager is</div>
+        <div style="font-family:var(--mono);font-size:17px;color:#eef3f8;">2</div>
+        <div style="font-size:16px;color:var(--muted);">— the one id it will not build a proxy for.</div>
+      </div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">A proxy stands in for an address that lives somewhere else. On its own network that address is already callable, so there is nothing to stand in for.</div>
     </div>
 
   </div>
 
   <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:var(--eez-chrome);border:1px solid var(--eez-edge);border-radius:10px;overflow:hidden;">
     <div aria-hidden="true" style="position:absolute;left:0;top:0;right:0;height:2px;background:var(--eez-grad);z-index:4;"></div>
-    <div style="display:flex;align-items:center;gap:14px;padding:14px 66px 14px 20px;border-bottom:1px solid var(--eez-edge);background:var(--eez-chrome);position:relative;">
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 114px 14px 20px;border-bottom:1px solid var(--eez-edge);background:var(--eez-chrome);position:relative;">
       <div style="display:flex;align-items:center;gap:8px;flex:none;" title="This source is cited at a pinned commit, not a moving branch">
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/README.md" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">README.md · scripts/xchain-test.sh ↗</a></div>
+      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L156&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/EEZBase.sol:156 · createCrossChainProxy ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L156" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:156 · createCrossChainProxy ↗</a></div>
+      <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
@@ -263,15 +232,15 @@
        Inserted as the 4th child of #stage; see the CSS note. -->
   <section id="intro" aria-labelledby="introTitle">
     <div class="intro-inner">
-      <div class="intro-eyebrow">ROLLUP OPERATORS · 04</div>
-      <h1 class="intro-title" id="introTitle">How to send and test a cross-chain call</h1>
-      <p class="intro-lede">Two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block, while everything else passes straight through.</p>
-      <p class="intro-lede">Driving both fronts is how you read real pass/fail numbers.</p>
+      <div class="intro-eyebrow">DAPP DEVELOPERS · 01</div>
+      <h1 class="intro-title" id="introTitle">How to get your contract's address on another rollup</h1>
+      <p class="intro-lede">Your contract lives on one rollup. On every other rollup it has a stand-in — a proxy — and anything there that wants to reach your contract calls the stand-in instead, which EEZ routes home.</p>
+      <p class="intro-lede">The stand-in's address is derived from your address, your own rollup id, and the manager on the far side, so you can compute it before anything is deployed.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
-        <li><b>01 · TWO FRONTS, ONE JOB</b>sendRawTransaction is held for the next Sync block — once per L1 block, for cross-chain work.</li>
-        <li><b>02 · MIND THE BUNDLE SIZE</b>EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it.</li>
-        <li><b>03 · EXERCISE IT FOR REAL</b>xchain-test.sh drives both fronts through the full matrix and reports real pipeline metrics.</li>
+        <li><b>01 · CALL IT INTO EXISTENCE</b>One call deploys the proxy, registers it, and returns the address.</li>
+        <li><b>02 · OR READ IT FIRST</b>A view call reads that address before anything is deployed.</li>
+        <li><b>03 · THE ONE RULE</b>Remote addresses only — a proxy for your own network reverts.</li>
       </ul>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
@@ -303,50 +272,165 @@
   var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["TWO FRONTS, ONE JOB", "MIND THE BUNDLE SIZE", "EXERCISE IT FOR REAL"];
+  var kickers = ["CALL IT INTO EXISTENCE", "OR READ IT FIRST", "THE ONE RULE"];
   var captions = [
-    "Two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block — once per L1 block, for cross-chain work — while everything else passes straight through.",
-    "EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it, so measure before you raise it.",
-    "xchain-test.sh drives both fronts through the full op × direction × direct/wrapper matrix and reports real pipeline metrics."
+    "One call deploys the proxy and registers it — you get the address back.",
+    "Or read the address before anything is deployed. It is a view call.",
+    "Remote addresses only. A proxy for your own network reverts."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
-  // so the panel never dumps the whole README + script ungrouped.
-  var lines = [
-    "# README.md · Endpoints & cross-chain fronts",
-    "#",
-    "# | Endpoint                | URL           |",
-    "# |--------------------------|----------------|",
-    "# | L2 RPC                  | :18688        |",
-    "# | Embedded chiado L1 RPC  | :18645        |",
-    "# | L1→L2 front (Inbound)   | :18999        |",
-    "# | L2→L1 front (Outbound)  | :18998        |",
-    "",
-    "# both fronts: eth_sendRawTransaction is held",
-    "# + composed into the next Sync block; every",
-    "# other eth_* call is forwarded to the front's",
-    "# source-chain RPC.",
-    "",
-    "# compose mode caps bundle size:",
-    "EEZ_MAX_USER_TXS_PER_BUNDLE=3   # default",
-    "",
-    "# ⚠ rbuilder-chiado silently drops txs beyond",
-    "#   ~3 per bundle — raise only against a",
-    "#   builder proven to include larger bundles",
-    "#   atomically. Measure before bumping.",
-    "",
-    "$ EEZ_WAVE_COUNT=5 bash scripts/xchain-test.sh"
-  ];
+  // so the panel never dumps the full function ungrouped.
   var codeByStep = [
-    lines.slice(0, 13),
-    lines.slice(0, 21),
-    lines.slice(0, 23)
+    [
+      "function createCrossChainProxy(",
+      "    address originalAddress,",
+      "    uint64 originalRollupId",
+      ") external returns (address proxy);"
+    ],
+    [
+      "function createCrossChainProxy(",
+      "    address originalAddress,",
+      "    uint64 originalRollupId",
+      ") external returns (address proxy);",
+      "",
+      "function computeCrossChainProxyAddress(",
+      "    address originalAddress,",
+      "    uint64 originalRollupId",
+      ") external view returns (address);"
+    ],
+    [
+      "function createCrossChainProxy(",
+      "    address originalAddress,",
+      "    uint64 originalRollupId",
+      ") external returns (address proxy);",
+      "",
+      "function computeCrossChainProxyAddress(",
+      "    address originalAddress,",
+      "    uint64 originalRollupId",
+      ") external view returns (address);",
+      "",
+      "// A proxy stands in for a REMOTE address.",
+      "if (originalRollupId == _getRollupId())",
+      "    revert SameNetworkProxy(originalRollupId);"
+    ]
+  ];
+  // The panel's citation follows the step: steps 1 and 2 are the two entry
+  // points, step 3's guard lives in _createCrossChainProxyInternal, which is
+  // a different function at a different line. A single fixed citation would
+  // send a step-3 reader to code that does not contain what they are reading.
+  // Written as literal anchors so verify-citations.py sees and pins them.
+  var citeByStep = [
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L156" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:156 · createCrossChainProxy ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L176" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:176 · computeCrossChainProxyAddress ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L166" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:166 · SameNetworkProxy ↗</a>'
   ];
   var hlByStep = [
-    [6,7,9,10,11,12],
-    [15,17,18,19,20],
-    [22]
+    [0,1,2,3],
+    [5,6,7,8],
+    [10,11,12]
   ];
+
+  // Verbatim copy of snippets/q7-create-proxy.sol (the whole file).
+  // scripts/check-panel-drift.py asserts this array still equals that file
+  // line for line, so an embedded copy cannot rot unnoticed. Regenerate it
+  // with scripts/sync-embedded-snippets.py after editing the .sol.
+  var fullSnippet = [
+      "// SPDX-License-Identifier: MIT",
+      "pragma solidity ^0.8.28;",
+      "",
+      "// Panel source for: dapp-developers/q7-your-cross-chain-address.html",
+      "// Mirrors eez-core-protocol/src/base/EEZBase.sol:156, :166 and :176",
+      "// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda",
+      "//",
+      "// The two calls a dapp developer *can* make. Neither is usually required:",
+      "// the protocol creates the proxy itself on the first inbound call, at",
+      "// eez-core-protocol/src/EEZ.sol:1139-1142. Neither call requires knowing",
+      "// how the address is derived \u2014 that is protocol-researcher territory.",
+      "//",
+      "// Signatures and bodies are hand-wrapped to the code panel's column, the",
+      "// same way snippets/q1-compute-address.sol is, so that every line the panel",
+      "// shows exists verbatim here. scripts/check-panel-drift.py asserts that.",
+      "",
+      "/// @dev Stand-in for the real proxy. Only `type(...).creationCode` matters here.",
+      "contract CrossChainProxy {",
+      "    address public immutable manager;",
+      "",
+      "    constructor(address manager_) {",
+      "        manager = manager_;",
+      "    }",
+      "}",
+      "",
+      "/// @dev The two entry points, as a dapp codes against them.",
+      "interface IEEZProxyFactory {",
+      "function createCrossChainProxy(",
+      "    address originalAddress,",
+      "    uint64 originalRollupId",
+      ") external returns (address proxy);",
+      "",
+      "function computeCrossChainProxyAddress(",
+      "    address originalAddress,",
+      "    uint64 originalRollupId",
+      ") external view returns (address);",
+      "}",
+      "",
+      "contract CreateProxySnippet {",
+      "    /// @notice Error when a proxy is requested for an address on THIS",
+      "    ///         manager's own network.",
+      "    error SameNetworkProxy(uint64 rollupId);",
+      "",
+      "    mapping(address => bool) public authorizedProxies;",
+      "",
+      "    event CrossChainProxyCreated(",
+      "        address indexed proxy,",
+      "        address indexed originalAddress,",
+      "        uint64 originalRollupId",
+      "    );",
+      "",
+      "    function _getRollupId() internal pure returns (uint64) {",
+      "        return 0;",
+      "    }",
+      "",
+      "function createCrossChainProxy(",
+      "    address originalAddress,",
+      "    uint64 originalRollupId",
+      ") external returns (address proxy) {",
+      "// A proxy stands in for a REMOTE address.",
+      "if (originalRollupId == _getRollupId())",
+      "    revert SameNetworkProxy(originalRollupId);",
+      "",
+      "    bytes32 salt = keccak256(",
+      "        abi.encodePacked(originalRollupId, originalAddress)",
+      "    );",
+      "    proxy = address(new CrossChainProxy{salt: salt}(address(this)));",
+      "    authorizedProxies[proxy] = true;",
+      "    emit CrossChainProxyCreated(",
+      "        proxy, originalAddress, originalRollupId",
+      "    );",
+      "}",
+      "",
+      "function computeCrossChainProxyAddress(",
+      "    address originalAddress,",
+      "    uint64 originalRollupId",
+      ") public view returns (address) {",
+      "    bytes32 salt = keccak256(",
+      "        abi.encodePacked(originalRollupId, originalAddress)",
+      "    );",
+      "    bytes32 bytecodeHash = keccak256(abi.encodePacked(",
+      "        type(CrossChainProxy).creationCode,",
+      "        abi.encode(address(this))",
+      "    ));",
+      "    return address(uint160(uint256(keccak256(",
+      "        abi.encodePacked(",
+      "            bytes1(0xff), address(this),",
+      "            salt, bytecodeHash",
+      "        )",
+      "    ))));",
+      "}",
+      "}"
+  ];
+  var showFull = false;
+  function currentLines(){ return showFull ? fullSnippet : (codeByStep[step] || []); }
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
 
@@ -448,14 +532,16 @@
     document.getElementById("kicker").textContent = kickers[step];
     document.getElementById("caption").textContent = captions[step];
     document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
+    var cite = document.getElementById("srcCite");
+    if (cite && !showFull) { cite.innerHTML = citeByStep[step] || cite.getAttribute("data-demo-cite"); }
 
     els.s1.style.display = step === 0 ? "flex" : "none";
     els.s2.style.display = step === 1 ? "flex" : "none";
     els.s3.style.display = step === 2 ? "flex" : "none";
 
-    var code = codeByStep[step];
-    var hl = hlByStep[step] || [];
-    var dm = (typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {};
+    var code = currentLines();
+    var hl = showFull ? [] : (hlByStep[step] || []);
+    var dm = showFull ? {} : ((typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {});
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
@@ -557,7 +643,7 @@
     if (play) { play.focus(); }
     if (tourPending) {
       tourPending = false;
-      if (eezTour()) { eezTour().maybeStart(); }
+      if (root_EEZTour()) { root_EEZTour().maybeStart(); }
     }
   }
   if (introEl) {
@@ -581,20 +667,19 @@
   }, 0);
 
   var btnHelp = document.getElementById("btnHelp");
-  function eezTour(){ return (typeof EEZTour !== "undefined") ? EEZTour : null; }
-  if (btnHelp) {
-    btnHelp.addEventListener("click", function(){
-      // The tour spotlights stage elements the lead-in is covering, so the
-      // lead-in goes first. tourPending is cleared so dismissIntro does not
-      // also fire maybeStart and open a second copy.
-      if (introShowing()) { tourPending = false; dismissIntro(); }
-      if (playing) { togglePlay(); }
-      if (eezTour()) { eezTour().start(); }
-    });
+  function openTour(){
+    // The tour spotlights stage elements the lead-in is covering, so the
+    // lead-in goes first. tourPending is cleared so dismissIntro does not
+    // also fire maybeStart and open a second copy.
+    if (introShowing()) { tourPending = false; dismissIntro(); }
+    if (playing) { togglePlay(); }
+    if (root_EEZTour()) { root_EEZTour().start(); }
   }
+  function root_EEZTour(){ return (typeof EEZTour !== "undefined") ? EEZTour : null; }
+  if (btnHelp) { btnHelp.addEventListener("click", openTour); }
   // Deferred while the lead-in is up; dismissIntro replays it.
   if (introShowing()) { tourPending = true; }
-  else if (eezTour()) { eezTour().maybeStart(); }
+  else if (root_EEZTour()) { root_EEZTour().maybeStart(); }
 
   function copyFallback(text, done){
     try {
@@ -610,10 +695,41 @@
       done(ok);
     } catch (e) { done(false); }
   }
+  // Full-context toggle. The step snippets are hand-wrapped teaching slices with
+  // no pragma, no imports and no contract wrapper; FULL swaps in the whole
+  // compilable file so COPY yields something that actually builds.
+  var btnFull = document.getElementById("btnFull");
+  var citeEl = document.getElementById("srcCite");
+  function applyPanelMode(){
+    if (btnFull) {
+      btnFull.textContent = showFull ? "STEP" : "FULL";
+      btnFull.style.color = showFull ? "var(--eez-green)" : "var(--muted)";
+      btnFull.style.borderColor = showFull ? "#2c6b3c" : "#2e2e2e";
+      btnFull.title = showFull ? "Back to the step snippet" : "Show the full compilable file";
+    }
+    if (citeEl) {
+      citeEl.innerHTML = showFull
+        ? 'snippets/q7-create-proxy.sol \u00b7 solc 0.8.28'
+        : (citeByStep[step] || citeEl.getAttribute("data-demo-cite"));
+    }
+    // The whole file is longer and wider than the column, so full-context mode
+    // trades type size for reach and turns the vertical axis into a scroller
+    // instead of clipping the tail off unreachably.
+    var cp = document.getElementById("codePanel");
+    cp.style.fontSize = showFull ? "13px" : "19px";
+    cp.style.lineHeight = showFull ? "20px" : "34px";
+    cp.style.overflowY = "auto";
+    cp.scrollTop = 0;
+    cp.scrollLeft = 0;
+    render();
+  }
+  if (btnFull) {
+    btnFull.addEventListener("click", function(){ showFull = !showFull; applyPanelMode(); });
+  }
   var btnCopy = document.getElementById("btnCopy");
   if (btnCopy) {
     btnCopy.addEventListener("click", function(){
-      var lines = codeByStep[step] || [];
+      var lines = currentLines();
       var text = lines.join("\n").replace(/[ \t]+$/gm, "").replace(/\n+$/, "") + "\n";
       var done = function(ok){
         btnCopy.textContent = ok ? "COPIED" : "COPY FAILED";
@@ -648,7 +764,7 @@
     else if(e.key==="r"||e.key==="R"){ clearTimeout(timer); step = 0; playing = true; render(); schedule(); }
   });
   window.addEventListener("resize", scaleStage);
-  scaleStage(); render(); staticBar();
+  scaleStage(); applyPanelMode(); staticBar();
 })();
 </script>
 </body></html>

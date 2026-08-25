@@ -12,7 +12,7 @@ the snippets, the citations, the tests — is behind a render. These two files
 hand it over directly.
 
 Generated, never hand-edited, for the same reason the embedded snippets are
-generated: a hand-maintained copy of 14 pages' content would be wrong within a
+generated: a hand-maintained copy of every page's content would be wrong within a
 week. `--check` fails if the committed files are stale, so CI catches that.
 
 Usage:
@@ -118,10 +118,9 @@ def citation_of(src):
 def index_cards():
     src = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
     out = {}
+    fuller = {}
     for href, body in re.findall(r'<a class="card"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', src, re.S):
         rel = href.lstrip("./")
-        if rel in out:
-            continue
         # The title is an <h3> that opens with a card-number span, so stopping
         # at the first "</" captures the number instead of the title.
         t = re.search(r'class="card-title"[^>]*>(.*?)</h3>', body, re.S)
@@ -130,7 +129,30 @@ def index_cards():
         if t:
             inner = re.sub(r'<span class="card-num">.*?</span>', "", t.group(1), flags=re.S)
             title = strip_tags(inner)
-        out[rel] = (title, strip_tags(h.group(1)) if h else "")
+        if h:
+            hook = strip_tags(h.group(1))
+            is_full = False
+        else:
+            # Numbered cards carry the hook as two paragraphs instead of one
+            # (card-answer, then card-detail) - join them so an entry still
+            # gets a real hook instead of silently going blank.
+            a = re.search(r'class="card-answer"[^>]*>(.*?)</p>', body, re.S)
+            d = re.search(r'class="card-detail"[^>]*>(.*?)</p>', body, re.S)
+            hook = " ".join(strip_tags(m.group(1)) for m in (a, d) if m)
+            is_full = bool(a or d)
+        if rel not in out:
+            # First occurrence sets this page's position (dict insertion
+            # order), which the starter row's entry and the numbered grid's
+            # entry always agree on: the starter row only links a track's
+            # own card 01.
+            out[rel] = (title, hook)
+            fuller[rel] = is_full
+        elif is_full and not fuller[rel]:
+            # The starter row's short card-hook loses to the numbered grid's
+            # fuller card-answer + card-detail once both have been seen -
+            # updating the value in place does not move rel's position.
+            out[rel] = (title, hook)
+            fuller[rel] = is_full
     return out
 
 
@@ -144,33 +166,81 @@ def snippet_map():
 
 def collect():
     cards = index_cards()
+    grid_order = list(cards.keys())
     snips, tests = snippet_map()
     pages = []
+    missing_from_grid = []
     for track, label, blurb in TRACKS:
-        for path in sorted(glob.glob(os.path.join(ROOT, track, "*.html"))):
-            name = os.path.basename(path)
-            if name.startswith("q7"):
+        ordered_rels = [rel for rel in grid_order if rel.startswith(track + "/")]
+        # Filename order is only a fallback, for a page glob finds but the
+        # grid doesn't list - it must never silently reassert itself as the
+        # primary order (that was the whole bug: alphabetical, not reading
+        # order). Anything already placed by the grid is dropped from here.
+        on_disk = [track + "/" + os.path.basename(p)
+                   for p in sorted(glob.glob(os.path.join(ROOT, track, "*.html")))]
+        extra = [rel for rel in on_disk if rel not in ordered_rels]
+        for rel in ordered_rels + extra:
+            name = os.path.basename(rel)
+            # The untracked scaffold, ignored by .gitignore at this exact path.
+            # Matched by exact filename, not a "q7" prefix: that prefix also
+            # matches real q7 pages, which would then be dropped silently.
+            if name == "q7-test-demo.html":
+                continue
+            path = os.path.join(ROOT, rel)
+            if not os.path.exists(path):
                 continue
             src = open(path, encoding="utf-8").read()
-            rel = track + "/" + name
+            captions = flat_strings(js_array(src, "captions"))
+            if not captions:
+                # No captions means no walkthrough steps to narrate - a
+                # redirect stub left behind at a moved page's old path,
+                # not a real page for this index. Skip generally rather
+                # than by filename, so any future stub is caught too.
+                continue
+            if rel in extra:
+                missing_from_grid.append(rel)
             title, hook = cards.get(rel, (name, ""))
             cite_txt, cite_url, sha, cite_path = citation_of(src)
             pages.append({
                 "track": track, "track_label": label, "track_blurb": blurb,
                 "rel": rel, "title": title, "hook": hook,
                 "kickers": flat_strings(js_array(src, "kickers")),
-                "captions": flat_strings(js_array(src, "captions")),
+                "captions": captions,
                 "steps": steps_of(src), "diffs": diffs_of(src),
                 "cite_txt": cite_txt, "cite_url": cite_url, "sha": sha,
                 "lang": lang_for(cite_path, track),
                 "snippet": snips.get(name), "test": tests.get(name),
             })
+    if missing_from_grid:
+        print("NOTE: pages absent from index.html's card grid, appended after "
+              "the ordered ones instead of dropped: %s" % ", ".join(missing_from_grid),
+              file=sys.stderr)
     return pages
 
 
-HEAD = """# EEZ Quickstarts
+# Spelled out because the preamble reads as prose. Derived from len(pages) so
+# that adding a walkthrough cannot leave the count silently wrong, which is
+# exactly what happened to "Fourteen".
+_ONES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+         "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+         "sixteen", "seventeen", "eighteen", "nineteen"]
+_TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy",
+         "eighty", "ninety"]
 
-> Fourteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
+
+def count_word(n):
+    if n < 20:
+        w = _ONES[n]
+    elif n < 100:
+        w = _TENS[n // 10] + ("-" + _ONES[n % 10] if n % 10 else "")
+    else:
+        return str(n)
+    return w[0].upper() + w[1:]
+
+
+HEAD_TMPL = """# EEZ Quickstarts
+
+> %s interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
 > contracts that call across rollups, running the stack, and how Rollup0 settles and proves.
 
@@ -186,8 +256,12 @@ a commit SHA, so a link tells you exactly which revision a claim was true of.
 """
 
 
+def head_for(pages):
+    return HEAD_TMPL % count_word(len(pages))
+
+
 def build_index(pages):
-    out = [HEAD]
+    out = [head_for(pages)]
     for track, label, blurb in TRACKS:
         rows = [p for p in pages if p["track"] == track]
         if not rows:
@@ -232,7 +306,7 @@ def build_index(pages):
 
 
 def build_full(pages):
-    out = [HEAD.replace(
+    out = [head_for(pages).replace(
         "These files hand over the content directly: each",
         "This file is the whole thing in one document: each")]
     for track, label, blurb in TRACKS:
@@ -293,8 +367,8 @@ def build_full(pages):
 def main():
     check = "--check" in sys.argv
     pages = collect()
-    if len(pages) != 14:
-        print("FAIL: expected 14 walkthroughs, collected %d" % len(pages))
+    if len(pages) != 15:
+        print("FAIL: expected 15 walkthroughs, collected %d" % len(pages))
         return 1
 
     targets = {"llms.txt": build_index(pages), "llms-full.txt": build_full(pages)}

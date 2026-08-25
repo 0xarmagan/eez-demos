@@ -1,6 +1,6 @@
 # EEZ Quickstarts
 
-> Fourteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
+> Fifteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
 > contracts that call across rollups, running the stack, and how Rollup0 settles and proves.
 
@@ -18,49 +18,51 @@ a commit SHA, so a link tells you exactly which revision a claim was true of.
 
 Writing contracts that call across rollups.
 
-- [Compute your cross-chain address](https://0xarmagan.github.io/eez-demos/dapp-developers/q1-compute-your-cross-chain-address.html): Every contract gets one deterministic address on every other rollup.
-- [Send a cross-chain call](https://0xarmagan.github.io/eez-demos/dapp-developers/q2-send-a-cross-chain-call.html): Call the proxy like a normal contract — EEZ handles the routing.
-- [How msg.sender resolves across chains](https://0xarmagan.github.io/eez-demos/dapp-developers/q3-fix-the-msg-sender-gotcha.html): The destination always sees the proxy, never your original address.
-- [How the proxy registry works](https://0xarmagan.github.io/eez-demos/dapp-developers/q4-check-if-an-address-is-a-proxy.html): Every real proxy is recorded on-chain, and anyone can read it directly.
-- [Encode a call's content hash](https://0xarmagan.github.io/eez-demos/dapp-developers/q5-encode-a-calls-content-hash.html): Reorder the fields and you get a silently different hash.
-- [Why the manager only accepts proxy calls](https://0xarmagan.github.io/eez-demos/dapp-developers/q6-why-you-cant-call-the-manager-directly.html): Direct calls revert — only a registered proxy reaches execution.
+- [How to get your contract's address on another rollup](https://0xarmagan.github.io/eez-demos/dapp-developers/q7-your-cross-chain-address.html): Learn how to read it, or deploy it.
+- [How to call a contract on another rollup](https://0xarmagan.github.io/eez-demos/dapp-developers/q2-send-a-cross-chain-call.html): Learn how to encode it like any normal call and send it to the proxy.
+- [How to handle msg.sender across chains](https://0xarmagan.github.io/eez-demos/dapp-developers/q3-fix-the-msg-sender-gotcha.html): Learn how to whitelist the proxy instead of the address you expected.
+- [How to check an address is a real proxy](https://0xarmagan.github.io/eez-demos/dapp-developers/q4-check-if-an-address-is-a-proxy.html): Learn how to read the on-chain registry instead of guessing.
+- [How the guard makes sure only proxy calls reach execution](https://0xarmagan.github.io/eez-demos/dapp-developers/q6-why-you-cant-call-the-manager-directly.html): Learn how UnauthorizedProxy() stops any call that isn't proxy-routed.
+- [How to encode a call's content hash](https://0xarmagan.github.io/eez-demos/dapp-developers/q5-encode-a-calls-content-hash.html): Learn how to hash eight fields in the one order that works.
 
 ## Rollup operators
 
 Standing the stack up and driving it.
 
-- [Run the EEZ devnet with Kurtosis](https://0xarmagan.github.io/eez-demos/rollup-operators/ro1-run-the-devnet-with-kurtosis.html): One command: sequencer, composer, proof-signer, embedded L1.
-- [Deploy the protocol](https://0xarmagan.github.io/eez-demos/rollup-operators/ro2-deploy-the-protocol.html): One script: EEZ, the proof system, and your manager.
-- [Run the Chiado L2](https://0xarmagan.github.io/eez-demos/rollup-operators/ro3-run-a-real-chiado-l2.html): Same stack, a real testnet instead of a sandbox.
-- [Send & test cross-chain calls](https://0xarmagan.github.io/eez-demos/rollup-operators/ro4-send-and-test-cross-chain-calls.html): Two ports, four op types, real pass/fail metrics.
+- [How to run the whole stack locally](https://0xarmagan.github.io/eez-demos/rollup-operators/ro1-run-the-devnet-with-kurtosis.html): Learn how to bring up the node, proof-signer and the L1 in a disposable network.
+- [How to deploy the protocol](https://0xarmagan.github.io/eez-demos/rollup-operators/ro2-deploy-the-protocol.html): Learn how one command deploys EEZ, the proof system and your manager.
+- [How to run against a real testnet](https://0xarmagan.github.io/eez-demos/rollup-operators/ro3-run-a-real-chiado-l2.html): Learn how to point the same stack at Chiado instead of a sandbox.
+- [How to send and test a cross-chain call](https://0xarmagan.github.io/eez-demos/rollup-operators/ro4-send-and-test-cross-chain-calls.html): Learn how to drive both fronts and read real pass/fail numbers.
 
 ## Protocol researchers
 
 How Rollup0 actually settles and proves.
 
-- [The four components of Rollup0](https://0xarmagan.github.io/eez-demos/protocol-researchers/pr1-the-four-components-of-rollup0.html): Sequencer, composer, proof-signer, deriver — who does what.
-- [Commit-first, repair-if-needed](https://0xarmagan.github.io/eez-demos/protocol-researchers/pr2-commit-first-repair-if-needed.html): L2 commits immediately. L1 is still the source of truth.
-- [The deriver: rebuilding L2 state from L1 alone](https://0xarmagan.github.io/eez-demos/protocol-researchers/pr3-the-deriver.html): Rebuild the whole L2 chain from L1 alone.
-- [How the composer proves a batch](https://0xarmagan.github.io/eez-demos/protocol-researchers/pr4-how-the-composer-proves-a-batch.html): One gRPC stream: header, then blocks, then a signature.
+- [How the four components divide the work](https://0xarmagan.github.io/eez-demos/protocol-researchers/pr1-the-four-components-of-rollup0.html): Learn how sequencer, composer, proof-signer and deriver each fit.
+- [How L1 stays the source of truth](https://0xarmagan.github.io/eez-demos/protocol-researchers/pr2-commit-first-repair-if-needed.html): Learn how an L2 commits first and L1 then settles or repairs it.
+- [How the composer proves a batch](https://0xarmagan.github.io/eez-demos/protocol-researchers/pr4-how-the-composer-proves-a-batch.html): Learn how one gRPC stream carries header, blocks and a signature.
+- [How the deriver rebuilds L2 from L1](https://0xarmagan.github.io/eez-demos/protocol-researchers/pr3-the-deriver.html): Learn how the whole chain is reconstructed from L1 data alone.
+- [How the address is derived](https://0xarmagan.github.io/eez-demos/protocol-researchers/pr5-how-the-address-is-derived.html): Learn how two values become a salt and a CREATE2 address.
 
 ## Compilable source
 
 Real files, not fragments: pragma, imports and a contract wrapper, all building under solc 0.8.28. Each mirrors the upstream function its walkthrough cites.
 
-- [snippets/q1-compute-address.sol](https://0xarmagan.github.io/eez-demos/snippets/q1-compute-address.sol): full source behind Compute your cross-chain address
-- [snippets/q2-cross-chain-call.sol](https://0xarmagan.github.io/eez-demos/snippets/q2-cross-chain-call.sol): full source behind Send a cross-chain call
-- [snippets/q3-msg-sender.sol](https://0xarmagan.github.io/eez-demos/snippets/q3-msg-sender.sol): full source behind How msg.sender resolves across chains
-- [snippets/q4-proxy-registry.sol](https://0xarmagan.github.io/eez-demos/snippets/q4-proxy-registry.sol): full source behind How the proxy registry works
-- [snippets/q5-content-hash.sol](https://0xarmagan.github.io/eez-demos/snippets/q5-content-hash.sol): full source behind Encode a call's content hash
-- [snippets/q6-manager-direct.sol](https://0xarmagan.github.io/eez-demos/snippets/q6-manager-direct.sol): full source behind Why the manager only accepts proxy calls
+- [snippets/q7-create-proxy.sol](https://0xarmagan.github.io/eez-demos/snippets/q7-create-proxy.sol): full source behind How to get your contract's address on another rollup
+- [snippets/q2-cross-chain-call.sol](https://0xarmagan.github.io/eez-demos/snippets/q2-cross-chain-call.sol): full source behind How to call a contract on another rollup
+- [snippets/q3-msg-sender.sol](https://0xarmagan.github.io/eez-demos/snippets/q3-msg-sender.sol): full source behind How to handle msg.sender across chains
+- [snippets/q4-proxy-registry.sol](https://0xarmagan.github.io/eez-demos/snippets/q4-proxy-registry.sol): full source behind How to check an address is a real proxy
+- [snippets/q6-manager-direct.sol](https://0xarmagan.github.io/eez-demos/snippets/q6-manager-direct.sol): full source behind How the guard makes sure only proxy calls reach execution
+- [snippets/q5-content-hash.sol](https://0xarmagan.github.io/eez-demos/snippets/q5-content-hash.sol): full source behind How to encode a call's content hash
+- [snippets/q1-compute-address.sol](https://0xarmagan.github.io/eez-demos/snippets/q1-compute-address.sol): full source behind How the address is derived
 
 ## Runnable tests
 
 Foundry tests with no forge-std and no submodules, so they drop into an existing suite. `cd snippets && forge test`.
 
-- [snippets/test/Q3MsgSender.t.sol](https://0xarmagan.github.io/eez-demos/snippets/test/Q3MsgSender.t.sol): proves the behaviour in How msg.sender resolves across chains
-- [snippets/test/Q5ContentHash.t.sol](https://0xarmagan.github.io/eez-demos/snippets/test/Q5ContentHash.t.sol): proves the behaviour in Encode a call's content hash
-- [snippets/test/Q6ManagerDirect.t.sol](https://0xarmagan.github.io/eez-demos/snippets/test/Q6ManagerDirect.t.sol): proves the behaviour in Why the manager only accepts proxy calls
+- [snippets/test/Q3MsgSender.t.sol](https://0xarmagan.github.io/eez-demos/snippets/test/Q3MsgSender.t.sol): proves the behaviour in How to handle msg.sender across chains
+- [snippets/test/Q6ManagerDirect.t.sol](https://0xarmagan.github.io/eez-demos/snippets/test/Q6ManagerDirect.t.sol): proves the behaviour in How the guard makes sure only proxy calls reach execution
+- [snippets/test/Q5ContentHash.t.sol](https://0xarmagan.github.io/eez-demos/snippets/test/Q5ContentHash.t.sol): proves the behaviour in How to encode a call's content hash
 
 ## Everything inlined
 

@@ -18,12 +18,12 @@ No build step, no dependencies — but serve it rather than opening `index.html`
 scripts/new-demo.sh <dapp-developers|rollup-operators|protocol-researchers> <slug> "<Title>"
 ```
 
-Scaffolds a structurally-correct file from the `q1` template (stage, code panel, `PRE-MAINNET` label, mobile floor — all pre-wired), with topic-specific content (diagram, `codeByStep`, citation, captions) marked `TODO`. Doesn't touch `index.html` or the `NEXT:` chain — that's manual.
+Scaffolds a structurally-correct file from the `pr5` template (stage, code panel, `PRE-MAINNET` label, mobile floor — all pre-wired), with topic-specific content (diagram, `codeByStep`, citation, captions) marked `TODO`. Doesn't touch `index.html` or the `NEXT:` chain — that's manual.
 
 ## Format
 
 - **Card** on `index.html`: action-oriented title, one-sentence hook stating the *consequence* (not the mechanic — "reorder the fields and you get a silently different hash," not "eight fields in order"). No code on the card. CTA is always `WATCH THE 3-STEP WALKTHROUGH →`.
-- **Walkthrough**: copy `dapp-developers/q1-compute-your-cross-chain-address.html` as the template. Keep the fixed 1920×1080 stage (diagram left / code right / caption bottom / Prev-Play-Next), progressive `codeByStep` reveal, real data in the diagram (never placeholder boxes), the `PRE-MAINNET` label, the `NEXT:` link chain, and `scaleStage()`'s mobile floor — don't redesign these.
+- **Walkthrough**: copy `protocol-researchers/pr5-how-the-address-is-derived.html` as the template. Keep the fixed 1920×1080 stage (diagram left / code right / caption bottom / Prev-Play-Next), progressive `codeByStep` reveal, real data in the diagram (never placeholder boxes), the `PRE-MAINNET` label, the `NEXT:` link chain, and `scaleStage()`'s mobile floor — don't redesign these.
 - Links: back/index links are `../index.html`. A `NEXT:` link into a different audience folder needs that folder in its path (`../rollup-operators/ro1-....html`); same-folder links just need the filename.
 
 ## Source of truth
@@ -81,7 +81,7 @@ A second, independent pass — every real bug in this repo so far (a drifted sub
 1. Re-run `scripts/audit.sh` yourself — don't trust that it was run, or that nothing changed since.
 2. Re-run `scripts/verify-citations.py` — it fetches each cited file at the SHA in `scripts/citation-pins.json` and asserts the line and symbol still match, so citations no longer need checking by hand. What still needs judgment: whether the cited line is the *right* line to point at. The verifier accepts any line whose symbol matches within a few lines; it caught `EEZ.sol:790` pointing 10 lines into a function body, but it can't tell you a citation is pedagogically misaimed.
 3. Check the diagram against the code panel — same real function/struct/value, or just plausible-looking?
-4. Grep the term across all 14 demos before accepting a new name for something already named.
+4. Grep the term across all 15 demos before accepting a new name for something already named.
 5. Serve it locally and click through all 3 steps yourself — a diff review won't catch a broken `NEXT:` link or a step that renders wrong.
 
 Fix anything this turns up before merge — don't file a follow-up issue for a page that's already live.

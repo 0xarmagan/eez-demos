@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-// Panel source for: dapp-developers/q1-compute-your-cross-chain-address.html
+// Panel source for: protocol-researchers/pr5-how-the-address-is-derived.html
 // Mirrors eez-core-protocol/src/base/EEZBase.sol:176
 // @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
 //
