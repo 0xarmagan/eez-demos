@@ -90,22 +90,22 @@
       style="position:absolute;top:-34px;right:0;z-index:4;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TRY IT</button>
 
     <div id="calcPanel" style="display:none;position:absolute;inset:0;z-index:3;background:#000;flex-direction:column;justify-content:center;gap:18px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.16em;color:#5b6572;">YOUR CALL &#183; EIGHT FIELDS, THIS ORDER</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.16em;color:var(--muted);">YOUR CALL &#183; EIGHT FIELDS, THIS ORDER</div>
 
       <div style="display:flex;gap:18px;">
         <label style="flex:0 0 150px;display:flex;flex-direction:column;gap:6px;">
-          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">isStatic &#183; bool</span>
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">isStatic &#183; bool</span>
           <select id="cIsStatic" style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
             <option value="false">false</option><option value="true">true</option>
           </select>
         </label>
         <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
-          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">value &#183; uint256</span>
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">value &#183; uint256</span>
           <input id="cValue" value="0" spellcheck="false" autocomplete="off"
             style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
         </label>
         <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
-          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">callGas &#183; uint64</span>
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">callGas &#183; uint64</span>
           <input id="cCallGas" value="0" spellcheck="false" autocomplete="off"
             style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
         </label>
@@ -113,12 +113,12 @@
 
       <div style="display:flex;gap:18px;">
         <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
-          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">sourceAddress</span>
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">sourceAddress</span>
           <input id="cSrc" value="0x1111111111111111111111111111111111111111" spellcheck="false" autocomplete="off"
             style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
         </label>
         <label style="flex:0 0 150px;min-width:0;display:flex;flex-direction:column;gap:6px;">
-          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">sourceRollupId</span>
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">sourceRollupId</span>
           <input id="cSrid" value="1" spellcheck="false" autocomplete="off"
             style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
         </label>
@@ -126,12 +126,12 @@
 
       <div style="display:flex;gap:18px;">
         <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
-          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">targetAddress</span>
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">targetAddress</span>
           <input id="cTgt" value="0x2222222222222222222222222222222222222222" spellcheck="false" autocomplete="off"
             style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
         </label>
         <label style="flex:0 0 150px;min-width:0;display:flex;flex-direction:column;gap:6px;">
-          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">targetRollupId</span>
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">targetRollupId</span>
           <input id="cTrid" value="100" spellcheck="false" autocomplete="off"
             style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
         </label>
@@ -139,7 +139,7 @@
 
       <div style="display:flex;gap:18px;">
         <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
-          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">data &#183; bytes</span>
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">data &#183; bytes</span>
           <input id="cData" value="0xa9059cbb" spellcheck="false" autocomplete="off"
             style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
         </label>
@@ -148,7 +148,7 @@
       <div id="cErr" style="display:none;font-family:var(--mono);font-size:13px;color:#8B7B55;"></div>
 
       <div style="display:flex;flex-direction:column;gap:6px;">
-        <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:#5b6572;">keccak256(abi.encode(&#8943;)) &#183; <span id="cLen"></span></span>
+        <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">keccak256(abi.encode(&#8943;)) &#183; <span id="cLen"></span></span>
         <div id="cHash" style="font-family:var(--mono);font-size:20px;line-height:30px;color:var(--eez-green);word-break:break-all;"></div>
       </div>
 
