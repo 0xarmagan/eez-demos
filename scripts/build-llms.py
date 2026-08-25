@@ -12,7 +12,7 @@ the snippets, the citations, the tests — is behind a render. These two files
 hand it over directly.
 
 Generated, never hand-edited, for the same reason the embedded snippets are
-generated: a hand-maintained copy of 14 pages' content would be wrong within a
+generated: a hand-maintained copy of every page's content would be wrong within a
 week. `--check` fails if the committed files are stale, so CI catches that.
 
 Usage:
@@ -149,7 +149,10 @@ def collect():
     for track, label, blurb in TRACKS:
         for path in sorted(glob.glob(os.path.join(ROOT, track, "*.html"))):
             name = os.path.basename(path)
-            if name.startswith("q7"):
+            # The untracked scaffold, ignored by .gitignore at this exact path.
+            # Matched by exact filename, not a "q7" prefix: that prefix also
+            # matches real q7 pages, which would then be dropped silently.
+            if name == "q7-test-demo.html":
                 continue
             src = open(path, encoding="utf-8").read()
             captions = flat_strings(js_array(src, "captions"))
@@ -175,9 +178,29 @@ def collect():
     return pages
 
 
-HEAD = """# EEZ Quickstarts
+# Spelled out because the preamble reads as prose. Derived from len(pages) so
+# that adding a walkthrough cannot leave the count silently wrong, which is
+# exactly what happened to "Fourteen".
+_ONES = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+         "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+         "sixteen", "seventeen", "eighteen", "nineteen"]
+_TENS = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy",
+         "eighty", "ninety"]
 
-> Fourteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
+
+def count_word(n):
+    if n < 20:
+        w = _ONES[n]
+    elif n < 100:
+        w = _TENS[n // 10] + ("-" + _ONES[n % 10] if n % 10 else "")
+    else:
+        return str(n)
+    return w[0].upper() + w[1:]
+
+
+HEAD_TMPL = """# EEZ Quickstarts
+
+> %s interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
 > contracts that call across rollups, running the stack, and how Rollup0 settles and proves.
 
@@ -193,8 +216,12 @@ a commit SHA, so a link tells you exactly which revision a claim was true of.
 """
 
 
+def head_for(pages):
+    return HEAD_TMPL % count_word(len(pages))
+
+
 def build_index(pages):
-    out = [HEAD]
+    out = [head_for(pages)]
     for track, label, blurb in TRACKS:
         rows = [p for p in pages if p["track"] == track]
         if not rows:
@@ -239,7 +266,7 @@ def build_index(pages):
 
 
 def build_full(pages):
-    out = [HEAD.replace(
+    out = [head_for(pages).replace(
         "These files hand over the content directly: each",
         "This file is the whole thing in one document: each")]
     for track, label, blurb in TRACKS:
@@ -300,8 +327,8 @@ def build_full(pages):
 def main():
     check = "--check" in sys.argv
     pages = collect()
-    if len(pages) != 14:
-        print("FAIL: expected 14 walkthroughs, collected %d" % len(pages))
+    if len(pages) != 15:
+        print("FAIL: expected 15 walkthroughs, collected %d" % len(pages))
         return 1
 
     targets = {"llms.txt": build_index(pages), "llms-full.txt": build_full(pages)}

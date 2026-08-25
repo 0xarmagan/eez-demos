@@ -1,6 +1,6 @@
 # EEZ Quickstarts
 
-> Fourteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
+> Fifteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
 > contracts that call across rollups, running the stack, and how Rollup0 settles and proves.
 
@@ -23,6 +23,7 @@ Writing contracts that call across rollups.
 - [How the proxy registry works](https://0xarmagan.github.io/eez-demos/dapp-developers/q4-check-if-an-address-is-a-proxy.html): Every real proxy is recorded on-chain, and anyone can read it directly.
 - [Encode a call's content hash](https://0xarmagan.github.io/eez-demos/dapp-developers/q5-encode-a-calls-content-hash.html): Reorder the fields and you get a silently different hash.
 - [Why the manager only accepts proxy calls](https://0xarmagan.github.io/eez-demos/dapp-developers/q6-why-you-cant-call-the-manager-directly.html): Direct calls revert — only a registered proxy reaches execution.
+- [q7-your-address-on-every-rollup.html](https://0xarmagan.github.io/eez-demos/dapp-developers/q7-your-address-on-every-rollup.html): 
 
 ## Rollup operators
 
@@ -52,6 +53,7 @@ Real files, not fragments: pragma, imports and a contract wrapper, all building 
 - [snippets/q4-proxy-registry.sol](https://0xarmagan.github.io/eez-demos/snippets/q4-proxy-registry.sol): full source behind How the proxy registry works
 - [snippets/q5-content-hash.sol](https://0xarmagan.github.io/eez-demos/snippets/q5-content-hash.sol): full source behind Encode a call's content hash
 - [snippets/q6-manager-direct.sol](https://0xarmagan.github.io/eez-demos/snippets/q6-manager-direct.sol): full source behind Why the manager only accepts proxy calls
+- [snippets/q7-create-proxy.sol](https://0xarmagan.github.io/eez-demos/snippets/q7-create-proxy.sol): full source behind q7-your-address-on-every-rollup.html
 - [snippets/q1-compute-address.sol](https://0xarmagan.github.io/eez-demos/snippets/q1-compute-address.sol): full source behind pr5-how-the-address-is-derived.html
 
 ## Runnable tests
