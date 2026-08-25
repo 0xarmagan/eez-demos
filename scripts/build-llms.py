@@ -70,13 +70,84 @@ def flat_strings(block):
             for x in re.findall(r'"((?:[^"\\]|\\.)*)"', block)]
 
 
-def steps_of(src):
-    """codeByStep as a list of per-step line lists."""
+def top_level_items(raw):
+    """The outer array's elements, as source text, split on depth-0 commas.
+
+    Splitting on a regex instead lost whichever elements the regex didn't
+    happen to describe, silently and without changing the step count. This
+    hands back every element, so an unreadable one is a shape this file has
+    to answer for rather than a step that quietly disappears.
+    """
+    body = raw.strip()[1:-1]                     # drop the outer [ ]
+    items, buf, depth, quote, esc = [], [], 0, None, False
+    for ch in body:
+        if quote:
+            buf.append(ch)
+            if esc:
+                esc = False
+            elif ch == "\\":
+                esc = True
+            elif ch == quote:
+                quote = None
+            continue
+        if ch in "\"'":
+            quote = ch
+        elif ch in "[({":
+            depth += 1
+        elif ch in "])}":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            items.append("".join(buf))
+            buf = []
+            continue
+        buf.append(ch)
+    items.append("".join(buf))
+    return [it.strip() for it in items if it.strip()]
+
+
+def steps_of(src, rel="a page"):
+    """codeByStep as a list of per-step line lists.
+
+    Two shapes are in use. Most pages write each step as an inline array of
+    string literals. The progressive-reveal pages (ro2, ro4) declare one named
+    array of lines and take a growing prefix of it per step —
+    `makefileLines.slice(0, 6)` — which carries no string literal at all, so
+    reading literals out of codeByStep returned nothing for them and the build
+    still exited 0. Both pages shipped a title, a source line and no code.
+
+    Hence: resolve `<name>.slice(a, b)` against the named array declared in the
+    same file, and refuse — loudly — any element this function cannot read, or
+    a codeByStep that yields no lines. A third way of building panels must
+    fail the build, not vanish from the corpus.
+    """
     raw = js_array(src, "codeByStep")
     if not raw:
         return []
-    return [flat_strings(g) for g in
-            re.findall(r'\[\s*((?:"(?:[^"\\]|\\.)*",?\s*)*)\]', raw)]
+    steps = []
+    for item in top_level_items(raw):
+        if item.startswith("["):
+            steps.append(flat_strings(item))
+            continue
+        m = re.match(r"([A-Za-z_$][\w$]*)\.slice\(\s*(-?\d+)\s*"
+                     r"(?:,\s*(-?\d+)\s*)?\)$", item)
+        if not m:
+            raise ValueError(
+                "%s: codeByStep element is neither a literal array nor a "
+                "<name>.slice(a[, b]) reference, so its code would be dropped "
+                "from llms-full.txt: %s" % (rel, item.replace("\n", " ")[:120]))
+        base = js_array(src, m.group(1))
+        if base is None:
+            raise ValueError("%s: codeByStep references %s.slice(...) but no "
+                             "`var %s = [...]` is declared in the page"
+                             % (rel, m.group(1), m.group(1)))
+        lines = flat_strings(base)
+        start = int(m.group(2))
+        end = None if m.group(3) is None else int(m.group(3))
+        steps.append(lines[start:] if end is None else lines[start:end])
+    if not any(steps):
+        raise ValueError("%s: declares codeByStep but yielded zero lines — "
+                         "the page would emit a header with no code" % rel)
+    return steps
 
 
 def diffs_of(src):
@@ -206,7 +277,7 @@ def collect():
                 "rel": rel, "title": title, "hook": hook,
                 "kickers": flat_strings(js_array(src, "kickers")),
                 "captions": captions,
-                "steps": steps_of(src), "diffs": diffs_of(src),
+                "steps": steps_of(src, rel), "diffs": diffs_of(src),
                 "cite_txt": cite_txt, "cite_url": cite_url, "sha": sha,
                 "lang": lang_for(cite_path, track),
                 "snippet": snips.get(name), "test": tests.get(name),

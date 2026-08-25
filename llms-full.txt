@@ -1016,6 +1016,47 @@ Learn how one command deploys EEZ, the proof system and your manager.
 - Pinned at commit: `a4b9b2f`
 - Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/Makefile#L64-L65
 
+### Step 1 — ONE COMMAND
+
+`make deploy-protocol` runs `./scripts/deploy.sh`, deploying the EEZ core protocol, the proof system, and your manager contract in one shot.
+
+```bash
+# Outputs land in deployments.env (gitignored).
+# eez-node loads it alongside .env at startup, so
+# a successful deploy means `make run-node` Just
+# Works without any paste-the-address-into-.env
+# step.
+deploy-protocol:
+```
+
+### Step 2 — OUTPUTS LAND IN DEPLOYMENTS.ENV
+
+Every address deploy.sh produces lands in a gitignored `deployments.env` file, not your notes.
+
+```bash
+# Outputs land in deployments.env (gitignored).
+# eez-node loads it alongside .env at startup, so
+# a successful deploy means `make run-node` Just
+# Works without any paste-the-address-into-.env
+# step.
+deploy-protocol:
+	@./scripts/deploy.sh
+```
+
+### Step 3 — RUN-NODE JUST WORKS
+
+`make run-node` loads `deployments.env` alongside `.env` at startup, so there's no paste-the-address-into-.env step.
+
+```bash
+# Outputs land in deployments.env (gitignored).
+# eez-node loads it alongside .env at startup, so
+# a successful deploy means `make run-node` Just
+# Works without any paste-the-address-into-.env
+# step.
+deploy-protocol:
+	@./scripts/deploy.sh
+```
+
 ## How to run against a real testnet
 
 Learn how to point the same stack at Chiado instead of a sandbox.
@@ -1098,6 +1139,84 @@ Learn how to drive both fronts and read real pass/fail numbers.
 - Source: `README.md · scripts/xchain-test.sh`
 - Pinned at commit: `a4b9b2f`
 - Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/README.md
+
+### Step 1 — TWO FRONTS, ONE JOB
+
+Two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block — once per L1 block, for cross-chain work — while everything else passes straight through.
+
+```bash
+# README.md · Endpoints & cross-chain fronts
+#
+# | Endpoint                | URL           |
+# |--------------------------|----------------|
+# | L2 RPC                  | :18688        |
+# | Embedded chiado L1 RPC  | :18645        |
+# | L1→L2 front (Inbound)   | :18999        |
+# | L2→L1 front (Outbound)  | :18998        |
+
+# both fronts: eth_sendRawTransaction is held
+# + composed into the next Sync block; every
+# other eth_* call is forwarded to the front's
+# source-chain RPC.
+```
+
+### Step 2 — MIND THE BUNDLE SIZE
+
+EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it, so measure before you raise it.
+
+```bash
+# README.md · Endpoints & cross-chain fronts
+#
+# | Endpoint                | URL           |
+# |--------------------------|----------------|
+# | L2 RPC                  | :18688        |
+# | Embedded chiado L1 RPC  | :18645        |
+# | L1→L2 front (Inbound)   | :18999        |
+# | L2→L1 front (Outbound)  | :18998        |
+
+# both fronts: eth_sendRawTransaction is held
+# + composed into the next Sync block; every
+# other eth_* call is forwarded to the front's
+# source-chain RPC.
+
+# compose mode caps bundle size:
+EEZ_MAX_USER_TXS_PER_BUNDLE=3   # default
+
+# ⚠ rbuilder-chiado silently drops txs beyond
+#   ~3 per bundle — raise only against a
+#   builder proven to include larger bundles
+#   atomically. Measure before bumping.
+```
+
+### Step 3 — EXERCISE IT FOR REAL
+
+xchain-test.sh drives both fronts through the full op × direction × direct/wrapper matrix and reports real pipeline metrics.
+
+```bash
+# README.md · Endpoints & cross-chain fronts
+#
+# | Endpoint                | URL           |
+# |--------------------------|----------------|
+# | L2 RPC                  | :18688        |
+# | Embedded chiado L1 RPC  | :18645        |
+# | L1→L2 front (Inbound)   | :18999        |
+# | L2→L1 front (Outbound)  | :18998        |
+
+# both fronts: eth_sendRawTransaction is held
+# + composed into the next Sync block; every
+# other eth_* call is forwarded to the front's
+# source-chain RPC.
+
+# compose mode caps bundle size:
+EEZ_MAX_USER_TXS_PER_BUNDLE=3   # default
+
+# ⚠ rbuilder-chiado silently drops txs beyond
+#   ~3 per bundle — raise only against a
+#   builder proven to include larger bundles
+#   atomically. Measure before bumping.
+
+$ EEZ_WAVE_COUNT=5 bash scripts/xchain-test.sh
+```
 
 ---
 

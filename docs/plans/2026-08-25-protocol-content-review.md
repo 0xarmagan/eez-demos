@@ -33,7 +33,7 @@ Evidence gathered 2026-08-25, before this plan. Rows below marked *(ext, re-veri
 
 | Check | Result |
 |---|---|
-| `scripts/verify-citations.py` | 26 citations, 28 assertions, **all pass** at the pinned SHAs |
+| `scripts/verify-citations.py` | **25 citations, 27 assertions**, all pass at the pinned SHAs (26/28 was the unmerged `fix/panel-geometry-gate` branch) |
 | `eez-core-protocol` upstream HEAD | `9735f53` — **identical to the pin**; the Solidity pages are pinned to current `main` |
 | `eez-rollup0` upstream HEAD | `d8a7547` (2026-08-25) — **2 commits / 34 files ahead of the pin** |
 | Cited rollup0 files changed since the pin | `composer.rs` **+870/−252**, `deriver.rs` +4/−10, `optimistic.rs` +1/−1 |

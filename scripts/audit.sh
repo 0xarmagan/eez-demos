@@ -84,6 +84,28 @@ if [ -n "$hits" ]; then
   FAIL=1
 fi
 
+echo "== Generated files are current =="
+# A stale generated file is how STATIC_CHECK_GAS=5000 kept shipping after the
+# snippet was fixed: llms-full.txt is what agents read, and nothing compared it
+# to its sources. --check compares without writing, so staleness FAILS here
+# rather than being silently repaired by the section below.
+python3 scripts/build-llms.py --check 2>&1 | sed 's/^/  /'
+if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+  FAIL=1
+fi
+
+echo
+echo "== Every walkthrough reaches llms-full.txt with its code =="
+# ro2 and ro4 shipped a title, a source line and zero steps because they build
+# codeByStep from .slice() and the extractor only read string literals — and
+# the build still exited 0. This runs the gate that catches a page whose panels
+# are built a way build-llms.py cannot read. It regenerates llms.txt and
+# llms-full.txt as a side effect, which is what build-llms.py is for.
+python3 scripts/test_build_llms.py 2>&1 | sed 's/^/  /'
+if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+  FAIL=1
+fi
+
 echo
 if [ "$FAIL" -eq 0 ]; then
   echo "Structural audit passed."
