@@ -18,6 +18,13 @@ import {IEEZ} from "./lib/IEEZ.sol";
 // through that proxy. Authorizing it therefore authorizes that one owner on
 // that one rollup — not "anyone who can reach the manager".
 
+/// @dev Upstream uses custom errors throughout (EEZ.sol reverts
+///      `UnauthorizedProxy()`), and they have been the idiom since 0.8.4.
+///      A bare require here would be teaching an idiom the protocol itself
+///      does not use.
+error NotOwner();
+error NotProxy();
+
 contract OwnerGated {
     IEEZ internal immutable eez;
     address internal immutable owner;
@@ -32,7 +39,7 @@ contract OwnerGated {
     /// @dev The trap. Correct on one chain, unreachable across chains.
     function sameChainOnly() external view {
 // same-chain owner check — reverts cross-chain:
-require(msg.sender == owner);
+if (msg.sender != owner) revert NotOwner();
     }
 
     /// @dev The fix.
@@ -42,6 +49,6 @@ address proxy = eez.computeCrossChainProxyAddress(
     owner, originRollupId
 );
 
-require(msg.sender == proxy);
+if (msg.sender != proxy) revert NotProxy();
     }
 }

@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
+<link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
 <title>Deploy the Protocol — EEZ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,7 +13,7 @@
 <style>
   *{box-sizing:border-box;}
   html,body{margin:0;background:#000;}
-  :root{ --sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; --muted:#9aa3b3; --label:#9ba6d6; --eez-green:#3BE57E; --eez-grad:linear-gradient(90deg,#8AE5AC 0%,#6283BD 55%,#4439CB 100%); --eez-grad-btn:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%); --eez-ink-on-grad:#0A0A0A; }
+  :root{ --sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; --muted:#9aa3b3; --label:#9ba6d6; --eez-green:#3BE57E; --eez-canvas:#0A0A0A; --eez-screen:#161616; --eez-chrome:#1F1F1F; --eez-edge:#2E2E2E; --eez-grad:linear-gradient(90deg,#8AE5AC 0%,#6283BD 55%,#4439CB 100%); --eez-grad-btn:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%); --eez-ink-on-grad:#0A0A0A; }
   @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
   @keyframes flowByte{ from{transform:translateX(-14px);opacity:0;} to{transform:translateX(0);opacity:1;} }
   @keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,0.4);} 50%{box-shadow:0 0 0 8px rgba(63,185,80,0);} }
@@ -39,7 +41,7 @@
   .filehdr{font-family:var(--mono);font-size:15px;color:#d8d8d8;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 14px;}
   .filehdr-sm{font-family:var(--mono);font-size:14px;color:#d8d8d8;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 13px;}
   .badge-gitignore{font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;background:rgba(240,168,60,0.12);border:1px solid #463a1e;border-radius:5px;padding:4px 10px;}
-  .envfile{background:#050505;border:1px solid #232b36;border-radius:9px;padding:18px 22px;display:flex;flex-direction:column;gap:12px;}
+  .envfile{background:var(--eez-screen);border:1px solid #232b36;border-radius:9px;padding:18px 22px;display:flex;flex-direction:column;gap:12px;}
   .envline{font-family:var(--mono);font-size:17px;}
   .plus{font-size:22px;color:var(--muted);}
   .node-box{font-family:var(--mono);font-size:16px;color:#7ee08c;background:rgba(63,185,80,0.08);border:1px solid #2f6b3a;border-radius:9px;padding:12px 20px;}
@@ -80,7 +82,7 @@
 </head>
 <body>
 <div role="main" class="stage-wrap" style="position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
-<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background-color:#000;background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:42px 42px;color:#fff;transform-origin:center center;">
+<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background-color:var(--eez-canvas);background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:42px 42px;color:#fff;transform-origin:center center;">
 
   <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1a1a1a;">
     <div style="position:absolute;left:0;bottom:0;width:100%;height:3px;background:#1a1a1a;"><div id="timebar" style="height:100%;width:100%;transform:scaleX(0);transform-origin:left;background:var(--eez-grad);"></div></div>
@@ -153,17 +155,17 @@
 
   </div>
 
-  <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:#0a0a0a;border:1px solid #262626;border-radius:10px;overflow:hidden;box-shadow:0 20px 60px -20px rgba(0,0,0,0.6);">
-    <div style="display:flex;align-items:center;gap:14px;padding:14px 66px 14px 20px;border-bottom:1px solid #1a1a1a;background:#111;position:relative;">
-      <div style="display:flex;gap:7px;">
-        <div style="width:11px;height:11px;border-radius:50%;background:#ff5f57;"></div>
-        <div style="width:11px;height:11px;border-radius:50%;background:#febc2e;"></div>
-        <div style="width:11px;height:11px;border-radius:50%;background:#28c840;"></div>
+  <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:var(--eez-chrome);border:1px solid var(--eez-edge);border-radius:10px;overflow:hidden;">
+    <div aria-hidden="true" style="position:absolute;left:0;top:0;right:0;height:2px;background:var(--eez-grad);z-index:4;"></div>
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 66px 14px 20px;border-bottom:1px solid var(--eez-edge);background:var(--eez-chrome);position:relative;">
+      <div style="display:flex;align-items:center;gap:8px;flex:none;" title="This source is cited at a pinned commit, not a moving branch">
+        <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
+        <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/Makefile#L64-L65" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">Makefile:64-65 · scripts/deploy.sh ↗</a></div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/Makefile#L64-L65" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">Makefile:64-65 · scripts/deploy.sh ↗</a></div>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
-    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:#050505;"></div>
+    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
   </div>
 
   <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
@@ -340,13 +342,13 @@
       var mcol = (d === "del") ? "#f85149" : ((d === "add") ? "var(--eez-green)" : "#3a3a3a");
       html += '<div style="display:flex;align-items:stretch;padding:1px 16px;white-space:nowrap;' + bg + '">'
         + '<span style="width:26px;flex:none;text-align:right;padding-right:8px;color:#3a3a3a;user-select:none;">' + (i+1) + '</span>'
-        + '<span style="width:12px;flex:none;text-align:center;color:' + mcol + ';user-select:none;">' + mark + '</span>'
+        + '<span style="width:12px;flex:none;text-align:center;color:' + mcol + ';user-select:none;border-right:1px solid var(--eez-edge);margin-right:11px;">' + mark + '</span>'
         + '<span style="white-space:pre;' + ((lit || d) ? "color:#eef3f8;" : "color:var(--muted);") + '">'
         + highlightCode(t) + '</span></div>';
     }
     html += '<div style="display:flex;align-items:stretch;padding:1px 16px;">'
       + '<span style="width:26px;flex:none;"></span>'
-      + '<span style="width:12px;flex:none;"></span>'
+      + '<span style="width:12px;flex:none;border-right:1px solid var(--eez-edge);margin-right:11px;"></span>'
       + '<span style="display:inline-block;width:10px;height:20px;background:var(--eez-green);animation:blink 1s step-end infinite;vertical-align:middle;"></span></div>';
     document.getElementById("codePanel").innerHTML = html;
 
@@ -396,6 +398,18 @@
   document.getElementById("btnPrev").addEventListener("click", prev);
   document.getElementById("btnNext").addEventListener("click", next);
   document.getElementById("btnPlay").addEventListener("click", togglePlay);
+
+  // The pin is read out of whichever citation link the page has, deferred so it
+  // also catches pages that build their citation row during the first render.
+  setTimeout(function(){
+    var lbl = document.getElementById("pinLabel");
+    if (!lbl) { return; }
+    var links = document.querySelectorAll('a[href*="/blob/"]');
+    for (var i = 0; i < links.length; i++) {
+      var m = /\/blob\/([0-9a-f]{7,40})\//.exec(links[i].getAttribute("href") || "");
+      if (m) { lbl.textContent = "PINNED " + m[1].slice(0, 7); return; }
+    }
+  }, 0);
 
   var btnHelp = document.getElementById("btnHelp");
   function eezTour(){ return (typeof EEZTour !== "undefined") ? EEZTour : null; }

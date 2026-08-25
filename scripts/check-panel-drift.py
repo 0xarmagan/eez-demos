@@ -52,6 +52,8 @@ IGNORE_PREFIXES = ("//", "/*", "*", "⋯", "...")
 # Pages that embed a verbatim slice of a test file behind the TEST tab.
 TEST_SNIPPET_MAP = {
     "q3-fix-the-msg-sender-gotcha.html": "test/Q3MsgSender.t.sol",
+    "q5-encode-a-calls-content-hash.html": "test/Q5ContentHash.t.sol",
+    "q6-why-you-cant-call-the-manager-directly.html": "test/Q6ManagerDirect.t.sol",
 }
 
 # Every Solidity walkthrough also embeds its whole snippet behind the FULL
