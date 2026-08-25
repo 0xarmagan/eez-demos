@@ -1129,9 +1129,14 @@ pub struct Composer<L2: BlockReader> { ... }
 
 pub(crate) struct Attester { ... }
 
-pub(crate) fn sign(&self, public_inputs_hash: AttestablePublicInputsHash)
+pub(crate) fn sign(
+    &self,
+    public_inputs_hash: AttestablePublicInputsHash,
+)
     -> Result<Bytes, SignerError> {
-    self.signer.sign_prehash(public_inputs_hash.into_inner())
+    self.signer.sign_prehash(
+        public_inputs_hash.into_inner()
+    )
 }
 ```
 
@@ -1146,9 +1151,14 @@ pub struct Composer<L2: BlockReader> { ... }
 
 pub(crate) struct Attester { ... }
 
-pub(crate) fn sign(&self, public_inputs_hash: AttestablePublicInputsHash)
+pub(crate) fn sign(
+    &self,
+    public_inputs_hash: AttestablePublicInputsHash,
+)
     -> Result<Bytes, SignerError> {
-    self.signer.sign_prehash(public_inputs_hash.into_inner())
+    self.signer.sign_prehash(
+        public_inputs_hash.into_inner()
+    )
 }
 
 pub struct Deriver<L2> { ... }
@@ -1205,12 +1215,18 @@ L1 confirmation calls mark_settled to finalize it, or mark_failed to trigger a r
 ```rust
 // optimistic.rs:177
 pub fn mark_settled(&self, sync_height: u64) {
-    // marks the block permanent — no longer optimistic
+    // marks the block permanent —
+    // no longer optimistic
 }
 
 // optimistic.rs:191
-pub fn mark_failed(&self, sync_height: u64, slot_skipped: bool) {
-    // triggers a repair; slot_skipped flags a skipped slot
+pub fn mark_failed(
+    &self,
+    sync_height: u64,
+    slot_skipped: bool,
+) {
+    // triggers a repair;
+    // slot_skipped flags a skipped slot
 }
 ```
 
@@ -1315,7 +1331,10 @@ event BatchPosted(uint256 indexed rollupCount);
 pub struct Deriver<L2>
 
 // deriver.rs:774
-async fn handle_event(&self, event: L1Event) -> DeriverResult<()> {
+async fn handle_event(
+    &self,
+    event: L1Event,
+) -> DeriverResult<()> {
 
 // deriver.rs:504
 pub fn execute_block(
@@ -1327,7 +1346,10 @@ catch_up() replays this across all of L1 history to the present, so the resultin
 
 ```rust
 // deriver.rs:774
-async fn handle_event(&self, event: L1Event) -> DeriverResult<()> {
+async fn handle_event(
+    &self,
+    event: L1Event,
+) -> DeriverResult<()> {
 
 // deriver.rs:504
 pub fn execute_block(

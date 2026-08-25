@@ -318,12 +318,18 @@
     [
       "// optimistic.rs:177",
       "pub fn mark_settled(&self, sync_height: u64) {",
-      "    // marks the block permanent — no longer optimistic",
+      "    // marks the block permanent —",
+      "    // no longer optimistic",
       "}",
       "",
       "// optimistic.rs:191",
-      "pub fn mark_failed(&self, sync_height: u64, slot_skipped: bool) {",
-      "    // triggers a repair; slot_skipped flags a skipped slot",
+      "pub fn mark_failed(",
+      "    &self,",
+      "    sync_height: u64,",
+      "    slot_skipped: bool,",
+      ") {",
+      "    // triggers a repair;",
+      "    // slot_skipped flags a skipped slot",
       "}"
     ]
   ];
