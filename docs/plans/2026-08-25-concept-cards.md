@@ -15,7 +15,7 @@
 ## Global Constraints
 
 - **Every walkthrough file is fully self-contained.** Per-file `<style>` and `<script>`. Do not introduce a shared stylesheet. Shared JS is limited to the existing `assets/eez-*.js`.
-- **Code panel hard cap: 16 lines.** Fixed height with `overflow-y:hidden`. 17 lines clip invisibly and `audit.sh` does not catch it. Line width ~50 chars before the right edge cuts.
+- **Code panel design target: 16 lines.** The panel is fixed-height with `overflow-y:auto`, so a 17th line scrolls below the fold rather than clipping — easy to miss inside a scale-transformed stage, and `audit.sh` does not catch it. Line width ~50 chars before the right edge cuts. (Corrected mid-execution: earlier text claimed `overflow-y:hidden`, which stopped being true at commit f6f3820.)
 - **Citations are SHA-pinned, never branch-pinned.** `eez-core-protocol` = `9735f53abbb6b9f5e863f405ad4555b4701b7fda`. Never point a citation link at a mutable branch.
 - **Solidity snippets compile under solc 0.8.28** and carry no forge-std, no submodules.
 - **Colour tokens are the existing ones.** `--eez-canvas:#0A0A0A`, `--eez-screen:#161616`, `--eez-edge:#2E2E2E`, `--eez-green:#3BE57E`, `--muted:#9aa3b3`. Do not invent new greys.
@@ -174,14 +174,14 @@ mirror serves from /eez-demos/, not the domain root."
 ### Task 2: Add the new dapp opener
 
 **Files:**
-- Create: `dapp-developers/q7-your-address-on-every-rollup.html`
+- Create: `dapp-developers/q7-your-cross-chain-address.html`
 - Create: `snippets/q7-create-proxy.sol`
 - Create: `scripts/check-panel-height.cjs`
 - Modify: `scripts/check-panel-drift.py` (SNIPPET_MAP)
 
 **Interfaces:**
 - Consumes: the template at `protocol-researchers/pr5-how-the-address-is-derived.html` (moved in Task 1) via `scripts/new-demo.sh`.
-- Produces: the path `dapp-developers/q7-your-address-on-every-rollup.html`, linked as card 01 by Task 3 and titled by Task 4. Produces `scripts/check-panel-height.cjs`, used by Task 5's final gate.
+- Produces: the path `dapp-developers/q7-your-cross-chain-address.html`, linked as card 01 by Task 3 and titled by Task 4. Produces `scripts/check-panel-height.cjs`, used by Task 5's final gate.
 
 - [ ] **Step 1: Write the compilable snippet first**
 
@@ -191,7 +191,7 @@ Create `snippets/q7-create-proxy.sol`. It mirrors the two upstream functions thi
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-// Panel source for: dapp-developers/q7-your-address-on-every-rollup.html
+// Panel source for: dapp-developers/q7-your-cross-chain-address.html
 // Mirrors eez-core-protocol/src/base/EEZBase.sol:156 and :176
 // @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
 //
@@ -255,14 +255,14 @@ Expected: compiles clean under 0.8.28. If `new CrossChainProxy{salt: salt}` erro
 - [ ] **Step 3: Scaffold the walkthrough**
 
 ```bash
-scripts/new-demo.sh dapp-developers q7-your-address-on-every-rollup "Your Address on Every Rollup"
+scripts/new-demo.sh dapp-developers q7-your-cross-chain-address "Your Address on Every Rollup"
 ```
 
 This produces a structurally-correct file with every piece of real content replaced by `TODO`. It does **not** wire the file into `index.html` or the NEXT chain — Task 3 does that.
 
 - [ ] **Step 4: Write the three steps**
 
-In `dapp-developers/q7-your-address-on-every-rollup.html`, replace the scaffold's `kickers`, `captions` and `codeByStep`:
+In `dapp-developers/q7-your-cross-chain-address.html`, replace the scaffold's `kickers`, `captions` and `codeByStep`:
 
 ```javascript
   var kickers = ["CALL IT INTO EXISTENCE", "OR READ IT FIRST", "THE ONE RULE"];
@@ -345,7 +345,7 @@ Use `--eez-green` for the live path and `#8B7B55` amber for the rejected same-ne
 In `scripts/check-panel-drift.py`, add to `SNIPPET_MAP`:
 
 ```python
-    "q7-your-address-on-every-rollup.html": "q7-create-proxy.sol",
+    "q7-your-cross-chain-address.html": "q7-create-proxy.sol",
 ```
 
 - [ ] **Step 8: Write the headless panel-height checker**
@@ -414,7 +414,7 @@ bash scripts/audit.sh
 python3 scripts/check-panel-drift.py
 python3 scripts/verify-citations.py
 cd snippets && forge test && cd ..
-node scripts/check-panel-height.cjs dapp-developers/q7-your-address-on-every-rollup.html
+node scripts/check-panel-height.cjs dapp-developers/q7-your-cross-chain-address.html
 ```
 
 Expected: audit passes · `pages checked: 7` · citations resolve at the pinned SHA · 13 tests pass · `No clipping across 1 file(s).`
@@ -433,7 +433,7 @@ Expected: `llms.txt and llms-full.txt are current (15 walkthroughs).`
 - [ ] **Step 11: Commit**
 
 ```bash
-git add dapp-developers/q7-your-address-on-every-rollup.html \
+git add dapp-developers/q7-your-cross-chain-address.html \
         snippets/q7-create-proxy.sol \
         scripts/check-panel-height.cjs scripts/check-panel-drift.py \
         llms.txt llms-full.txt
@@ -488,9 +488,9 @@ Lines 131-133. Dapp stays 6 (loses the derivation demo, gains the opener); resea
 Line 153 links the old `q1`. The starter row shows the real 01 from each track, so it must now link the new opener, with its question title and answer:
 
 ```html
-    <a class="card" href="./dapp-developers/q7-your-address-on-every-rollup.html">
+    <a class="card" href="./dapp-developers/q7-your-cross-chain-address.html">
       <div class="card-head"><h3 class="card-title">What address does my contract have on another rollup?</h3><span class="badge">DAPP DEVS</span></div>
-      <p class="card-hook">You already have one — derived from your address, identical on every rollup.</p>
+      <p class="card-hook">You already have one on each — derived from your address, and computable before anything is deployed.</p>
       <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
     </a>
 ```
@@ -518,7 +518,7 @@ Text is verbatim. Wrap the named symbols in `<code>` where they appear.
 
 | NN | file | QUESTION | ANSWER | DETAIL |
 |---|---|---|---|---|
-| 01 | `q7-your-address-on-every-rollup` | What address does my contract have on another rollup? | You already have one — derived from your address, identical on every rollup. | The stand-in is a proxy, and its address comes out of yours, so nothing has to be registered and it is the same everywhere. Read it with `computeCrossChainProxyAddress`, deploy it with `createCrossChainProxy` — or do neither, because it is created automatically the first time someone calls it. |
+| 01 | `q7-your-cross-chain-address` | What address does my contract have on another rollup? | You already have one on each — derived from your address, and computable before anything is deployed. | The stand-in is a proxy, and its address is derived from yours plus the rollup it lives on, so nothing has to be registered. Read it with `computeCrossChainProxyAddress`, deploy it with `createCrossChainProxy` — or do neither, because the protocol creates one on the first inbound call. |
 | 02 | `q2-send-a-cross-chain-call` | How do I call a contract on another rollup? | Encode it like any normal call and send it to the proxy address. | There is no cross-chain ABI to learn — the proxy's fallback catches everything and routes it. It even works out whether you meant a read: one self-call probes a transient write, and if that reverts, the call goes to a read-only lookup instead of a real execution. |
 | 03 | `q3-fix-the-msg-sender-gotcha` | Who is `msg.sender` when the call comes from another chain? | The proxy — never your original address. | A call from another rollup arrives through the proxy, so that is who the destination sees. A `require(msg.sender == owner)` written for same-chain use passes locally and reverts every time cross-chain. Whitelist the proxy instead. |
 | 04 | `q4-check-if-an-address-is-a-proxy` | How do I check an address is a real proxy? | Read the registry — every proxy is recorded when it is created. | One public mapping, no simulation and no guessing. When `isProxy` is true, the other two fields — the original address and its rollup id — are real. |
@@ -733,7 +733,7 @@ Merging rebuilds GitHub Pages in about a minute and triggers the Vercel deploy. 
 
 ```bash
 for u in https://eez-demos.vercel.app https://0xarmagan.github.io/eez-demos; do
-  for p in /llms.txt /dapp-developers/q7-your-address-on-every-rollup.html \
+  for p in /llms.txt /dapp-developers/q7-your-cross-chain-address.html \
            /protocol-researchers/pr5-how-the-address-is-derived.html \
            /dapp-developers/q1-compute-your-cross-chain-address.html; do
     printf "%s%s -> " "$u" "$p"; curl -s -o /dev/null -w "%{http_code}\n" "$u$p?cb=$$"

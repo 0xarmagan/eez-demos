@@ -112,7 +112,7 @@ public on two hosts. The stub uses a **relative** href — an absolute path is e
 broke the favicon on the GitHub Pages mirror, which serves from `/eez-demos/` rather than the
 domain root. A `vercel.json` redirect was rejected because it fixes only one of the two hosts.
 
-**A new dapp opener is added:** `dapp-developers/q7-your-address-on-every-rollup.html`,
+**A new dapp opener is added:** `dapp-developers/q7-your-cross-chain-address.html`,
 displayed as card 01.
 
 The filename is `q7`, not `q0`, deliberately. This repo already separates display order from
@@ -143,7 +143,7 @@ Titles are also the demo `<title>` tags, so the card and the page agree.
 
 | # | Question | Answer line |
 |---|---|---|
-| 01 | What address does my contract have on another rollup? | You already have one — derived from your address, identical on every rollup. |
+| 01 | What address does my contract have on another rollup? | You already have one on each — derived from your address, and computable before anything is deployed. |
 | 02 | How do I call a contract on another rollup? | Encode it like any normal call and send it to the proxy address. |
 | 03 | Who is `msg.sender` when the call comes from another chain? | The proxy — never your original address. |
 | 04 | How do I check an address is a real proxy? | Read the registry — every proxy is recorded when it is created. |
@@ -202,8 +202,8 @@ Nothing ships until all of these pass:
 - `cd snippets && forge test`.
 - `python3 scripts/build-llms.py --check`.
 - **Headless panel-height check on `q7` across all 3 steps.** The code panel is fixed-height
-  with `overflow-y:hidden`: 16 lines fit, 17 clip, and the overflow is invisible in a
-  screenshot. `audit.sh` does **not** catch this — it has passed on a file that was actively
+  with `overflow-y:auto`: 16 lines fit, and a 17th scrolls below the fold rather than
+  clipping — easy to miss inside a scale-transformed stage. `audit.sh` does **not** catch this — it has passed on a file that was actively
   clipping. Assert `scrollHeight === clientHeight` on `#codePanel` at every step.
 - **Both old and new URLs resolve** on Vercel *and* the GitHub Pages mirror after deploy.
 
