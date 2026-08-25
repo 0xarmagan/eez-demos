@@ -22,7 +22,7 @@ Writing contracts that call across rollups.
 
 ## What address does my contract have on another rollup?
 
-You already have one on each — derived from your address, and computable before anything is deployed. The stand-in is a proxy, and its address is derived from yours plus the rollup it lives on, so nothing has to be registered. Read it with computeCrossChainProxyAddress, deploy it with createCrossChainProxy — or do neither, because the protocol creates one on the first inbound call.
+You already have one on every other rollup — derived from your address and your own rollup id. The stand-in is a proxy. Its address comes from your address, your rollup id, and the manager on the far side, so you can compute it before anything is deployed and you never pre-register anything yourself. Read it with computeCrossChainProxyAddress, deploy it with createCrossChainProxy — or do neither, because the protocol creates one on the first inbound call.
 
 - Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q7-your-cross-chain-address.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:156 · createCrossChainProxy`
@@ -947,7 +947,7 @@ Standing the stack up and driving it.
 
 ## How do I run the whole stack locally?
 
-One Kurtosis command brings up all of it. Sequencer, composer, proof-signer and an embedded L1 in one disposable network. A single script deploys the contracts, generates the L2 genesis and boots everything together — the same components you would run against a real testnet, without one.
+Pull the submodule, start the engine, then one script boots the rest. A submodule pulls in the real contract source, kurtosis engine start spins up the disposable network, and two exports point it at the enclave and args file. Then one script deploys the contracts, generates the L2 genesis, and boots the L1, MEV-builder, node and proof-signer together — the same components you would run against a real testnet, without one.
 
 - Page: https://0xarmagan.github.io/eez-demos/rollup-operators/ro1-run-the-devnet-with-kurtosis.html
 - Source: `testing/kurtosis/README.md`

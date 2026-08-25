@@ -18,7 +18,7 @@ No build step, no dependencies — but serve it rather than opening `index.html`
 scripts/new-demo.sh <dapp-developers|rollup-operators|protocol-researchers> <slug> "<Title>"
 ```
 
-Scaffolds a structurally-correct file from the `q1` template (stage, code panel, `PRE-MAINNET` label, mobile floor — all pre-wired), with topic-specific content (diagram, `codeByStep`, citation, captions) marked `TODO`. Doesn't touch `index.html` or the `NEXT:` chain — that's manual.
+Scaffolds a structurally-correct file from the `pr5` template (stage, code panel, `PRE-MAINNET` label, mobile floor — all pre-wired), with topic-specific content (diagram, `codeByStep`, citation, captions) marked `TODO`. Doesn't touch `index.html` or the `NEXT:` chain — that's manual.
 
 ## Format
 

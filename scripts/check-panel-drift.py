@@ -16,8 +16,9 @@ toggle, and q3's TEST tab, claim to be showing a real file verbatim rather than
 a hand-wrapped slice of one, so those are asserted equal to the file line for
 line — a claim that would otherwise rot the moment the .sol file is edited.
 
-Only the six dapp-developer pages are covered. The rollup-operator pages are
-shell and the protocol-researcher pages are Rust/protobuf — different
+Only the six dapp-developer pages and one protocol-researcher page (pr5, which
+reuses the q1 snippet) are covered. The rollup-operator pages are shell and
+the rest of the protocol-researcher pages are Rust/protobuf — different
 toolchains, not in scope for this check.
 
 Usage:
@@ -34,8 +35,8 @@ import sys
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SNIPPETS = os.path.join(REPO_ROOT, "snippets")
 
-# Every Solidity walkthrough must name its snippet. A new dapp-developers page
-# with no entry here is a failure, not a silent skip.
+# Every Solidity walkthrough must name its snippet. A new dapp-developers or
+# protocol-researchers page with no entry here is a failure, not a silent skip.
 SNIPPET_MAP = {
     "pr5-how-the-address-is-derived.html": "q1-compute-address.sol",
     "q2-send-a-cross-chain-call.html": "q2-cross-chain-call.sol",

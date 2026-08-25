@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Scaffold a new walkthrough from the q1 template.
+# Scaffold a new walkthrough from the pr5 template.
 #
 # Usage:
 #   scripts/new-demo.sh <audience> <slug> <title>

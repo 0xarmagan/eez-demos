@@ -156,13 +156,13 @@ h1 .l{font-weight:300;color:#dcdcdc}
 
     <a class="card" href="./dapp-developers/q7-your-cross-chain-address.html">
       <div class="card-head"><h3 class="card-title">What address does my contract have on another rollup?</h3><span class="badge">DAPP DEVS</span></div>
-      <p class="card-hook">You already have one on each — derived from your address, and computable before anything is deployed.</p>
+      <p class="card-hook">You already have one on every other rollup — derived from your address and your own rollup id.</p>
       <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
     </a>
 
     <a class="card" href="./rollup-operators/ro1-run-the-devnet-with-kurtosis.html">
       <div class="card-head"><h3 class="card-title">How do I run the whole stack locally?</h3><span class="badge">ROLLUP OPS</span></div>
-      <p class="card-hook">One command: sequencer, composer, proof-signer, embedded L1.</p>
+      <p class="card-hook">Pull the submodule, start the engine, then one script boots the L1, MEV-builder, node and proof-signer.</p>
       <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
     </a>
 
@@ -184,8 +184,8 @@ h1 .l{font-weight:300;color:#dcdcdc}
 
       <a class="card" href="./dapp-developers/q7-your-cross-chain-address.html">
         <div class="card-head"><h3 class="card-title"><span class="card-num">01</span>What address does my contract have on another rollup?</h3></div>
-        <p class="card-answer">You already have one on each — derived from your address, and computable before anything is deployed.</p>
-        <p class="card-detail">The stand-in is a proxy, and its address is derived from yours plus the rollup it lives on, so nothing has to be registered. Read it with <code>computeCrossChainProxyAddress</code>, deploy it with <code>createCrossChainProxy</code> — or do neither, because the protocol creates one on the first inbound call.</p>
+        <p class="card-answer">You already have one on every other rollup — derived from your address and your own rollup id.</p>
+        <p class="card-detail">The stand-in is a proxy. Its address comes from your address, your rollup id, and the manager on the far side, so you can compute it before anything is deployed and you never pre-register anything yourself. Read it with <code>computeCrossChainProxyAddress</code>, deploy it with <code>createCrossChainProxy</code> — or do neither, because the protocol creates one on the first inbound call.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
@@ -237,8 +237,8 @@ h1 .l{font-weight:300;color:#dcdcdc}
 
       <a class="card" href="./rollup-operators/ro1-run-the-devnet-with-kurtosis.html">
         <div class="card-head"><h3 class="card-title"><span class="card-num">01</span>How do I run the whole stack locally?</h3></div>
-        <p class="card-answer">One Kurtosis command brings up all of it.</p>
-        <p class="card-detail">Sequencer, composer, proof-signer and an embedded L1 in one disposable network. A single script deploys the contracts, generates the L2 genesis and boots everything together — the same components you would run against a real testnet, without one.</p>
+        <p class="card-answer">Pull the submodule, start the engine, then one script boots the rest.</p>
+        <p class="card-detail">A submodule pulls in the real contract source, <code>kurtosis engine start</code> spins up the disposable network, and two exports point it at the enclave and args file. Then one script deploys the contracts, generates the L2 genesis, and boots the L1, MEV-builder, node and proof-signer together — the same components you would run against a real testnet, without one.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
