@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 # Structural audit — a fast automated first pass for a new/changed demo.
 #
-# This checks only what's verifiable from the repo alone. Two companion
-# scripts cover the rest, and CI runs all three:
+# This checks only what's verifiable from the repo alone. Three companion
+# scripts cover the rest, and CI runs all four:
 #
 #   scripts/verify-citations.py    fetches each cited file at its pinned SHA
 #                                  and asserts the line and symbol still match
 #   scripts/check-panel-drift.py   asserts every Solidity line in a code panel
 #                                  exists verbatim in a compilable snippet
+#   scripts/check-snippet-fidelity.py  asserts every declaration a snippet shares
+#                                  with upstream still matches upstream at the pin
 #   scripts/sync-embedded-snippets.py  re-embeds a snippet after editing the .sol
 #   scripts/build-llms.py          regenerates llms.txt / llms-full.txt
 #
@@ -111,6 +113,7 @@ if [ "$FAIL" -eq 0 ]; then
   echo "Structural audit passed."
   echo "Next: python3 scripts/verify-citations.py  (citations vs real source)"
   echo "      python3 scripts/check-panel-drift.py (panels vs compilable snippets)"
+  echo "      python3 scripts/check-snippet-fidelity.py (snippets vs upstream at the pin)"
   echo "If you edited a snippet: python3 scripts/sync-embedded-snippets.py"
   echo "If you edited any content: python3 scripts/build-llms.py"
 else
