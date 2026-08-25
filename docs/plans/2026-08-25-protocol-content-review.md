@@ -264,7 +264,7 @@ Review checks what is on the page; this task checks what should be. Scored again
 | `msg.sender` is a `CrossChainProxy` | Yes — `q3`, with a runnable test |
 | `balance` / `extcodesize` / `delegatecall` describe the proxy | **Check — appears absent** |
 | Same-block constraint on **execution** entries (`lastVerifiedBlock == block.number`, "there is no later") | **Check — appears absent** |
-| That the same-block rule does **not** apply to top-level **static** reads (`EEZ.sol:1306-1327`, persistent `staticEntryQueue`, gated on `_stateRootsMatch`) | **Absent — and a candidate page currently states the opposite. See Task 11** |
+| That the same-block rule differs by side — **L1 top-level statics are not block-gated** (`EEZ.sol:1306-1327`, persistent `staticEntryQueue`, gated on `_stateRootsMatch`), while **L2 statics are** (`EEZL2.sol:634`, docstring `:588` "no pins on L2 — the block gate bounds staleness"). `CrossChainProxy` runs on both sides, so no copy may state either rule flatly | **Absent — and a candidate page states the L1 rule as universal. See Task 11** |
 | Outcomes are pre-committed in an `ExecutionEntry` before the tx runs | **Check — appears absent** |
 | A caller cannot distinguish "no matching entry" from "destination reverted" | **Check — appears absent** |
 | Value and `callGas` semantics on a cross-chain call | Partial — `callGas` appears only as a hash field in `q5` |
@@ -486,7 +486,15 @@ The draft says the routed read works *"provided the composer put a matching stat
 curl -s "https://raw.githubusercontent.com/eez-association/eez-core-protocol/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol" | sed -n '1266,1330p'
 ```
 
-Expected: outside a mid-flight batch, `staticCrossChainCall` scans `verificationByRollup[destRid].staticEntryQueue` and matches on `proxyEntryHash`, `destinationRollupId` and `_stateRootsMatch(...)` — no `block.number` gate, with the source comment *"static calls do not obsolete after a block passes."* Replacement wording: the read resolves as long as a matching static entry exists **and the state roots it was proven against still match**, and it reverts `ExecutionNotFound()` when none does. Name the error exactly so search works.
+Expected: outside a mid-flight batch, `staticCrossChainCall` scans `verificationByRollup[destRid].staticEntryQueue` and matches on `proxyEntryHash`, `destinationRollupId` and `_stateRootsMatch(...)` — no `block.number` gate, with the source comment *"static calls do not obsolete after a block passes."*
+
+**But that is the L1 rule only, and the draft's page would run on both sides.** `EEZL2.sol:634` gates the L2 static path (`if (lastLoadBlock != block.number) revert ExecutionNotInCurrentBlock();`), with the docstring at `:588` explaining why: *"no pins on L2 — the block gate bounds staleness."* Verify both before writing a word:
+
+```bash
+curl -s "https://raw.githubusercontent.com/eez-association/eez-core-protocol/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/L2/EEZL2.sol" | sed -n '585,640p'
+```
+
+Replacement wording must therefore be side-aware: an L1 read resolves as long as a matching static entry exists **and the state roots it was proven against still match**; an L2 read is bounded to the block. Both revert `ExecutionNotFound()` when nothing matches — name the error exactly so search works. Do not state either rule flatly.
 
 - [ ] **Step 2: Fix the test that cannot pass (BLOCKING)**
 
