@@ -86,6 +86,21 @@ if [ -n "$hits" ]; then
   FAIL=1
 fi
 
+echo "== Every page carries the PRE-MAINNET label =="
+# Added by 47922e6 to close a DevRel review gap, then deleted from all 15 pages
+# by 81a211f — a syntax-highlighting commit — and nothing noticed for four days,
+# while README.md went on claiming "every page says so". The pages make
+# capability claims about a protocol that has not shipped; the label is the
+# frame those claims are read in.
+for f in $HTML_FILES; do
+  case "$f" in *q1-compute-your-cross-chain-address.html) continue ;; esac
+  if ! grep -qi "PRE-MAINNET" "$f"; then
+    echo "  MISSING: $f"
+    FAIL=1
+  fi
+done
+
+echo
 echo "== Generated files are current =="
 # A stale generated file is how STATIC_CHECK_GAS=5000 kept shipping after the
 # snippet was fixed: llms-full.txt is what agents read, and nothing compared it
