@@ -22,6 +22,8 @@
   button{font-family:var(--mono);}
   button:focus-visible{outline:2px solid var(--eez-green);outline-offset:2px;}
   .btn:hover{background:#1a1a1a !important;}
+  .btn:disabled{opacity:.38;cursor:default;}
+  .btn:disabled:hover{background:#141414 !important;}
   .btn-play:hover{background:linear-gradient(90deg,#9DEBBB 0%,#7593CD 100%) !important;}
   a.back{font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;}
   a.back{transition:color .15s ease,transform .15s ease;}
@@ -109,6 +111,15 @@
     #btnStart{font-size:16px;padding:13px 24px;width:100%;}
   }
 </style>
+<!-- The stage is authored at 1920x1080 and fitted by scaleStage(); the lead-in
+     hides the demo behind it from JS. Both corrections live in the script at the
+     end of <body>, and the render-blocking eez-tour.js fetch gives the browser a
+     paint opportunity before they run - so the first frame used to be the
+     unscaled stage with the demo showing through the lead-in. Holding the stage
+     until that init pass has run makes the first painted frame the correct one.
+     The class is set from script, so with JS off nothing is ever hidden. -->
+<script>document.documentElement.className += " pre-fit";</script>
+<style>.pre-fit #stage{visibility:hidden;}</style>
 </head>
 <body>
 <div role="main" class="stage-wrap" style="position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
@@ -124,7 +135,7 @@
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
-      <a class="back" href="ro2-deploy-the-protocol.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Deploy the Protocol →</a>
+      <a class="back" href="ro2-deploy-the-protocol.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Deploy the Protocol →</a>
     </div>
   </div>
 
@@ -475,8 +486,17 @@
     }
     stage.style.transform = "scale(" + s + ")";
   }
-  function staticBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; }
-  function animateBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; void b.offsetWidth; b.style.transition="transform "+STEP_MS+"ms linear"; b.style.transform="scaleX("+((step+1)/N)+")"; }
+  // Prev at the first step and Next at the last one are no-ops (both clamp),
+  // so they carry a real disabled state instead of looking live and doing
+  // nothing. Driven from the two bar functions because between them they run
+  // after every step change - manual, autoplay and init alike.
+  function syncEnds(){
+    var p = document.getElementById("btnPrev"), n = document.getElementById("btnNext");
+    if (p) { p.disabled = (step <= 0); }
+    if (n) { n.disabled = (step >= N-1); }
+  }
+  function staticBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; syncEnds(); }
+  function animateBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; void b.offsetWidth; b.style.transition="transform "+STEP_MS+"ms linear"; b.style.transform="scaleX("+((step+1)/N)+")"; syncEnds(); }
   function schedule(){ clearTimeout(timer); animateBar(); timer = setTimeout(function(){ if(!playing) return; if(step >= N-1){ playing=false; render(); return; } step++; render(); schedule(); }, STEP_MS); }
   function togglePlay(){ if(playing){ clearTimeout(timer); playing=false; staticBar(); render(); return; } if(step >= N-1) step = 0; playing = true; render(); schedule(); }
   function next(){ clearTimeout(timer); playing=false; step=Math.min(N-1,step+1); render(); staticBar(); }
@@ -492,7 +512,6 @@
   // lasts for this page view only - nothing is written to localStorage.
   var introEl = document.getElementById("intro");
   var introHidden = [];   // [element, its own inline display] while covered
-  var tourPending = false;
   function introShowing(){ return !!introEl && !introEl.hasAttribute("hidden"); }
   function hideDemoForIntro(){
     var kids = document.querySelectorAll("#stage > div");
@@ -515,10 +534,6 @@
     render(); staticBar();
     var play = document.getElementById("btnPlay");
     if (play) { play.focus(); }
-    if (tourPending) {
-      tourPending = false;
-      if (eezTour()) { eezTour().maybeStart(); }
-    }
   }
   if (introEl) {
     hideDemoForIntro();
@@ -526,6 +541,15 @@
     // A real <button>, so Enter and Space activate it natively; the
     // keydown handler below stays off the keyboard while it is up.
     if (btnStart) { btnStart.addEventListener("click", dismissIntro); }
+    // Arriving via a NEXT link (bottom-bar <a class="back">, see the other
+    // 14 walkthroughs) means the reader already opted in to this track by
+    // clicking through the previous page - skip straight to step 1 instead
+    // of making them dismiss the lead-in again. Reusing dismissIntro keeps
+    // this in sync with the Start button's own end state. A reload of this
+    // exact URL (marker still in the address bar) legitimately skips the
+    // intro again; a reload of the bare URL carries no marker and still
+    // shows it.
+    if (window.location.hash === "#skip-intro") { dismissIntro(); }
   }
 
   // The pin is read out of whichever citation link the page has, deferred so it
@@ -545,16 +569,17 @@
   if (btnHelp) {
     btnHelp.addEventListener("click", function(){
       // The tour spotlights stage elements the lead-in is covering, so the
-      // lead-in goes first. tourPending is cleared so dismissIntro does not
-      // also fire maybeStart and open a second copy.
-      if (introShowing()) { tourPending = false; dismissIntro(); }
+      // lead-in goes first.
+      if (introShowing()) { dismissIntro(); }
       if (playing) { togglePlay(); }
       if (eezTour()) { eezTour().start(); }
     });
   }
-  // Deferred while the lead-in is up; dismissIntro replays it.
-  if (introShowing()) { tourPending = true; }
-  else if (eezTour()) { eezTour().maybeStart(); }
+  // The lead-in already orients a cold arrival, so the tour does not open
+  // behind it. Stacking the two meant the reader's first click after "Start
+  // the walkthrough" landed on the tour scrim instead of Next. The ? button
+  // still opens the tour on demand.
+  if (!introEl && eezTour()) { eezTour().maybeStart(); }
 
   function copyFallback(text, done){
     try {
@@ -609,6 +634,7 @@
   });
   window.addEventListener("resize", scaleStage);
   scaleStage(); render(); staticBar();
+  document.documentElement.classList.remove("pre-fit");
 })();
 </script>
 </body></html>
