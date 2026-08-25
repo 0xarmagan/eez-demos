@@ -374,9 +374,12 @@ h1 .l{font-weight:300;color:#dcdcdc}
   if (btnHelp) {
     btnHelp.addEventListener("click", function(){ if (eezTour()) { eezTour().start(); } });
   }
-  // Same site-wide key as the walkthroughs, so arriving here after seeing the
-  // tour on a walkthrough does not show it a second time.
-  if (eezTour()) { eezTour().maybeStart(); }
+  // The tour does not auto-open here. While #tourLayer is up the page will not
+  // scroll, so a first-time visitor's first click on an audience control did
+  // nothing at all: scrollIntoView returned 0 and held, against a target
+  // 1864px down. The hero, the search field and the "first time here" row
+  // already orient a cold arrival. Same defect the walkthroughs had in
+  // 56cb356, where the tour ate the first Next click. ? still opens it.
 })();
 </script>
 </body></html>
