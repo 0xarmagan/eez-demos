@@ -70,6 +70,45 @@ def flat_strings(block):
             for x in re.findall(r'"((?:[^"\\]|\\.)*)"', block)]
 
 
+# Terms a reader would plausibly type that appear nowhere on the card. The
+# search on index.html matched card.textContent only - a title, a one-line hook
+# and a CTA identical on all 18 cards, about 20 words per walkthrough - so
+# "Kurtosis" returned nothing while a whole walkthrough was about it. These are
+# generated rather than hand-written so they cannot drift: --check gates them
+# the same way it gates llms.txt.
+_STOP = {
+    "the", "a", "an", "and", "or", "of", "to", "in", "on", "it", "is", "for",
+    "that", "this", "with", "from", "by", "as", "at", "be", "are", "you",
+    "your", "how", "learn", "one", "into", "its", "not", "no", "so", "then",
+    "than", "before", "after", "every", "each", "any", "all", "can", "has",
+    "have", "was", "were", "will", "would", "run", "set", "get", "use", "new",
+}
+
+# codeByStep is the usual home, but ro4 slices a `lines` array and ro2 slices
+# `makefileLines`, so a codeByStep-only read would silently skip both pages'
+# vocabulary - which is where EEZ_MAX_USER_TXS_PER_BUNDLE and run-node live.
+_TEXT_ARRAYS = ("captions", "kickers", "codeByStep", "lines", "makefileLines")
+
+
+def keywords_for(src, rel):
+    words = []
+    for name in _TEXT_ARRAYS:
+        words += flat_strings(js_array(src, name))
+    blob = " ".join(words) + " " + os.path.basename(rel)
+    terms = set()
+    for w in re.findall(r"[A-Za-z][A-Za-z0-9_.]{2,}", blob):
+        t = w.lower().strip("._")
+        if len(t) > 2 and t not in _STOP:
+            terms.add(t)
+    # The slug carries the topic word often enough to be worth splitting out:
+    # "run-the-devnet-with-kurtosis" is the only place "kurtosis" appears for
+    # ro1 outside its code panel.
+    for part in re.split(r"[-_./]", os.path.basename(rel)):
+        if len(part) > 2 and part.lower() not in _STOP:
+            terms.add(part.lower())
+    return " ".join(sorted(terms))
+
+
 def steps_of(src):
     """codeByStep as a list of per-step line lists."""
     raw = js_array(src, "codeByStep")
@@ -210,6 +249,7 @@ def collect():
                 "cite_txt": cite_txt, "cite_url": cite_url, "sha": sha,
                 "lang": lang_for(cite_path, track),
                 "snippet": snips.get(name), "test": tests.get(name),
+                "keywords": keywords_for(src, rel),
             })
     if missing_from_grid:
         print("NOTE: pages absent from index.html's card grid, appended after "
@@ -364,6 +404,25 @@ def build_full(pages):
     return "\n".join(out).rstrip() + "\n"
 
 
+def build_index_html(pages):
+    """index.html with each card's data-keywords rewritten from its page.
+
+    Idempotent: an existing attribute is replaced, a missing one inserted after
+    the href. Returned rather than written, so main() can treat it exactly like
+    llms.txt and --check can call it stale.
+    """
+    path = os.path.join(ROOT, "index.html")
+    src = open(path, encoding="utf-8").read()
+    for p in pages:
+        # The starter row repeats three of the cards, so every anchor pointing
+        # at this page gets the attribute, not just the first.
+        href = "./" + p["rel"]
+        pat = re.compile(r'(<a class="card" href="' + re.escape(href) + r'")'
+                         r'(?: data-keywords="[^"]*")?')
+        src = pat.sub(lambda m: m.group(1) + ' data-keywords="%s"' % p["keywords"], src)
+    return src
+
+
 def main():
     check = "--check" in sys.argv
     pages = collect()
@@ -371,7 +430,9 @@ def main():
         print("FAIL: expected 15 walkthroughs, collected %d" % len(pages))
         return 1
 
-    targets = {"llms.txt": build_index(pages), "llms-full.txt": build_full(pages)}
+    targets = {"llms.txt": build_index(pages),
+               "llms-full.txt": build_full(pages),
+               "index.html": build_index_html(pages)}
     stale = []
     for name, content in targets.items():
         path = os.path.join(ROOT, name)
@@ -386,7 +447,7 @@ def main():
         if stale:
             print("STALE: %s — run python3 scripts/build-llms.py" % ", ".join(stale))
             return 1
-        print("llms.txt and llms-full.txt are current (%d walkthroughs)." % len(pages))
+        print("llms.txt, llms-full.txt and index.html keywords are current (%d walkthroughs)." % len(pages))
         return 0
 
     for name in targets:
