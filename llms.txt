@@ -18,7 +18,7 @@ a commit SHA, so a link tells you exactly which revision a claim was true of.
 
 Writing contracts that call across rollups.
 
-- [What address does my contract have on another rollup?](https://0xarmagan.github.io/eez-demos/dapp-developers/q7-your-cross-chain-address.html): You already have one on every other rollup — derived from your address and your own rollup id. The stand-in is a proxy. Its address comes from your address, your rollup id, and the manager on the far side, so you can compute it before anything is deployed and you never pre-register anything yourself. Read it with computeCrossChainProxyAddress, deploy it with createCrossChainProxy — or do neither, because the protocol creates one on the first inbound call.
+- [How to get your contract's address on another rollup](https://0xarmagan.github.io/eez-demos/dapp-developers/q7-your-cross-chain-address.html): Learn how to read it, deploy it, or let the protocol create it for you.
 - [How do I call a contract on another rollup?](https://0xarmagan.github.io/eez-demos/dapp-developers/q2-send-a-cross-chain-call.html): Encode it like any normal call and send it to the proxy address. There is no cross-chain ABI to learn — the proxy's fallback catches everything and routes it. It even works out whether you meant a read: one self-call probes a transient write, and if that reverts, the call goes to a read-only lookup instead of a real execution.
 - [Who is msg.sender when the call comes from another chain?](https://0xarmagan.github.io/eez-demos/dapp-developers/q3-fix-the-msg-sender-gotcha.html): The proxy — never your original address. A call from another rollup arrives through the proxy, so that is who the destination sees. A require(msg.sender == owner) written for same-chain use passes locally and reverts every time cross-chain. Whitelist the proxy instead.
 - [How do I check an address is a real proxy?](https://0xarmagan.github.io/eez-demos/dapp-developers/q4-check-if-an-address-is-a-proxy.html): Read the registry — every proxy is recorded when it is created. One public mapping, no simulation and no guessing. When isProxy is true, the other two fields — the original address and its rollup id — are real.
@@ -48,7 +48,7 @@ How Rollup0 actually settles and proves.
 
 Real files, not fragments: pragma, imports and a contract wrapper, all building under solc 0.8.28. Each mirrors the upstream function its walkthrough cites.
 
-- [snippets/q7-create-proxy.sol](https://0xarmagan.github.io/eez-demos/snippets/q7-create-proxy.sol): full source behind What address does my contract have on another rollup?
+- [snippets/q7-create-proxy.sol](https://0xarmagan.github.io/eez-demos/snippets/q7-create-proxy.sol): full source behind How to get your contract's address on another rollup
 - [snippets/q2-cross-chain-call.sol](https://0xarmagan.github.io/eez-demos/snippets/q2-cross-chain-call.sol): full source behind How do I call a contract on another rollup?
 - [snippets/q3-msg-sender.sol](https://0xarmagan.github.io/eez-demos/snippets/q3-msg-sender.sol): full source behind Who is msg.sender when the call comes from another chain?
 - [snippets/q4-proxy-registry.sol](https://0xarmagan.github.io/eez-demos/snippets/q4-proxy-registry.sol): full source behind How do I check an address is a real proxy?

@@ -64,7 +64,18 @@
 </style>
 </head>
 <body>
-<div role="main" class="stage-wrap" style="position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
+<div class="intro" style="max-width:900px;margin:0 auto;padding:56px 24px 40px;font-family:var(--sans);background:#000;">
+  <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">DAPP DEVELOPERS · 01</div>
+  <h1 style="font-size:28px;font-weight:600;color:#fff;line-height:1.25;margin:14px 0 18px;">How to get your contract's address on another rollup</h1>
+  <p style="font-size:17px;line-height:1.6;color:#d8d8d8;max-width:760px;margin:0 0 26px;">You already have an address on every other rollup — a proxy derived from your address, your rollup id, and the manager on the far side. Read it before anything is deployed with a view call, or deploy it yourself with one transaction that registers it as authorized — or do neither, since the protocol creates one automatically on the first inbound call. The one rule: this only works for remote addresses — a proxy for your own network reverts.</p>
+  <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;">WHAT YOU'LL LEARN</div>
+  <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;">
+    <li style="display:flex;gap:10px;font-size:16px;line-height:1.5;color:#d8d8d8;"><span style="color:var(--eez-green);flex:none;" aria-hidden="true">→</span>Deploy the proxy and get its address back in one call.</li>
+    <li style="display:flex;gap:10px;font-size:16px;line-height:1.5;color:#d8d8d8;"><span style="color:var(--eez-green);flex:none;" aria-hidden="true">→</span>Read the address before anything is deployed, with a view call.</li>
+    <li style="display:flex;gap:10px;font-size:16px;line-height:1.5;color:#d8d8d8;"><span style="color:var(--eez-green);flex:none;" aria-hidden="true">→</span>Why a proxy for your own network reverts — remote addresses only.</li>
+  </ul>
+</div>
+<div role="main" class="stage-wrap" style="position:relative;inset:auto;height:100vh;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
 <div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background-color:var(--eez-canvas);background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:42px 42px;color:#fff;transform-origin:center center;">
 
   <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1a1a1a;">
@@ -520,14 +531,17 @@
       document.body.style.overflowX = "auto";
     } else {
       stage.style.transformOrigin = "center center";
-      wrap.style.position = "fixed";
-      wrap.style.inset = "0";
+      // Was position:fixed/inset:0 (viewport-pinned). Now relative + full
+      // viewport height so the stage sits in normal flow below the intro
+      // block instead of covering it. See PostToolUse note in pilot report.
+      wrap.style.position = "relative";
+      wrap.style.inset = "auto";
       wrap.style.display = "flex";
       wrap.style.alignItems = "center";
       wrap.style.justifyContent = "center";
       wrap.style.overflow = "hidden";
       wrap.style.width = "";
-      wrap.style.height = "";
+      wrap.style.height = "100vh";
       document.body.style.overflowX = "";
     }
     stage.style.transform = "scale(" + s + ")";

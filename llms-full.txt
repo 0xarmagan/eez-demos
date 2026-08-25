@@ -20,9 +20,9 @@ a commit SHA, so a link tells you exactly which revision a claim was true of.
 
 Writing contracts that call across rollups.
 
-## What address does my contract have on another rollup?
+## How to get your contract's address on another rollup
 
-You already have one on every other rollup — derived from your address and your own rollup id. The stand-in is a proxy. Its address comes from your address, your rollup id, and the manager on the far side, so you can compute it before anything is deployed and you never pre-register anything yourself. Read it with computeCrossChainProxyAddress, deploy it with createCrossChainProxy — or do neither, because the protocol creates one on the first inbound call.
+Learn how to read it, deploy it, or let the protocol create it for you.
 
 - Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q7-your-cross-chain-address.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:156 · createCrossChainProxy`
