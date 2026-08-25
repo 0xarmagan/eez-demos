@@ -2,13 +2,13 @@
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EEZ Quickstarts</title>
-<meta name="description" content="14 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
+<meta name="description" content="15 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
 <meta property="og:title" content="EEZ Quickstarts">
-<meta property="og:description" content="14 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
+<meta property="og:description" content="15 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="EEZ Quickstarts">
-<meta name="twitter:description" content="14 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
+<meta name="twitter:description" content="15 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="alternate" type="text/markdown" href="llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="llms-full.txt" title="llms-full.txt — every walkthrough inlined">
@@ -131,7 +131,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <span class="search-shortcut">/</span>
     </div>
     <div class="filter-tabs">
-      <button class="filter-btn active" data-filter="all">ALL (14)</button>
+      <button class="filter-btn active" data-filter="all">ALL (15)</button>
       <button class="filter-btn" data-filter="dapp-developers">DAPP DEVS (6)</button>
       <button class="filter-btn" data-filter="rollup-operators">ROLLUP OPS (4)</button>
       <button class="filter-btn" data-filter="protocol-researchers">PROTOCOL RESEARCHERS (5)</button>
@@ -288,17 +288,17 @@ h1 .l{font-weight:300;color:#dcdcdc}
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
-      <a class="card" href="./protocol-researchers/pr3-the-deriver.html">
-        <div class="card-head"><h3 class="card-title"><span class="card-num">03</span>Can the L2 chain be rebuilt from L1 alone?</h3></div>
-        <p class="card-answer">Yes — that is the deriver's entire job.</p>
-        <p class="card-detail">It watches L1 for <code>BatchPosted</code> events rather than trusting any node's live output, rebuilding each slice of L2 state from raw L1 data. Replayed across all of L1 history, the resulting state answers to L1 and nothing else.</p>
+      <a class="card" href="./protocol-researchers/pr4-how-the-composer-proves-a-batch.html">
+        <div class="card-head"><h3 class="card-title"><span class="card-num">03</span>How does the composer prove a batch?</h3></div>
+        <p class="card-answer">One gRPC stream: header first, then blocks, then a signature.</p>
+        <p class="card-detail">The prover re-executes rather than taking the composer's word — it decodes the batch calldata, replays each block and recomputes the hash itself. The composer trusts the result only once the signature recovers to the registered attester.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
-      <a class="card" href="./protocol-researchers/pr4-how-the-composer-proves-a-batch.html">
-        <div class="card-head"><h3 class="card-title"><span class="card-num">04</span>How does the composer prove a batch?</h3></div>
-        <p class="card-answer">One gRPC stream: header first, then blocks, then a signature.</p>
-        <p class="card-detail">The prover re-executes rather than taking the composer's word — it decodes the batch calldata, replays each block and recomputes the hash itself. The composer trusts the result only once the signature recovers to the registered attester.</p>
+      <a class="card" href="./protocol-researchers/pr3-the-deriver.html">
+        <div class="card-head"><h3 class="card-title"><span class="card-num">04</span>Can the L2 chain be rebuilt from L1 alone?</h3></div>
+        <p class="card-answer">Yes — that is the deriver's entire job.</p>
+        <p class="card-detail">It watches L1 for <code>BatchPosted</code> events rather than trusting any node's live output, rebuilding each slice of L2 state from raw L1 data. Replayed across all of L1 history, the resulting state answers to L1 and nothing else.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
@@ -313,7 +313,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
   </section>
 
   <footer class="closer">
-    <span class="closer-label">THAT'S ALL 14 — MORE COMING AS THE PROTOCOL DOES</span>
+    <span class="closer-label">THAT'S ALL 15 — MORE COMING AS THE PROTOCOL DOES</span>
     <div class="closer-links">
       <a href="https://github.com/eez-association/eez-core-protocol">Star eez-core-protocol ↗</a>
       <a href="https://github.com/0xarmagan/eez-demos/blob/main/CONTRIBUTING.md">Suggest a demo ↗</a>

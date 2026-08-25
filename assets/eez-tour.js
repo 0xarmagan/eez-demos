@@ -14,7 +14,7 @@
  *    script would describe buttons that are not there.
  *
  * 3. It shows once per SITE, not once per page. Someone working through all
- *    14 walkthroughs should meet this once.
+ *    15 walkthroughs should meet this once.
  *
  * No dependencies, no build step, ES5-compatible.
  */
@@ -98,13 +98,13 @@
     if (q(".search-box-row")) {
       steps.push({ els: [q(".search-box-row")], pad: 10,
         kicker: "FIND ONE",
-        body: "Search all 14 walkthroughs by keyword \u2014 try msg.sender, CREATE2 or Kurtosis. " +
+        body: "Search all 15 walkthroughs by keyword \u2014 try msg.sender, CREATE2 or Kurtosis. " +
               "Pressing / jumps here from anywhere on the page." });
     }
     if (q(".filter-tabs")) {
       steps.push({ els: [q(".filter-tabs")], pad: 10,
         kicker: "OR BROWSE BY AUDIENCE",
-        body: "Three tracks: 6 for dapp developers, 4 for rollup operators, 4 for protocol " +
+        body: "Three tracks: 6 for dapp developers, 4 for rollup operators, 5 for protocol " +
               "researchers. The counts are live, so a filter never lands you on an empty list." });
     }
     var firstTime = q(".sec-head");
