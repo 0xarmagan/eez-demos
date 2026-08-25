@@ -124,7 +124,7 @@
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
-      <a class="back" href="../rollup-operators/ro1-run-the-devnet-with-kurtosis.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Run the EEZ Devnet with Kurtosis →</a>
+      <a class="back" href="../rollup-operators/ro1-run-the-devnet-with-kurtosis.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Run the EEZ Devnet with Kurtosis →</a>
     </div>
   </div>
 
@@ -608,6 +608,15 @@
     // A real <button>, so Enter and Space activate it natively; the
     // keydown handler below stays off the keyboard while it is up.
     if (btnStart) { btnStart.addEventListener("click", dismissIntro); }
+    // Arriving via a NEXT link (bottom-bar <a class="back">, see the other
+    // 14 walkthroughs) means the reader already opted in to this track by
+    // clicking through the previous page - skip straight to step 1 instead
+    // of making them dismiss the lead-in again. Reusing dismissIntro keeps
+    // this in sync with the Start button's own end state. A reload of this
+    // exact URL (marker still in the address bar) legitimately skips the
+    // intro again; a reload of the bare URL carries no marker and still
+    // shows it.
+    if (window.location.hash === "#skip-intro") { dismissIntro(); }
   }
 
   // The pin is read out of whichever citation link the page has, deferred so it
