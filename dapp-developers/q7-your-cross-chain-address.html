@@ -61,21 +61,147 @@
     #codePanel{position:relative;}
     #codePanel::after{content:"";position:absolute;top:0;right:0;bottom:0;width:28px;background:linear-gradient(to right,transparent,#050505);pointer-events:none;}
   }
+
+  /* ============================================================
+     PILOT v2 — control row + explanation section above the stage.
+     Self-contained; no shared stylesheet, no external asset.
+     Every colour here is either a :root custom property or a
+     literal already used elsewhere on this page. Amber #8B7B55
+     is the friction colour. Never red.
+     ============================================================ */
+
+  /* Smooth scroll for "Skip to demo ↓" only where motion is welcome.
+     The anchor itself is a plain in-page href, so it still works
+     with JS off and with reduced motion on — it just jumps. */
+  @media (prefers-reduced-motion: no-preference){ html{scroll-behavior:smooth;} }
+
+  /* --- 1. Slim control row -------------------------------------- */
+  .page-top{max-width:1120px;margin:0 auto;padding:22px 24px 0;display:flex;align-items:center;gap:16px;font-family:var(--sans);}
+  .page-top .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);flex:1;text-align:center;}
+  .skip-demo{font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;flex:none;white-space:nowrap;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:7px 14px;transition:color .15s ease,border-color .15s ease;}
+  .skip-demo:hover{color:#fff;border-color:var(--eez-edge);}
+  /* a:focus-visible above already gives every anchor here the same
+     2px green ring that button:focus-visible gives the stage buttons. */
+  @media (max-width:640px){
+    .page-top{flex-wrap:wrap;row-gap:12px;padding-top:18px;}
+    .page-top .eyebrow{order:3;flex:1 0 100%;text-align:left;}
+    .skip-demo{margin-left:auto;}
+  }
+
+  /* --- 2. Explanation section ----------------------------------- */
+  /* Two columns on wide screens: prose carries the argument, the
+     figure carries the mechanism. Prose is first in the DOM, so the
+     narrow-screen stack is prose-first for free. minmax(0,...) on
+     both tracks stops a long mono token from forcing the grid wider
+     than its container. */
+  .explain{max-width:1120px;margin:0 auto;padding:30px 24px 48px;font-family:var(--sans);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,420px);gap:56px;align-items:start;}
+  @media (max-width:940px){ .explain{grid-template-columns:minmax(0,1fr);gap:32px;padding:24px 20px 36px;} }
+
+  .explain h1{font-size:28px;font-weight:600;color:#fff;line-height:1.25;margin:0 0 20px;text-wrap:pretty;}
+  .explain p{font-size:17px;line-height:1.6;color:#d8d8d8;margin:0 0 16px;}
+  .explain p:last-of-type{margin-bottom:28px;}
+  .explain code{font-family:var(--mono);font-size:15px;color:#eef3f8;overflow-wrap:anywhere;}
+  .explain strong{color:#eef3f8;font-weight:600;}
+  .learn-label{font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;}
+  .learn{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;}
+  .learn li{display:flex;gap:10px;font-size:16px;line-height:1.5;color:#d8d8d8;}
+  .learn li > span{color:var(--eez-green);flex:none;}
+
+  .explain-figure{margin:0;background:var(--eez-canvas);border:1px solid var(--eez-edge);border-radius:12px;padding:20px 20px 16px;}
+  .explain-figure svg{display:block;width:100%;height:auto;}
+  .explain-figure figcaption{margin-top:16px;padding-top:14px;border-top:1px solid #1a1a1a;font-size:14px;line-height:1.55;color:var(--muted);}
+
+  /* --- 3. Diagram internals (classes, not per-node inline attrs,
+         so the next fourteen pages can restyle by swapping labels
+         and keep one palette). CSS font-size in px inside a viewBox
+         is in user units, so it scales with the figure. ---------- */
+  .dg-frame{fill:none;stroke:var(--eez-edge);stroke-dasharray:5 5;}
+  .dg-card{fill:var(--eez-screen);stroke:var(--eez-edge);}
+  .dg-card-proxy{fill:rgba(59,229,126,0.06);stroke:var(--eez-green);stroke-width:1.5;}
+  .dg-net{font-family:var(--mono);font-size:11px;letter-spacing:0.14em;fill:var(--label);}
+  .dg-name{font-family:var(--sans);font-size:16px;font-weight:600;fill:#eef3f8;}
+  .dg-addr{font-family:var(--mono);font-size:13px;fill:var(--muted);}
+  .dg-addr-proxy{font-family:var(--mono);font-size:13px;fill:var(--eez-green);}
+  .dg-tag{font-family:var(--mono);font-size:11px;fill:var(--label);}
+  .dg-tag-proxy{font-family:var(--mono);font-size:11px;fill:#7ee08c;}
+  .dg-route{font-family:var(--mono);font-size:12px;fill:var(--eez-green);}
+  .dg-note{font-family:var(--mono);font-size:12px;fill:var(--muted);}
+  .dg-flow{stroke:var(--eez-green);stroke-width:1.5;fill:none;}
+  .dg-flow-head{fill:var(--eez-green);}
+  .dg-flow-in{stroke:var(--muted);stroke-width:1.5;fill:none;}
+  .dg-flow-in-head{fill:var(--muted);}
+  .dg-derive{font-family:var(--mono);font-size:11px;fill:var(--muted);}
+  .dg-derive-key{fill:var(--eez-green);}
+  .dg-chip{font-family:var(--mono);font-size:11px;fill:#eef3f8;}
 </style>
 </head>
 <body>
-<div class="intro" style="max-width:900px;margin:0 auto;padding:56px 24px 40px;font-family:var(--sans);background:#000;">
-  <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">DAPP DEVELOPERS · 01</div>
-  <h1 style="font-size:28px;font-weight:600;color:#fff;line-height:1.25;margin:14px 0 18px;">How to get your contract's address on another rollup</h1>
-  <p style="font-size:17px;line-height:1.6;color:#d8d8d8;max-width:760px;margin:0 0 26px;">You already have an address on every other rollup — a proxy derived from your address, your rollup id, and the manager on the far side. Read it before anything is deployed with a view call, or deploy it yourself with one transaction that registers it as authorized — or do neither, since the protocol creates one automatically on the first inbound call. The one rule: this only works for remote addresses — a proxy for your own network reverts.</p>
-  <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:var(--muted);margin-bottom:10px;">WHAT YOU'LL LEARN</div>
-  <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;">
-    <li style="display:flex;gap:10px;font-size:16px;line-height:1.5;color:#d8d8d8;"><span style="color:var(--eez-green);flex:none;" aria-hidden="true">→</span>Deploy the proxy and get its address back in one call.</li>
-    <li style="display:flex;gap:10px;font-size:16px;line-height:1.5;color:#d8d8d8;"><span style="color:var(--eez-green);flex:none;" aria-hidden="true">→</span>Read the address before anything is deployed, with a view call.</li>
-    <li style="display:flex;gap:10px;font-size:16px;line-height:1.5;color:#d8d8d8;"><span style="color:var(--eez-green);flex:none;" aria-hidden="true">→</span>Why a proxy for your own network reverts — remote addresses only.</li>
-  </ul>
+<div class="page-top">
+  <a class="back" href="../index.html">← Quickstarts</a>
+  <div class="eyebrow">DAPP DEVELOPERS · 01</div>
+  <a class="skip-demo" href="#demo">Skip to demo ↓</a>
 </div>
-<div role="main" class="stage-wrap" style="position:relative;inset:auto;height:100vh;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
+
+<section class="explain">
+  <div class="explain-prose">
+    <h1>How to get your contract's address on another rollup</h1>
+    <p>Your contract lives on one rollup. On every other rollup it has a stand-in — a proxy — and anything over there that wants to reach your contract calls the stand-in instead. EEZ routes the call home.</p>
+    <p>The stand-in's address is derived, not assigned. It comes from your address, your own rollup id, and the manager contract on the far side — so you can compute it before anything is deployed, and reference a counterparty's address before either side exists.</p>
+    <p>You will rarely create one yourself. The protocol creates the proxy on the first inbound call, so the address is real whether or not you ever call <code>createCrossChainProxy</code>.</p>
+    <p>One rule: a proxy stands in for a <strong>remote</strong> address. Asking for one on the manager's own network reverts with <code>SameNetworkProxy</code>.</p>
+    <div class="learn-label">WHAT YOU'LL LEARN</div>
+    <ul class="learn">
+      <li><span aria-hidden="true">→</span>Deploy the proxy and get its address back in one call.</li>
+      <li><span aria-hidden="true">→</span>Read the address before anything is deployed, with a view call.</li>
+      <li><span aria-hidden="true">→</span>Why a proxy for your own network reverts — remote addresses only.</li>
+    </ul>
+  </div>
+
+  <figure class="explain-figure">
+    <svg viewBox="0 0 440 480" role="img" aria-labelledby="dgTitle dgDesc">
+      <title id="dgTitle">Your contract on rollup 1 and its stand-in proxy on rollup 2</title>
+      <desc id="dgDesc">myContract at 0xC0ffEE…4979 sits on rollup 1. On rollup 2 it has a stand-in, proxy(myContract), at 0x7d3F…9bA1. A contract on rollup 2 calls the stand-in, and EEZ routes that call home to rollup 1. The stand-in address is derived from three inputs: 0xC0ffEE…4979, rollup id 1, and rollup 2's manager.</desc>
+
+      <!-- ROLLUP 1 — the original -->
+      <rect class="dg-frame" x="8" y="8" width="424" height="124" rx="12"/>
+      <text class="dg-net" x="26" y="34">ROLLUP 1</text>
+      <rect class="dg-card" x="26" y="46" width="388" height="68" rx="8"/>
+      <text class="dg-name" x="44" y="74">myContract</text>
+      <text class="dg-addr" x="44" y="98">0xC0ffEE…4979</text>
+      <text class="dg-tag" x="396" y="74" text-anchor="end">your contract</text>
+
+      <!-- routed home -->
+      <path class="dg-flow" d="M62 214 L62 151"/>
+      <polygon class="dg-flow-head" points="62,136 55,151 69,151"/>
+      <text class="dg-route" x="84" y="180">EEZ routes the call home</text>
+
+      <!-- ROLLUP 2 — the stand-in, and whoever called it -->
+      <rect class="dg-frame" x="8" y="214" width="424" height="196" rx="12"/>
+      <text class="dg-net" x="26" y="240">ROLLUP 2</text>
+      <rect class="dg-card-proxy" x="26" y="252" width="388" height="68" rx="8"/>
+      <text class="dg-name" x="44" y="280">proxy(myContract)</text>
+      <text class="dg-addr-proxy" x="44" y="304">0x7d3F…9bA1</text>
+      <text class="dg-tag-proxy" x="396" y="280" text-anchor="end">its stand-in</text>
+
+      <path class="dg-flow-in" d="M62 362 L62 337"/>
+      <polygon class="dg-flow-in-head" points="62,322 55,337 69,337"/>
+      <text class="dg-note" x="84" y="347">calls the stand-in</text>
+      <rect class="dg-card" x="26" y="362" width="210" height="32" rx="6"/>
+      <text class="dg-note" x="44" y="382">a contract on rollup 2</text>
+
+      <!-- the three derivation inputs -->
+      <text class="dg-derive" x="8" y="436"><tspan class="dg-derive-key">0x7d3F…9bA1</tspan> is derived, not assigned — from:</text>
+      <rect class="dg-card" x="8" y="448" width="132" height="26" rx="6"/>
+      <text class="dg-chip" x="74" y="465" text-anchor="middle">0xC0ffEE…4979</text>
+      <rect class="dg-card" x="148" y="448" width="100" height="26" rx="6"/>
+      <text class="dg-chip" x="198" y="465" text-anchor="middle">rollup id 1</text>
+      <rect class="dg-card" x="256" y="448" width="176" height="26" rx="6"/>
+      <text class="dg-chip" x="344" y="465" text-anchor="middle">rollup 2's manager</text>
+    </svg>
+    <figcaption>Three inputs in, one address out — so either side can compute it before either side is deployed. Change any input and the address changes, which is why your contract does not have the same address on every rollup.</figcaption>
+  </figure>
+</section>
+<div role="main" id="demo" class="stage-wrap" style="position:relative;inset:auto;height:100vh;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
 <div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background-color:var(--eez-canvas);background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:42px 42px;color:#fff;transform-origin:center center;">
 
   <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1a1a1a;">
