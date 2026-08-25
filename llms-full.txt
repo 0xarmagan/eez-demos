@@ -20,9 +20,9 @@ a commit SHA, so a link tells you exactly which revision a claim was true of.
 
 Writing contracts that call across rollups.
 
-## Send a cross-chain call
+## How do I call a contract on another rollup?
 
-Call the proxy like a normal contract — EEZ handles the routing.
+Encode it like any normal call and send it to the proxy address. There is no cross-chain ABI to learn — the proxy's fallback catches everything and routes it. It even works out whether you meant a read: one self-call probes a transient write, and if that reverts, the call goes to a read-only lookup instead of a real execution.
 
 - Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q2-send-a-cross-chain-call.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback`
@@ -158,9 +158,9 @@ function _fallback() internal {
 }
 ```
 
-## How msg.sender resolves across chains
+## Who is msg.sender when the call comes from another chain?
 
-The destination always sees the proxy, never your original address.
+The proxy — never your original address. A call from another rollup arrives through the proxy, so that is who the destination sees. A require(msg.sender == owner) written for same-chain use passes locally and reverts every time cross-chain. Whitelist the proxy instead.
 
 - Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q3-fix-the-msg-sender-gotcha.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:39 · fallback`
@@ -358,9 +358,9 @@ contract Q3MsgSenderTest {
 }
 ```
 
-## How the proxy registry works
+## How do I check an address is a real proxy?
 
-Every real proxy is recorded on-chain, and anyone can read it directly.
+Read the registry — every proxy is recorded when it is created. One public mapping, no simulation and no guessing. When isProxy is true, the other two fields — the original address and its rollup id — are real.
 
 - Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q4-check-if-an-address-is-a-proxy.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:60 · authorizedProxies`
@@ -447,9 +447,9 @@ if (isProxy) { /* real proxy for origAddr@origRid */ }
 }
 ```
 
-## Encode a call's content hash
+## How do I encode a call's content hash?
 
-Reorder the fields and you get a silently different hash.
+Eight fields, hashed in one fixed order, identify a cross-chain call. Hash them together and you get the bytes32 that identifies the call. The order is load-bearing: reorder the fields and the hash changes silently — no error, just a hash that nothing matches.
 
 - Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q5-encode-a-calls-content-hash.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:198`
@@ -625,9 +625,9 @@ contract Q5ContentHashTest {
 }
 ```
 
-## Why the manager only accepts proxy calls
+## What does the manager accept?
 
-Direct calls revert — only a registered proxy reaches execution.
+Calls that arrive through a registered proxy. Nothing else reaches execution. Call the manager's entry point directly and it reverts with UnauthorizedProxy(). Both proxy entry points open with that same check, so no call reaches execution without passing it.
 
 - Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q6-why-you-cant-call-the-manager-directly.html
 - Source: `eez-core-protocol/src/EEZ.sol:780 · executeCrossChainCall`
@@ -786,7 +786,9 @@ contract Q6ManagerDirectTest {
 }
 ```
 
-## q7-your-cross-chain-address.html
+## What address does my contract have on another rollup?
+
+You already have one on each — derived from your address, and computable before anything is deployed.
 
 - Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q7-your-cross-chain-address.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:156 · createCrossChainProxy`
@@ -943,7 +945,7 @@ function computeCrossChainProxyAddress(
 
 Standing the stack up and driving it.
 
-## Run the EEZ devnet with Kurtosis
+## How do I run the whole stack locally?
 
 One command: sequencer, composer, proof-signer, embedded L1.
 
@@ -993,18 +995,18 @@ $ bash testing/kurtosis/start.sh \
     "$KURTOSIS_ARGS_FILE"
 ```
 
-## Deploy the protocol
+## How do I deploy the protocol?
 
-One script: EEZ, the proof system, and your manager.
+One command deploys the core protocol, the proof system and your manager. make deploy-protocol writes every address it produces into a gitignored deployments.env, and make run-node reads that file at startup — so there is no paste-the-address-into-.env step.
 
 - Page: https://0xarmagan.github.io/eez-demos/rollup-operators/ro2-deploy-the-protocol.html
 - Source: `Makefile:64-65 · scripts/deploy.sh`
 - Pinned at commit: `a4b9b2f`
 - Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/Makefile#L64-L65
 
-## Run the Chiado L2
+## How do I run this against a real testnet?
 
-Same stack, a real testnet instead of a sandbox.
+The same stack, pointed at Chiado instead of a sandbox. One-time build tooling, then deploy-protocol writes deployments.env and genesis.json before docker compose starts the node, signer and lighthouse. cast block-number against both ports confirms the embedded L1 is climbing and the L2 is producing.
 
 - Page: https://0xarmagan.github.io/eez-demos/rollup-operators/ro3-run-a-real-chiado-l2.html
 - Source: `README.md · Run a chiado L2 (Docker)`
@@ -1076,9 +1078,9 @@ $ cast block-number \
     --rpc-url http://localhost:18688
 ```
 
-## Send & test cross-chain calls
+## How do I send and test a cross-chain call?
 
-Two ports, four op types, real pass/fail metrics.
+Two proxy fronts, one script, real pass/fail numbers. Transparent fronts sit in front of L1 and L2: cross-chain transactions are held for the next sync block, everything else passes straight through. Watch EEZ_MAX_USER_TXS_PER_BUNDLE — it defaults to 3, and anything past it is dropped silently.
 
 - Page: https://0xarmagan.github.io/eez-demos/rollup-operators/ro4-send-and-test-cross-chain-calls.html
 - Source: `README.md · scripts/xchain-test.sh`
@@ -1091,7 +1093,7 @@ Two ports, four op types, real pass/fail metrics.
 
 How Rollup0 actually settles and proves.
 
-## The four components of Rollup0
+## Which component does what?
 
 Sequencer, composer, proof-signer, deriver — who does what.
 
@@ -1146,9 +1148,9 @@ pub(crate) fn sign(&self, public_inputs_hash: AttestablePublicInputsHash)
 pub struct Deriver<L2> { ... }
 ```
 
-## Commit-first, repair-if-needed
+## If L2 commits first, what makes L1 the source of truth?
 
-L2 commits immediately. L1 is still the source of truth.
+L2 commits immediately, and L1 either settles it or repairs it. begin() commits the L2 block before L1 has confirmed anything, and that optimistic state waits at a fixed sync height until L1's history reaches it. L1 confirmation then marks it settled — or marks it failed and triggers a repair.
 
 - Page: https://0xarmagan.github.io/eez-demos/protocol-researchers/pr2-commit-first-repair-if-needed.html
 - Source: `crates/eez-composer/src/optimistic.rs`
@@ -1206,9 +1208,9 @@ pub fn mark_failed(&self, sync_height: u64, slot_skipped: bool) {
 }
 ```
 
-## The deriver: rebuilding L2 state from L1 alone
+## Can the L2 chain be rebuilt from L1 alone?
 
-Rebuild the whole L2 chain from L1 alone.
+Yes — that is the deriver's entire job. It watches L1 for BatchPosted events rather than trusting any node's live output, rebuilding each slice of L2 state from raw L1 data. Replayed across all of L1 history, the resulting state answers to L1 and nothing else.
 
 - Page: https://0xarmagan.github.io/eez-demos/protocol-researchers/pr3-the-deriver.html
 - Source: `crates/eez-deriver/src/deriver.rs · Deriver<L2>`
@@ -1260,9 +1262,9 @@ pub fn execute_block(
 pub async fn catch_up(&self) -> DeriverResult<()> {
 ```
 
-## How the composer proves a batch
+## How does the composer prove a batch?
 
-One gRPC stream: header, then blocks, then a signature.
+One gRPC stream: header first, then blocks, then a signature. The prover re-executes rather than taking the composer's word — it decodes the batch calldata, replays each block and recomputes the hash itself. The composer trusts the result only once the signature recovers to the registered attester.
 
 - Page: https://0xarmagan.github.io/eez-demos/protocol-researchers/pr4-how-the-composer-proves-a-batch.html
 - Source: `crates/eez-control-rpc/proto/prove.proto · prove.v1.Prover`
@@ -1328,7 +1330,9 @@ message ProveResponse {
 // (1 GiB) — applied to encode + decode
 ```
 
-## pr5-how-the-address-is-derived.html
+## How is the address derived?
+
+Two values, hashed into a salt, run through CREATE2. The rollup id and your address, packed together, are the whole identity. keccak256 turns them into a 32-byte salt, and CREATE2 turns (manager, salt, bytecodeHash) into one address — computable before anything is deployed. This is the inside of computeCrossChainProxyAddress.
 
 - Page: https://0xarmagan.github.io/eez-demos/protocol-researchers/pr5-how-the-address-is-derived.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:176`

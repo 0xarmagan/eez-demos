@@ -130,7 +130,16 @@ def index_cards():
         if t:
             inner = re.sub(r'<span class="card-num">.*?</span>', "", t.group(1), flags=re.S)
             title = strip_tags(inner)
-        out[rel] = (title, strip_tags(h.group(1)) if h else "")
+        if h:
+            hook = strip_tags(h.group(1))
+        else:
+            # Numbered cards carry the hook as two paragraphs instead of one
+            # (card-answer, then card-detail) - join them so an entry still
+            # gets a real hook instead of silently going blank.
+            a = re.search(r'class="card-answer"[^>]*>(.*?)</p>', body, re.S)
+            d = re.search(r'class="card-detail"[^>]*>(.*?)</p>', body, re.S)
+            hook = " ".join(strip_tags(m.group(1)) for m in (a, d) if m)
+        out[rel] = (title, hook)
     return out
 
 

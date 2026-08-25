@@ -81,7 +81,7 @@ A second, independent pass — every real bug in this repo so far (a drifted sub
 1. Re-run `scripts/audit.sh` yourself — don't trust that it was run, or that nothing changed since.
 2. Re-run `scripts/verify-citations.py` — it fetches each cited file at the SHA in `scripts/citation-pins.json` and asserts the line and symbol still match, so citations no longer need checking by hand. What still needs judgment: whether the cited line is the *right* line to point at. The verifier accepts any line whose symbol matches within a few lines; it caught `EEZ.sol:790` pointing 10 lines into a function body, but it can't tell you a citation is pedagogically misaimed.
 3. Check the diagram against the code panel — same real function/struct/value, or just plausible-looking?
-4. Grep the term across all 14 demos before accepting a new name for something already named.
+4. Grep the term across all 15 demos before accepting a new name for something already named.
 5. Serve it locally and click through all 3 steps yourself — a diff review won't catch a broken `NEXT:` link or a step that renders wrong.
 
 Fix anything this turns up before merge — don't file a follow-up issue for a page that's already live.
