@@ -22,7 +22,7 @@ Writing contracts that call across rollups.
 
 ## How to get your contract's address on another rollup
 
-Learn how to read it, deploy it, or let the protocol create it for you.
+Learn how to read it, or deploy it.
 
 - Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q7-your-cross-chain-address.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:156 · createCrossChainProxy`
@@ -600,9 +600,9 @@ if (isProxy) { /* real proxy for origAddr@origRid */ }
 }
 ```
 
-## How to make sure your call reaches execution
+## How the guard makes sure only proxy calls reach execution
 
-Learn how to route through a registered proxy, and what happens if you do not.
+Learn how UnauthorizedProxy() stops any call that isn't proxy-routed.
 
 - Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q6-why-you-cant-call-the-manager-directly.html
 - Source: `eez-core-protocol/src/EEZ.sol:780 · executeCrossChainCall`
@@ -947,7 +947,7 @@ Standing the stack up and driving it.
 
 ## How to run the whole stack locally
 
-Learn how to bring up the node, proof-signer and an embedded L1 in a disposable network.
+Learn how to bring up the node, proof-signer and the L1 in a disposable network.
 
 - Page: https://0xarmagan.github.io/eez-demos/rollup-operators/ro1-run-the-devnet-with-kurtosis.html
 - Source: `testing/kurtosis/README.md`
