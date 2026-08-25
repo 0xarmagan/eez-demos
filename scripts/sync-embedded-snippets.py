@@ -14,21 +14,24 @@ Usage:
   python3 scripts/sync-embedded-snippets.py --check   # report, change nothing
 """
 
+import importlib.util
 import json
 import os
 import re
 import sys
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(REPO_ROOT, "scripts"))
 
-# Reuse the single source of truth for page -> snippet rather than restating it.
-_drift = {}
-with open(os.path.join(REPO_ROOT, "scripts", "check-panel-drift.py")) as fh:
-    _src = fh.read()
-_map_src = re.search(r"SNIPPET_MAP = \{(.*?)\n\}", _src, re.S).group(1)
-for m in re.finditer(r'"([^"]+)":\s*"([^"]+)"', _map_src):
-    _drift[m.group(1)] = m.group(2)
+# Reuse the single source of truth for page -> snippet, and its page-location
+# helper (a page isn't always in dapp-developers/ - e.g. pr5), rather than
+# restating either. check-panel-drift.py's filename has a hyphen so it can't
+# be a plain `import`; load it by path instead.
+_spec = importlib.util.spec_from_file_location(
+    "check_panel_drift", os.path.join(REPO_ROOT, "scripts", "check-panel-drift.py"))
+_drift_mod = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(_drift_mod)
+_drift = _drift_mod.SNIPPET_MAP
+find_page_path = _drift_mod.find_page_path
 
 ARRAY_RE = re.compile(r"(  var fullSnippet = )\[.*?\n  \](;)", re.S)
 
@@ -43,9 +46,9 @@ def main():
     changed, stale = [], []
 
     for page, rel in sorted(_drift.items()):
-        page_path = os.path.join(REPO_ROOT, "dapp-developers", page)
+        page_path = find_page_path(page)
         sol_path = os.path.join(REPO_ROOT, "snippets", rel)
-        if not (os.path.exists(page_path) and os.path.exists(sol_path)):
+        if page_path is None or not os.path.exists(sol_path):
             print(f"  SKIP {page}: missing page or snippet")
             continue
 
