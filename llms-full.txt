@@ -20,6 +20,159 @@ a commit SHA, so a link tells you exactly which revision a claim was true of.
 
 Writing contracts that call across rollups.
 
+## What address does my contract have on another rollup?
+
+You already have one on each — derived from your address, and computable before anything is deployed. The stand-in is a proxy, and its address is derived from yours plus the rollup it lives on, so nothing has to be registered. Read it with computeCrossChainProxyAddress, deploy it with createCrossChainProxy — or do neither, because the protocol creates one on the first inbound call.
+
+- Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q7-your-cross-chain-address.html
+- Source: `eez-core-protocol/src/base/EEZBase.sol:156 · createCrossChainProxy`
+- Pinned at commit: `9735f53`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L156
+
+### Step 1 — CALL IT INTO EXISTENCE
+
+One call deploys the proxy and registers it — you get the address back.
+
+```solidity
+function createCrossChainProxy(
+    address originalAddress,
+    uint64 originalRollupId
+) external returns (address proxy);
+```
+
+### Step 2 — OR READ IT FIRST
+
+Or read the address before anything is deployed. It is a view call.
+
+```solidity
+function createCrossChainProxy(
+    address originalAddress,
+    uint64 originalRollupId
+) external returns (address proxy);
+
+function computeCrossChainProxyAddress(
+    address originalAddress,
+    uint64 originalRollupId
+) external view returns (address);
+```
+
+### Step 3 — THE ONE RULE
+
+Remote addresses only. A proxy for your own network reverts.
+
+```solidity
+function createCrossChainProxy(
+    address originalAddress,
+    uint64 originalRollupId
+) external returns (address proxy);
+
+function computeCrossChainProxyAddress(
+    address originalAddress,
+    uint64 originalRollupId
+) external view returns (address);
+
+// A proxy stands in for a REMOTE address.
+if (originalRollupId == _getRollupId())
+    revert SameNetworkProxy(originalRollupId);
+```
+
+### Full compilable source — snippets/q7-create-proxy.sol
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+// Panel source for: dapp-developers/q7-your-cross-chain-address.html
+// Mirrors eez-core-protocol/src/base/EEZBase.sol:156, :166 and :176
+// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+//
+// The two calls a dapp developer *can* make. Neither is usually required:
+// the protocol creates the proxy itself on the first inbound call, at
+// eez-core-protocol/src/EEZ.sol:1139-1142. Neither call requires knowing
+// how the address is derived — that is protocol-researcher territory.
+//
+// Signatures and bodies are hand-wrapped to the code panel's column, the
+// same way snippets/q1-compute-address.sol is, so that every line the panel
+// shows exists verbatim here. scripts/check-panel-drift.py asserts that.
+
+/// @dev Stand-in for the real proxy. Only `type(...).creationCode` matters here.
+contract CrossChainProxy {
+    address public immutable manager;
+
+    constructor(address manager_) {
+        manager = manager_;
+    }
+}
+
+/// @dev The two entry points, as a dapp codes against them.
+interface IEEZProxyFactory {
+function createCrossChainProxy(
+    address originalAddress,
+    uint64 originalRollupId
+) external returns (address proxy);
+
+function computeCrossChainProxyAddress(
+    address originalAddress,
+    uint64 originalRollupId
+) external view returns (address);
+}
+
+contract CreateProxySnippet {
+    /// @notice Error when a proxy is requested for an address on THIS
+    ///         manager's own network.
+    error SameNetworkProxy(uint64 rollupId);
+
+    mapping(address => bool) public authorizedProxies;
+
+    event CrossChainProxyCreated(
+        address indexed proxy,
+        address indexed originalAddress,
+        uint64 originalRollupId
+    );
+
+    function _getRollupId() internal pure returns (uint64) {
+        return 0;
+    }
+
+function createCrossChainProxy(
+    address originalAddress,
+    uint64 originalRollupId
+) external returns (address proxy) {
+// A proxy stands in for a REMOTE address.
+if (originalRollupId == _getRollupId())
+    revert SameNetworkProxy(originalRollupId);
+
+    bytes32 salt = keccak256(
+        abi.encodePacked(originalRollupId, originalAddress)
+    );
+    proxy = address(new CrossChainProxy{salt: salt}(address(this)));
+    authorizedProxies[proxy] = true;
+    emit CrossChainProxyCreated(
+        proxy, originalAddress, originalRollupId
+    );
+}
+
+function computeCrossChainProxyAddress(
+    address originalAddress,
+    uint64 originalRollupId
+) public view returns (address) {
+    bytes32 salt = keccak256(
+        abi.encodePacked(originalRollupId, originalAddress)
+    );
+    bytes32 bytecodeHash = keccak256(abi.encodePacked(
+        type(CrossChainProxy).creationCode,
+        abi.encode(address(this))
+    ));
+    return address(uint160(uint256(keccak256(
+        abi.encodePacked(
+            bytes1(0xff), address(this),
+            salt, bytecodeHash
+        )
+    ))));
+}
+}
+```
+
 ## How do I call a contract on another rollup?
 
 Encode it like any normal call and send it to the proxy address. There is no cross-chain ABI to learn — the proxy's fallback catches everything and routes it. It even works out whether you meant a read: one self-call probes a transient write, and if that reverts, the call goes to a read-only lookup instead of a real execution.
@@ -447,6 +600,167 @@ if (isProxy) { /* real proxy for origAddr@origRid */ }
 }
 ```
 
+## What does the manager accept?
+
+Calls that arrive through a registered proxy. Nothing else reaches execution. Call the manager's entry point directly and it reverts with UnauthorizedProxy(). Both proxy entry points open with that same check, so no call reaches execution without passing it.
+
+- Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q6-why-you-cant-call-the-manager-directly.html
+- Source: `eez-core-protocol/src/EEZ.sol:780 · executeCrossChainCall`
+- Pinned at commit: `9735f53`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L780
+
+### Step 1 — ONLY A REAL PROXY
+
+Anyone can try calling the manager's entry point directly.
+
+```solidity
+function executeCrossChainCall(
+    address sourceAddress,
+    bytes calldata callData
+) external payable returns (bytes memory) {
+```
+
+### Step 2 — THE GUARD
+
+It reverts — UnauthorizedProxy(). Only a real proxy gets through.
+
+```solidity
+ProxyInfo storage proxyInfo =
+    authorizedProxies[msg.sender];
+
+if (!proxyInfo.isProxy)
+    revert UnauthorizedProxy();
+```
+
+### Step 3 — NO WAY PAST IT
+
+Both proxy entry points open with this check, so no proxy-routed call reaches execution without it.
+
+```solidity
+ProxyInfo storage proxyInfo =
+    authorizedProxies[msg.sender];
+
+if (!proxyInfo.isProxy)
+    revert UnauthorizedProxy();
+
+// msg.sender must be a real proxy —
+// never the caller's own address
+```
+
+### Full compilable source — snippets/q6-manager-direct.sol
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+// Panel source for: dapp-developers/q6-why-you-cant-call-the-manager-directly.html
+// Mirrors eez-core-protocol/src/EEZ.sol:780
+// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+//
+// The registry check is the first thing the entry point does. There is no
+// path into execution that skips it, which is why calling the manager
+// yourself cannot work no matter how the calldata is shaped.
+
+struct ProxyInfo {
+    bool isProxy;
+    address originalAddress;
+    uint64 originalRollupId;
+}
+
+error UnauthorizedProxy();
+
+contract ManagerEntrySnippet {
+    mapping(address proxy => ProxyInfo info) public authorizedProxies;
+
+function executeCrossChainCall(
+    address sourceAddress,
+    bytes calldata callData
+) external payable returns (bytes memory) {
+ProxyInfo storage proxyInfo =
+    authorizedProxies[msg.sender];
+
+if (!proxyInfo.isProxy)
+    revert UnauthorizedProxy();
+// msg.sender must be a real proxy —
+// never the caller's own address
+    sourceAddress;
+    callData;
+    return "";
+}
+}
+```
+
+### Runnable test — snippets/test/Q6ManagerDirect.t.sol
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+import {ManagerEntrySnippet, UnauthorizedProxy} from "../q6-manager-direct.sol";
+
+// Runnable proof that the manager's proxy entry point cannot be called
+// directly. Paste into any Foundry project and run:
+//
+//   forge test --match-contract Q6ManagerDirectTest -vv
+//
+// Depends on nothing but solc — no forge-std, no submodules.
+//
+// These are all negative cases on purpose. The claim the walkthrough makes is
+// that there is no way to shape a direct call that gets through, so the useful
+// test is the one that tries several shapes and gets the same revert each time.
+//
+// The positive case — a registered proxy succeeding — is deliberately absent.
+// authorizedProxies is written only by the manager's own CREATE2 deploy path,
+// so faking an entry here would mean either adding a setter that the real
+// contract does not have, or poking storage with vm.store. Both would be
+// testing the fake rather than the protocol.
+
+interface Vm {
+    function prank(address) external;
+    function expectRevert(bytes4) external;
+}
+
+contract Q6ManagerDirectTest {
+    Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+
+    ManagerEntrySnippet internal manager;
+
+    function setUp() public {
+        manager = new ManagerEntrySnippet();
+    }
+
+    /// @dev An ordinary EOA calling the entry point directly.
+    function test_directCallFromEoaReverts() public {
+        vm.prank(address(0xBEEF));
+        vm.expectRevert(UnauthorizedProxy.selector);
+        manager.executeCrossChainCall(address(0xBEEF), hex"a9059cbb");
+    }
+
+    /// @dev A contract calling it is no different: the check is on msg.sender
+    ///      being a registered proxy, not on being an EOA.
+    function test_directCallFromContractReverts() public {
+        vm.expectRevert(UnauthorizedProxy.selector);
+        manager.executeCrossChainCall(address(this), hex"a9059cbb");
+    }
+
+    /// @dev Passing someone else's address as sourceAddress does not help.
+    ///      sourceAddress is data; msg.sender is what is checked.
+    function test_spoofingSourceAddressDoesNotHelp() public {
+        vm.prank(address(0xBEEF));
+        vm.expectRevert(UnauthorizedProxy.selector);
+        manager.executeCrossChainCall(address(0xCAFE), hex"a9059cbb");
+    }
+
+    /// @dev Empty calldata reverts the same way. The registry check runs before
+    ///      anything looks at the payload, so payload shape is irrelevant.
+    function test_emptyCallDataRevertsIdentically() public {
+        vm.prank(address(0xBEEF));
+        vm.expectRevert(UnauthorizedProxy.selector);
+        manager.executeCrossChainCall(address(0xBEEF), "");
+    }
+}
+```
+
 ## How do I encode a call's content hash?
 
 Eight fields, hashed in one fixed order, identify a cross-chain call. Hash them together and you get the bytes32 that identifies the call. The order is load-bearing: reorder the fields and the hash changes silently — no error, just a hash that nothing matches.
@@ -625,320 +939,6 @@ contract Q5ContentHashTest {
 }
 ```
 
-## What does the manager accept?
-
-Calls that arrive through a registered proxy. Nothing else reaches execution. Call the manager's entry point directly and it reverts with UnauthorizedProxy(). Both proxy entry points open with that same check, so no call reaches execution without passing it.
-
-- Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q6-why-you-cant-call-the-manager-directly.html
-- Source: `eez-core-protocol/src/EEZ.sol:780 · executeCrossChainCall`
-- Pinned at commit: `9735f53`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L780
-
-### Step 1 — ONLY A REAL PROXY
-
-Anyone can try calling the manager's entry point directly.
-
-```solidity
-function executeCrossChainCall(
-    address sourceAddress,
-    bytes calldata callData
-) external payable returns (bytes memory) {
-```
-
-### Step 2 — THE GUARD
-
-It reverts — UnauthorizedProxy(). Only a real proxy gets through.
-
-```solidity
-ProxyInfo storage proxyInfo =
-    authorizedProxies[msg.sender];
-
-if (!proxyInfo.isProxy)
-    revert UnauthorizedProxy();
-```
-
-### Step 3 — NO WAY PAST IT
-
-Both proxy entry points open with this check, so no proxy-routed call reaches execution without it.
-
-```solidity
-ProxyInfo storage proxyInfo =
-    authorizedProxies[msg.sender];
-
-if (!proxyInfo.isProxy)
-    revert UnauthorizedProxy();
-
-// msg.sender must be a real proxy —
-// never the caller's own address
-```
-
-### Full compilable source — snippets/q6-manager-direct.sol
-
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
-
-// Panel source for: dapp-developers/q6-why-you-cant-call-the-manager-directly.html
-// Mirrors eez-core-protocol/src/EEZ.sol:780
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
-//
-// The registry check is the first thing the entry point does. There is no
-// path into execution that skips it, which is why calling the manager
-// yourself cannot work no matter how the calldata is shaped.
-
-struct ProxyInfo {
-    bool isProxy;
-    address originalAddress;
-    uint64 originalRollupId;
-}
-
-error UnauthorizedProxy();
-
-contract ManagerEntrySnippet {
-    mapping(address proxy => ProxyInfo info) public authorizedProxies;
-
-function executeCrossChainCall(
-    address sourceAddress,
-    bytes calldata callData
-) external payable returns (bytes memory) {
-ProxyInfo storage proxyInfo =
-    authorizedProxies[msg.sender];
-
-if (!proxyInfo.isProxy)
-    revert UnauthorizedProxy();
-// msg.sender must be a real proxy —
-// never the caller's own address
-    sourceAddress;
-    callData;
-    return "";
-}
-}
-```
-
-### Runnable test — snippets/test/Q6ManagerDirect.t.sol
-
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
-
-import {ManagerEntrySnippet, UnauthorizedProxy} from "../q6-manager-direct.sol";
-
-// Runnable proof that the manager's proxy entry point cannot be called
-// directly. Paste into any Foundry project and run:
-//
-//   forge test --match-contract Q6ManagerDirectTest -vv
-//
-// Depends on nothing but solc — no forge-std, no submodules.
-//
-// These are all negative cases on purpose. The claim the walkthrough makes is
-// that there is no way to shape a direct call that gets through, so the useful
-// test is the one that tries several shapes and gets the same revert each time.
-//
-// The positive case — a registered proxy succeeding — is deliberately absent.
-// authorizedProxies is written only by the manager's own CREATE2 deploy path,
-// so faking an entry here would mean either adding a setter that the real
-// contract does not have, or poking storage with vm.store. Both would be
-// testing the fake rather than the protocol.
-
-interface Vm {
-    function prank(address) external;
-    function expectRevert(bytes4) external;
-}
-
-contract Q6ManagerDirectTest {
-    Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
-
-    ManagerEntrySnippet internal manager;
-
-    function setUp() public {
-        manager = new ManagerEntrySnippet();
-    }
-
-    /// @dev An ordinary EOA calling the entry point directly.
-    function test_directCallFromEoaReverts() public {
-        vm.prank(address(0xBEEF));
-        vm.expectRevert(UnauthorizedProxy.selector);
-        manager.executeCrossChainCall(address(0xBEEF), hex"a9059cbb");
-    }
-
-    /// @dev A contract calling it is no different: the check is on msg.sender
-    ///      being a registered proxy, not on being an EOA.
-    function test_directCallFromContractReverts() public {
-        vm.expectRevert(UnauthorizedProxy.selector);
-        manager.executeCrossChainCall(address(this), hex"a9059cbb");
-    }
-
-    /// @dev Passing someone else's address as sourceAddress does not help.
-    ///      sourceAddress is data; msg.sender is what is checked.
-    function test_spoofingSourceAddressDoesNotHelp() public {
-        vm.prank(address(0xBEEF));
-        vm.expectRevert(UnauthorizedProxy.selector);
-        manager.executeCrossChainCall(address(0xCAFE), hex"a9059cbb");
-    }
-
-    /// @dev Empty calldata reverts the same way. The registry check runs before
-    ///      anything looks at the payload, so payload shape is irrelevant.
-    function test_emptyCallDataRevertsIdentically() public {
-        vm.prank(address(0xBEEF));
-        vm.expectRevert(UnauthorizedProxy.selector);
-        manager.executeCrossChainCall(address(0xBEEF), "");
-    }
-}
-```
-
-## What address does my contract have on another rollup?
-
-You already have one on each — derived from your address, and computable before anything is deployed.
-
-- Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q7-your-cross-chain-address.html
-- Source: `eez-core-protocol/src/base/EEZBase.sol:156 · createCrossChainProxy`
-- Pinned at commit: `9735f53`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L156
-
-### Step 1 — CALL IT INTO EXISTENCE
-
-One call deploys the proxy and registers it — you get the address back.
-
-```solidity
-function createCrossChainProxy(
-    address originalAddress,
-    uint64 originalRollupId
-) external returns (address proxy);
-```
-
-### Step 2 — OR READ IT FIRST
-
-Or read the address before anything is deployed. It is a view call.
-
-```solidity
-function createCrossChainProxy(
-    address originalAddress,
-    uint64 originalRollupId
-) external returns (address proxy);
-
-function computeCrossChainProxyAddress(
-    address originalAddress,
-    uint64 originalRollupId
-) external view returns (address);
-```
-
-### Step 3 — THE ONE RULE
-
-Remote addresses only. A proxy for your own network reverts.
-
-```solidity
-function createCrossChainProxy(
-    address originalAddress,
-    uint64 originalRollupId
-) external returns (address proxy);
-
-function computeCrossChainProxyAddress(
-    address originalAddress,
-    uint64 originalRollupId
-) external view returns (address);
-
-// A proxy stands in for a REMOTE address.
-if (originalRollupId == _getRollupId())
-    revert SameNetworkProxy(originalRollupId);
-```
-
-### Full compilable source — snippets/q7-create-proxy.sol
-
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
-
-// Panel source for: dapp-developers/q7-your-cross-chain-address.html
-// Mirrors eez-core-protocol/src/base/EEZBase.sol:156, :166 and :176
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
-//
-// The two calls a dapp developer *can* make. Neither is usually required:
-// the protocol creates the proxy itself on the first inbound call, at
-// eez-core-protocol/src/EEZ.sol:1139-1142. Neither call requires knowing
-// how the address is derived — that is protocol-researcher territory.
-//
-// Signatures and bodies are hand-wrapped to the code panel's column, the
-// same way snippets/q1-compute-address.sol is, so that every line the panel
-// shows exists verbatim here. scripts/check-panel-drift.py asserts that.
-
-/// @dev Stand-in for the real proxy. Only `type(...).creationCode` matters here.
-contract CrossChainProxy {
-    address public immutable manager;
-
-    constructor(address manager_) {
-        manager = manager_;
-    }
-}
-
-/// @dev The two entry points, as a dapp codes against them.
-interface IEEZProxyFactory {
-function createCrossChainProxy(
-    address originalAddress,
-    uint64 originalRollupId
-) external returns (address proxy);
-
-function computeCrossChainProxyAddress(
-    address originalAddress,
-    uint64 originalRollupId
-) external view returns (address);
-}
-
-contract CreateProxySnippet {
-    /// @notice Error when a proxy is requested for an address on THIS
-    ///         manager's own network.
-    error SameNetworkProxy(uint64 rollupId);
-
-    mapping(address => bool) public authorizedProxies;
-
-    event CrossChainProxyCreated(
-        address indexed proxy,
-        address indexed originalAddress,
-        uint64 originalRollupId
-    );
-
-    function _getRollupId() internal pure returns (uint64) {
-        return 0;
-    }
-
-function createCrossChainProxy(
-    address originalAddress,
-    uint64 originalRollupId
-) external returns (address proxy) {
-// A proxy stands in for a REMOTE address.
-if (originalRollupId == _getRollupId())
-    revert SameNetworkProxy(originalRollupId);
-
-    bytes32 salt = keccak256(
-        abi.encodePacked(originalRollupId, originalAddress)
-    );
-    proxy = address(new CrossChainProxy{salt: salt}(address(this)));
-    authorizedProxies[proxy] = true;
-    emit CrossChainProxyCreated(
-        proxy, originalAddress, originalRollupId
-    );
-}
-
-function computeCrossChainProxyAddress(
-    address originalAddress,
-    uint64 originalRollupId
-) public view returns (address) {
-    bytes32 salt = keccak256(
-        abi.encodePacked(originalRollupId, originalAddress)
-    );
-    bytes32 bytecodeHash = keccak256(abi.encodePacked(
-        type(CrossChainProxy).creationCode,
-        abi.encode(address(this))
-    ));
-    return address(uint160(uint256(keccak256(
-        abi.encodePacked(
-            bytes1(0xff), address(this),
-            salt, bytecodeHash
-        )
-    ))));
-}
-}
-```
-
 ---
 
 # Rollup operators
@@ -947,7 +947,7 @@ Standing the stack up and driving it.
 
 ## How do I run the whole stack locally?
 
-One command: sequencer, composer, proof-signer, embedded L1.
+One Kurtosis command brings up all of it. Sequencer, composer, proof-signer and an embedded L1 in one disposable network. A single script deploys the contracts, generates the L2 genesis and boots everything together — the same components you would run against a real testnet, without one.
 
 - Page: https://0xarmagan.github.io/eez-demos/rollup-operators/ro1-run-the-devnet-with-kurtosis.html
 - Source: `testing/kurtosis/README.md`
@@ -1095,7 +1095,7 @@ How Rollup0 actually settles and proves.
 
 ## Which component does what?
 
-Sequencer, composer, proof-signer, deriver — who does what.
+Four separate programs, not one node. The sequencer builds a chain's blocks; the composer settles any cross-chain calls inside them — the live path is just those two. The proof-signer then signs a hash of the result so the block can be trusted downstream. The deriver trusts none of them and re-derives the same state from L1 alone.
 
 - Page: https://0xarmagan.github.io/eez-demos/protocol-researchers/pr1-the-four-components-of-rollup0.html
 - Source: `crates/eez-driver/src/sequencer.rs:159 · crates/eez-composer/src/composer.rs:515 · crates/eez-proof-signer/src/attest.rs:52 / :134 · crates/eez-deriver/src/deriver.rs:45`
@@ -1208,60 +1208,6 @@ pub fn mark_failed(&self, sync_height: u64, slot_skipped: bool) {
 }
 ```
 
-## Can the L2 chain be rebuilt from L1 alone?
-
-Yes — that is the deriver's entire job. It watches L1 for BatchPosted events rather than trusting any node's live output, rebuilding each slice of L2 state from raw L1 data. Replayed across all of L1 history, the resulting state answers to L1 and nothing else.
-
-- Page: https://0xarmagan.github.io/eez-demos/protocol-researchers/pr3-the-deriver.html
-- Source: `crates/eez-deriver/src/deriver.rs · Deriver<L2>`
-- Pinned at commit: `a4b9b2f`
-- Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-deriver/src/deriver.rs
-
-### Step 1 — WATCH L1
-
-The deriver watches L1 for BatchPosted events instead of trusting any node's live output.
-
-```rust
-// abi.rs:105
-event BatchPosted(uint256 indexed rollupCount);
-
-// deriver.rs:45
-pub struct Deriver<L2>
-```
-
-### Step 2 — REACT TO THE EVENT
-
-Each BatchPosted event runs through handle_event into execute_block, rebuilding that slice of L2 state from raw L1 data.
-
-```rust
-// abi.rs:105
-event BatchPosted(uint256 indexed rollupCount);
-
-// deriver.rs:45
-pub struct Deriver<L2>
-
-// deriver.rs:774
-async fn handle_event(&self, event: L1Event) -> DeriverResult<()> {
-
-// deriver.rs:504
-pub fn execute_block(
-```
-
-### Step 3 — CATCH UP = REBUILD EVERYTHING
-
-catch_up() replays this across all of L1 history to the present, so the resulting L2 state answers to L1 alone.
-
-```rust
-// deriver.rs:774
-async fn handle_event(&self, event: L1Event) -> DeriverResult<()> {
-
-// deriver.rs:504
-pub fn execute_block(
-
-// deriver.rs:169
-pub async fn catch_up(&self) -> DeriverResult<()> {
-```
-
 ## How does the composer prove a batch?
 
 One gRPC stream: header first, then blocks, then a signature. The prover re-executes rather than taking the composer's word — it decodes the batch calldata, replays each block and recomputes the hash itself. The composer trusts the result only once the signature recovers to the registered attester.
@@ -1328,6 +1274,60 @@ message ProveResponse {
 
 // MAX_MESSAGE_BYTES = 1024 * 1024 * 1024
 // (1 GiB) — applied to encode + decode
+```
+
+## Can the L2 chain be rebuilt from L1 alone?
+
+Yes — that is the deriver's entire job. It watches L1 for BatchPosted events rather than trusting any node's live output, rebuilding each slice of L2 state from raw L1 data. Replayed across all of L1 history, the resulting state answers to L1 and nothing else.
+
+- Page: https://0xarmagan.github.io/eez-demos/protocol-researchers/pr3-the-deriver.html
+- Source: `crates/eez-deriver/src/deriver.rs · Deriver<L2>`
+- Pinned at commit: `a4b9b2f`
+- Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-deriver/src/deriver.rs
+
+### Step 1 — WATCH L1
+
+The deriver watches L1 for BatchPosted events instead of trusting any node's live output.
+
+```rust
+// abi.rs:105
+event BatchPosted(uint256 indexed rollupCount);
+
+// deriver.rs:45
+pub struct Deriver<L2>
+```
+
+### Step 2 — REACT TO THE EVENT
+
+Each BatchPosted event runs through handle_event into execute_block, rebuilding that slice of L2 state from raw L1 data.
+
+```rust
+// abi.rs:105
+event BatchPosted(uint256 indexed rollupCount);
+
+// deriver.rs:45
+pub struct Deriver<L2>
+
+// deriver.rs:774
+async fn handle_event(&self, event: L1Event) -> DeriverResult<()> {
+
+// deriver.rs:504
+pub fn execute_block(
+```
+
+### Step 3 — CATCH UP = REBUILD EVERYTHING
+
+catch_up() replays this across all of L1 history to the present, so the resulting L2 state answers to L1 alone.
+
+```rust
+// deriver.rs:774
+async fn handle_event(&self, event: L1Event) -> DeriverResult<()> {
+
+// deriver.rs:504
+pub fn execute_block(
+
+// deriver.rs:169
+pub async fn catch_up(&self) -> DeriverResult<()> {
 ```
 
 ## How is the address derived?
