@@ -282,11 +282,11 @@
       card.innerHTML =
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:11px;">' +
           '<div style="font-family:var(--mono);font-size:12px;letter-spacing:0.14em;color:#3BE57E;">' + st.kicker + '</div>' +
-          '<div style="font-family:var(--mono);font-size:12px;color:#5b6572;">' + (idx + 1) + ' / ' + steps.length + '</div>' +
+          '<div style="font-family:var(--mono);font-size:12px;color:var(--muted);">' + (idx + 1) + ' / ' + steps.length + '</div>' +
         '</div>' +
         '<div style="font-size:17px;line-height:1.5;color:#d8d8d8;">' + st.body + '</div>' +
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px;">' +
-          '<button type="button" id="tourSkip" style="font-family:var(--mono);font-size:12px;letter-spacing:0.06em;color:#5b6572;background:none;border:none;padding:0;cursor:pointer;">SKIP</button>' +
+          '<button type="button" id="tourSkip" style="font-family:var(--mono);font-size:12px;letter-spacing:0.06em;color:var(--muted);background:none;border:none;padding:0;cursor:pointer;">SKIP</button>' +
           '<div style="display:flex;gap:9px;">' +
             (idx > 0 ? '<button type="button" id="tourPrev" style="font-family:var(--mono);font-size:12px;letter-spacing:0.06em;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:8px 16px;cursor:pointer;">‹ Back</button>' : '') +
             '<button type="button" id="tourNext" style="font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:0.06em;color:#0A0A0A;background:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%);border:1px solid #6283BD;border-radius:100px;padding:8px 18px;cursor:pointer;">' +
