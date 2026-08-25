@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-// Panel source for: dapp-developers/q7-your-address-on-every-rollup.html
-// Mirrors eez-core-protocol/src/base/EEZBase.sol:156 and :176
+// Panel source for: dapp-developers/q7-your-cross-chain-address.html
+// Mirrors eez-core-protocol/src/base/EEZBase.sol:156, :166 and :176
 // @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
 //
-// The two calls a dapp developer makes. Neither requires knowing how the
-// address is derived — that is protocol-researcher territory.
+// The two calls a dapp developer *can* make. Neither is usually required:
+// the protocol creates the proxy itself on the first inbound call, at
+// eez-core-protocol/src/EEZ.sol:1139-1142. Neither call requires knowing
+// how the address is derived — that is protocol-researcher territory.
 //
 // Signatures and bodies are hand-wrapped to the code panel's column, the
 // same way snippets/q1-compute-address.sol is, so that every line the panel

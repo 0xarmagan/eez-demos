@@ -6,7 +6,7 @@
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
-<title>Your Address on Every Rollup — EEZ</title>
+<title>What address does my contract have on another rollup? — EEZ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -72,7 +72,7 @@
     <div style="display:flex;align-items:center;gap:18px;">
       <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-      <div style="font-size:22px;font-weight:600;color:#fff;">Your Address on Every Rollup</div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">Your Cross-Chain Address</div>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
@@ -91,7 +91,7 @@
         <div style="flex:0 0 366px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:20px 22px;">
           <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">ROLLUP 1</div>
           <div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">myContract</div>
-          <div style="font-family:var(--mono);font-size:16px;color:var(--muted);margin-top:6px;">0xC0ffEE…0042</div>
+          <div style="font-family:var(--mono);font-size:16px;color:var(--muted);margin-top:6px;">0xC0ffEE…4979</div>
         </div>
         <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:9px;width:250px;">
           <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">createCrossChainProxy</div>
@@ -109,7 +109,7 @@
         <div style="width:6px;height:6px;border-radius:50%;background:var(--eez-green);animation:pulse 1.8s ease-in-out infinite;"></div>
         <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">deployed · authorizedProxies[proxy] = true</div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">One transaction. The manager on rollup 2 deploys the proxy and records it as authorized in the same call.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">One transaction. The manager on rollup 2 deploys the proxy and records it as authorized in the same call. You rarely have to: the protocol runs this same path itself the first time a call arrives from that address.</div>
     </div>
 
     <!-- STEP 2: compute — same address, nothing deployed (outline, not solid) -->
@@ -119,7 +119,7 @@
         <div style="flex:0 0 366px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:20px 22px;">
           <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">ROLLUP 1</div>
           <div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">myContract</div>
-          <div style="font-family:var(--mono);font-size:16px;color:var(--muted);margin-top:6px;">0xC0ffEE…0042</div>
+          <div style="font-family:var(--mono);font-size:16px;color:var(--muted);margin-top:6px;">0xC0ffEE…4979</div>
         </div>
         <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:9px;width:250px;">
           <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">computeCrossChainProxyAddress</div>
@@ -144,13 +144,13 @@
       <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">REMOTE ADDRESSES ONLY</div>
       <div style="display:flex;align-items:center;gap:18px;width:982px;max-width:100%;background:rgba(59,229,126,0.05);border:1px solid #2f6b3a;border-radius:10px;padding:16px 22px;">
         <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#7ee08c;flex:none;width:86px;">ALLOWED</div>
-        <div style="font-family:var(--mono);font-size:17px;color:#eef3f8;">createCrossChainProxy(0xC0ffEE…0042, 1)</div>
+        <div style="font-family:var(--mono);font-size:17px;color:#eef3f8;">createCrossChainProxy(0xC0ffEE…4979, 1)</div>
         <div style="font-size:20px;color:var(--eez-green);">→</div>
         <div style="font-family:var(--mono);font-size:17px;color:var(--eez-green);">0x7d3F…9bA1</div>
       </div>
       <div style="display:flex;align-items:center;gap:18px;width:982px;max-width:100%;background:rgba(139,123,85,0.08);border:1px solid #8B7B55;border-radius:10px;padding:16px 22px;">
         <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#8B7B55;flex:none;width:86px;">REVERTS</div>
-        <div style="font-family:var(--mono);font-size:17px;color:#8B7B55;text-decoration:line-through;">createCrossChainProxy(0xC0ffEE…0042, 2)</div>
+        <div style="font-family:var(--mono);font-size:17px;color:#8B7B55;text-decoration:line-through;">createCrossChainProxy(0xC0ffEE…4979, 2)</div>
         <div style="font-size:20px;color:#8B7B55;">→</div>
         <div style="font-family:var(--mono);font-size:17px;color:#8B7B55;">SameNetworkProxy(2)</div>
       </div>
@@ -246,6 +246,16 @@
       "    revert SameNetworkProxy(originalRollupId);"
     ]
   ];
+  // The panel's citation follows the step: steps 1 and 2 are the two entry
+  // points, step 3's guard lives in _createCrossChainProxyInternal, which is
+  // a different function at a different line. A single fixed citation would
+  // send a step-3 reader to code that does not contain what they are reading.
+  // Written as literal anchors so verify-citations.py sees and pins them.
+  var citeByStep = [
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L156" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:156 · createCrossChainProxy ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L176" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:176 · computeCrossChainProxyAddress ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L166" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:166 · SameNetworkProxy ↗</a>'
+  ];
   var hlByStep = [
     [0,1,2,3],
     [5,6,7,8],
@@ -260,12 +270,14 @@
       "// SPDX-License-Identifier: MIT",
       "pragma solidity ^0.8.28;",
       "",
-      "// Panel source for: dapp-developers/q7-your-address-on-every-rollup.html",
-      "// Mirrors eez-core-protocol/src/base/EEZBase.sol:156 and :176",
+      "// Panel source for: dapp-developers/q7-your-cross-chain-address.html",
+      "// Mirrors eez-core-protocol/src/base/EEZBase.sol:156, :166 and :176",
       "// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda",
       "//",
-      "// The two calls a dapp developer makes. Neither requires knowing how the",
-      "// address is derived \u2014 that is protocol-researcher territory.",
+      "// The two calls a dapp developer *can* make. Neither is usually required:",
+      "// the protocol creates the proxy itself on the first inbound call, at",
+      "// eez-core-protocol/src/EEZ.sol:1139-1142. Neither call requires knowing",
+      "// how the address is derived \u2014 that is protocol-researcher territory.",
       "//",
       "// Signatures and bodies are hand-wrapped to the code panel's column, the",
       "// same way snippets/q1-compute-address.sol is, so that every line the panel",
@@ -451,6 +463,8 @@
     document.getElementById("kicker").textContent = kickers[step];
     document.getElementById("caption").textContent = captions[step];
     document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
+    var cite = document.getElementById("srcCite");
+    if (cite && !showFull) { cite.innerHTML = citeByStep[step] || cite.getAttribute("data-demo-cite"); }
 
     els.s1.style.display = step === 0 ? "flex" : "none";
     els.s2.style.display = step === 1 ? "flex" : "none";
@@ -579,7 +593,7 @@
     if (citeEl) {
       citeEl.innerHTML = showFull
         ? 'snippets/q7-create-proxy.sol \u00b7 solc 0.8.28'
-        : citeEl.getAttribute("data-demo-cite");
+        : (citeByStep[step] || citeEl.getAttribute("data-demo-cite"));
     }
     // The whole file is longer and wider than the column, so full-context mode
     // trades type size for reach and turns the vertical axis into a scroller

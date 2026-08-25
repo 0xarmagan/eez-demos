@@ -43,7 +43,7 @@ SNIPPET_MAP = {
     "q4-check-if-an-address-is-a-proxy.html": "q4-proxy-registry.sol",
     "q5-encode-a-calls-content-hash.html": "q5-content-hash.sol",
     "q6-why-you-cant-call-the-manager-directly.html": "q6-manager-direct.sol",
-    "q7-your-address-on-every-rollup.html": "q7-create-proxy.sol",
+    "q7-your-cross-chain-address.html": "q7-create-proxy.sol",
 }
 
 # Panel lines that are prose or deliberate elision, not Solidity to compile.
