@@ -205,6 +205,10 @@
         </div>
       </div>
       <div style="font-size:16px;color:var(--muted);max-width:900px;">Runs with the proxy as msg.sender — real return data or revert bubbles straight back to you.</div>
+      <div style="max-width:900px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">AND ONLY INSIDE THE RIGHT BLOCK</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">A real execution resolves only in the block that proved it — <span style="font-family:var(--mono);">executeCrossChainCall</span> reverts <span style="font-family:var(--mono);">ExecutionNotInCurrentBlock</span> unless a verified batch for the destination rollup landed in this one. The read path differs by side: on L1 a static entry stays resolvable while its state roots still match, on L2 the same block gate applies. A miss reverts <span style="font-family:var(--mono);">ExecutionNotFound</span> — which you cannot tell apart from the destination reverting.</div>
+      </div>
     </div>
 
   </div>
@@ -238,7 +242,7 @@
       <ul class="intro-learn">
         <li><b>01 · ENCODE IT LIKE ANY CALL</b>A normal call, encoded with no cross-chain-specific ABI.</li>
         <li><b>02 · SEND TO THE PROXY</b>It goes to the proxy address, whose fallback catches everything.</li>
-        <li><b>03 · VIEW CALL OR REAL ONE?</b>One self-call probes a transient write — a revert marks it a view call, routed to a read-only lookup.</li>
+        <li><b>03 · VIEW CALL OR REAL ONE?</b>One self-call probes a transient write — a revert marks it a read, routed to the static path.</li>
       </ul>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
@@ -274,7 +278,7 @@
   var captions = [
     "Encode a normal call — no cross-chain-specific ABI.",
     "Send it to the proxy address. Its fallback catches everything.",
-    "One self-call probes a transient write. If it reverts, this is a view call — routed to a read-only lookup instead of a real execution."
+    "One self-call probes a transient write. If it reverts, this is a read — routed to staticCrossChainCall, which resolves it against a pre-computed static entry instead of executing."
   ];
 
   var codeByStep = [
@@ -289,6 +293,7 @@
       ");",
       "",
       "(bool ok, ) = proxyAddress.call(data);",
+      "if (!ok) revert CrossChainCallFailed();",
       "",
       "// CrossChainProxy.sol",
       "fallback() external payable {",
@@ -314,7 +319,7 @@
       "}"
     ]
   ];
-  var hlByStep = [ [0,1,2], [4,7,8,9], [1,2,3] ];
+  var hlByStep = [ [0,1,2], [4,5,8,9,10], [1,2,3] ];
 
   // Verbatim copy of snippets/q2-cross-chain-call.sol (the whole file, 74 lines).
   // scripts/check-panel-drift.py asserts this array still equals that file
@@ -337,6 +342,14 @@
       "    function setValue(uint256 v) external;",
       "}",
       "",
+      "/// @dev A cross-chain call fails for reasons an ordinary same-chain call",
+      "///      cannot, and the proxy forwards raw revert data either way",
+      "///      (CrossChainProxy.sol:109-113). So `ok == false` tells you the call",
+      "///      did not happen \u2014 never why. No matching entry in this block and a",
+      "///      genuine revert in the destination contract are indistinguishable",
+      "///      here; see docs/CAVEATS.md \"Indistinguishable revert reasons\".",
+      "error CrossChainCallFailed();",
+      "",
       "/// @dev Caller side \u2014 this is all a dapp has to do.",
       "contract Caller {",
       "    address public proxyAddress;",
@@ -347,7 +360,7 @@
       ");",
       "",
       "(bool ok, ) = proxyAddress.call(data);",
-      "        ok;",
+      "if (!ok) revert CrossChainCallFailed();",
       "    }",
       "}",
       "",

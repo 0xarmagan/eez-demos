@@ -15,6 +15,14 @@ interface IRemote {
     function setValue(uint256 v) external;
 }
 
+/// @dev A cross-chain call fails for reasons an ordinary same-chain call
+///      cannot, and the proxy forwards raw revert data either way
+///      (CrossChainProxy.sol:109-113). So `ok == false` tells you the call
+///      did not happen — never why. No matching entry in this block and a
+///      genuine revert in the destination contract are indistinguishable
+///      here; see docs/CAVEATS.md "Indistinguishable revert reasons".
+error CrossChainCallFailed();
+
 /// @dev Caller side — this is all a dapp has to do.
 contract Caller {
     address public proxyAddress;
@@ -25,7 +33,7 @@ bytes memory data = abi.encodeCall(
 );
 
 (bool ok, ) = proxyAddress.call(data);
-        ok;
+if (!ok) revert CrossChainCallFailed();
     }
 }
 
