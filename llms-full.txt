@@ -20,116 +20,6 @@ a commit SHA, so a link tells you exactly which revision a claim was true of.
 
 Writing contracts that call across rollups.
 
-## Compute your cross-chain address
-
-Every contract gets one deterministic address on every other rollup.
-
-- Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q1-compute-your-cross-chain-address.html
-- Source: `eez-core-protocol/src/base/EEZBase.sol:176`
-- Pinned at commit: `9735f53`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L176
-
-### Step 1 — TWO INPUTS
-
-Two values, packed as bytes — that's the whole identity.
-
-```solidity
-function computeCrossChainProxyAddress(
-    address originalAddress,
-    uint64 originalRollupId
-) public view returns (address) {
-```
-
-### Step 2 — PACKED & HASHED → SALT
-
-keccak256 turns them into a 32-byte salt.
-
-```solidity
-function computeCrossChainProxyAddress(
-    address originalAddress,
-    uint64 originalRollupId
-) public view returns (address) {
-
-    bytes32 salt = keccak256(
-        abi.encodePacked(
-            originalRollupId, originalAddress
-        )
-    );
-```
-
-### Step 3 — CREATE2 → ONE ADDRESS
-
-CREATE2 turns (manager, salt, bytecodeHash) into an address — before deployment.
-
-```solidity
-    bytes32 salt = keccak256(
-        abi.encodePacked(
-            originalRollupId, originalAddress
-        )
-    );
-
-    bytes32 bytecodeHash = keccak256(abi.encodePacked(
-        type(CrossChainProxy).creationCode,
-        abi.encode(address(this))
-    ));
-
-    return address(uint160(uint256(keccak256(
-        abi.encodePacked(
-            bytes1(0xff), address(this),
-            salt, bytecodeHash
-        )
-    ))));
-}
-```
-
-### Full compilable source — snippets/q1-compute-address.sol
-
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
-
-// Panel source for: dapp-developers/q1-compute-your-cross-chain-address.html
-// Mirrors eez-core-protocol/src/base/EEZBase.sol:176
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
-//
-// The address is a pure function of two values. No nonce, no deployment
-// order, no registry lookup — so you can compute it before anything is
-// deployed, on any chain running the manager.
-
-/// @dev Stand-in for the real proxy. Only `type(...).creationCode` matters here.
-contract CrossChainProxy {
-    address public immutable manager;
-
-    constructor(address manager_) {
-        manager = manager_;
-    }
-}
-
-contract ComputeAddressSnippet {
-function computeCrossChainProxyAddress(
-    address originalAddress,
-    uint64 originalRollupId
-) public view returns (address) {
-
-    bytes32 salt = keccak256(
-        abi.encodePacked(
-            originalRollupId, originalAddress
-        )
-    );
-    bytes32 bytecodeHash = keccak256(abi.encodePacked(
-        type(CrossChainProxy).creationCode,
-        abi.encode(address(this))
-    ));
-    return address(uint160(uint256(keccak256(
-        abi.encodePacked(
-            bytes1(0xff), address(this),
-            salt, bytecodeHash
-        )
-    ))));
-}
-}
-```
-
 ## Send a cross-chain call
 
 Call the proxy like a normal contract — EEZ handles the routing.
@@ -1285,4 +1175,112 @@ message ProveResponse {
 
 // MAX_MESSAGE_BYTES = 1024 * 1024 * 1024
 // (1 GiB) — applied to encode + decode
+```
+
+## pr5-how-the-address-is-derived.html
+
+- Page: https://0xarmagan.github.io/eez-demos/protocol-researchers/pr5-how-the-address-is-derived.html
+- Source: `eez-core-protocol/src/base/EEZBase.sol:176`
+- Pinned at commit: `9735f53`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L176
+
+### Step 1 — TWO INPUTS
+
+Two values, packed as bytes — that's the whole identity.
+
+```solidity
+function computeCrossChainProxyAddress(
+    address originalAddress,
+    uint64 originalRollupId
+) public view returns (address) {
+```
+
+### Step 2 — PACKED & HASHED → SALT
+
+keccak256 turns them into a 32-byte salt.
+
+```solidity
+function computeCrossChainProxyAddress(
+    address originalAddress,
+    uint64 originalRollupId
+) public view returns (address) {
+
+    bytes32 salt = keccak256(
+        abi.encodePacked(
+            originalRollupId, originalAddress
+        )
+    );
+```
+
+### Step 3 — CREATE2 → ONE ADDRESS
+
+CREATE2 turns (manager, salt, bytecodeHash) into an address — before deployment.
+
+```solidity
+    bytes32 salt = keccak256(
+        abi.encodePacked(
+            originalRollupId, originalAddress
+        )
+    );
+
+    bytes32 bytecodeHash = keccak256(abi.encodePacked(
+        type(CrossChainProxy).creationCode,
+        abi.encode(address(this))
+    ));
+
+    return address(uint160(uint256(keccak256(
+        abi.encodePacked(
+            bytes1(0xff), address(this),
+            salt, bytecodeHash
+        )
+    ))));
+}
+```
+
+### Full compilable source — snippets/q1-compute-address.sol
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+// Panel source for: protocol-researchers/pr5-how-the-address-is-derived.html
+// Mirrors eez-core-protocol/src/base/EEZBase.sol:176
+// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+//
+// The address is a pure function of two values. No nonce, no deployment
+// order, no registry lookup — so you can compute it before anything is
+// deployed, on any chain running the manager.
+
+/// @dev Stand-in for the real proxy. Only `type(...).creationCode` matters here.
+contract CrossChainProxy {
+    address public immutable manager;
+
+    constructor(address manager_) {
+        manager = manager_;
+    }
+}
+
+contract ComputeAddressSnippet {
+function computeCrossChainProxyAddress(
+    address originalAddress,
+    uint64 originalRollupId
+) public view returns (address) {
+
+    bytes32 salt = keccak256(
+        abi.encodePacked(
+            originalRollupId, originalAddress
+        )
+    );
+    bytes32 bytecodeHash = keccak256(abi.encodePacked(
+        type(CrossChainProxy).creationCode,
+        abi.encode(address(this))
+    ));
+    return address(uint160(uint256(keccak256(
+        abi.encodePacked(
+            bytes1(0xff), address(this),
+            salt, bytecodeHash
+        )
+    ))));
+}
+}
 ```

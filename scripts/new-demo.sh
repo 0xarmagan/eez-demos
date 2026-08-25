@@ -26,7 +26,7 @@ case "$AUDIENCE" in
 esac
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-TEMPLATE="$REPO_ROOT/dapp-developers/q1-compute-your-cross-chain-address.html"
+TEMPLATE="$REPO_ROOT/protocol-researchers/pr5-how-the-address-is-derived.html"
 DEST="$REPO_ROOT/$AUDIENCE/$SLUG.html"
 
 if [ ! -f "$TEMPLATE" ]; then

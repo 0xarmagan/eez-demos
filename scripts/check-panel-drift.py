@@ -37,7 +37,7 @@ SNIPPETS = os.path.join(REPO_ROOT, "snippets")
 # Every Solidity walkthrough must name its snippet. A new dapp-developers page
 # with no entry here is a failure, not a silent skip.
 SNIPPET_MAP = {
-    "q1-compute-your-cross-chain-address.html": "q1-compute-address.sol",
+    "pr5-how-the-address-is-derived.html": "q1-compute-address.sol",
     "q2-send-a-cross-chain-call.html": "q2-cross-chain-call.sol",
     "q3-fix-the-msg-sender-gotcha.html": "q3-msg-sender.sol",
     "q4-check-if-an-address-is-a-proxy.html": "q4-proxy-registry.sol",
@@ -98,6 +98,27 @@ def full_snippet_lines(html_path):
             for raw in re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(1))]
 
 
+# Registered pages aren't all in dapp-developers/ any more (a Solidity page
+# can move to another track, e.g. pr5) — locate a page by basename across
+# every audience-track directory instead of assuming one fixed folder.
+TRACK_DIRS = ("dapp-developers", "rollup-operators", "protocol-researchers")
+
+
+def find_page_path(name):
+    for track in TRACK_DIRS:
+        candidate = os.path.join(REPO_ROOT, track, name)
+        if os.path.exists(candidate):
+            return candidate
+    return None
+
+
+def has_code_panels(html_path):
+    """True if the page has a codeByStep array, i.e. is an actual walkthrough
+    and not a redirect stub (which has no panels to drift-check)."""
+    return bool(re.search(r"var codeByStep\s*=",
+                           open(html_path, encoding="utf-8").read()))
+
+
 def main():
     pages_dir = os.path.join(REPO_ROOT, "dapp-developers")
     present = sorted(
@@ -108,22 +129,32 @@ def main():
     failures, checked = [], 0
 
     for page in present:
+        if page in SNIPPET_MAP:
+            continue
         # q7-test-demo.html is untracked scaffold, not a published walkthrough
-        if page not in SNIPPET_MAP:
-            if page.startswith("q7-test-demo"):
-                continue
-            failures.append(f"{page}: no snippet registered in SNIPPET_MAP")
+        if page.startswith("q7-test-demo"):
+            continue
+        # A page with no code panels at all (e.g. a moved-away redirect
+        # stub) isn't a walkthrough and has nothing for this check to do.
+        if not has_code_panels(os.path.join(pages_dir, page)):
+            continue
+        failures.append(f"{page}: no snippet registered in SNIPPET_MAP")
+
+    for page, snippet_name in sorted(SNIPPET_MAP.items()):
+        page_path = find_page_path(page)
+        if page_path is None:
+            failures.append(f"{page}: registered in SNIPPET_MAP but the page is missing")
             continue
 
-        snippet_path = os.path.join(SNIPPETS, SNIPPET_MAP[page])
+        snippet_path = os.path.join(SNIPPETS, snippet_name)
         if not os.path.exists(snippet_path):
-            failures.append(f"{page}: snippet missing at snippets/{SNIPPET_MAP[page]}")
+            failures.append(f"{page}: snippet missing at snippets/{snippet_name}")
             continue
 
         snippet = {ln.rstrip() for ln in open(snippet_path, encoding="utf-8").read().splitlines()}
 
         try:
-            lines = panel_lines(os.path.join(pages_dir, page))
+            lines = panel_lines(page_path)
         except RuntimeError as e:
             failures.append(f"{page}: {e}")
             continue
@@ -135,13 +166,16 @@ def main():
             checked += 1
             if ln.rstrip() not in snippet:
                 failures.append(
-                    f"{page}: panel line not in snippets/{SNIPPET_MAP[page]}:\n"
+                    f"{page}: panel line not in snippets/{snippet_name}:\n"
                     f"        {ln.rstrip()!r}")
 
     # The TEST tab claims to show a verbatim slice of a real test file. Prove it.
     for page, rel in TEST_SNIPPET_MAP.items():
-        page_path = os.path.join(pages_dir, page)
+        page_path = find_page_path(page)
         test_path = os.path.join(SNIPPETS, rel)
+        if page_path is None:
+            failures.append(f"{page}: registered in TEST_SNIPPET_MAP but the page is missing")
+            continue
         if not os.path.exists(test_path):
             failures.append(f"{page}: test file missing at snippets/{rel}")
             continue
@@ -163,9 +197,9 @@ def main():
     # embedded copy that nothing checks is a copy that silently rots, so this
     # asserts equality line for line, including blanks and line count.
     for page, rel in sorted(FULL_SNIPPET_MAP.items()):
-        page_path = os.path.join(pages_dir, page)
+        page_path = find_page_path(page)
         snippet_path = os.path.join(SNIPPETS, rel)
-        if not os.path.exists(page_path):
+        if page_path is None:
             failures.append(f"{page}: registered in FULL_SNIPPET_MAP but the page is missing")
             continue
         if not os.path.exists(snippet_path):

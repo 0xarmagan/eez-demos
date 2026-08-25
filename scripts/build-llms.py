@@ -152,6 +152,13 @@ def collect():
             if name.startswith("q7"):
                 continue
             src = open(path, encoding="utf-8").read()
+            captions = flat_strings(js_array(src, "captions"))
+            if not captions:
+                # No captions means no walkthrough steps to narrate - a
+                # redirect stub left behind at a moved page's old path,
+                # not a real page for this index. Skip generally rather
+                # than by filename, so any future stub is caught too.
+                continue
             rel = track + "/" + name
             title, hook = cards.get(rel, (name, ""))
             cite_txt, cite_url, sha, cite_path = citation_of(src)
@@ -159,7 +166,7 @@ def collect():
                 "track": track, "track_label": label, "track_blurb": blurb,
                 "rel": rel, "title": title, "hook": hook,
                 "kickers": flat_strings(js_array(src, "kickers")),
-                "captions": flat_strings(js_array(src, "captions")),
+                "captions": captions,
                 "steps": steps_of(src), "diffs": diffs_of(src),
                 "cite_txt": cite_txt, "cite_url": cite_url, "sha": sha,
                 "lang": lang_for(cite_path, track),
