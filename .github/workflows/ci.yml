@@ -22,6 +22,16 @@ jobs:
       - name: Structural audit
         run: bash scripts/audit.sh
 
+      # The code panel is a fixed 662x663 column with overflow:auto, so an
+      # over-long line is not destroyed — it hides behind a scrollbar nobody
+      # looks for. This class shipped three times (2026-08-20, 08-23, 08-25)
+      # while every other gate passed, because the checker existed and nothing
+      # ran it. It runs here now.
+      - name: Code panel geometry
+        run: |
+          npm install puppeteer --no-save
+          node scripts/check-panel-geometry.cjs
+
       # Asserts every Solidity line in a code panel also exists in a snippet
       # that the compiler checks. Catches a panel edited into invalid Solidity.
       - name: Panel drift
