@@ -1,6 +1,6 @@
 # EEZ Quickstarts
 
-> Fifteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
+> Sixteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
 > contracts that call across rollups, running the stack, and how Rollup0 settles and proves.
 
@@ -24,6 +24,7 @@ Writing contracts that call across rollups.
 - [How to check an address is a real proxy](https://0xarmagan.github.io/eez-demos/dapp-developers/q4-check-if-an-address-is-a-proxy.html): Learn how to read the on-chain registry instead of guessing.
 - [How the guard makes sure only proxy calls reach execution](https://0xarmagan.github.io/eez-demos/dapp-developers/q6-why-you-cant-call-the-manager-directly.html): Learn how UnauthorizedProxy() stops any call that isn't proxy-routed.
 - [How to encode a call's content hash](https://0xarmagan.github.io/eez-demos/dapp-developers/q5-encode-a-calls-content-hash.html): Learn how to hash eight fields in the one order that works.
+- [How to read a remote contract's state](https://0xarmagan.github.io/eez-demos/dapp-developers/q8-read-a-remote-contracts-state.html): Learn why balance and code size answer about the proxy, and hand back a real number about the wrong contract with no revert.
 
 ## Rollup operators
 
@@ -54,6 +55,7 @@ Real files, not fragments: pragma, imports and a contract wrapper, all building 
 - [snippets/q4-proxy-registry.sol](https://0xarmagan.github.io/eez-demos/snippets/q4-proxy-registry.sol): full source behind How to check an address is a real proxy
 - [snippets/q6-manager-direct.sol](https://0xarmagan.github.io/eez-demos/snippets/q6-manager-direct.sol): full source behind How the guard makes sure only proxy calls reach execution
 - [snippets/q5-content-hash.sol](https://0xarmagan.github.io/eez-demos/snippets/q5-content-hash.sol): full source behind How to encode a call's content hash
+- [snippets/q8-remote-reads.sol](https://0xarmagan.github.io/eez-demos/snippets/q8-remote-reads.sol): full source behind How to read a remote contract's state
 - [snippets/q1-compute-address.sol](https://0xarmagan.github.io/eez-demos/snippets/q1-compute-address.sol): full source behind How the address is derived
 
 ## Runnable tests
@@ -63,6 +65,7 @@ Foundry tests with no forge-std and no submodules, so they drop into an existing
 - [snippets/test/Q3MsgSender.t.sol](https://0xarmagan.github.io/eez-demos/snippets/test/Q3MsgSender.t.sol): proves the behaviour in How to handle msg.sender across chains
 - [snippets/test/Q6ManagerDirect.t.sol](https://0xarmagan.github.io/eez-demos/snippets/test/Q6ManagerDirect.t.sol): proves the behaviour in How the guard makes sure only proxy calls reach execution
 - [snippets/test/Q5ContentHash.t.sol](https://0xarmagan.github.io/eez-demos/snippets/test/Q5ContentHash.t.sol): proves the behaviour in How to encode a call's content hash
+- [snippets/test/Q8RemoteReads.t.sol](https://0xarmagan.github.io/eez-demos/snippets/test/Q8RemoteReads.t.sol): proves the behaviour in How to read a remote contract's state
 
 ## Everything inlined
 

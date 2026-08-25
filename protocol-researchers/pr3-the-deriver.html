@@ -130,7 +130,7 @@
       <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
       <div style="font-size:22px;font-weight:600;color:#fff;">The Deriver: Rebuilding L2 State from L1 Alone</div>
-      <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#5a5a5a;">PRE-MAINNET</div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#8a8a8a;">PRE-MAINNET</div>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
@@ -149,7 +149,7 @@
       <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:18px 22px;display:flex;flex-direction:column;gap:10px;max-width:900px;">
         <div style="display:flex;gap:14px;align-items:baseline;">
           <div style="width:110px;font-family:var(--mono);font-size:13px;color:var(--muted);">address</div>
-          <div style="font-family:var(--mono);font-size:14px;color:#d8d8d8;">0xA9c1…04Fe <span style="color:var(--muted);">(RollupL1)</span></div>
+          <div style="font-family:var(--mono);font-size:14px;color:#d8d8d8;">0xA9c1…04Fe <span style="color:var(--muted);">(EEZ)</span></div>
         </div>
         <div style="display:flex;gap:14px;align-items:baseline;">
           <div style="width:110px;font-family:var(--mono);font-size:13px;color:var(--muted);">topics[0]</div>
@@ -157,14 +157,19 @@
         </div>
         <div style="display:flex;gap:14px;align-items:baseline;">
           <div style="width:110px;font-family:var(--mono);font-size:13px;color:var(--muted);">topics[1]</div>
-          <div style="display:flex;gap:10px;align-items:center;">
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
             <span style="font-family:var(--mono);font-size:13px;color:var(--muted);">rollupCount (indexed) =</span>
-            <span class="byte" style="background:rgba(63,185,80,0.16);color:#cfe9d4;border:1px solid #2f6b3a;font-weight:600;">4,821</span>
+            <span class="byte" style="background:rgba(63,185,80,0.16);color:#cfe9d4;border:1px solid #2f6b3a;font-weight:600;">3</span>
+            <span style="font-size:13px;color:var(--muted);">— rollups settled in this batch, not a batch ordinal</span>
           </div>
         </div>
         <div style="display:flex;gap:14px;align-items:baseline;">
           <div style="width:110px;font-family:var(--mono);font-size:13px;color:var(--muted);">data</div>
           <div style="font-family:var(--mono);font-size:14px;color:var(--muted);">(empty — nothing but the indexed topic)</div>
+        </div>
+        <div style="display:flex;gap:14px;align-items:baseline;">
+          <div style="width:110px;font-family:var(--mono);font-size:13px;color:#8f98a8;">tx calldata</div>
+          <div style="font-size:14px;color:#c9d1dc;">the batch payload — this is what the deriver decodes</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:12px;">
@@ -175,37 +180,57 @@
 
     <!-- STEP 2: handle_event fires, feeds execute_block -->
     <div id="s2" style="display:none;flex-direction:column;gap:26px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">RAW L1 EVENT → REBUILT L2 BLOCK</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">LOG = TRIGGER · CALLDATA = DATA</div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <div style="font-family:var(--mono);font-size:14px;color:#cfe9d4;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:7px;padding:9px 14px;">BatchPosted(rollupCount: 4821)</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#cfe9d4;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:7px;padding:9px 14px;">BatchPosted(rollupCount: 3)</div>
         <div style="font-size:22px;color:var(--muted);">→</div>
         <div style="font-family:var(--mono);font-size:15px;font-weight:600;color:#eef1ff;background:rgba(124,131,255,0.14);border:1px solid #3a4173;border-radius:8px;padding:10px 16px;">handle_event(&amp;self, event: L1Event)</div>
       </div>
-      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);padding-left:2px;">→ DeriverResult&lt;()&gt;</div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="font-family:var(--mono);font-size:13px;color:#8f98a8;padding-left:2px;">↳</div>
+        <div style="font-family:var(--mono);font-size:15px;font-weight:600;color:#eef1ff;background:rgba(124,131,255,0.14);border:1px solid #3a4173;border-radius:8px;padding:10px 16px;">on_batch_posted(… call_data …)</div>
+        <div style="font-size:22px;color:var(--muted);">→</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#cfe9d4;background:rgba(63,185,80,0.08);border:1px dashed #2f6b3a;border-radius:7px;padding:9px 14px;">eez_payload_codec::decode(call_data)</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="font-family:var(--mono);font-size:13px;color:#8f98a8;padding-left:2px;">↳</div>
         <div style="font-family:var(--mono);font-size:15px;font-weight:600;color:#eef1ff;background:rgba(124,131,255,0.14);border:1px solid #3a4173;border-radius:8px;padding:10px 16px;">execute_block(</div>
         <div style="font-size:26px;color:var(--eez-green);">→</div>
         <div style="background:rgba(180,120,240,0.08);border:1px solid #4e3168;border-radius:9px;padding:14px 20px;display:flex;flex-direction:column;gap:6px;animation:riseIn .4s ease both;">
           <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#c89cf5;">L2 BLOCK · REBUILT LOCALLY</div>
-          <div style="font-family:var(--mono);font-size:14px;color:#f1e8ff;">number: 4,821 · txs: 213 · state_root: 0x9a2c…f1d0</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#f1e8ff;">number: 48,120 · txs: 213 · state_root: 0x9a2c…f1d0</div>
         </div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">Not fetched from a node's API — derived from the L1 data itself.</div>
+      <div style="font-size:16px;color:#8f98a8;max-width:900px;">The log carries no payload. The blocks come out of the posting transaction's calldata — nothing is fetched from a node's API.</div>
     </div>
 
     <!-- STEP 3: catch_up loop, zoomed out over a range of L1 history -->
     <div id="s3" style="display:none;flex-direction:column;gap:24px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">CATCH_UP() · WALK L1 GENESIS → HEAD</div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-        <div style="font-family:var(--mono);font-size:13px;color:var(--muted);">L1 genesis</div>
-        <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;">Batch 1</div>
-        <div style="color:#2a2a2a;">···</div>
-        <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;">Batch 4819</div>
-        <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;">Batch 4820</div>
-        <div class="byte" style="background:rgba(63,185,80,0.26);color:#eef8ee;border:1.5px solid var(--eez-green);font-weight:600;animation:pulse 1.8s ease-in-out infinite;">Batch 4821</div>
-        <div style="font-family:var(--mono);font-size:13px;color:var(--muted);">L1 head</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">CATCH_UP() · REVALIDATE THE TAIL, THEN SCAN FORWARD</div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;">PHASE 1 · WALK THE INDEXED TAIL BACKWARD — deriver.rs:257</div>
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <div style="font-size:20px;color:#8f98a8;">←</div>
+          <div class="byte" style="background:rgba(232,177,94,0.16);color:#f2dfb3;border:1px dashed #8a6a2e;">L1 #21,004,344 · hash ✗</div>
+          <div class="byte" style="background:rgba(232,177,94,0.16);color:#f2dfb3;border:1px dashed #8a6a2e;">L1 #21,004,331 · hash ✗</div>
+          <div class="byte" style="background:rgba(63,185,80,0.20);color:#eef8ee;border:1.5px solid var(--eez-green);font-weight:600;">L1 #21,004,318 · hash ✓</div>
+        </div>
+        <div style="font-size:15px;color:#c9b894;max-width:960px;">Batches whose recorded L1 block hash is no longer canonical are dropped and the L2 safe cursor retreats. The highest still-canonical batch becomes the anchor.</div>
       </div>
-      <div style="font-family:var(--mono);font-size:14px;color:var(--muted);padding-left:2px;">each → handle_event → execute_block, in order, one loop</div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:var(--eez-green);">PHASE 2 · SCAN FORWARD FROM THE ANCHOR — deriver.rs:246-249</div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div class="byte" style="background:rgba(63,185,80,0.20);color:#eef8ee;border:1.5px solid var(--eez-green);font-weight:600;">anchor</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#8f98a8;">─────────────►</div>
+          <div class="byte" style="background:rgba(63,185,80,0.14);color:#cfe9d4;border:1px solid #2f6b3a;">L1 head</div>
+          <div style="font-family:var(--mono);font-size:13px;color:#8f98a8;">each BatchPosted → handle_event → on_batch_posted → execute_block</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div style="font-family:var(--mono);font-size:13px;color:#8f98a8;">index empty (cold start) →</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#eef1ff;border:1px solid #3a4173;">deploy_block</div>
+          <div style="font-size:14px;color:#c9d1dc;">— the contract's deployment block, not L1 genesis.</div>
+        </div>
+      </div>
       <div id="deriverResult" style="margin-top:6px;background:rgba(63,185,80,0.06);border:1.5px dashed var(--eez-green);border-radius:9px;padding:18px 24px;display:inline-flex;align-items:center;gap:18px;animation:riseIn .4s ease both;">
         <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#7ee08c;">RESULT</div>
         <div style="font-size:23px;font-weight:600;color:#eef8ee;">L2 state, independently rebuilt</div>
@@ -238,13 +263,13 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">PROTOCOL RESEARCHERS · 04</div>
       <h1 class="intro-title" id="introTitle">How the deriver rebuilds L2 from L1</h1>
-      <p class="intro-lede">The deriver watches L1 for BatchPosted events instead of trusting any node’s live output.</p>
-      <p class="intro-lede">Replaying those events across all of L1 history reconstructs the whole chain from L1 data alone.</p>
+      <p class="intro-lede">The deriver watches L1 for BatchPosted events instead of trusting any node’s live output — the log is the trigger, the posting transaction’s calldata is the data.</p>
+      <p class="intro-lede">Replaying those batches forward, after re-checking that the ones it already indexed are still canonical, reconstructs the chain from L1 alone.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
-        <li><b>01 · WATCH L1</b>The deriver watches L1 for BatchPosted events instead of trusting any node’s live output.</li>
-        <li><b>02 · REACT TO THE EVENT</b>Each event runs through handle_event into execute_block, rebuilding that slice of L2 state from raw L1 data.</li>
-        <li><b>03 · CATCH UP = REBUILD EVERYTHING</b>catch_up() replays this across all of L1 history, so the resulting L2 state answers to L1 alone.</li>
+        <li><b>01 · WATCH L1</b>The deriver watches L1 for BatchPosted events instead of trusting any node’s live output. The log carries no payload.</li>
+        <li><b>02 · DECODE THE CALLDATA</b>handle_event routes to on_batch_posted, which decodes the posting transaction’s calldata and replays the blocks through execute_block.</li>
+        <li><b>03 · REVALIDATE, THEN SCAN FORWARD</b>catch_up() drops indexed batches whose L1 block is no longer canonical, then scans forward from that anchor — or from deploy_block on a cold start.</li>
       </ul>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
@@ -276,51 +301,65 @@
   var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["WATCH L1", "REACT TO THE EVENT", "CATCH UP = REBUILD EVERYTHING"];
+  var kickers = ["WATCH L1", "DECODE THE CALLDATA", "REVALIDATE, THEN SCAN FORWARD"];
   var captions = [
-    "The deriver watches L1 for BatchPosted events instead of trusting any node's live output.",
-    "Each BatchPosted event runs through handle_event into execute_block, rebuilding that slice of L2 state from raw L1 data.",
-    "catch_up() replays this across all of L1 history to the present, so the resulting L2 state answers to L1 alone."
+    "The deriver watches L1 for BatchPosted events instead of trusting any node's live output. The log is the trigger; the payload is the posting transaction's calldata.",
+    "handle_event routes the event to on_batch_posted, which decodes that calldata and replays the blocks through execute_block.",
+    "catch_up() first re-checks the batches it already indexed and drops any whose L1 block is no longer canonical, then scans forward from that anchor — or from the deployment block on a cold start."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
-  // so the panel never dumps the whole file ungrouped.
+  // so the panel never dumps the whole file ungrouped. Each line is verbatim
+  // from the cited file at the pin, de-indented out of its enclosing block.
   var codeByStep = [
     [
-      "// abi.rs:105",
+      "// crates/eez-protocol/src/abi.rs:105",
       "event BatchPosted(uint256 indexed rollupCount);",
+      "// ^ the count of rollups settled in THIS batch,",
+      "//   not a batch ordinal (EEZ.sol:442 emits",
+      "//   batch.rollupIdsWithProofSystems.length)",
       "",
       "// deriver.rs:45",
       "pub struct Deriver<L2>"
     ],
     [
-      "// abi.rs:105",
-      "event BatchPosted(uint256 indexed rollupCount);",
-      "",
-      "// deriver.rs:45",
-      "pub struct Deriver<L2>",
-      "",
-      "// deriver.rs:774",
+      "// deriver.rs:786",
       "async fn handle_event(&self, event: L1Event) -> DeriverResult<()> {",
       "",
-      "// deriver.rs:504",
+      "// deriver.rs:836",
+      "async fn on_batch_posted(",
+      "    // params omitted — signature verified, body not",
+      ") -> DeriverResult<()> {",
+      "",
+      "// deriver.rs:849 — the log is the trigger, this is the data",
+      "let decoded = eez_payload_codec::decode(call_data.as_ref())?;",
+      "",
+      "// deriver.rs:516",
       "pub fn execute_block("
     ],
     [
-      "// deriver.rs:774",
-      "async fn handle_event(&self, event: L1Event) -> DeriverResult<()> {",
-      "",
-      "// deriver.rs:504",
-      "pub fn execute_block(",
-      "",
       "// deriver.rs:169",
-      "pub async fn catch_up(&self) -> DeriverResult<()> {"
+      "pub async fn catch_up(&self) -> DeriverResult<()> {",
+      "",
+      "// deriver.rs:257 — phase 1: walk the index tail BACKWARD,",
+      "// dropping batches whose recorded L1 hash is no longer",
+      "// canonical; returns the highest still-canonical anchor",
+      "async fn revalidate_index_tail(&self) -> DeriverResult<Option<u64>> {",
+      "",
+      "// deriver.rs:246-249 — phase 2: scan forward (arms wrapped)",
+      "match anchor {",
+      "    Some(anchor_l1_block) =>",
+      "        self.sync_batches_inner(anchor_l1_block, cursor).await,",
+      "    // cold start: deploy_block, NOT L1 genesis",
+      "    None =>",
+      "        self.sync_batches_inner(self.inner.deploy_block, 0).await,",
+      "}"
     ]
   ];
   var hlByStep = [
     [0,1],
-    [6,7],
-    [6,7]
+    [9,12],
+    [6,10,11,13,14]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

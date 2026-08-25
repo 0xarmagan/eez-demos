@@ -1,6 +1,6 @@
 # EEZ Quickstarts
 
-> Fifteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
+> Sixteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
 > contracts that call across rollups, running the stack, and how Rollup0 settles and proves.
 
@@ -951,6 +951,479 @@ contract Q5ContentHashTest {
 }
 ```
 
+## How to read a remote contract's state
+
+Learn why balance and code size answer about the proxy, and hand back a real number about the wrong contract with no revert.
+
+- Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q8-read-a-remote-contracts-state.html
+- Source: `eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback`
+- Pinned at commit: `9735f53`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89
+
+### Step 1 — A CONTRACT ON THIS CHAIN
+
+The proxy is an ordinary contract, deployed on this chain. Every opcode that asks the EVM about an address answers about it — not about the contract it stands for.
+
+```solidity
+address proxy = eez.computeCrossChainProxyAddress(
+    remote, remoteRollupId
+);
+
+// a contract deployed on THIS chain, with its
+// own code and its own balance
+```
+
+### Step 2 — FOUR READS, NO REVERT
+
+balance, extcodesize, extcodecopy and delegatecall describe the proxy; block-state opcodes describe the chain you are executing on. Each read succeeds and returns a real number about the wrong contract.
+
+```diff
+ address proxy = eez.computeCrossChainProxyAddress(
+     remote, remoteRollupId
+ );
+
+ // a contract deployed on THIS chain, with its
+ // own code and its own balance
+
+-uint256 bal  = proxy.balance;       // PROXY's ether
+-uint256 size = proxy.code.length;   // PROXY's code
+-bool sameChain =
+-    block.chainid == remoteChainId;  // THIS chain
+```
+
+### Step 3 — ASK IT, DON'T INSPECT IT
+
+Call through the proxy instead. The read is routed and resolves against an entry written before your transaction ran — or reverts ExecutionNotFound(), which looks exactly like the destination reverting.
+
+```diff
+ address proxy = eez.computeCrossChainProxyAddress(
+     remote, remoteRollupId
+ );
+
+-uint256 bal  = proxy.balance;       // PROXY's ether
++uint256 bal = IRemote(proxy).balanceOf(user);
+ // the proxy is an IDENTITY, not a mirror:
+ // ask it, don't inspect it
+```
+
+### Full compilable source — snippets/q8-remote-reads.sol
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+import {IEEZ} from "./lib/IEEZ.sol";
+
+// Panel source for: dapp-developers/q8-read-a-remote-contracts-state.html
+// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:89
+// and eez-core-protocol/docs/CAVEATS.md, "Opcodes that differ on cross-chain
+// proxies" and "Indistinguishable revert reasons when calling a proxy"
+// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+//
+// This is the caveat with no compiler help. q3's mistake reverts, so you find
+// it the first time a call arrives through a proxy. The reads below SUCCEED and
+// return a real number about the wrong contract, so they ship.
+//
+// WHY: a CrossChainProxy is an ordinary contract, deployed on THIS chain, with
+// its own code and its own balance. An opcode that asks the EVM about an
+// address answers about that local contract. Only a CALL is routed: the proxy's
+// fallback (CrossChainProxy.sol:89, `_fallback`) forwards to the manager, which
+// resolves an outcome that was written down before your transaction ran. So
+// inspection is local, invocation is resolved.
+//
+// The four that answer about the proxy, per CAVEATS.md: `balance`,
+// `extcodesize`, `extcodecopy`, `delegatecall`. Plus every block-state opcode
+// (`number`, `blockhash`, `chainid`, `coinbase`, `gaslimit`), which describes
+// the chain currently executing, not the source chain — so the same logical
+// action reads differently on L1 and on L2.
+//
+// `delegatecall` deserves its own line: delegatecalling a proxy runs the
+// PROXY's code in your storage context. It does not reach the remote contract.
+//
+// WHEN A ROUTED READ RESOLVES — the rule is side-specific, so do not learn one
+// half of it and carry it to the other chain:
+//
+//   L1 has NO block gate on the read path. `staticCrossChainCall`
+//   (EEZ.sol:1266-1328) falls through to
+//   `verificationByRollup[destRid].staticEntryQueue` (:1309-1310) and matches on
+//   `proxyEntryHash`, `destinationRollupId` and `_stateRootsMatch(...)`
+//   (:1317-1319). Upstream's own comment at :1308: "Note that static calls do
+//   not obsolete after a block passes. As long as the state roots matches it can
+//   be execute".
+//
+//   L2 DOES gate it. `EEZL2.sol:634` is
+//   `if (lastLoadBlock != block.number) revert ExecutionNotInCurrentBlock();`,
+//   and the docstring at :588-589 gives the reason: "no pins on L2 — the block
+//   gate bounds staleness".
+//
+//   Mutating calls are block-gated on both sides. On L1 that is EEZ.sol:794-797,
+//   `revert ExecutionNotInCurrentBlock(destRid)`.
+//
+// A read with nothing to resolve against reverts `ExecutionNotFound()` —
+// EEZ.sol:1327 and EEZL2.sol:644. That is the string to search for.
+//
+// AND YOU CANNOT TELL WHY IT FAILED. CAVEATS.md, "Indistinguishable revert
+// reasons when calling a proxy": a caller cannot differentiate a call reverting
+// because no matching entry existed from the destination call actually
+// reverting. Both bubble up as a revert from the proxy, because
+// CrossChainProxy.sol:109-113 forwards the raw revert data unmodified. Do not
+// write a `try/catch` that claims to know which one happened.
+
+interface IRemote {
+    function balanceOf(address account) external view returns (uint256);
+}
+
+contract RemoteReader {
+    IEEZ internal immutable eez;
+    address internal immutable remote;
+    uint64 internal immutable remoteRollupId;
+
+    constructor(IEEZ eez_, address remote_, uint64 remoteRollupId_) {
+        eez = eez_;
+        remote = remote_;
+        remoteRollupId = remoteRollupId_;
+    }
+
+    /// @dev The trap. Compiles, runs, returns real numbers about the proxy.
+    ///      Returns are intentionally unnamed: the panel lines below declare
+    ///      `bal`, `size` and `sameChain` verbatim, and named returns would
+    ///      shadow them.
+    function inspectionLies(uint256 remoteChainId)
+        external
+        view
+        returns (uint256, uint256, bool)
+    {
+address proxy = eez.computeCrossChainProxyAddress(
+    remote, remoteRollupId
+);
+// a contract deployed on THIS chain, with its
+// own code and its own balance
+
+uint256 bal  = proxy.balance;       // PROXY's ether
+uint256 size = proxy.code.length;   // PROXY's code
+bool sameChain =
+    block.chainid == remoteChainId;  // THIS chain
+        return (bal, size, sameChain);
+    }
+
+    /// @dev The fix. A view call through the proxy is routed, and resolves
+    ///      against an entry the composer already wrote — so what comes back is
+    ///      the remote contract's state, not the proxy's.
+    ///
+    ///      When it resolves is side-specific: on L1 a static entry stays valid
+    ///      as long as the state roots still match (EEZ.sol:1308-1319), on L2 it
+    ///      is gated on the current block (EEZL2.sol:634). With no matching
+    ///      entry on either side, this reverts `ExecutionNotFound()` — and that
+    ///      revert is indistinguishable from the destination reverting.
+    function readRemoteBalance(address user) external view returns (uint256) {
+address proxy = eez.computeCrossChainProxyAddress(
+    remote, remoteRollupId
+);
+
+uint256 bal = IRemote(proxy).balanceOf(user);
+// the proxy is an IDENTITY, not a mirror:
+// ask it, don't inspect it
+        return bal;
+    }
+
+    /// @dev A live proxy says nothing about the remote target. Code at the proxy
+    ///      address means the manager will route through it — not that anything
+    ///      answers on the other side. See q4 for reading the registry.
+    function proxyExistsButProvesNothing() external view returns (bool) {
+        address proxy = eez.computeCrossChainProxyAddress(remote, remoteRollupId);
+        return proxy.code.length != 0;
+    }
+}
+```
+
+### Runnable test — snippets/test/Q8RemoteReads.t.sol
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+import {IEEZ} from "../lib/IEEZ.sol";
+import {RemoteReader, IRemote} from "../q8-remote-reads.sol";
+
+// Runnable proof of the q8 caveat. Paste into any Foundry project and run:
+//
+//   forge test --match-contract Q8RemoteReads -vv
+//
+// Depends on nothing but solc — no forge-std, no submodules.
+//
+// The first three cases are the whole hazard: NOTHING REVERTS. Each is a
+// successful read returning a real number about the wrong contract. Unlike the
+// q3 owner check, there is no failure to notice.
+//
+// WHAT IS FAKED HERE, AND WHAT IS NOT. Q6ManagerDirect.t.sol refuses to fake
+// protocol state and says so in its header; the same line is held here.
+// `EntryTable` below is not an EEZ manager and does not pretend to be one. It
+// is a local model of the one property the routed read rests on: the outcome
+// was written into a table BEFORE the transaction ran, it is matched by a hash
+// of the call, and a miss reverts `ExecutionNotFound()`. That is the shape of
+// EEZ resolution — the opposite of fetch-on-demand messaging, where the answer
+// is gone and fetched while you wait.
+//
+// What this establishes: the reader in ../q8-remote-reads.sol behaves correctly
+// against a resolver of that shape, including both failure modes a builder will
+// actually meet. What it does NOT establish: that upstream resolves this way.
+// The citations on the page and scripts/verify-citations.py are the check for
+// that, and nothing in a local table could stand in for it.
+//
+// Deliberately not modelled, because a local table cannot: the composer, the
+// rolling hash, state roots, the entry queues, and the side-specific rule for
+// when a static entry is still valid (L1 matches on state roots with no block
+// gate, EEZ.sol:1308-1319; L2 gates on the block, EEZL2.sol:634). The key below
+// is a REDUCED stand-in for `computeCrossChainCallHash` — q5 has the real
+// eight-field preimage. What is under test is lookup-then-revert, not the
+// field list.
+
+/// @dev Minimal cheatcode surface. Same address forge injects.
+interface Vm {
+    function deal(address, uint256) external;
+    function label(address, string calldata) external;
+    function expectRevert(bytes4) external;
+}
+
+/// @dev Named exactly as upstream names it (EEZ.sol:1327, EEZL2.sol:644), so a
+///      reader who hits it in production can search for the same string.
+error ExecutionNotFound();
+
+/// @dev The destination's own error, for the case where an entry exists and
+///      records that the destination call reverted.
+error RemoteBalanceUnavailable();
+
+// @stand-in a local table, not a manager: it holds outcomes keyed by a reduced
+//           call hash so the test can exercise hit, miss and destination-revert
+//           without faking EEZ storage. See the header.
+contract EntryTable {
+    struct Entry {
+        bool present;
+        bool success;
+        bytes data;
+    }
+
+    mapping(bytes32 => Entry) private entries;
+
+    address private immutable destAddress;
+    uint64 private immutable destRollupId;
+
+    constructor(address destAddress_, uint64 destRollupId_) {
+        destAddress = destAddress_;
+        destRollupId = destRollupId_;
+    }
+
+    /// @dev Reduced stand-in for computeCrossChainCallHash. The real preimage is
+    ///      eight fields in a fixed order (q5); the point here is only that the
+    ///      entry is addressed by the content of the call.
+    function keyFor(address sourceAddress, bytes memory callData) public view returns (bytes32) {
+        return keccak256(abi.encode(true, sourceAddress, destAddress, destRollupId, callData));
+    }
+
+    /// @dev The composer's job, done by hand. In production nothing in your
+    ///      transaction writes this table.
+    function commit(address sourceAddress, bytes calldata callData, bool success, bytes calldata data) external {
+        entries[keyFor(sourceAddress, callData)] = Entry(true, success, data);
+    }
+
+    /// @dev Same name and signature as the manager's read entry point, so the
+    ///      shape of the call the proxy makes is the real one.
+    function staticCrossChainCall(address sourceAddress, bytes calldata callData)
+        external
+        view
+        returns (bytes memory)
+    {
+        Entry storage entry = entries[keyFor(sourceAddress, callData)];
+        if (!entry.present) revert ExecutionNotFound();
+        if (!entry.success) {
+            bytes memory reason = entry.data;
+            assembly {
+                revert(add(reason, 0x20), mload(reason))
+            }
+        }
+        return entry.data;
+    }
+}
+
+// @stand-in a two-line model of CrossChainProxy's read path: a real local
+//           contract with its own code and balance, whose fallback forwards to
+//           the manager's view entry point and hands back exactly what comes
+//           out — including raw revert data (CrossChainProxy.sol:104-113).
+contract StubProxy {
+    address internal immutable manager;
+
+    constructor(address manager_) {
+        manager = manager_;
+    }
+
+    fallback() external payable {
+        (bool ok, bytes memory result) =
+            manager.staticcall(abi.encodeCall(EntryTable.staticCrossChainCall, (msg.sender, msg.data)));
+        if (ok) {
+            // The manager returns `bytes`, so the raw result is double-encoded.
+            result = abi.decode(result, (bytes));
+        }
+        assembly {
+            switch ok
+            case 0 { revert(add(result, 0x20), mload(result)) }
+            default { return(add(result, 0x20), mload(result)) }
+        }
+    }
+
+    receive() external payable {}
+}
+
+// @stand-in an address book, nothing more: the reader asks for its proxy and
+//           gets the stub back. It does not derive anything — q7 is the page
+//           for the real CREATE2 derivation.
+contract MockEEZ {
+    address private immutable proxyAddress;
+
+    constructor(address proxyAddress_) {
+        proxyAddress = proxyAddress_;
+    }
+
+    function computeCrossChainProxyAddress(address, uint64) external view returns (address) {
+        return proxyAddress;
+    }
+}
+
+// @stand-in the contract being read, as it exists on the OTHER rollup. It is
+//           local here only so the test can hold two different numbers at once.
+//           The routed read must never touch it, which is what `calls` proves.
+contract Counterpart {
+    uint256 public calls;
+
+    mapping(address => uint256) private balances;
+
+    function setBalance(address who, uint256 amount) external {
+        balances[who] = amount;
+    }
+
+    function balanceOf(address who) external returns (uint256) {
+        calls++;
+        return balances[who];
+    }
+}
+
+contract Q8RemoteReadsTest {
+    Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+
+    address internal constant USER = address(0xA11CE);
+    address internal constant STRANGER = address(0xB0B);
+    uint64 internal constant REMOTE_ROLLUP_ID = 1;
+
+    uint256 internal constant COMMITTED_BALANCE = 500 ether;
+    uint256 internal constant PROXY_BALANCE = 1 wei;
+    uint256 internal constant COUNTERPART_BALANCE = 7 ether;
+
+    Counterpart internal counterpart;
+    EntryTable internal table;
+    StubProxy internal proxy;
+    RemoteReader internal reader;
+
+    function setUp() public {
+        counterpart = new Counterpart();
+        counterpart.setBalance(USER, COMMITTED_BALANCE);
+        vm.deal(address(counterpart), COUNTERPART_BALANCE);
+
+        table = new EntryTable(address(counterpart), REMOTE_ROLLUP_ID);
+        proxy = new StubProxy(address(table));
+        vm.deal(address(proxy), PROXY_BALANCE);
+
+        reader = new RemoteReader(
+            IEEZ(address(new MockEEZ(address(proxy)))), address(counterpart), REMOTE_ROLLUP_ID
+        );
+
+        // The entry for the one read this test expects to resolve. Written
+        // before any of it runs, which is the whole point.
+        table.commit(
+            address(reader),
+            abi.encodeCall(IRemote.balanceOf, (USER)),
+            true,
+            abi.encode(COMMITTED_BALANCE)
+        );
+
+        vm.label(address(proxy), "proxy(counterpart)");
+        vm.label(address(counterpart), "counterpart");
+        vm.label(address(table), "entryTable");
+    }
+
+    /// @dev The trap, part one. `.balance` answers about the proxy. No revert.
+    function test_balanceReadsTheProxyNotTheCounterpart() public view {
+        (uint256 bal,,) = reader.inspectionLies(block.chainid + 1);
+        require(bal == PROXY_BALANCE, "expected the proxy's own balance");
+        require(bal != COUNTERPART_BALANCE, "must not be the counterpart's balance");
+    }
+
+    /// @dev The trap, part two. The proxy has code, so an `extcodesize`-style
+    ///      "is this a contract" check passes — and proves nothing about whether
+    ///      anything exists on the other rollup.
+    function test_codeSizeIsTheProxysOwn() public view {
+        (, uint256 size,) = reader.inspectionLies(block.chainid + 1);
+        require(size == address(proxy).code.length, "the proxy's own code size");
+        require(
+            keccak256(address(proxy).code) != keccak256(address(counterpart).code),
+            "proxy code is not the counterpart's code"
+        );
+        require(reader.proxyExistsButProvesNothing(), "code at the proxy address proves only that");
+    }
+
+    /// @dev The trap, part three. Block context is local. A reader comparing
+    ///      against the counterparty's chain id silently takes the wrong branch.
+    function test_blockContextIsLocal() public view {
+        (,, bool sameChain) = reader.inspectionLies(block.chainid + 1);
+        require(!sameChain, "block.chainid is this chain's, never the remote one");
+    }
+
+    /// @dev The fix. Calling THROUGH the proxy returns the remote contract's
+    ///      state, because a call is routed and an inspection is not — and the
+    ///      value comes out of the entry, not out of a live fetch. `calls == 0`
+    ///      is that second half: the counterpart is never touched.
+    function test_routedReadReturnsThePreCommittedEntry() public view {
+        uint256 seen = reader.readRemoteBalance(USER);
+        require(seen == COMMITTED_BALANCE, "routed read returns the committed outcome");
+        require(counterpart.calls() == 0, "resolution never calls the counterpart");
+    }
+
+    /// @dev The honest limit. With no matching entry the routed read reverts
+    ///      `ExecutionNotFound()` rather than returning zero. In production that
+    ///      is a read whose static entry is not in scope: on L2 because the block
+    ///      moved on (EEZL2.sol:634), on L1 because no entry in the queue matches
+    ///      the call and the live state roots (EEZ.sol:1308-1319).
+    function test_unresolvedReadRevertsExecutionNotFound() public {
+        vm.expectRevert(ExecutionNotFound.selector);
+        reader.readRemoteBalance(STRANGER);
+    }
+
+    /// @dev CAVEATS.md, "Indistinguishable revert reasons when calling a proxy".
+    ///      The proxy forwards raw revert data and adds nothing of its own, so
+    ///      the caller has no field saying which layer failed — only the bytes it
+    ///      was handed. Both cases below hand back the same bytes.
+    function test_missAndDestinationRevertAreIndistinguishable() public {
+        bytes memory callData = abi.encodeCall(IRemote.balanceOf, (STRANGER));
+
+        // A: nothing committed for STRANGER, so the table itself reverts.
+        (bool okMiss, bytes memory fromMiss) = address(proxy).staticcall(callData);
+
+        // B: an entry EXISTS and records that the destination call reverted,
+        // carrying the destination's own revert bytes.
+        table.commit(address(this), callData, false, abi.encodeWithSelector(ExecutionNotFound.selector));
+        (bool okReverted, bytes memory fromReverted) = address(proxy).staticcall(callData);
+
+        require(!okMiss && !okReverted, "both fail");
+        require(keccak256(fromMiss) == keccak256(fromReverted), "the caller cannot tell them apart");
+
+        // And a destination that reverts with its own error is no more legible:
+        // it is still just bytes arriving from the proxy.
+        table.commit(address(this), callData, false, abi.encodeWithSelector(RemoteBalanceUnavailable.selector));
+        (bool okOther, bytes memory fromOther) = address(proxy).staticcall(callData);
+        require(!okOther, "still a revert from the proxy");
+        require(fromOther.length == 4, "four bytes of someone else's error, and no attribution");
+    }
+}
+```
+
 ---
 
 # Rollup operators
@@ -968,10 +1441,11 @@ Learn how to bring up the node, proof-signer and the L1 in a disposable network.
 
 ### Step 1 — PREREQS + SUBMODULE
 
-All local tooling, plus the real contract source pulled in via submodule — nothing else to install.
+A Linux host with Docker, all local tooling, plus the real contract source pulled in via submodule.
 
 ```bash
 # disposable local devnet
+# requires a Linux host with Docker running
 
 $ git submodule update --init --recursive \
     eez-core-protocol
@@ -979,10 +1453,11 @@ $ git submodule update --init --recursive \
 
 ### Step 2 — START THE ENGINE
 
-KURTOSIS_ENCLAVE names the disposable network and KURTOSIS_ARGS_FILE points at the real ci-args.yaml.
+KURTOSIS_ENCLAVE names the disposable network and KURTOSIS_ARGS_FILE points at the real ci-args.yaml — which carries deterministic private-network keys.
 
 ```bash
 # disposable local devnet
+# requires a Linux host with Docker running
 
 $ git submodule update --init --recursive \
     eez-core-protocol
@@ -991,11 +1466,15 @@ $ kurtosis engine start
 
 $ export KURTOSIS_ENCLAVE=eez-dev
 $ export KURTOSIS_ARGS_FILE="$PWD/testing/kurtosis/ci-args.yaml"
+
+# ci-args.yaml carries deterministic private-
+# network keys. Never use them on a public
+# network or fund them with real assets.
 ```
 
 ### Step 3 — ONE SCRIPT → FULL STACK
 
-One script deploys contracts, generates the L2 genesis, and boots the L1, MEV-builder, node and proof-signer together.
+One script deploys contracts, generates the L2 genesis, and boots the L1, MEV-builder, node and proof-signer together — several minutes on the first run.
 
 ```bash
 $ kurtosis engine start
@@ -1005,6 +1484,9 @@ $ export KURTOSIS_ARGS_FILE="$PWD/testing/kurtosis/ci-args.yaml"
 
 $ bash testing/kurtosis/start.sh \
     "$KURTOSIS_ARGS_FILE"
+
+# the first start builds three images and
+# pulls the client images: several minutes
 ```
 
 ## How to deploy the protocol
@@ -1012,33 +1494,45 @@ $ bash testing/kurtosis/start.sh \
 Learn how one command deploys EEZ, the proof system and your manager.
 
 - Page: https://0xarmagan.github.io/eez-demos/rollup-operators/ro2-deploy-the-protocol.html
-- Source: `Makefile:64-65 · scripts/deploy.sh`
+- Source: `Makefile:47-65 · scripts/deploy.sh`
 - Pinned at commit: `a4b9b2f`
-- Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/Makefile#L64-L65
+- Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/Makefile#L47-L65
 
 ### Step 1 — ONE COMMAND
 
-`make deploy-protocol` runs `./scripts/deploy.sh`, deploying the EEZ core protocol, the proof system, and your manager contract in one shot.
+With `.env` in place, `make deploy-protocol` runs `./scripts/deploy.sh` through its five steps: DeployEEZ, DeployECDSAProofSystem, DeployRollup, RegisterRollup, DeployBridgeL1.
 
 ```bash
-# Outputs land in deployments.env (gitignored).
-# eez-node loads it alongside .env at startup, so
-# a successful deploy means `make run-node` Just
-# Works without any paste-the-address-into-.env
-# step.
-deploy-protocol:
+# Reads .env (gitignored). Copy .env.example first.
+$ cp .env.example .env
+#   EEZ_L1_RPC_URL   EEZ_L1_POSTER_KEY
+#   EEZ_PROOF_SIGNER_KEY   EEZ_L2_SYSTEM_KEY
+
+# Runs the 5-step deploy sequence:
+#   1. DeployEEZ    2. DeployECDSAProofSystem
+#   3. DeployRollup  4. RegisterRollup
+#   5. DeployBridgeL1
 ```
 
 ### Step 2 — OUTPUTS LAND IN DEPLOYMENTS.ENV
 
-Every address deploy.sh produces lands in a gitignored `deployments.env` file, not your notes.
+Every address deploy.sh produces lands in a gitignored `deployments.env` file, not your notes — 19 keys in all.
 
 ```bash
+# Reads .env (gitignored). Copy .env.example first.
+$ cp .env.example .env
+#   EEZ_L1_RPC_URL   EEZ_L1_POSTER_KEY
+#   EEZ_PROOF_SIGNER_KEY   EEZ_L2_SYSTEM_KEY
+
+# Runs the 5-step deploy sequence:
+#   1. DeployEEZ    2. DeployECDSAProofSystem
+#   3. DeployRollup  4. RegisterRollup
+#   5. DeployBridgeL1
+
 # Outputs land in deployments.env (gitignored).
 # eez-node loads it alongside .env at startup, so
 # a successful deploy means `make run-node` Just
-# Works without any paste-the-address-into-.env
-# step.
+# Works without any paste-the-address-into-.env step.
 deploy-protocol:
 	@./scripts/deploy.sh
 ```
@@ -1048,11 +1542,20 @@ deploy-protocol:
 `make run-node` loads `deployments.env` alongside `.env` at startup, so there's no paste-the-address-into-.env step.
 
 ```bash
+# Reads .env (gitignored). Copy .env.example first.
+$ cp .env.example .env
+#   EEZ_L1_RPC_URL   EEZ_L1_POSTER_KEY
+#   EEZ_PROOF_SIGNER_KEY   EEZ_L2_SYSTEM_KEY
+
+# Runs the 5-step deploy sequence:
+#   1. DeployEEZ    2. DeployECDSAProofSystem
+#   3. DeployRollup  4. RegisterRollup
+#   5. DeployBridgeL1
+
 # Outputs land in deployments.env (gitignored).
 # eez-node loads it alongside .env at startup, so
 # a successful deploy means `make run-node` Just
-# Works without any paste-the-address-into-.env
-# step.
+# Works without any paste-the-address-into-.env step.
 deploy-protocol:
 	@./scripts/deploy.sh
 ```
@@ -1068,38 +1571,35 @@ Learn how to point the same stack at Chiado instead of a sandbox.
 
 ### Step 1 — ONE-TIME SETUP
 
-One-time setup: local build tooling, plus everything the embedded L1 needs before it can sync.
+One-time setup: the contracts submodule, local build tooling, plus everything the embedded L1 needs before it can sync.
 
 ```bash
 # one-time setup
+$ git submodule update --init --recursive
 
 $ docker build -t eez-node:local .
 $ docker build -f Dockerfile.signer \
     -t eez-proof-signer:local .
-
-$ docker run --rm \
-    -v "$PWD/data/chiado-l1:/data" \
+$ docker run --rm -v "$PWD/data/chiado-l1:/data" \
     ghcr.io/gnosischain/reth_gnosis:v2.0.0 \
     download --chain chiado --minimal \
     --datadir /data
-
 $ openssl rand -hex 32 > data/jwt.hex
-
 $ git clone \
     https://github.com/gnosischain/configs.git \
     /tmp/gnosis-configs
-$ cp -r /tmp/gnosis-configs/chiado configs/chiado
+$ mkdir -p configs && \
+    cp -r /tmp/gnosis-configs/chiado configs/chiado
 ```
 
 ### Step 2 — DEPLOY, THEN START
 
-deploy-protocol writes deployments.env and genesis.json before docker compose starts the node, signer, and lighthouse.
+deploy-protocol writes deployments.env and genesis.json before docker compose starts the node, signer, and lighthouse. .env.chiado.example ships its three keys as 0xCHANGE_ME, and the proof signer must be the same key the deploy used.
 
 ```bash
 $ cp .env.example .env
 # set EEZ_L1_RPC_URL, EEZ_L1_POSTER_KEY,
 #     EEZ_PROOF_SIGNER_KEY, EEZ_L2_SYSTEM_KEY
-
 $ EEZ_DEPLOY_SKIP_SIMULATION=1 \
     make deploy-protocol
 
@@ -1109,6 +1609,8 @@ $ EEZ_DEPLOY_SKIP_SIMULATION=1 \
 #  no separate genesis step)
 
 $ cp .env.chiado.example .env.chiado
+# host paths + funded keys + bundler URL
+# EEZ_PROOF_SIGNER_KEY = the deploy-time key
 $ docker compose --env-file .env.chiado \
     -f docker-compose.chiado-node.yml up
 ```
@@ -1142,17 +1644,15 @@ Learn how to drive both fronts and read real pass/fail numbers.
 
 ### Step 1 — TWO FRONTS, ONE JOB
 
-Two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block — once per L1 block, for cross-chain work — while everything else passes straight through.
+With the Chiado stack from step 03 running, two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block — once per L1 block, for cross-chain work — while everything else passes straight through.
 
 ```bash
-# README.md · Endpoints & cross-chain fronts
-#
-# | Endpoint                | URL           |
-# |--------------------------|----------------|
-# | L2 RPC                  | :18688        |
-# | Embedded chiado L1 RPC  | :18645        |
-# | L1→L2 front (Inbound)   | :18999        |
-# | L2→L1 front (Outbound)  | :18998        |
+# README.md · Endpoints (chiado compose stack)
+#   L2 RPC                   :18688
+#   Embedded chiado L1 RPC   :18645
+#   L1→L2 front (Inbound)    :18999
+#   L2→L1 front (Outbound)   :18998
+# (Kurtosis devnet: source testing/kurtosis/ports.sh)
 
 # both fronts: eth_sendRawTransaction is held
 # + composed into the next Sync block; every
@@ -1165,14 +1665,12 @@ Two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is he
 EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it, so measure before you raise it.
 
 ```bash
-# README.md · Endpoints & cross-chain fronts
-#
-# | Endpoint                | URL           |
-# |--------------------------|----------------|
-# | L2 RPC                  | :18688        |
-# | Embedded chiado L1 RPC  | :18645        |
-# | L1→L2 front (Inbound)   | :18999        |
-# | L2→L1 front (Outbound)  | :18998        |
+# README.md · Endpoints (chiado compose stack)
+#   L2 RPC                   :18688
+#   Embedded chiado L1 RPC   :18645
+#   L1→L2 front (Inbound)    :18999
+#   L2→L1 front (Outbound)   :18998
+# (Kurtosis devnet: source testing/kurtosis/ports.sh)
 
 # both fronts: eth_sendRawTransaction is held
 # + composed into the next Sync block; every
@@ -1181,26 +1679,23 @@ EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops an
 
 # compose mode caps bundle size:
 EEZ_MAX_USER_TXS_PER_BUNDLE=3   # default
-
 # ⚠ rbuilder-chiado silently drops txs beyond
 #   ~3 per bundle — raise only against a
 #   builder proven to include larger bundles
 #   atomically. Measure before bumping.
 ```
 
-### Step 3 — EXERCISE IT FOR REAL
+### Step 3 — EXERCISE IT
 
-xchain-test.sh drives both fronts through the full op × direction × direct/wrapper matrix and reports real pipeline metrics.
+xchain-test.sh drives both fronts through the full op × direction × direct/wrapper matrix and prints a RESULTS block of pipeline metrics — the box shows that block's format, not a captured run.
 
 ```bash
-# README.md · Endpoints & cross-chain fronts
-#
-# | Endpoint                | URL           |
-# |--------------------------|----------------|
-# | L2 RPC                  | :18688        |
-# | Embedded chiado L1 RPC  | :18645        |
-# | L1→L2 front (Inbound)   | :18999        |
-# | L2→L1 front (Outbound)  | :18998        |
+# README.md · Endpoints (chiado compose stack)
+#   L2 RPC                   :18688
+#   Embedded chiado L1 RPC   :18645
+#   L1→L2 front (Inbound)    :18999
+#   L2→L1 front (Outbound)   :18998
+# (Kurtosis devnet: source testing/kurtosis/ports.sh)
 
 # both fronts: eth_sendRawTransaction is held
 # + composed into the next Sync block; every
@@ -1209,13 +1704,15 @@ xchain-test.sh drives both fronts through the full op × direction × direct/wra
 
 # compose mode caps bundle size:
 EEZ_MAX_USER_TXS_PER_BUNDLE=3   # default
-
 # ⚠ rbuilder-chiado silently drops txs beyond
 #   ~3 per bundle — raise only against a
 #   builder proven to include larger bundles
 #   atomically. Measure before bumping.
-
+# bring the node up first: scripts/chiado-up.sh
 $ EEZ_WAVE_COUNT=5 bash scripts/xchain-test.sh
+# prints a RESULTS block: hit-rate, consecutive
+# / gapped postBatch blocks, drops, evictions,
+# divergence (a count) and reconcile PASS/FAIL
 ```
 
 ---
@@ -1235,10 +1732,11 @@ Learn how sequencer, composer, proof-signer and deriver each fit.
 
 ### Step 1 — THE LIVE PATH
 
-Sequencer builds the block, then Composer settles any cross-chain calls inside it — the live path runs on just these two.
+Ordinary blocks are the sequencer alone. One Sync block per L1 block adds the composer — and that block cannot be emitted until the proof-signer returns an attestation.
 
 ```rust
-pub struct Sequencer<T, ChainSpec> { ... }
+pub struct Sequencer<T, ChainSpec>
+    where T: PayloadTypes<PayloadAttributes = EthPayloadAttributes> { ... }
 
 pub struct Composer<L2: BlockReader> { ... }
 ```
@@ -1248,7 +1746,8 @@ pub struct Composer<L2: BlockReader> { ... }
 Once Composer finishes, the Attester signs a hash of the result so the block can be trusted downstream.
 
 ```rust
-pub struct Sequencer<T, ChainSpec> { ... }
+pub struct Sequencer<T, ChainSpec>
+    where T: PayloadTypes<PayloadAttributes = EthPayloadAttributes> { ... }
 
 pub struct Composer<L2: BlockReader> { ... }
 
@@ -1265,7 +1764,8 @@ pub(crate) fn sign(&self, public_inputs_hash: AttestablePublicInputsHash)
 Deriver never trusts any of the three — it independently re-derives the same state from L1 alone.
 
 ```rust
-pub struct Sequencer<T, ChainSpec> { ... }
+pub struct Sequencer<T, ChainSpec>
+    where T: PayloadTypes<PayloadAttributes = EthPayloadAttributes> { ... }
 
 pub struct Composer<L2: BlockReader> { ... }
 
@@ -1276,7 +1776,8 @@ pub(crate) fn sign(&self, public_inputs_hash: AttestablePublicInputsHash)
     self.signer.sign_prehash(public_inputs_hash.into_inner())
 }
 
-pub struct Deriver<L2> { ... }
+pub struct Deriver<L2>
+    where L2: BlockReader { ... }
 ```
 
 ## How L1 stays the source of truth
@@ -1288,54 +1789,66 @@ Learn how an L2 commits first and L1 then settles or repairs it.
 - Pinned at commit: `a4b9b2f`
 - Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-composer/src/optimistic.rs
 
-### Step 1 — COMMIT FIRST
+### Step 1 — THE LEDGER
 
-begin() commits the L2 block to a cross-chain call before L1 has confirmed anything.
+The committer commits the Sync block; begin() records it in the ledger at its sync_height as Pending. Two adjacent acts.
 
 ```rust
+// optimistic.rs:67 — private; variant doc comments omitted
+enum Resolution {
+    Pending,
+    Settled,
+    Failed,
+}
+
 // optimistic.rs:101
 pub struct OptimisticallyIncluded {
-    // fields omitted — signature verified, body not
+    by_sync_height: Mutex<BTreeMap<u64, InFlight>>,
 }
 
 // optimistic.rs:117
 pub fn begin(
     // params omitted — signature verified, body not
-) -> OptimisticallyIncluded {
+) {
 ```
 
-### Step 2 — L1 CATCHES UP
+### Step 2 — TWO ORACLES, THREE STATES
 
-The optimistic state sits at a fixed sync_height, unresolved until L1's history reaches it.
-
-```rust
-// optimistic.rs:101
-pub struct OptimisticallyIncluded {
-    // fields omitted — signature verified, body not
-}
-
-// optimistic.rs:117
-pub fn begin(
-    // params omitted — signature verified, body not
-) -> OptimisticallyIncluded {
-
-// L2 keeps producing blocks here — this state sits
-// at a fixed sync_height until L1 catches up to it.
-```
-
-### Step 3 — SETTLED, OR REPAIRED
-
-L1 confirmation calls mark_settled to finalize it, or mark_failed to trigger a repair.
+Two oracles resolve an entry: the observer's log scan, and the Deriver's L1-derived cursor. The cursor is the stronger one — it overrides a Failed verdict.
 
 ```rust
-// optimistic.rs:177
+// optimistic.rs:177 — observer verdict
 pub fn mark_settled(&self, sync_height: u64) {
-    // marks the block permanent — no longer optimistic
+    // observer verdict: the bundle settled on L1
 }
 
-// optimistic.rs:191
+// optimistic.rs:191 — observer verdict
 pub fn mark_failed(&self, sync_height: u64, slot_skipped: bool) {
-    // triggers a repair; slot_skipped flags a skipped slot
+    // observer verdict: the bundle didn't land
+}
+
+// optimistic.rs:160 — the Deriver's cursor overrides Failed
+pub fn resolve_below_cursor(&self, cursor: u64) -> Vec<HeldTx> {
+    // flips Pending AND Failed at or below cursor to Settled
+}
+```
+
+### Step 3 — SETTLED IS NOT PERMANENT
+
+Settled is not permanent. An L1 reorg takes rolled-out Settled entries back out; entries leave clean only at finality, and only after their postBatch receipt is re-checked on L1.
+
+```rust
+// optimistic.rs:247
+pub fn take_rolled_out(&self, new_l2_cursor: u64) -> Vec<HeldTx> {
+    // L1 reorg: removes Settled entries ABOVE the retreated
+    // cursor and returns their txs. Pending entries stay.
+}
+
+// optimistic.rs:270 (one line in source; wrapped here)
+pub fn take_finalized(&self, finalized_l2: u64)
+    -> Vec<(u64, TxHash, Vec<HeldTx>)> {
+    // the only clean exit — and the caller still checks
+    // each postBatch receipt exists on L1 before discarding
 }
 ```
 
@@ -1403,8 +1916,12 @@ message ProveResponse {
   bytes signature          = 2;  // 65B
 }
 
-// MAX_MESSAGE_BYTES = 1024 * 1024 * 1024
-// (1 GiB) — applied to encode + decode
+// eez-control-rpc/src/lib.rs:19 — Rust, not the proto
+pub const MAX_MESSAGE_BYTES: usize = 1024 * 1024 * 1024;
+
+// eez-proof-signer/src/service.rs:26, :29 — the server
+const MAX_DECODING_MESSAGE_BYTES: usize = 256 * 1024 * 1024;
+const MAX_ENCODING_MESSAGE_BYTES: usize = 1024;
 ```
 
 ## How the deriver rebuilds L2 from L1
@@ -1418,47 +1935,60 @@ Learn how the whole chain is reconstructed from L1 data alone.
 
 ### Step 1 — WATCH L1
 
-The deriver watches L1 for BatchPosted events instead of trusting any node's live output.
+The deriver watches L1 for BatchPosted events instead of trusting any node's live output. The log is the trigger; the payload is the posting transaction's calldata.
 
 ```rust
-// abi.rs:105
+// crates/eez-protocol/src/abi.rs:105
 event BatchPosted(uint256 indexed rollupCount);
+// ^ the count of rollups settled in THIS batch,
+//   not a batch ordinal (EEZ.sol:442 emits
+//   batch.rollupIdsWithProofSystems.length)
 
 // deriver.rs:45
 pub struct Deriver<L2>
 ```
 
-### Step 2 — REACT TO THE EVENT
+### Step 2 — DECODE THE CALLDATA
 
-Each BatchPosted event runs through handle_event into execute_block, rebuilding that slice of L2 state from raw L1 data.
+handle_event routes the event to on_batch_posted, which decodes that calldata and replays the blocks through execute_block.
 
 ```rust
-// abi.rs:105
-event BatchPosted(uint256 indexed rollupCount);
-
-// deriver.rs:45
-pub struct Deriver<L2>
-
-// deriver.rs:774
+// deriver.rs:786
 async fn handle_event(&self, event: L1Event) -> DeriverResult<()> {
 
-// deriver.rs:504
+// deriver.rs:836
+async fn on_batch_posted(
+    // params omitted — signature verified, body not
+) -> DeriverResult<()> {
+
+// deriver.rs:849 — the log is the trigger, this is the data
+let decoded = eez_payload_codec::decode(call_data.as_ref())?;
+
+// deriver.rs:516
 pub fn execute_block(
 ```
 
-### Step 3 — CATCH UP = REBUILD EVERYTHING
+### Step 3 — REVALIDATE, THEN SCAN FORWARD
 
-catch_up() replays this across all of L1 history to the present, so the resulting L2 state answers to L1 alone.
+catch_up() first re-checks the batches it already indexed and drops any whose L1 block is no longer canonical, then scans forward from that anchor — or from the deployment block on a cold start.
 
 ```rust
-// deriver.rs:774
-async fn handle_event(&self, event: L1Event) -> DeriverResult<()> {
-
-// deriver.rs:504
-pub fn execute_block(
-
 // deriver.rs:169
 pub async fn catch_up(&self) -> DeriverResult<()> {
+
+// deriver.rs:257 — phase 1: walk the index tail BACKWARD,
+// dropping batches whose recorded L1 hash is no longer
+// canonical; returns the highest still-canonical anchor
+async fn revalidate_index_tail(&self) -> DeriverResult<Option<u64>> {
+
+// deriver.rs:246-249 — phase 2: scan forward (arms wrapped)
+match anchor {
+    Some(anchor_l1_block) =>
+        self.sync_batches_inner(anchor_l1_block, cursor).await,
+    // cold start: deploy_block, NOT L1 genesis
+    None =>
+        self.sync_batches_inner(self.inner.deploy_block, 0).await,
+}
 ```
 
 ## How the address is derived

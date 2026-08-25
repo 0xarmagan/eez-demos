@@ -435,11 +435,19 @@ def build_full(pages):
     return "\n".join(out).rstrip() + "\n"
 
 
+# Every walkthrough that ships. A page that stops being collected - a caption
+# array renamed, a card removed from index.html - would otherwise vanish from
+# llms-full.txt silently, so the count is asserted rather than trusted. Bump it
+# in the same commit that adds or removes a page.
+EXPECTED_WALKTHROUGHS = 16
+
+
 def main():
     check = "--check" in sys.argv
     pages = collect()
-    if len(pages) != 15:
-        print("FAIL: expected 15 walkthroughs, collected %d" % len(pages))
+    if len(pages) != EXPECTED_WALKTHROUGHS:
+        print("FAIL: expected %d walkthroughs, collected %d"
+              % (EXPECTED_WALKTHROUGHS, len(pages)))
         return 1
 
     targets = {"llms.txt": build_index(pages), "llms-full.txt": build_full(pages)}
