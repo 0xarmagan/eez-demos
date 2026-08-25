@@ -301,13 +301,15 @@
       "$ kurtosis engine start",
       "",
       "$ export KURTOSIS_ENCLAVE=eez-dev",
-      "$ export KURTOSIS_ARGS_FILE=\"$PWD/testing/kurtosis/ci-args.yaml\""
+      "$ export KURTOSIS_ARGS_FILE=\\",
+      "    \"$PWD/testing/kurtosis/ci-args.yaml\""
     ],
     [
       "$ kurtosis engine start",
       "",
       "$ export KURTOSIS_ENCLAVE=eez-dev",
-      "$ export KURTOSIS_ARGS_FILE=\"$PWD/testing/kurtosis/ci-args.yaml\"",
+      "$ export KURTOSIS_ARGS_FILE=\\",
+      "    \"$PWD/testing/kurtosis/ci-args.yaml\"",
       "",
       "$ bash testing/kurtosis/start.sh \\",
       "    \"$KURTOSIS_ARGS_FILE\""

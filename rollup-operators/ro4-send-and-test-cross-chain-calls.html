@@ -349,9 +349,13 @@
     "$ EEZ_WAVE_COUNT=5 bash scripts/xchain-test.sh"
   ];
   var codeByStep = [
+    // Windows, not a cumulative reveal: step 1 owns the endpoint table, and
+    // steps 2-3 own the bundle-size cap. Cumulative slices pushed step 3's own
+    // subject — the test-driver invocation — 7 lines below the fold, cutting
+    // the rbuilder-chiado warning mid-sentence on the way.
     lines.slice(0, 13),
-    lines.slice(0, 21),
-    lines.slice(0, 23)
+    lines.slice(13, 21),
+    lines.slice(13, 23)
   ];
   var hlByStep = [
     [6,7,9,10,11,12],

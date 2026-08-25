@@ -982,7 +982,8 @@ $ git submodule update --init --recursive \
 $ kurtosis engine start
 
 $ export KURTOSIS_ENCLAVE=eez-dev
-$ export KURTOSIS_ARGS_FILE="$PWD/testing/kurtosis/ci-args.yaml"
+$ export KURTOSIS_ARGS_FILE=\
+    "$PWD/testing/kurtosis/ci-args.yaml"
 ```
 
 ### Step 3 — ONE SCRIPT → FULL STACK
@@ -993,7 +994,8 @@ One script deploys contracts, generates the L2 genesis, and boots the L1, MEV-bu
 $ kurtosis engine start
 
 $ export KURTOSIS_ENCLAVE=eez-dev
-$ export KURTOSIS_ARGS_FILE="$PWD/testing/kurtosis/ci-args.yaml"
+$ export KURTOSIS_ARGS_FILE=\
+    "$PWD/testing/kurtosis/ci-args.yaml"
 
 $ bash testing/kurtosis/start.sh \
     "$KURTOSIS_ARGS_FILE"
