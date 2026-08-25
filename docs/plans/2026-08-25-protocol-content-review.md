@@ -21,7 +21,7 @@
 - **Never re-point a citation at a mutable branch.** Bump the SHA in `citation-pins.json`, run `scripts/verify-citations.py --repin`, re-run the verifier.
 - **No invented API surface.** If a function, field or error cannot be confirmed at the pinned SHA, the finding is "unverified — check `<file>`", never an assertion.
 - **No Solidity toolchain on this machine.** `forge` and `solc` are both absent, and `solcx` is not installed. Any task claiming a test passes must either install a toolchain first or run it in CI — an unexecuted compile-check is not a passing test, and must be labelled as such.
-- **Citation counts, verbatim.** The repo's own `scripts/verify-citations.py` finds **26 citations / 28 assertions** and passes. An external audit of this site reported "20/20 citations resolve" from a hand-rolled script with a hardcoded list; that is a subset, not a contradiction. Do not "fix" the repo's verifier to match it.
+- **Citation counts, verbatim.** The repo's own `scripts/verify-citations.py` finds **25 citations / 27 assertions** on `origin/main` and passes (26/28 on the unmerged `fix/panel-geometry-gate` branch). An external audit of this site reported "20/20 citations resolve" from a hand-rolled script with a hardcoded list; that is a subset, not a contradiction. Do not "fix" the repo's verifier to match it.
 - **Severity vocabulary** (from the skill's review format, used by every task): `BLOCKING` (breaks in production, leaks value, or teaches a security-relevant falsehood) → `ACCURACY` (wrong name, field, or claim) → `BETTER` (opinionated improvement) → `RIGHT` (specific, earned credit).
 - **Page verdicts:** `Ship it` / `Ship with fixes` / `Don't ship — conceptual problem`. One per page, no abstentions.
 
