@@ -176,12 +176,33 @@ Additionally blocked before the devnet session: the banked draft is unlocated
 review as a publish blocker.
 
 **1.3 — End-to-end quickstart** · `ready` (1.1 shipped) · L — cold-start test is
-`needs-human`.
+`needs-human`. Inherits the Guide format from 1.5 (below).
 
 **1.4 — Lead Safe at N=2** · `ready` (timeboxed 1 day) · M — module code review
 is a publish blocker.
 
-**1.5 — Rolling hash** · `ready` · L — parallel desk work, not started.
+**1.5 — Rolling hash** · `done` · L
+done-when: covers 4-tuple collapse, seeding, tag chain, `CALL_NOT_FOUND`
+anti-forgery, tagged/untagged asymmetry with justification; code illustrative not
+copy-pasteable; zero stale names; the researcher takes home one reusable idea. ✔
+Shipped as `protocol-researchers/pr6-the-rolling-hash.html`, seven steps, source
+`docs/CORE_PROTOCOL_SPEC.md` §E and `EEZBase.sol`. Seven per-step citations, all
+resolving at the pin. Checked by `scripts/audit.sh`,
+`scripts/check-panel-drift.py` (ILLUSTRATIVE_ONLY) and
+`scripts/check-panel-height.cjs`.
+
+Deviation on the record: the card says **"4-tuple collapse"**. Upstream says
+**triple** — `(hash, rollingHash, isStatic)` collapsed into one comparison
+(`EEZBase.sol:244-245`), and that is the only tuple language anywhere in the
+pinned tree. The page says triple. Related: spec §E calls `crossChainCallHash`
+"seven-field" in one sentence, which is shorthand for the seven that *vary* once
+`callGas` is constant — the formula is eight fields (§C), so q5's "8 FIELDS" is
+right and was left alone.
+
+The reusable idea is step 4: a hash chain plus domain tags already encodes
+sequence, so folding a position counter is redundant — and the redundancy is not
+free, because it forbids re-running a subsequence out of its original offset.
+That is what lets a `revertNextNCalls` span be processed as a 0-based sub-slice.
 
 ### Wave 2 — The safety net
 
@@ -255,7 +276,33 @@ quickstart family; no borrowed credibility.
 
 **4.4 — IA pass** · `blocked` by index > ~20 items · M
 done-when: the dapp-dev section is one ordered curriculum; constraints precede
-designs; "First time here?" routes through same-block early. Index is at 16.
+designs; "First time here?" routes through same-block early. Index is at 17.
+
+## The Guide format — pilot locked, awaiting sign-off
+
+Ground rule 1 decides Guides are variable-length (3–12 steps), but every page in
+the repo was a hardcoded three-step walkthrough and `scripts/new-demo.sh` only
+scaffolds those. That looked like a blocker on all of Wave 1. It was smaller than
+it looked: `stepLabel`, the dot row and every `*ByStep` array already derive from
+`N`. The only hardcoding was the stage show/hide (`els.s1/s2/s3`), now a loop
+over `N` with a startup assertion that every step has a stage div.
+
+So a Guide, as shipped in pr6, is the same player with four differences:
+
+1. `var N` is the real step count (7 here), pacing eased to 4200ms since the
+   steps carry more reading.
+2. No FULL toggle and no snippet, because the code is illustrative. The button is
+   absent, `fullSnippet` is `[]`, and the player's existing `if (btnFull)` guards
+   make that a no-op rather than a special case.
+3. `citeByStep`, updated inside `render()`. A guide's panels span several files,
+   so one fixed citation would be right on step 1 and wrong on the rest.
+4. Registered in `check-panel-drift.py`'s `ILLUSTRATIVE_ONLY` with a written
+   reason — an allowlist, not a skip, so "no snippet" can never mean "nobody
+   looked".
+
+**pr6 is the pilot. 1.2 and 1.3 should roll out to this template once it is
+signed off, not before** — building three Guides against an unreviewed shape is
+how a format gets locked in by accident.
 
 ## Measurement, re-read
 
@@ -266,7 +313,7 @@ designs; "First time here?" routes through same-block early. Index is at 16.
 | Critical footguns covered | 0/4 | 0/4 | 0.10 assertion (not yet written) |
 | Contract-side researcher demos | 0/5 | 0/5 | rubric |
 | Solidity demos with tests | 3/7 | **5/8** | `forge test` in CI |
-| Formats shipped | 2/4 | 2/4 | manual |
+| Formats shipped | 2/4 | **3/4** (Guides now shipped) | manual |
 | Max citation pin age | unmeasured | unmeasured | 0.9 reporter (not yet written) |
 
 Target for the first metric is ≥3. q2 is one; 1.3 and 4.3 are the other two.

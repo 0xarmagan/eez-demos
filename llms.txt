@@ -1,6 +1,6 @@
 # EEZ Quickstarts
 
-> Sixteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
+> Seventeen interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
 > contracts that call across rollups, running the stack, and how Rollup0 settles and proves.
 
@@ -44,6 +44,7 @@ How Rollup0 actually settles and proves.
 - [How the composer attests a batch](https://eez-demos.vercel.app/protocol-researchers/pr4-how-the-composer-proves-a-batch.html): Learn why it is an attestation and not yet a proof, and who can swap that.
 - [How the deriver rebuilds L2 from L1](https://eez-demos.vercel.app/protocol-researchers/pr3-the-deriver.html): Learn how the whole chain is reconstructed from L1 data alone.
 - [How the address is derived](https://eez-demos.vercel.app/protocol-researchers/pr5-how-the-address-is-derived.html): Learn how two values become a salt and a CREATE2 address.
+- [The rolling hash](https://eez-demos.vercel.app/protocol-researchers/pr6-the-rolling-hash.html): Learn how one bytes32 commits to a whole execution tree — and why no call index is folded in.
 
 ## Compilable source
 

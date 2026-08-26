@@ -43,7 +43,7 @@ ASSETS = os.path.join(ROOT, "scripts", "asset-manifest.json")
 # The floor, not the count. Citations only ever get added, so an exact number
 # would fail on every new page and get bumped without being read. A floor fails
 # only on a LOSS, which is the failure this is for. Raise it when a wave lands.
-MIN_CITATIONS = 30
+MIN_CITATIONS = 38
 
 STALE_NAMES = [
     "StateDelta", "LookupCall", "ExpectedLookup", "revertSpan",

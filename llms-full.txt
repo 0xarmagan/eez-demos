@@ -1,6 +1,6 @@
 # EEZ Quickstarts
 
-> Sixteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
+> Seventeen interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
 > contracts that call across rollups, running the stack, and how Rollup0 settles and proves.
 
@@ -2417,5 +2417,148 @@ function computeCrossChainProxyAddress(
         )
     ))));
 }
+}
+```
+
+## The rolling hash
+
+Learn how one bytes32 commits to a whole execution tree — and why no call index is folded in.
+
+- Page: https://eez-demos.vercel.app/protocol-researchers/pr6-the-rolling-hash.html
+- Source: `eez-core-protocol/src/base/EEZBase.sol:290 · _rollingHashEntryBegin`
+- Pinned at commit: `9735f53`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L290
+
+### Step 1 — ONE VALUE, WHOLE TREE
+
+An entry states what should happen; the rolling hash commits to what did. Six distinct classes of divergence — wrong return data, wrong success flag, missing or extra calls, a skipped or extra reentrant frame, reordering, an unexpected reentrant call — all collapse into one equality check.
+
+```solidity
+require(_rollingHash == entry.rollingHash);
+// reverts RollingHashMismatch
+
+// EEZBase.sol:107 declares the error;
+// the check runs after every call and
+// every nesting in the entry completes.
+```
+
+### Step 2 — SEEDED WITH STATE
+
+It is seeded, not zeroed: the entry's starting state context closed with its own identity, so the hash binds what the world looked like as well as what happened. It must be clear beforehand, or _rollingHashEntryBegin reverts RollingHashNotCleared.
+
+```solidity
+// EEZBase.sol:290  _rollingHashEntryBegin
+if (_rollingHash != bytes32(0))
+    revert RollingHashNotCleared();
+
+bytes32 statesHash;
+for (i in deltas)
+    statesHash = keccak256(abi.encodePacked(
+        statesHash,
+        deltas[i].rollupId,
+        deltas[i].currentState));
+
+_rollingHash = keccak256(abi.encodePacked(
+    statesHash, proxyEntryHash));
+```
+
+### Step 3 — FIVE TAGGED EVENTS
+
+Five events, each folded with its own domain byte, so one set of inputs cannot mean two things. CALL_BEGIN folds the call's full identity hash — a substituted call with an identical return value still diverges.
+
+```solidity
+// EEZBase.sol:39-43 — the domain bytes
+CALL_BEGIN     = 1;
+CALL_END       = 2;
+NESTED_BEGIN   = 3;
+NESTED_END     = 4;
+CALL_NOT_FOUND = 5;
+
+// :303
+keccak256(abi.encodePacked(
+    _rollingHash, CALL_BEGIN,
+    crossChainCallHash));
+
+// :309
+keccak256(abi.encodePacked(
+    _rollingHash, CALL_END,
+    success, retData));
+```
+
+### Step 4 — NO INDEX IS FOLDED IN
+
+No call index is folded in. Because each fold consumes the prior hash, order, count and nesting are already bound by the chain, and an explicit counter would add nothing. Dropping it is what lets a revert span be reprocessed as a 0-based sub-slice and still hash like a continuous run.
+
+```solidity
+// each fold consumes the previous value
+_rollingHash = keccak256(abi.encodePacked(
+    _rollingHash,   // <- the chain
+    TAG,
+    ...));
+
+// so this is NOT folded anywhere:
+//     uint256 callIndex
+
+// and that omission is what lets a
+// revertNextNCalls span run as a
+// 0-based sub-slice without diverging
+// from a continuous run.
+```
+
+### Step 5 — A NO-MATCH CANNOT BE FORGED
+
+A reentrant call that finds no matching row folds CALL_NOT_FOUND, not CALL_END(true, ""). Sharing a tag would let a silent no-match be presented as a successful empty return; the separate domain byte makes those two histories hash differently.
+
+```solidity
+// a normal empty return (:309)
+keccak256(abi.encodePacked(
+    _rollingHash, CALL_END,
+    true, ""));
+
+// a no-match (:331) — different tag
+keccak256(abi.encodePacked(
+    _rollingHash, CALL_NOT_FOUND,
+    crossChainCallHash));
+
+// one tag for both would let the first
+// stand in for the second.
+```
+
+### Step 6 — A TRIPLE COLLAPSED TO ONE
+
+The reentrant table's position key was (hash, rollingHash, isStatic) and is now keccak256(crossChainCallHash, rollingHash). isStatic did not stop mattering — it is already the first of the eight fields inside crossChainCallHash, so carrying it again committed to the same bit twice.
+
+```solidity
+// EEZBase.sol:246
+function _computeExpectedL1toL2Hash(
+    bytes32 crossChainCallHash,
+    bytes32 rollingHash
+) internal pure returns (bytes32) {
+    return keccak256(abi.encodePacked(
+        crossChainCallHash,
+        rollingHash));
+}
+
+// isStatic is already field 1 of the
+// eight inside crossChainCallHash.
+```
+
+### Step 7 — THE UNTAGGED EXCEPTION
+
+Static sub-hashes drop the tags entirely, into a separate accumulator. That is safe because the surrounding key already pins what the tags disambiguate — an asymmetry with a stated reason, not an oversight.
+
+```solidity
+// EEZBase.sol:339  _rollingHashStaticResult
+// pure: never touches _rollingHash
+return keccak256(abi.encodePacked(
+    prev, success, retData));
+
+// EEZL2.sol:674  _processNStaticCalls
+computedHash = bytes32(0);
+for (cc in calls) {
+    (success, retData) =
+        sourceProxy.staticcall(...);
+    computedHash = _rollingHashStaticResult(
+        computedHash, success, retData);
 }
 ```
