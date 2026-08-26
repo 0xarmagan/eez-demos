@@ -12,6 +12,8 @@
 #                                  with upstream still matches upstream at the pin
 #   scripts/sync-embedded-snippets.py  re-embeds a snippet after editing the .sol
 #   scripts/build-llms.py          regenerates llms.txt / llms-full.txt
+#   scripts/check-manifest.py      asserts docs/plans/2026-08-26-developer-content-v41.md
+#                                  (the v4.1 execution manifest) against the tree
 #
 # See CONTRIBUTING.md's "Audit, before merge" section for what remains manual.
 set -uo pipefail
@@ -129,6 +131,7 @@ if [ "$FAIL" -eq 0 ]; then
   echo "Next: python3 scripts/verify-citations.py  (citations vs real source)"
   echo "      python3 scripts/check-panel-drift.py (panels vs compilable snippets)"
   echo "      python3 scripts/check-snippet-fidelity.py (snippets vs upstream at the pin)"
+  echo "      python3 scripts/check-manifest.py     (the v4.1 manifest vs the tree)"
   echo "If you edited a snippet: python3 scripts/sync-embedded-snippets.py"
   echo "If you edited any content: python3 scripts/build-llms.py"
 else

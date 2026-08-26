@@ -228,6 +228,12 @@
         <div class="warntxt">rbuilder-chiado silently drops the excess beyond ~3 — that's lost tx inclusion, not a queued retry.</div>
         <div class="warntxt">Raise this only against a builder proven to include larger bundles atomically. Measure before bumping.</div>
       </div>
+      <div class="warnbox" style="border-left-color:#e8b15e;">
+        <div class="warnhdr">⚠ WHAT "ATOMIC" ACTUALLY COVERS HERE</div>
+        <div class="warntxt">Cross-chain atomicity is bounded twice, and both bounds are visible from this config line. <b>One L1 block:</b> an execution resolves only in the block whose batch verified it — <span style="font-family:var(--mono);font-size:14px;">executeCrossChainCall</span> reverts <span style="font-family:var(--mono);font-size:14px;">ExecutionNotInCurrentBlock</span> otherwise (EEZL2.sol:228, EEZ.sol:209). There is no "later": nothing queues, nothing retries on its own.</div>
+        <div class="warntxt"><b>One bundle the builder took whole:</b> atomicity is a property of a bundle that landed intact. It is not enforced against the builder. rbuilder-chiado drops the excess past ~3 silently, and a bundle that loses members is not a failed transaction you can resend — the members that did land already executed.</div>
+        <div class="warntxt">So the guarantee to design against is: atomic within one bundle, in one L1 block, if the builder included all of it. Raising the cap widens the first two and leaves the third to a builder you have measured.</div>
+      </div>
       <div class="note">The cap is generous for one op — it's the first thing to check when a wave of txs comes up short.</div>
     </div>
 
@@ -290,7 +296,7 @@
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 · TWO FRONTS, ONE JOB</b>sendRawTransaction is held for the next Sync block — once per L1 block, for cross-chain work.</li>
-        <li><b>02 · MIND THE BUNDLE SIZE</b>EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it.</li>
+        <li><b>02 · MIND THE BUNDLE SIZE</b>EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, rbuilder-chiado silently drops anything past it, and that drop is where atomicity stops.</li>
         <li><b>03 · EXERCISE IT</b>xchain-test.sh drives both fronts through the full matrix and prints a RESULTS block of pipeline metrics.</li>
       </ul>
       <div class="intro-actions">
@@ -326,12 +332,15 @@
   var kickers = ["TWO FRONTS, ONE JOB", "MIND THE BUNDLE SIZE", "EXERCISE IT"];
   var captions = [
     "With the Chiado stack from step 03 running, two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block — once per L1 block, for cross-chain work — while everything else passes straight through.",
-    "EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it, so measure before you raise it.",
+    "EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it. That drop is also the limit of atomicity: cross-chain work is atomic within one bundle, in one L1 block, if the builder took the bundle whole \u2014 nothing queues and nothing retries.",
     "xchain-test.sh drives both fronts through the full op × direction × direct/wrapper matrix and prints a RESULTS block of pipeline metrics — the box shows that block's format, not a captured run."
   ];
 
-  // Progressive code reveal: each step shows only the lines relevant so far,
-  // so the panel never dumps the whole README + script ungrouped.
+  // Sliding window, not a growing prefix. The prefix version accumulated to 23
+  // lines by step 3 against a 663px / 16-line column, so seven lines sat below
+  // the fold behind a scrollbar nobody looks for — invisible until
+  // scripts/check-panel-height.cjs was repaired and could measure again. Each
+  // window carries one block of the previous step for continuity and fits.
   var lines = [
     "# README.md · Endpoints (chiado compose stack)",
     "#   L2 RPC                   :18688",
@@ -359,13 +368,14 @@
   ];
   var codeByStep = [
     lines.slice(0, 11),
-    lines.slice(0, 18),
-    lines.slice(0, 23)
+    lines.slice(7, 18),
+    lines.slice(12, 23)
   ];
+  // Highlights are window-relative, so they shift with the slice above.
   var hlByStep = [
     [3,4,7,8,9,10],
-    [13,14,15,16,17],
-    [18,19,20,21,22]
+    [6,7,8,9,10],
+    [1,2,6,7,8,9,10]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

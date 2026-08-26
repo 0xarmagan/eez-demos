@@ -37,6 +37,55 @@ jobs:
       - name: Agent-readable files are current
         run: python3 scripts/build-llms.py --check
 
+      # The third comparison, and the one that was written but never gated:
+      # panel drift compares the panel to the snippet, verify-citations compares
+      # the citation to upstream, and this compares the SNIPPET to upstream. It
+      # was left out of audit.sh deliberately (that script is network-free) and
+      # then out of CI by omission, so the check that exists to stop a repeat of
+      # STATIC_CHECK_GAS = 5000 was running nowhere. CI has network; it belongs
+      # here.
+      - name: Snippets still match upstream at the pin
+        run: python3 scripts/check-snippet-fidelity.py
+
+      - name: Snippet-fidelity checker still catches injected drift
+        run: python3 scripts/test_snippet_fidelity.py
+
+      # The export gate: every walkthrough reaches llms-full.txt, with a code
+      # block for every step it narrates. "At least one block" was the old
+      # floor and a page could lose two steps of three under it.
+      - name: Export is not silently lossy
+        run: python3 scripts/test_build_llms.py
+
+      # Part III of the v4.1 plan. The manifest is the source of truth for
+      # status, so it has to be asserted against the tree or it becomes the
+      # CLAUDE.md failure: a document that describes a repo it no longer
+      # matches. Checks the header block has no blanks, every card carries a
+      # status and a size, the card count matches the plan, a `done` card names
+      # a check CI actually runs, every asset row resolves, the citation count
+      # has not dropped, and no stale name has come back.
+      - name: Manifest integrity
+        run: python3 scripts/check-manifest.py
+
+  panels:
+    name: Code panels fit their column
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # A panel taller than its 663px column puts the tail below the fold
+      # behind a scrollbar nobody looks for, and audit.sh cannot see it at all.
+      # The checker needs a browser; this repo has no node_modules, so install
+      # puppeteer here rather than vendoring it.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install puppeteer
+        run: npm install --no-save puppeteer
+
+      - name: No over-height code panels
+        run: NODE_PATH="$PWD/node_modules" node scripts/check-panel-height.cjs
+
   solidity:
     name: Snippets compile and tests pass
     runs-on: ubuntu-latest

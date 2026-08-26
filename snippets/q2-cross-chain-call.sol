@@ -10,9 +10,15 @@ import {IEEZ} from "./lib/IEEZ.sol";
 // Caller side is ordinary: encode a call, send it to the proxy address like
 // any other contract. The proxy has no matching function, so everything
 // lands in fallback() and gets forwarded to the manager.
+//
+// A read is the same code with one difference that matters: STATICCALL
+// instead of CALL. That is what the proxy's probe detects, and it is what
+// decides whether the manager resolves an ExecutionEntry or a
+// StaticExecutionEntry. See `settleIfFunded` below.
 
 interface IRemote {
     function setValue(uint256 v) external;
+    function balanceOf(address account) external view returns (uint256);
 }
 
 /// @dev A cross-chain call fails for reasons an ordinary same-chain call
@@ -23,10 +29,24 @@ interface IRemote {
 ///      here; see docs/CAVEATS.md "Indistinguishable revert reasons".
 error CrossChainCallFailed();
 
+/// @dev Raised on a value that came back from another rollup. The point of the
+///      mechanism is not that the call succeeded — it is that the answer
+///      decides what the rest of this transaction does.
+error InsufficientRemoteBalance(uint256 have, uint256 need);
+
 /// @dev Caller side — this is all a dapp has to do.
 contract Caller {
     address public proxyAddress;
 
+    mapping(address account => uint256 amount) public credited;
+    mapping(address account => uint256 amount) public shortfall;
+
+    constructor(address proxyAddress_) {
+        proxyAddress = proxyAddress_;
+    }
+
+    /// @dev The write path. Nothing comes back worth reading, so `ok` is the
+    ///      whole result and the call is an ordinary CALL.
     function send() external {
 bytes memory data = abi.encodeCall(
     IRemote.setValue, (42)
@@ -34,6 +54,39 @@ bytes memory data = abi.encodeCall(
 
 (bool ok, ) = proxyAddress.call(data);
 if (!ok) revert CrossChainCallFailed();
+    }
+
+    /// @dev The read path — a value from another rollup deciding a branch here.
+    ///
+    ///      The one thing to get right: the proxy picks static-vs-mutable from
+    ///      the CALLER'S frame, not from `view`. Its probe does a `tstore`, and
+    ///      a `tstore` only halts under STATICCALL (CrossChainProxy.sol:71). A
+    ///      plain `.call(data)` here would therefore take the mutable path and
+    ///      demand an ExecutionEntry no composer wrote for a read — on L2 that
+    ///      is `EntryNotFound(hash, callGas)` (EEZL2.sol:441). STATICCALL is
+    ///      what routes it to `staticCrossChainCall` (EEZL2.sol:594) and a
+    ///      `StaticExecutionEntry`.
+    function settleIfFunded(address user, uint256 need) external returns (bool) {
+bytes memory data = abi.encodeCall(
+    IRemote.balanceOf, (user)
+);
+
+// STATICCALL, not CALL: the proxy keys off this
+// frame, not off `view`.
+(bool ok, bytes memory ret) =
+    proxyAddress.staticcall(data);
+if (!ok) revert CrossChainCallFailed();
+
+// The proxy returns the destination call's raw
+// return data, so decode it exactly as you would
+// a same-chain read — then branch on the value.
+uint256 have = abi.decode(ret, (uint256));
+if (have < need) {
+    shortfall[user] = need - have;
+    return false;
+}
+credited[user] += need;
+return true;
     }
 }
 

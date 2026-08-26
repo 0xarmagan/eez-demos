@@ -206,6 +206,15 @@
 
       <div id="cErr" style="display:none;font-family:var(--mono);font-size:13px;color:#8B7B55;"></div>
 
+      <div style="background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.30);border-left:3px solid #8B7B55;border-radius:8px;padding:12px 16px;display:flex;flex-direction:column;gap:8px;">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#c9b183;">TWO OF THE EIGHT ARE NOT YOURS TO CHOOSE</div>
+        <div style="font-size:14px;line-height:1.55;color:#b9a985;">All eight fields are editable here so you can watch the hash move. On-chain, two of them are written by whichever manager the call leaves, not by you — put your own values in either and the hash you compute will never match an entry.</div>
+        <div style="font-size:14px;line-height:1.55;color:#b9a985;"><b style="font-family:var(--mono);color:#d8c69b;">sourceRollupId</b> is forced by the side you are leaving. Leaving L1, <span style="font-family:var(--mono);">EEZ</span> hardcodes <span style="font-family:var(--mono);">MAINNET_ROLLUP_ID</span>, which is <span style="font-family:var(--mono);">0</span> (EEZ.sol:60, :800, :1277). Leaving an L2, <span style="font-family:var(--mono);">EEZL2</span> passes its own <span style="font-family:var(--mono);">ROLLUP_ID</span> (EEZL2.sol:238). Neither reads an argument.</div>
+        <div style="font-size:14px;line-height:1.55;color:#b9a985;"><b style="font-family:var(--mono);color:#d8c69b;">callGas</b> is <span style="font-family:var(--mono);">0</span> at every site but one. The exception is a call <em>leaving an L2</em> whose manager was deployed with <span style="font-family:var(--mono);">USE_GAS_LEFT = true</span> — there it is the <span style="font-family:var(--mono);">gasleft()</span> observed at manager entry, <span style="font-family:var(--mono);">uint64(gasleft())</span> (EEZL2.sol:41, :236; EEZBase.sol:52-53, :197). Everywhere else the constant <span style="font-family:var(--mono);">ZERO_CALL_GAS</span> is folded in, including every static read.</div>
+        <div style="font-size:14px;line-height:1.55;color:#b9a985;">That exception is why the L2 miss carries a payload: <span style="font-family:var(--mono);">EntryNotFound(bytes32 crossChainCallHash, uint64 callGas)</span> hands back the observed gas so whoever builds the entry can reproduce the key (EEZL2.sol:97-98, :441). Under <span style="font-family:var(--mono);">USE_GAS_LEFT</span> the hash is gas-dependent, and a value you cannot predict off-chain is in the preimage.</div>
+        <div id="cCond" style="font-family:var(--mono);font-size:13px;line-height:1.5;color:#8B7B55;"></div>
+      </div>
+
       <div style="display:flex;flex-direction:column;gap:6px;">
         <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">keccak256(abi.encode(&#8943;)) &#183; <span id="cLen"></span></span>
         <div id="cHash" style="font-family:var(--mono);font-size:20px;line-height:30px;color:var(--eez-green);word-break:break-all;"></div>
@@ -694,6 +703,27 @@
       };
       g("cHashSwap").textContent = "0x" + EEZHash.callHash(swapped);
       err.style.display = "none";
+      // Not an encoding error — the encoding is fine. This says whether a
+      // manager would ever produce this combination, which is the difference
+      // between a hash that is well-formed and a hash that can match.
+      var notes = [];
+      if (base.callGas !== "0") {
+        notes.push("callGas \u2260 0 \u2014 reachable only leaving an L2 whose manager has USE_GAS_LEFT = true.");
+      }
+      if (base.isStatic && base.callGas !== "0") {
+        notes.push("A static read always folds ZERO_CALL_GAS: this pair cannot occur.");
+      }
+      if (base.isStatic && base.value !== "0") {
+        notes.push("value is always 0 in a static context (EEZL2.sol:605): this pair cannot occur.");
+      }
+      if (base.sourceRollupId === "0") {
+        notes.push("sourceRollupId = 0 is MAINNET_ROLLUP_ID \u2014 this is a call leaving L1.");
+      }
+      var cond = g("cCond");
+      if (cond) {
+        cond.textContent = notes.join("  \u00b7  ");
+        cond.style.display = notes.length ? "block" : "none";
+      }
     } catch (e) {
       err.textContent = e.message;
       err.style.display = "block";

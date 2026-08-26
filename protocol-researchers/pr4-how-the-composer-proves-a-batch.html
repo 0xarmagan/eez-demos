@@ -6,7 +6,7 @@
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
-<title>How the composer proves a batch — EEZ</title>
+<title>How the composer attests a batch — EEZ</title>
 <link rel="canonical" href="https://eez-demos.vercel.app/protocol-researchers/pr4-how-the-composer-proves-a-batch.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -138,7 +138,7 @@
     <div style="display:flex;align-items:center;gap:18px;">
       <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-      <div style="font-size:22px;font-weight:600;color:#fff;">How the Composer Proves a Batch</div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">How the Composer Attests a Batch</div>
       <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#8a8a8a;">PRE-MAINNET</div>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
@@ -266,14 +266,18 @@
   <section id="intro" aria-labelledby="introTitle">
     <div class="intro-inner">
       <div class="intro-eyebrow">PROTOCOL RESEARCHERS · 03</div>
-      <h1 class="intro-title" id="introTitle">How the composer proves a batch</h1>
-      <p class="intro-lede">The composer opens one gRPC stream to the proof-signer and sends a ProveHeader first — blocks always follow in order.</p>
+      <h1 class="intro-title" id="introTitle">How the composer attests a batch</h1>
+      <p class="intro-lede">"Attests", not "proves", and the distinction is the page. Three mechanisms sit behind that word, and only the first is what the name "prover" suggests.</p>
+      <p class="intro-lede"><b>Stateless re-execution.</b> The prover is handed a <span style="font-family:var(--mono);">BlockWitness</span> and replays the block from it to recompute the hash itself, rather than trusting the composer's claim or reading a state database. That part is real, and step 2 is it.</p>
+      <p class="intro-lede"><b>ECDSA standing in for succinctness.</b> What comes back is not a succinct proof. <span style="font-family:var(--mono);">ECDSAProofSystem</span> is described upstream as a "temporary proof system that uses ECDSA signature recovery instead of a ZK proof", and its <span style="font-family:var(--mono);">verify</span> is one line: <span style="font-family:var(--mono);">ECDSA.recover(publicInputsHash, proof) == signer</span>. So the guarantee today is that a named signer re-executed and agreed — an attestation. It is not yet a proof anyone can check without trusting that signer.</p>
+      <p class="intro-lede"><b>A per-rollup prover swap.</b> Which contract does the checking is a per-rollup choice, not a network-wide one. <span style="font-family:var(--mono);">IProofSystem</span> is any contract that can check <span style="font-family:var(--mono);">(proof, publicInputsHash)</span> — ZK, ECDSA, or otherwise — referenced from that rollup's own vkey map. There is no central registry, and upstream is explicit that each rollup owner vets which proof-system addresses their rollup allows. Swapping ECDSA for a real verifier is therefore a per-rollup upgrade, and until a rollup makes it, "attests" is the honest verb for that rollup.</p>
+      <p class="intro-lede">The mechanics below are the first mechanism. The composer opens one gRPC stream to the proof-signer and sends a ProveHeader first — blocks always follow in order.</p>
       <p class="intro-lede">That one stream carries the header, the blocks and a signature back.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 · ONE STREAM, ONE JOB</b>One gRPC stream to the proof-signer: ProveHeader first, blocks in order.</li>
         <li><b>02 · THE PROVER RE-EXECUTES</b>For each BlockWitness, the prover decodes PostBatch’s calldata and replays the block to recompute the hash.</li>
-        <li><b>03 · SIGN &amp; RETURN</b>The prover signs the recomputed hash; the composer only trusts it once the signature recovers to the registered attester.</li>
+        <li><b>03 · SIGN &amp; RETURN</b>The prover signs the recomputed hash; the composer only trusts it once the signature recovers to the registered attester — an attestation, not a succinct proof.</li>
       </ul>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
@@ -333,7 +337,6 @@
       "  uint64 to_block   = 3;  // sync_height",
       "  PostBatch post_batch = 4;",
       "}",
-      "",
       "message PostBatch {",
       "  bytes abi_calldata = 1;",
       "  bytes public_inputs_hash = 2;",

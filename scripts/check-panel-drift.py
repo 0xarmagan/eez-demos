@@ -37,6 +37,10 @@ SNIPPETS = os.path.join(REPO_ROOT, "snippets")
 
 # Every Solidity walkthrough must name its snippet. A new dapp-developers or
 # protocol-researchers page with no entry here is a failure, not a silent skip.
+#
+# That comment was aspirational until 2026-08-26: the coverage scan below only
+# read dapp-developers/ and only files matching q[1-9], so a new
+# protocol-researchers page WAS a silent skip. It now scans both directories.
 SNIPPET_MAP = {
     "pr5-how-the-address-is-derived.html": "q1-compute-address.sol",
     "q2-send-a-cross-chain-call.html": "q2-cross-chain-call.sol",
@@ -48,12 +52,37 @@ SNIPPET_MAP = {
     "q8-read-a-remote-contracts-state.html": "q8-remote-reads.sol",
 }
 
+# Pages whose panels are deliberately illustrative rather than compilable, and
+# so have no snippet to compare against. This is an ALLOWLIST, not a skip: a
+# page is exempt only by being named here with a reason, so "no snippet" can
+# never mean "nobody looked". A Guide that teaches a scheme rather than an API
+# surface is the case this exists for — pinning its panels to a compilable file
+# would mean inventing a contract the protocol does not have.
+ILLUSTRATIVE_ONLY = {
+    "pr6-the-rolling-hash.html":
+        "teaches the rolling-hash fold scheme; panels are hash formulas and "
+        "elided loops, not a contract anyone should paste (card 1.5)",
+}
+
+# Exempt for a different reason: the panels are not Solidity at all, so there is
+# no snippet a Solidity compiler could check. Kept separate from
+# ILLUSTRATIVE_ONLY so the two reasons cannot be confused — "another toolchain"
+# and "deliberately not compilable" are not the same claim, and a page moving
+# from one to the other should be a visible edit.
+NON_SOLIDITY = {
+    "pr1-the-four-components-of-rollup0.html": "Rust (eez-rollup0 crates)",
+    "pr2-commit-first-repair-if-needed.html": "Rust (eez-composer)",
+    "pr3-the-deriver.html": "Rust (eez-deriver)",
+    "pr4-how-the-composer-proves-a-batch.html": "protobuf + Rust constants",
+}
+
 # Panel lines that are prose or deliberate elision, not Solidity to compile.
 IGNORE_PREFIXES = ("//", "/*", "*", "⋯", "...")
 
 
 # Pages that embed a verbatim slice of a test file behind the TEST tab.
 TEST_SNIPPET_MAP = {
+    "q2-send-a-cross-chain-call.html": "test/Q2CrossChainCall.t.sol",
     "q3-fix-the-msg-sender-gotcha.html": "test/Q3MsgSender.t.sol",
     "q5-encode-a-calls-content-hash.html": "test/Q5ContentHash.t.sol",
     "q6-why-you-cant-call-the-manager-directly.html": "test/Q6ManagerDirect.t.sol",
@@ -124,15 +153,17 @@ def has_code_panels(html_path):
 
 
 def main():
-    pages_dir = os.path.join(REPO_ROOT, "dapp-developers")
-    present = sorted(
-        f for f in os.listdir(pages_dir)
-        if f.endswith(".html") and re.match(r"q[1-9]", f)
-    )
+    # Both Solidity-bearing tracks, not just the first one.
+    present = []
+    for track in ("dapp-developers", "protocol-researchers"):
+        d = os.path.join(REPO_ROOT, track)
+        for f in sorted(os.listdir(d)):
+            if f.endswith(".html") and re.match(r"(q|pr)[1-9]", f):
+                present.append((f, os.path.join(d, f)))
 
     failures, checked = [], 0
 
-    for page in present:
+    for page, path in present:
         if page in SNIPPET_MAP:
             continue
         # q7-test-demo.html is untracked scaffold, not a published walkthrough
@@ -140,9 +171,18 @@ def main():
             continue
         # A page with no code panels at all (e.g. a moved-away redirect
         # stub) isn't a walkthrough and has nothing for this check to do.
-        if not has_code_panels(os.path.join(pages_dir, page)):
+        if not has_code_panels(path):
             continue
-        failures.append(f"{page}: no snippet registered in SNIPPET_MAP")
+        if page in ILLUSTRATIVE_ONLY:
+            print(f"  illustrative-only, no snippet compared: {page}")
+            print(f"    reason: {ILLUSTRATIVE_ONLY[page]}")
+            continue
+        if page in NON_SOLIDITY:
+            print(f"  not Solidity, nothing to compile: {page} "
+                  f"({NON_SOLIDITY[page]})")
+            continue
+        failures.append(f"{page}: no snippet registered in SNIPPET_MAP (add one, "
+                        f"or name it in ILLUSTRATIVE_ONLY / NON_SOLIDITY with a reason)")
 
     for page, snippet_name in sorted(SNIPPET_MAP.items()):
         page_path = find_page_path(page)
