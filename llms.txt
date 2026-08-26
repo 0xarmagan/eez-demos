@@ -41,7 +41,7 @@ How Rollup0 actually settles and proves.
 
 - [How the four components divide the work](https://eez-demos.vercel.app/protocol-researchers/pr1-the-four-components-of-rollup0.html): Learn how sequencer, composer, proof-signer and deriver each fit.
 - [How L1 stays the source of truth](https://eez-demos.vercel.app/protocol-researchers/pr2-commit-first-repair-if-needed.html): Learn how an L2 commits first and L1 then settles or repairs it.
-- [How the composer proves a batch](https://eez-demos.vercel.app/protocol-researchers/pr4-how-the-composer-proves-a-batch.html): Learn how one gRPC stream carries header, blocks and a signature.
+- [How the composer attests a batch](https://eez-demos.vercel.app/protocol-researchers/pr4-how-the-composer-proves-a-batch.html): Learn why it is an attestation and not yet a proof, and who can swap that.
 - [How the deriver rebuilds L2 from L1](https://eez-demos.vercel.app/protocol-researchers/pr3-the-deriver.html): Learn how the whole chain is reconstructed from L1 data alone.
 - [How the address is derived](https://eez-demos.vercel.app/protocol-researchers/pr5-how-the-address-is-derived.html): Learn how two values become a salt and a CREATE2 address.
 

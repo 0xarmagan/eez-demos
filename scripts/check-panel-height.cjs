@@ -75,6 +75,18 @@ async function main() {
       await new Promise((r) => setTimeout(r, 150));
     }
 
+    // The lead-in slide (#intro) is a full-stage overlay shown before the
+    // walkthrough starts, and it sits on top of #btnNext exactly as the tour
+    // overlay did. Without this the very first page throws "Node is either not
+    // clickable or not an Element" and the whole run dies before measuring
+    // anything — which is how this checker went quietly non-functional from the
+    // moment the lead-in landed. Same failure, same fix: dismiss it first.
+    const start = await page.$("#btnStart");
+    if (start) {
+      await start.click();
+      await new Promise((r) => setTimeout(r, 200));
+    }
+
     // A page with no step dots is not a walkthrough (e.g. a redirect stub).
     const steps = await page.$$eval("#dots > div", (d) => d.length).catch(() => 0);
     if (!steps) {

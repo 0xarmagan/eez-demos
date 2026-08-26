@@ -231,10 +231,6 @@ return true;
         (success, result) = EEZ.staticcall(abi.encodeCall(
             IEEZ.staticCrossChainCall,
             (msg.sender, msg.data)));
-    } else {
-        (success, result) = EEZ.call{value: msg.value}(abi.encodeCall(
-            IEEZ.executeCrossChainCall,
-            (msg.sender, msg.data)));
     }
 ```
 
@@ -2007,16 +2003,9 @@ With the Chiado stack from step 03 running, two transparent proxy fronts sit in 
 
 ### Step 2 — MIND THE BUNDLE SIZE
 
-EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it, so measure before you raise it.
+EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it. That drop is also the limit of atomicity: cross-chain work is atomic within one bundle, in one L1 block, if the builder took the bundle whole — nothing queues and nothing retries.
 
 ```bash
-# README.md · Endpoints (chiado compose stack)
-#   L2 RPC                   :18688
-#   Embedded chiado L1 RPC   :18645
-#   L1→L2 front (Inbound)    :18999
-#   L2→L1 front (Outbound)   :18998
-# (Kurtosis devnet: source testing/kurtosis/ports.sh)
-
 # both fronts: eth_sendRawTransaction is held
 # + composed into the next Sync block; every
 # other eth_* call is forwarded to the front's
@@ -2035,18 +2024,6 @@ EEZ_MAX_USER_TXS_PER_BUNDLE=3   # default
 xchain-test.sh drives both fronts through the full op × direction × direct/wrapper matrix and prints a RESULTS block of pipeline metrics — the box shows that block's format, not a captured run.
 
 ```bash
-# README.md · Endpoints (chiado compose stack)
-#   L2 RPC                   :18688
-#   Embedded chiado L1 RPC   :18645
-#   L1→L2 front (Inbound)    :18999
-#   L2→L1 front (Outbound)   :18998
-# (Kurtosis devnet: source testing/kurtosis/ports.sh)
-
-# both fronts: eth_sendRawTransaction is held
-# + composed into the next Sync block; every
-# other eth_* call is forwarded to the front's
-# source-chain RPC.
-
 # compose mode caps bundle size:
 EEZ_MAX_USER_TXS_PER_BUNDLE=3   # default
 # ⚠ rbuilder-chiado silently drops txs beyond
@@ -2197,9 +2174,9 @@ pub fn take_finalized(&self, finalized_l2: u64)
 }
 ```
 
-## How the composer proves a batch
+## How the composer attests a batch
 
-Learn how one gRPC stream carries header, blocks and a signature.
+Learn why it is an attestation and not yet a proof, and who can swap that.
 
 - Page: https://eez-demos.vercel.app/protocol-researchers/pr4-how-the-composer-proves-a-batch.html
 - Source: `crates/eez-control-rpc/proto/prove.proto · prove.v1.Prover`
@@ -2222,7 +2199,6 @@ message ProveHeader {
   uint64 to_block   = 3;  // sync_height
   PostBatch post_batch = 4;
 }
-
 message PostBatch {
   bytes abi_calldata = 1;
   bytes public_inputs_hash = 2;
@@ -2383,12 +2359,10 @@ CREATE2 turns (manager, salt, bytecodeHash) into an address — before deploymen
             originalRollupId, originalAddress
         )
     );
-
     bytes32 bytecodeHash = keccak256(abi.encodePacked(
         type(CrossChainProxy).creationCode,
         abi.encode(address(this))
     ));
-
     return address(uint160(uint256(keccak256(
         abi.encodePacked(
             bytes1(0xff), address(this),
