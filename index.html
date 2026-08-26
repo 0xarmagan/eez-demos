@@ -3,13 +3,13 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EEZ Quickstarts</title>
 <link rel="canonical" href="https://eez-demos.vercel.app/">
-<meta name="description" content="15 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
+<meta name="description" content="17 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
 <meta property="og:title" content="EEZ Quickstarts">
-<meta property="og:description" content="15 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
+<meta property="og:description" content="17 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="EEZ Quickstarts">
-<meta name="twitter:description" content="15 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
+<meta name="twitter:description" content="17 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="alternate" type="text/markdown" href="llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="llms-full.txt" title="llms-full.txt — every walkthrough inlined">
@@ -125,14 +125,19 @@ h1 .l{font-weight:300;color:#dcdcdc}
   <div class="search-filter-wrap">
     <div class="search-box-row">
       <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <input id="searchInput" class="search-input" type="text" placeholder="Search 15 walkthroughs (e.g., msg.sender, Kurtosis, deriver, CREATE2)..." aria-label="Search walkthroughs">
+      <input id="searchInput" class="search-input" type="text" placeholder="Search walkthroughs (e.g., msg.sender, Kurtosis, deriver, CREATE2)..." aria-label="Search walkthroughs">
       <span class="search-shortcut">/</span>
     </div>
     <div class="filter-tabs">
-      <button class="filter-btn active" data-filter="all">ALL (15)</button>
-      <button class="filter-btn" data-filter="dapp-developers">DAPP DEVS (6)</button>
-      <button class="filter-btn" data-filter="rollup-operators">ROLLUP OPS (4)</button>
-      <button class="filter-btn" data-filter="protocol-researchers">PROTOCOL RESEARCHERS (5)</button>
+      <!-- The counts in these labels are filled in by labelFilters() below,
+           from the cards actually on the page. They used to be typed in by
+           hand and were wrong twice: DAPP DEVS said 6 after q8 landed (7),
+           and ALL said 15 after pr6 landed (17). A number that describes the
+           page should be read off the page. -->
+      <button class="filter-btn active" data-filter="all" data-label="ALL">ALL</button>
+      <button class="filter-btn" data-filter="dapp-developers" data-label="DAPP DEVS">DAPP DEVS</button>
+      <button class="filter-btn" data-filter="rollup-operators" data-label="ROLLUP OPS">ROLLUP OPS</button>
+      <button class="filter-btn" data-filter="protocol-researchers" data-label="PROTOCOL RESEARCHERS">PROTOCOL RESEARCHERS</button>
     </div>
   </div>
 
@@ -307,11 +312,11 @@ h1 .l{font-weight:300;color:#dcdcdc}
   </section>
 
   <footer class="closer">
-    <span class="closer-label">THAT'S ALL 15 — MORE COMING AS THE PROTOCOL DOES</span>
+    <span class="closer-label" id="closerLabel">MORE COMING AS THE PROTOCOL DOES</span>
     <div class="closer-links">
       <a href="https://github.com/eez-association/eez-core-protocol">Star eez-core-protocol ↗</a>
       <a href="https://github.com/0xarmagan/eez-demos/blob/main/CONTRIBUTING.md">Suggest a demo ↗</a>
-      <a href="llms.txt" title="Agent-readable index of all 15 walkthroughs, their code and their citations">llms.txt ↗</a>
+      <a href="llms.txt" title="Agent-readable index of every walkthrough, its code and its citations">llms.txt ↗</a>
     </div>
   </footer>
 
@@ -320,6 +325,39 @@ h1 .l{font-weight:300;color:#dcdcdc}
 <script>
 (function(){
   var searchInput = document.getElementById("searchInput");
+  // Counts come off the page, not out of the markup. Scoped to the three
+  // .sec track sections on purpose: the "First time here?" starter row repeats
+  // one card per track, so a bare .card count over-reports by three.
+  function trackCounts(){
+    var out = { all: 0 };
+    ["dapp-developers","rollup-operators","protocol-researchers"].forEach(function(id){
+      var sec = document.getElementById(id);
+      var n = sec ? sec.querySelectorAll(".card").length : 0;
+      out[id] = n;
+      out.all += n;
+    });
+    return out;
+  }
+
+  function labelFilters(){
+    var counts = trackCounts();
+    document.querySelectorAll(".filter-btn").forEach(function(btn){
+      var key = btn.getAttribute("data-filter");
+      var base = btn.getAttribute("data-label") || btn.textContent.trim();
+      var n = counts[key];
+      btn.textContent = (typeof n === "number") ? base + " (" + n + ")" : base;
+    });
+    var input = document.getElementById("searchInput");
+    if (input) {
+      input.setAttribute("aria-label", "Search " + counts.all + " walkthroughs");
+    }
+    var closer = document.getElementById("closerLabel");
+    if (closer) {
+      closer.textContent = "THAT'S ALL " + counts.all + " \u2014 MORE COMING AS THE PROTOCOL DOES";
+    }
+  }
+  labelFilters();
+
   var filterBtns = document.querySelectorAll(".filter-btn");
   var emptyState = document.getElementById("emptyState");
   var activeFilter = "all";

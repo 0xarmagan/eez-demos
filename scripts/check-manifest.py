@@ -21,6 +21,23 @@ exited 0. So the manifest lives in-repo and this asserts four things about it.
                     location and a row that quietly reads as fine defeats it.
   4. NO TRUNCATION  the citation count has a floor, so a page or a whole
                     citation block going missing cannot pass as "all verified".
+  5. COUNT CLAIMS   any file that states how many walkthroughs there are must
+                    state the real number. "ALL (15)" survived two pages
+                    landing; the filter tabs, the search box and the footer are
+                    derived from the DOM now, but crawler-visible meta text
+                    cannot be, so it is asserted here instead.
+  6. WIRED CHECKS   audit.sh's header claims "CI runs all N" and names the
+                    companion scripts. That sentence is checkable, and it was
+                    false for a day: check-snippet-fidelity.py's own commit
+                    edited the comment from "three" to "four" and never touched
+                    ci.yml. Every script that comment names must appear in a
+                    ci.yml run step.
+  7. NO DEAD TOOLS  every checker in scripts/ must be invoked by CI or audit.sh,
+                    or be declared here as something else. An unwired checker
+                    sits in the tree looking like coverage and cannot report
+                    that it has stopped working - check-panel-height.cjs had a
+                    working life of four hours before an overlay broke it, and
+                    nothing noticed for a day.
 
 Usage:
   python3 scripts/check-manifest.py
@@ -44,6 +61,21 @@ ASSETS = os.path.join(ROOT, "scripts", "asset-manifest.json")
 # would fail on every new page and get bumped without being read. A floor fails
 # only on a LOSS, which is the failure this is for. Raise it when a wave lands.
 MIN_CITATIONS = 38
+
+# Scripts that are deliberately not run by CI, with the reason. Anything in
+# scripts/ that is not a checker and not listed here fails assertion 7.
+NOT_A_CI_CHECK = {
+    "audit.sh": "the runner itself; CI invokes it",
+    "check-manifest.py": "this script; CI invokes it",
+    "new-demo.sh": "interactive scaffolding tool, run by a human starting a page",
+    "sync-embedded-snippets.py": "a fixer, not a check - it rewrites embedded "
+                                 "snippets; check-panel-drift.py is the gate "
+                                 "that fails when it has not been run",
+    "build-llms.py": "a generator; CI runs it with --check, which is the gate",
+    "citation-pins.json": "data, not a script",
+    "asset-manifest.json": "data, not a script",
+    "__pycache__": "not a file",
+}
 
 STALE_NAMES = [
     "StateDelta", "LookupCall", "ExpectedLookup", "revertSpan",
@@ -219,6 +251,72 @@ def check_no_truncation(problems):
         print("  citations: %d (floor %d)" % (n, MIN_CITATIONS))
 
 
+COUNT_RE = re.compile(
+    r"\b(?P<n>\d+)\s+(?:animated\s+|interactive\s+)?"
+    r"(?P<noun>walkthroughs|demos|examples)\b", re.I)
+
+
+def check_count_claims(problems, real):
+    """5. Count claims. Scoped to what ships: docs/ holds dated review records
+    that legitimately quote the count on the day they were written."""
+    files = subprocess.run(
+        ["git", "ls-files", "*.html", "README.md", "CONTRIBUTING.md"],
+        cwd=ROOT, capture_output=True, text=True).stdout.split()
+    found = 0
+    for rel in files:
+        for i, line in enumerate(open(os.path.join(ROOT, rel),
+                                     encoding="utf-8").read().splitlines(), 1):
+            for m in COUNT_RE.finditer(line):
+                found += 1
+                if int(m.group("n")) != real:
+                    fail(problems, "%s:%d claims %s %s, real count is %d"
+                         % (rel, i, m.group("n"), m.group("noun").lower(), real))
+    print("  %d numeric count claim(s) checked against %d walkthroughs"
+          % (found, real))
+
+
+def check_wired_checks(problems):
+    """6. audit.sh says CI runs its companion scripts. Hold it to that."""
+    audit = open(os.path.join(ROOT, "scripts", "audit.sh")).read()
+    ci = open(os.path.join(ROOT, ".github", "workflows", "ci.yml")).read()
+    # Only the GATES list makes a claim about CI. The FIXERS list below it
+    # deliberately names scripts a human runs, and conflating the two is what
+    # made the old single list wrong.
+    header = audit.split("set -uo pipefail")[0]
+    gates = header.split("GATES")[1].split("FIXERS")[0] if "GATES" in header else header
+    named = sorted(set(re.findall(r"scripts/([\w.-]+\.(?:py|cjs|sh))", gates)))
+    ci_runs = set(re.findall(r"scripts/([\w.-]+\.(?:py|cjs|sh))", ci))
+    audit_body = audit.split("set -uo pipefail", 1)[1]
+    audit_runs = set(re.findall(r"^\s*(?:python3|bash|node)\s+scripts/([\w.-]+)",
+                                audit_body, re.M))
+    for name in named:
+        if name not in ci_runs and name not in audit_runs:
+            fail(problems, "audit.sh's header names scripts/%s as a companion "
+                           "check, but nothing in ci.yml or audit.sh runs it - "
+                           "the comment is the only thing making that true"
+                 % name)
+    print("  %d companion script(s) named in audit.sh's header, all invoked"
+          % len(named))
+
+
+def check_no_dead_tools(problems):
+    """7. No checker sits in the tree unrun."""
+    ci = open(os.path.join(ROOT, ".github", "workflows", "ci.yml")).read()
+    audit = open(os.path.join(ROOT, "scripts", "audit.sh")).read()
+    invoked = set(re.findall(r"scripts/([\w.-]+)", ci + audit))
+    dead = []
+    for name in sorted(os.listdir(os.path.join(ROOT, "scripts"))):
+        if name in NOT_A_CI_CHECK or name in invoked:
+            continue
+        dead.append(name)
+    for name in dead:
+        fail(problems, "scripts/%s is never invoked by ci.yml or audit.sh. Wire "
+                       "it, or add it to NOT_A_CI_CHECK with a reason - an "
+                       "unwired checker looks like coverage and is not" % name)
+    print("  %d script(s) in scripts/, none unaccounted for"
+          % len(os.listdir(os.path.join(ROOT, "scripts"))))
+
+
 def check_stale_names(problems):
     """§7's stale-names gate, which the manifest claims is clean."""
     files = subprocess.run(
@@ -264,6 +362,27 @@ def main():
     print("== 4. no silent truncation ==")
     check_no_truncation(problems)
     check_stale_names(problems)
+
+    print("== 5. count claims ==")
+    real = len(subprocess.run(
+        ["git", "ls-files", "dapp-developers/*.html", "rollup-operators/*.html",
+         "protocol-researchers/*.html"],
+        cwd=ROOT, capture_output=True, text=True).stdout.split())
+    # q1 is a redirect stub with no walkthrough steps; build-llms.py excludes it
+    # the same way, by absence of captions rather than by filename.
+    real -= sum(
+        1 for rel in subprocess.run(
+            ["git", "ls-files", "dapp-developers/*.html", "rollup-operators/*.html",
+             "protocol-researchers/*.html"],
+            cwd=ROOT, capture_output=True, text=True).stdout.split()
+        if "var captions" not in open(os.path.join(ROOT, rel), encoding="utf-8").read())
+    check_count_claims(problems, real)
+
+    print("== 6. audit.sh's companion claims are wired ==")
+    check_wired_checks(problems)
+
+    print("== 7. no dead tools ==")
+    check_no_dead_tools(problems)
 
     print()
     if problems:
