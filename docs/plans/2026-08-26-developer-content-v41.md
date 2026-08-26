@@ -174,18 +174,42 @@ Nothing an agent runs substitutes for that.
 The banked draft is unlocated (see asset manifest), and step 5's encoding
 asymmetry still needs protocol-engineer review as a publish blocker.
 
-**Less blocked than recorded**, per the 1.4 research. Upstream has a flash-loan
-e2e scenario — `script/e2e/nested/L1_to_L2/flash-loan/E2EFlashLoan.s.sol`, with
-`src/periphery/defiMock/FlashLoan.sol` and `FlashLoanBridgeExecutor.sol` — so the
-guide does not start from nothing even without the missing draft. And the harness
-has a **local mode** that needs no devnet: *"everything on anvil; the test itself
-plays sequencer and posts batches."* `bash script/e2e/run/local-parallel.sh
-nested` exercises it. What genuinely needs the live devnet is the network-mode
-half: the captured trace and the gas numbers feeding 4.2, because local mode has
-the test playing sequencer rather than a real composer.
+**Run locally 2026-08-26; findings in
+`docs/reviews/2026-08-26/1.2-flash-loan-local-run.md`.** The scenario
+`script/e2e/nested/L1_to_L2/flash-loan/E2EFlashLoan.s.sol` executes and verifies
+on anvil with no devnet — exit 0, seven PASS assertions across the L1 batch, the
+L2 table and the L2 calls. That replaces the unlocated draft with something
+better: an entry construction that can be read rather than guessed.
+
+**Step 5's asymmetry is resolved, and the answer inverts the fear.** The scenario
+hashes the return leg two ways — `crossChainCallHash` on the L1 side,
+`crossChainCallHashL2Out` on the L2-outgoing side — but the second is a one-line
+wrapper around the first, so they are byte-identical today. The run confirms it:
+the L1 and L2 expected-hash lists are the same two values. The separate name is a
+marker for when `useGasLeft` flips on, per its own doc comment. So *"the return
+leg is hashed differently"* is wrong today, and *"one call, one hash"* is right
+today and wrong the moment gas keying turns on. Same fact `q5` teaches under 0.5.
+
+Protocol review is still a publish blocker, but the question is now a yes/no
+rather than an open review: *is it correct to document the L2-outgoing key as
+identical to the L1 key today, flagging `useGasLeft` as the single condition that
+separates them?*
+
+Still needs the live devnet: only the captured trace and the gas numbers feeding
+4.2, because local mode has the test playing sequencer rather than a real
+composer.
 
 **1.3 — End-to-end quickstart** · `ready` (1.1 shipped) · L — cold-start test is
 `needs-human`. Inherits the Guide format from 1.5 (below).
+
+One cold-start defect is already known and should be in the quickstart or fixed
+upstream first: **the e2e harness does not run on stock macOS.** `declare -A`
+(bash 4+) at `E2EBase.sh:182` and three sites in `decode-trace.sh`, plus `set -u`
+with empty-array expansion, which bash 3.2 calls unbound. macOS ships 3.2.57, so
+a reader following `script/e2e/README.md` hits `declare: -A: invalid option` on
+the first command with no indication why. CI cannot catch it — the runners are
+ubuntu, where bash is 5.x. Both are reporting-path only, so the workaround is
+local; details in `docs/reviews/2026-08-26/1.2-flash-loan-local-run.md`.
 
 **1.4 — Lead Safe at N=2** · `blocked` — moved to Wave 2 · M
 Timebox spent 2026-08-26; research recorded in
