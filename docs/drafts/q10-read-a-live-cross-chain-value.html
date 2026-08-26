@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
+<link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
+<title>Read a live cross-chain value — EEZ</title>
+<link rel="canonical" href="https://eez-demos.vercel.app/dapp-developers/q10-read-a-live-cross-chain-value.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:#000;}
+  :root{ --sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; --muted:#9aa3b3; --label:#9ba6d6; --eez-green:#3BE57E; --eez-canvas:#0A0A0A; --eez-screen:#161616; --eez-chrome:#1F1F1F; --eez-edge:#2E2E2E; --eez-grad:linear-gradient(90deg,#8AE5AC 0%,#6283BD 55%,#4439CB 100%); --eez-grad-btn:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%); --eez-ink-on-grad:#0A0A0A; }
+  @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  @keyframes flowByte{ from{transform:translateX(-14px);opacity:0;} to{transform:translateX(0);opacity:1;} }
+  @keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,0.4);} 50%{box-shadow:0 0 0 8px rgba(63,185,80,0);} }
+  @keyframes blink{ 0%,49%{opacity:1;} 50%,100%{opacity:0;} }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
+  button{font-family:var(--mono);}
+  button:focus-visible{outline:2px solid var(--eez-green);outline-offset:2px;}
+  .btn:hover{background:#1a1a1a !important;}
+  .btn:disabled{opacity:.38;cursor:default;}
+  .btn:disabled:hover{background:#141414 !important;}
+  .btn-play:hover{background:linear-gradient(90deg,#9DEBBB 0%,#7593CD 100%) !important;}
+  a.back{font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;}
+  a.back{transition:color .15s ease,transform .15s ease;}
+  a.back:hover{color:#fff;}
+  a.back:not([style]):hover{transform:translateX(-3px);}
+  a.back[style]:hover{transform:translateX(3px);}
+  .byte{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;border-radius:4px;padding:5px 8px;}
+
+  /* Mobile reflow: below 820px, the fixed 1920x1080 stage becomes a normal
+     stacked document instead of a scaled-and-panned deck. !important is
+     required to win over the inline styles the markup and scaleStage() set. */
+  a:focus-visible{outline:2px solid var(--eez-green);outline-offset:2px;}
+  @media (max-width:820px){
+    .stage-wrap{position:static !important;inset:auto !important;display:block !important;overflow:visible !important;height:auto !important;width:100% !important;}
+    #stage{position:static !important;width:100% !important;height:auto !important;transform:none !important;background-size:24px 24px;}
+    #stage > div{position:static !important;width:100% !important;height:auto !important;}
+    #stage > div:first-child{position:relative !important;padding:16px 20px !important;flex-wrap:wrap;row-gap:10px;}
+    #stage > div:nth-child(2){padding:24px 20px !important;justify-content:flex-start !important;}
+    #stage > div:nth-child(3){margin:0 20px 24px;width:calc(100% - 40px) !important;}
+    #stage > div:nth-child(3) #codePanel{height:auto !important;max-height:60vh;font-size:15px !important;line-height:28px !important;}
+    #stage > div:last-child{flex-direction:column;align-items:stretch !important;gap:20px;padding:20px 20px 32px !important;}
+    #stage > div:last-child > div:first-child{max-width:none !important;}
+    #stage > div:last-child > div:last-child{align-items:stretch !important;}
+    #stage > div:last-child button{flex:1;}
+    /* Safety net: bespoke per-diagram rows use fixed gaps/widths that were
+       sized for the 1920px stage. Rather than hand-adapt 14 different
+       diagrams, force every inline flex row inside the stage to wrap
+       instead of overflow — turns "must pan sideways" into "reads on two
+       lines", satisfying reflow even where a row wasn't designed for 350px. */
+    #stage *{min-width:0;overflow-wrap:anywhere;}
+    #stage svg{width:auto !important;height:auto !important;}
+    #stage [style*="display:flex"]{flex-wrap:wrap !important;}
+    body{overflow-x:hidden;}
+    /* Scroll affordance: codePanel already scrolls horizontally (overflow-x:auto)
+       when a line is longer than the viewport — this just makes that visible,
+       since a static screenshot or a first glance gives no other hint it's there. */
+    #codePanel{position:relative;}
+    #codePanel::after{content:"";position:absolute;top:0;right:0;bottom:0;width:28px;background:linear-gradient(to right,transparent,#050505);pointer-events:none;}
+  }
+  /* ============================================================
+     LEAD-IN SLIDE  (see docs/DESIGN.md - the settled format is two
+     layers: card -> 3-step walkthrough. The orientation copy that
+     used to sit ABOVE the stage now renders as a slide INSIDE it,
+     so the page still never scrolls and there is no second column
+     and no explanatory figure.)
+
+     It is a <section>, and it is inserted as the FOURTH child of
+     #stage, on purpose: the shared <820px block above addresses
+     #stage > div:first-child / :nth-child(2) / :nth-child(3) /
+     :last-child, and a non-div in slot 4 leaves all four of those
+     resolving to exactly the same elements as before.
+
+     No new colours - every value is a :root custom property or a
+     literal already used elsewhere on this page.
+     ============================================================ */
+  #intro{position:absolute;left:0;top:97px;right:0;bottom:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:0 96px;font-family:var(--sans);}
+  #intro[hidden]{display:none;}
+  /* riseIn is the page's existing entrance keyframe, and the
+     prefers-reduced-motion block above already neutralises it. */
+  .intro-inner{width:100%;max-width:1500px;animation:riseIn .4s ease both;}
+  .intro-eyebrow{font-family:var(--mono);font-size:16px;letter-spacing:0.16em;color:var(--eez-green);}
+  .intro-title{font-size:56px;font-weight:600;line-height:1.14;color:#fff;margin:20px 0 0;max-width:1380px;text-wrap:pretty;}
+  .intro-lede{font-size:25px;line-height:1.5;color:#d8d8d8;margin:26px 0 0;max-width:1280px;text-wrap:pretty;}
+  .intro-learn-label{font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:var(--muted);margin-top:54px;}
+  /* Three across, one per demo step - a full-width index, not cards
+     in a void: a hairline rule per column, no box, no fill. */
+  .intro-learn{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px;}
+  .intro-learn li{border-top:1px solid var(--eez-edge);padding-top:16px;font-size:19px;line-height:1.5;color:#d8d8d8;text-wrap:pretty;}
+  .intro-learn b{display:block;font-family:var(--mono);font-size:14px;font-weight:400;letter-spacing:0.12em;color:var(--eez-green);margin-bottom:11px;}
+  .intro-actions{margin-top:54px;}
+  /* Same gradient treatment as .btn-play, one size up for the stage;
+     it carries class="btn-play" so it inherits that hover rule and
+     the shared button:focus-visible green ring. */
+  #btnStart{font-size:20px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:1px solid #6283BD;border-radius:100px;padding:16px 34px;cursor:pointer;}
+
+  @media (max-width:820px){
+    #intro{position:static !important;padding:28px 20px 36px;}
+    .intro-title{font-size:30px;margin-top:14px;}
+    .intro-lede{font-size:17px;margin-top:16px;}
+    .intro-learn-label{margin-top:34px;}
+    .intro-learn{grid-template-columns:minmax(0,1fr);gap:20px;}
+    .intro-learn li{font-size:16px;}
+    .intro-actions{margin-top:32px;}
+    #btnStart{font-size:16px;padding:13px 24px;width:100%;}
+  }
+</style>
+<!-- The stage is authored at 1920x1080 and fitted by scaleStage(); the lead-in
+     hides the demo behind it from JS. Both corrections live in the script at the
+     end of <body>, and the render-blocking eez-tour.js fetch gives the browser a
+     paint opportunity before they run - so the first frame used to be the
+     unscaled stage with the demo showing through the lead-in. Holding the stage
+     until that init pass has run makes the first painted frame the correct one.
+     The class is set from script, so with JS off nothing is ever hidden. -->
+<script>document.documentElement.className += " pre-fit";</script>
+<style>.pre-fit #stage{visibility:hidden;}</style>
+</head>
+<body>
+<div role="main" class="stage-wrap" style="position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
+<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background-color:var(--eez-canvas);background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:42px 42px;color:#fff;transform-origin:center center;">
+
+  <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1a1a1a;">
+    <div style="position:absolute;left:0;bottom:0;width:100%;height:3px;background:#1a1a1a;"><div id="timebar" style="height:100%;width:100%;transform:scaleX(0);transform-origin:left;background:var(--eez-grad);"></div></div>
+    <div style="display:flex;align-items:center;gap:18px;">
+      <a class="back" href="../index.html">← Quickstarts</a>
+      <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">Read a Live Cross-Chain Value</div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#8a8a8a;">PRE-MAINNET</div>
+      </div>
+    <div style="display:flex;align-items:center;gap:22px;">
+      <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
+      <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
+      <a class="back" href="../rollup-operators/ro1-run-the-devnet-with-kurtosis.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: How to run the whole stack locally →</a>
+    </div>
+  </div>
+
+  <!-- ===== DIAGRAM — inspection is local, invocation is resolved ===== -->
+  <div id="stageCol" style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
+
+    <!-- STEP 1: the command -->
+    <div id="s1" style="display:flex;flex-direction:column;gap:20px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">ONE COMMAND &#183; NOTHING TO INSTALL BUT cast</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;line-height:1.5;">No Kurtosis, no Docker, no node. These contracts are already deployed on Chiado and the answer is already proven and on-chain. You are reading it.</div>
+      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">cast call $READER \
+  "readUint(address,bytes)(uint256)" \
+  $PROXY $(cast calldata "getValue()") \
+  --rpc-url https://rpc.chiadochain.net</div>
+      <div style="font-family:var(--mono);font-size:17px;color:var(--eez-green);background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-radius:8px;padding:12px 16px;display:inline-block;">123</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;line-height:1.5;">That number was produced on another chain, proven, and written to Chiado before you ran the command. Nothing fetched it while you waited.</div>
+      <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;">
+        <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">ADDRESSES</div>
+        <div style="display:flex;align-items:center;gap:14px;"><div style="font-family:var(--mono);font-size:14px;color:var(--muted);width:210px;flex:none;">READER</div><div style="font-family:var(--mono);font-size:13px;color:#c9b183;background:rgba(232,177,94,0.10);border:1px dashed rgba(232,177,94,0.45);border-radius:5px;padding:3px 9px;">TBD &#183; not yet deployed</div></div>
+        <div style="display:flex;align-items:center;gap:14px;"><div style="font-family:var(--mono);font-size:14px;color:var(--muted);width:210px;flex:none;">PROXY</div><div style="font-family:var(--mono);font-size:13px;color:#c9b183;background:rgba(232,177,94,0.10);border:1px dashed rgba(232,177,94,0.45);border-radius:5px;padding:3px 9px;">TBD &#183; not yet deployed</div></div>
+        <div style="display:flex;align-items:center;gap:14px;"><div style="font-family:var(--mono);font-size:14px;color:var(--muted);width:210px;flex:none;">EEZ</div><div style="font-family:var(--mono);font-size:13px;color:#c9b183;background:rgba(232,177,94,0.10);border:1px dashed rgba(232,177,94,0.45);border-radius:5px;padding:3px 9px;">TBD &#183; not yet deployed</div></div>
+        <div style="display:flex;align-items:center;gap:14px;"><div style="font-family:var(--mono);font-size:14px;color:var(--muted);width:210px;flex:none;">deploy commit</div><div style="font-family:var(--mono);font-size:13px;color:#c9b183;background:rgba(232,177,94,0.10);border:1px dashed rgba(232,177,94,0.45);border-radius:5px;padding:3px 9px;">TBD &#183; not yet deployed</div></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: why it resolves with nothing running -->
+    <div id="s2" style="display:none;flex-direction:column;gap:20px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">WHY IT ANSWERS WITH NOTHING RUNNING</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;line-height:1.5;">The read does not travel anywhere. A <span style="font-family:var(--mono);">StaticExecutionEntry</span> holding the answer was posted to Chiado in one batch and sits in that rollup's queue. Your call matches it by hash and returns the value.</div>
+      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">staticEntryQueue[rid]
+  &#8627; proxyEntryHash      == keccak(your call)
+  &#8627; destinationRollupId == the proxy's rollup
+  &#8627; every pinned state root still live
+     &#8594; return returnData</div>
+      <div style="max-width:900px;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-left:3px solid #3BE57E;border-radius:8px;padding:13px 17px;">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#A8F3CE;">AND WHY IT HAS TO GO THROUGH $READER</div>
+        <div style="font-size:15px;line-height:1.55;color:#bfe6cf;margin-top:7px;">Calling the proxy directly does not work. <span style="font-family:var(--mono);">cast call</span> is an eth_call, which the EVM runs as a non-static frame; the proxy probes for static context with a <span style="font-family:var(--mono);">tstore</span> that succeeds there, so it routes to the mutating path and reverts <span style="font-family:var(--mono);">ExecutionNotInCurrentBlock</span>. A Solidity <span style="font-family:var(--mono);">view</span> call compiles to a real STATICCALL, which is the whole job <span style="font-family:var(--mono);">$READER</span> does.</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:12px;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L1266" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:1266 &#183; staticCrossChainCall &#8599;</a></div>
+    </div>
+
+    <!-- STEP 3: the honest constraint + failure triage -->
+    <div id="s3" style="display:none;flex-direction:column;gap:18px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">WHAT THIS IS, EXACTLY &#183; AND WHEN IT STOPS</div>
+      <div style="max-width:900px;background:rgba(232,177,94,0.07);border:1px solid rgba(232,177,94,0.30);border-left:3px solid #8B7B55;border-radius:8px;padding:13px 17px;">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#c9b183;">THE ROLLUP BEHIND THIS READ IS INTENTIONALLY PAUSED</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">This is a real cross-chain read resolving against a real proven entry &#8212; and the state it reads is frozen. A queued static entry is deleted the moment any later batch verifies that rollup (<span style="font-family:var(--mono);">EEZ.sol:745</span> wipes the queue on every verify, roots untouched or not), so a permanently-answering playground is one where nothing is posting. That is the trade: a command that works forever, over a chain that is still moving.</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">Which runs opposite to intuition. A composer running against this rollup would destroy the entry every block, not sustain it.</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">WHEN THE COMMAND FAILS</div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;"><div style="font-family:var(--mono);font-size:15px;color:#e8c07d;width:290px;flex:none;">ExecutionNotInCurrentBlock</div><div style="font-size:15px;color:var(--muted);flex:1;min-width:260px;">You called the proxy, not <span style="font-family:var(--mono);">$READER</span>. Route through the helper.</div></div>
+        <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;"><div style="font-family:var(--mono);font-size:15px;color:#e8c07d;width:290px;flex:none;">ExecutionNotFound</div><div style="font-size:15px;color:var(--muted);flex:1;min-width:260px;">No entry matched: the calldata differs from the seeded one, a pinned root moved, or a later batch wiped the queue. Not distinguishable from the destination reverting.</div></div>
+        <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;"><div style="font-family:var(--mono);font-size:15px;color:#e8c07d;width:290px;flex:none;">UnauthorizedProxy</div><div style="font-size:15px;color:var(--muted);flex:1;min-width:260px;">The address in <span style="font-family:var(--mono);">$PROXY</span> is not a registered CrossChainProxy. Check the table in step 1.</div></div>
+      </div>
+      <div style="font-family:var(--mono);font-size:12px;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L745" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:745 &#183; _markVerifiedBlockAndDeletePreviousEntries &#8599;</a></div>
+    </div>
+
+  </div>
+
+  <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:var(--eez-chrome);border:1px solid var(--eez-edge);border-radius:10px;overflow:hidden;">
+    <div aria-hidden="true" style="position:absolute;left:0;top:0;right:0;height:2px;background:var(--eez-grad);z-index:4;"></div>
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 164px 14px 20px;border-bottom:1px solid var(--eez-edge);background:var(--eez-chrome);position:relative;">
+      <div style="display:flex;align-items:center;gap:8px;flex:none;" title="This source is cited at a pinned commit, not a moving branch">
+        <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
+        <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
+      </div>
+      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/CrossChainProxy.sol:89 &#183; _fallback &#8599;</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:89 &#183; _fallback &#8599;</a></div>
+      <button id="btnTest" type="button" title="Show the runnable Foundry test behind this page" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TEST</button>
+      <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:114px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
+      <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
+    </div>
+    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
+  </div>
+
+  <!-- ===== LEAD-IN SLIDE - shown before the walkthrough begins =====
+       This is a lead-in, NOT step 0. N, step, stepLabel, the dots,
+       kickers, captions and codeByStep are all untouched, so the
+       counter still reads 01 / 03 and there are still three dots.
+       Inserted as the 4th child of #stage; see the CSS note. -->
+  <section id="intro" aria-labelledby="introTitle">
+    <div class="intro-inner">
+      <div class="intro-eyebrow">DAPP DEVELOPERS &#183; 09</div>
+      <h1 class="intro-title" id="introTitle">Read a live cross-chain value</h1>
+      <p class="intro-lede">Every other way of seeing EEZ work starts with standing up a devnet. That is a fair ask of someone who has decided to build, and an excessive one for someone deciding whether to.</p>
+      <p class="intro-lede">So: contracts already deployed, one command, a value that came from another chain. If you have <span style="font-family:var(--mono);">cast</span> installed you are about ten minutes from it, and you will not install anything else.</p>
+      <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
+      <ul class="intro-learn">
+        <li><b>01 &#183; ONE COMMAND</b>The call, the addresses, and the number that comes back.</li>
+        <li><b>02 &#183; WHY IT ANSWERS</b>The answer was proven and queued before you called. Nothing fetched it, and nothing is running.</li>
+        <li><b>03 &#183; WHAT THIS IS EXACTLY</b>The rollup behind it is paused on purpose &#8212; why that is what makes it permanent, and how to read each failure.</li>
+      </ul>
+      <div class="intro-actions">
+        <button id="btnStart" class="btn-play" type="button">Start the walkthrough &#8594;</button>
+      </div>
+    </div>
+  </section>
+
+  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
+    <div id="narration" style="flex:1;max-width:1180px;" aria-live="polite" aria-atomic="true">
+      <div id="kicker" style="font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:var(--eez-green);margin-bottom:11px;"></div>
+      <div id="caption" style="font-size:25px;line-height:1.4;color:#d8d8d8;text-wrap:pretty;"></div>
+    </div>
+    <div id="stepNav" style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
+        <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:1px solid #6283BD;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
+        <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
+      </div>
+      <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="../assets/eez-tour.js"></script>
+<script>
+(function(){
+  var N = 3, STEP_MS = 3200;
+  var step = 0, playing = false, timer = null;
+
+  var kickers = ["TEN MINUTES, ONE COMMAND", "ALREADY PROVEN, ALREADY THERE", "PAUSED ON PURPOSE"];
+  var captions = [
+    "One cast call against a deployed reader returns a value that was produced on another chain. No Kurtosis, no Docker, no node — the contracts are already on Chiado and the answer is already on-chain.",
+    "Nothing fetched that value while you waited. A StaticExecutionEntry holding it was posted in one batch and sits in the rollup's queue; your call matches it by hash. The read has to go through the helper because cast call is an eth_call, which is not a static frame — the proxy would route it to the block-gated mutating path instead.",
+    "The rollup behind this read is paused on purpose. Any later batch verifying it deletes the whole static queue (EEZ.sol:745), roots untouched or not — so a playground that answers forever is one where nothing is posting. A running composer would destroy the entry every block, not sustain it."
+  ];
+
+  // Progressive code reveal: each step shows only the lines relevant so far,
+  // so the panel never dumps the full function ungrouped.
+  var codeByStep = [
+    [
+      "(bool ok, bytes memory ret) = proxy.staticcall(data);",
+      "if (!ok) {",
+      "    assembly {",
+      "        revert(add(ret, 0x20), mload(ret))",
+      "    }",
+      "}",
+      "return ret;"
+    ],
+    [
+      "(bool ok, bytes memory ret) = proxy.staticcall(data);",
+      "if (!ok) {",
+      "    assembly {",
+      "        revert(add(ret, 0x20), mload(ret))",
+      "    }",
+      "}",
+      "return ret;"
+    ],
+    [
+      "// `view` => the compiler emits STATICCALL, which is what the",
+      "// proxy's tstore probe detects. A plain .call() here would",
+      "// route to the mutating path and defeat the whole contract."
+    ]
+  ];
+  // The panel's citation follows the step: step 1 is the proxy's own fallback,
+  // step 2 is the caveat that names the opcodes, step 3 is the manager entry
+  // point a routed read actually reaches. A single fixed citation would send a
+  // step-2 reader to code that says nothing about which opcodes lie. Written as
+  // literal anchors so verify-citations.py sees and pins them.
+  var citeByStep = [
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L95" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:95 &#183; staticCheck &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L1266" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:1266 &#183; staticCrossChainCall &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L745" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:745 &#183; _markVerifiedBlockAndDeletePreviousEntries &#8599;</a>'
+  ];
+  var hlByStep = [
+    [0],
+    [0,1,5,6],
+    [0,1,2]
+  ];
+  // Step 2's four reads are marked `del` because they are the mistake, and
+  // step 3 puts the routed read beside the one it replaces. COPY drops every
+  // `del` line (see btnCopy below), so the clipboard never carries the bug the
+  // panel just crossed out.
+  var diffByStep = [
+    null,
+    null,
+    null
+  ];
+
+  // Verbatim copy of snippets/q8-remote-reads.sol (the whole file).
+  // scripts/check-panel-drift.py asserts this array still equals that file
+  // line for line, so an embedded copy cannot rot unnoticed. Regenerate it
+  // with scripts/sync-embedded-snippets.py after editing the .sol.
+  var fullSnippet = [
+      "// SPDX-License-Identifier: MIT",
+      "pragma solidity ^0.8.28;",
+      "",
+      "// The read helper the Chiado playground needs (card I.1).",
+      "// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:95 and :107",
+      "// and eez-core-protocol/src/EEZ.sol:1266",
+      "// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda",
+      "//",
+      "// WHY THIS CONTRACT EXISTS. The obvious playground command does not work:",
+      "//",
+      "//   cast call <proxy> \"balanceOf(address)(uint256)\" <user> --rpc-url <chiado>",
+      "//",
+      "// `cast call` is an eth_call, and the EVM runs an eth_call as a NON-static",
+      "// frame. CrossChainProxy detects static context by self-calling `staticCheck()`",
+      "// and seeing whether a `tstore` reverts (CrossChainProxy.sol:95-107). Under",
+      "// eth_call that tstore SUCCEEDS, so `_fallback` concludes it is in a normal",
+      "// context and routes to `executeCrossChainCall` \u2014 the MUTATING path, which is",
+      "// block-gated at EEZ.sol:794 and reverts `ExecutionNotInCurrentBlock(rid)`",
+      "// unless a batch verified this rollup in the very block you are calling.",
+      "//",
+      "// Reaching `staticCrossChainCall` needs a real STATICCALL. Solidity compiles a",
+      "// high-level call to an external `view` function into exactly that, so routing",
+      "// the read through a `view` function on any contract is enough. That is the",
+      "// whole trick, and it is the difference between a command that reverts and a",
+      "// command that returns.",
+      "//",
+      "// Verified against the real contracts, not reasoned about:",
+      "// test_StaticLookup_ReadHelperWorksWhereADirectCallDoesNot asserts both halves",
+      "// in one test \u2014 the helper read returns its value 50 blocks after the entry was",
+      "// posted with nothing running, and the direct call against that same state",
+      "// reverts ExecutionNotInCurrentBlock.",
+      "//",
+      "// WHEN THE READ RESOLVES, AND THE TWO WAYS IT STOPS. Top-level",
+      "// `staticCrossChainCall` (EEZ.sol:1266) has no block gate: it scans",
+      "// `verificationByRollup[destRid].staticEntryQueue` and matches on",
+      "// `proxyEntryHash`, `destinationRollupId` and `_stateRootsMatch`. Upstream's own",
+      "// comment at EEZ.sol:1308 \u2014 \"Note that static calls do not obsolete after a",
+      "// block passes.\" A queued entry therefore serves reads indefinitely, subject to",
+      "// two conditions that both have tests:",
+      "//",
+      "//   1. Every pinned state root must still be live.",
+      "//      (test_StaticLookup_StaleStateRootStopsResolving)",
+      "//   2. No later batch may verify that rollup. `_markVerifiedBlockAndDelete-",
+      "//      PreviousEntries` (EEZ.sol:745) deletes entryQueue AND staticEntryQueue on",
+      "//      EVERY verify, roots untouched or not.",
+      "//      (test_StaticLookup_LaterBatchWipesTheQueue)",
+      "//",
+      "// Condition 2 is the one that decides how a playground is operated, and it runs",
+      "// opposite to intuition: a composer posting every block DESTROYS the seeded",
+      "// entry each time unless it deliberately re-posts it. A paused rollup preserves",
+      "// it. The playground wants nothing running, not something running.",
+      "//",
+      "// A read with no matching entry reverts `ExecutionNotFound()` \u2014 and that is",
+      "// indistinguishable from the destination itself reverting (docs/CAVEATS.md,",
+      "// \"Indistinguishable revert reasons when calling a proxy\"). Do not write a",
+      "// try/catch that claims to tell them apart. See q8.",
+      "",
+      "/// @title CrossChainReader",
+      "/// @notice Routes a read through a CrossChainProxy as a real STATICCALL, so it",
+      "///         resolves against a pre-computed static entry instead of hitting the",
+      "///         block-gated mutating path.",
+      "/// @dev Deliberately generic: one deployment serves every read on the",
+      "///      playground. It holds no state and has no owner.",
+      "contract CrossChainReader {",
+      "    /// @notice Raw read. `proxy` is the CrossChainProxy standing for the remote",
+      "    ///         contract; `data` is the calldata you would send it directly.",
+      "    /// @return The pre-computed return data of the matching static entry.",
+      "    function read(address proxy, bytes calldata data)",
+      "        external",
+      "        view",
+      "        returns (bytes memory)",
+      "    {",
+      "// `view` => the compiler emits STATICCALL, which is what the",
+      "// proxy's tstore probe detects. A plain .call() here would",
+      "// route to the mutating path and defeat the whole contract.",
+      "(bool ok, bytes memory ret) = proxy.staticcall(data);",
+      "if (!ok) {",
+      "    // Forward the raw revert. It may be ExecutionNotFound()",
+      "    // or the destination's own revert - you cannot tell.",
+      "    assembly {",
+      "        revert(add(ret, 0x20), mload(ret))",
+      "    }",
+      "}",
+      "return ret;",
+      "    }",
+      "",
+      "    /// @notice Convenience for the common case of a single uint256 return.",
+      "    function readUint(address proxy, bytes calldata data)",
+      "        external",
+      "        view",
+      "        returns (uint256)",
+      "    {",
+      "        return abi.decode(this.read(proxy, data), (uint256));",
+      "    }",
+      "}"
+  ];
+  // Verbatim slice of snippets/test/Q8RemoteReads.t.sol (the routed read and
+  // the two ways it fails). check-panel-drift.py asserts these lines still
+  // match the file.
+  var testSnippet = [
+      "    function test_routedReadReturnsThePreCommittedEntry() public view {",
+      "        uint256 seen = reader.readRemoteBalance(USER);",
+      "        require(seen == COMMITTED_BALANCE, \"routed read returns the committed outcome\");",
+      "        require(counterpart.calls() == 0, \"resolution never calls the counterpart\");",
+      "    }",
+      "",
+      "    function test_unresolvedReadRevertsExecutionNotFound() public {",
+      "        vm.expectRevert(ExecutionNotFound.selector);",
+      "        reader.readRemoteBalance(STRANGER);",
+      "    }",
+      "",
+      "        // A: nothing committed for STRANGER, so the table itself reverts.",
+      "        (bool okMiss, bytes memory fromMiss) = address(proxy).staticcall(callData);",
+      "",
+      "        // B: an entry EXISTS and records that the destination call reverted,",
+      "        // carrying the destination's own revert bytes.",
+      "        table.commit(address(this), callData, false, abi.encodeWithSelector(ExecutionNotFound.selector));",
+      "        (bool okReverted, bytes memory fromReverted) = address(proxy).staticcall(callData);",
+      "",
+      "        require(!okMiss && !okReverted, \"both fail\");",
+      "        require(keccak256(fromMiss) == keccak256(fromReverted), \"the caller cannot tell them apart\");"
+  ];
+  var showTest = false;
+  var showFull = false;
+  function currentLines(){ return showFull ? fullSnippet : (showTest ? testSnippet : (codeByStep[step] || [])); }
+
+  var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
+
+  
+  // Single-pass tokenizer: strings and comments are consumed before identifiers,
+  // so keywords inside a string literal are never colorized and the highlighter
+  // never re-scans its own injected markup.
+  var HL_KW = {
+    // Solidity
+    "pragma":1,"import":1,"contract":1,"interface":1,"library":1,"abstract":1,
+    "function":1,"constructor":1,"modifier":1,"fallback":1,"receive":1,
+    "event":1,"emit":1,"error":1,"revert":1,"require":1,"assert":1,
+    "return":1,"returns":1,"if":1,"else":1,"for":1,"while":1,"do":1,
+    "break":1,"continue":1,"try":1,"catch":1,"unchecked":1,"assembly":1,
+    "new":1,"delete":1,"using":1,"is":1,"struct":1,"enum":1,"mapping":1,
+    "public":1,"private":1,"internal":1,"external":1,
+    "pure":1,"view":1,"payable":1,"nonpayable":1,
+    "immutable":1,"constant":1,"override":1,"virtual":1,"indexed":1,"anonymous":1,
+    "memory":1,"storage":1,"calldata":1,"transient":1,
+    // Rust
+    "pub":1,"fn":1,"let":1,"mut":1,"match":1,"impl":1,"trait":1,"mod":1,
+    "use":1,"async":1,"await":1,"where":1,"crate":1,"dyn":1,"ref":1,"move":1,
+    // protobuf / gRPC
+    "service":1,"rpc":1,"message":1,"syntax":1,"repeated":1,"optional":1
+  };
+  var HL_BI = {
+    "keccak256":1,"sha256":1,"ripemd160":1,"ecrecover":1,
+    "abi":1,"encode":1,"encodePacked":1,"encodeCall":1,
+    "encodeWithSelector":1,"encodeWithSignature":1,"decode":1,
+    "msg":1,"block":1,"tx":1,"gasleft":1,"blockhash":1,"selfdestruct":1,
+    "type":1,"creationCode":1,"runtimeCode":1,
+    "call":1,"staticcall":1,"delegatecall":1,"transfer":1,"send":1,
+    "computeCrossChainProxyAddress":1,"computeCrossChainCallHash":1,
+    "executeCrossChainCall":1,"staticCrossChainCall":1,"executeOnBehalf":1
+  };
+  function hlIsType(w) {
+    return /^(address|bool|string|byte)$/.test(w)
+      || /^u?int([0-9]+)?$/.test(w)
+      || /^bytes([0-9]+)?$/.test(w);
+  }
+  function hlEsc(s) {
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  function hlSpan(color, text, italic) {
+    return '<span style="color:' + color + (italic ? ";font-style:italic" : "") + '">'
+      + hlEsc(text) + '</span>';
+  }
+  function highlightCode(line) {
+    var C_KW = "#ff7b72", C_TY = "#79c0ff", C_BI = "#d2a8ff",
+        C_ST = "#a5d6ff", C_CM = "#6e7681", C_NM = "#79c0ff";
+    var out = "", i = 0, n = line.length;
+    while (i < n) {
+      var ch = line.charAt(i);
+      // line comment — consumes the rest of the line
+      if (ch === "/" && line.charAt(i + 1) === "/") {
+        out += hlSpan(C_CM, line.slice(i), true);
+        break;
+      }
+      // string literal
+      if (ch === '"' || ch === "'") {
+        var q = ch, j = i + 1;
+        while (j < n && line.charAt(j) !== q) {
+          if (line.charAt(j) === "\\") { j++; }
+          j++;
+        }
+        var end = Math.min(j + 1, n);
+        out += hlSpan(C_ST, line.slice(i, end));
+        i = end;
+        continue;
+      }
+      // identifier
+      if (/[A-Za-z_$]/.test(ch)) {
+        var k = i;
+        while (k < n && /[A-Za-z0-9_$]/.test(line.charAt(k))) { k++; }
+        var w = line.slice(i, k);
+        if (HL_KW[w]) { out += hlSpan(C_KW, w); }
+        else if (hlIsType(w)) { out += hlSpan(C_TY, w); }
+        else if (HL_BI[w]) { out += hlSpan(C_BI, w); }
+        else { out += hlEsc(w); }
+        i = k;
+        continue;
+      }
+      // numeric literal (incl. hex)
+      if (/[0-9]/.test(ch)) {
+        var m = i;
+        while (m < n && /[0-9a-fA-FxX_.]/.test(line.charAt(m))) { m++; }
+        out += hlSpan(C_NM, line.slice(i, m));
+        i = m;
+        continue;
+      }
+      out += hlEsc(ch);
+      i++;
+    }
+    return out;
+  }
+
+  function render(){
+    document.getElementById("stepLabel").textContent = String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
+    document.getElementById("kicker").textContent = kickers[step];
+    document.getElementById("caption").textContent = captions[step];
+    document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
+    var cite = document.getElementById("srcCite");
+    if (cite && !showFull && !showTest) { cite.innerHTML = citeByStep[step] || cite.getAttribute("data-demo-cite"); }
+
+    els.s1.style.display = step === 0 ? "flex" : "none";
+    els.s2.style.display = step === 1 ? "flex" : "none";
+    els.s3.style.display = step === 2 ? "flex" : "none";
+
+    var code = currentLines();
+    var hl = (showFull || showTest) ? [] : (hlByStep[step] || []);
+    var dm = (showFull || showTest) ? {} : ((typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {});
+    var html = "";
+    for(var i=0;i<code.length;i++){
+      var lit = hl.indexOf(i) !== -1;
+      var d = dm[i] || "";
+      var t = code[i].length ? code[i] : " ";
+      var bg = "background:transparent;";
+      if (d === "del") { bg = "background:rgba(248,81,73,0.13);box-shadow:inset 3px 0 0 #f85149;"; }
+      else if (d === "add") { bg = "background:rgba(63,185,80,0.13);box-shadow:inset 3px 0 0 var(--eez-green);"; }
+      else if (lit) { bg = "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 var(--eez-green);"; }
+      var mark = (d === "del") ? "-" : ((d === "add") ? "+" : " ");
+      var mcol = (d === "del") ? "#f85149" : ((d === "add") ? "var(--eez-green)" : "#3a3a3a");
+      html += '<div style="display:flex;align-items:stretch;padding:1px 16px;white-space:nowrap;' + bg + '">'
+        + '<span style="width:26px;flex:none;text-align:right;padding-right:8px;color:#3a3a3a;user-select:none;">' + (i+1) + '</span>'
+        + '<span style="width:12px;flex:none;text-align:center;color:' + mcol + ';user-select:none;border-right:1px solid var(--eez-edge);margin-right:11px;">' + mark + '</span>'
+        + '<span style="white-space:pre;' + ((lit || d) ? "color:#eef3f8;" : "color:var(--muted);") + '">'
+        + highlightCode(t) + '</span></div>';
+    }
+    html += '<div style="display:flex;align-items:stretch;padding:1px 16px;">'
+      + '<span style="width:26px;flex:none;"></span>'
+      + '<span style="width:12px;flex:none;border-right:1px solid var(--eez-edge);margin-right:11px;"></span>'
+      + '<span style="display:inline-block;width:10px;height:20px;background:var(--eez-green);animation:blink 1s step-end infinite;vertical-align:middle;"></span></div>';
+    document.getElementById("codePanel").innerHTML = html;
+
+    var d = "";
+    for(var j=0;j<N;j++){
+      var st = j===step ? "width:30px;background:var(--eez-grad);" : (j<step ? "width:13px;background:#3a4250;" : "width:13px;background:#222a35;");
+      d += '<div style="height:6px;border-radius:3px;transition:width .2s,background .2s;'+st+'"></div>';
+    }
+    document.getElementById("dots").innerHTML = d;
+  }
+
+  function scaleStage(){
+    var w = window.innerWidth, h = window.innerHeight;
+    var s = Math.min(w/1920, h/1080);
+    var stage = document.getElementById("stage");
+    var wrap = stage.parentNode;
+    if (s < 0.58) {
+      s = 0.58;
+      stage.style.transformOrigin = "top left";
+      wrap.style.position = "static";
+      wrap.style.display = "block";
+      wrap.style.overflow = "visible";
+      wrap.style.width = (1920*s) + "px";
+      wrap.style.height = (1080*s) + "px";
+      document.body.style.overflowX = "auto";
+    } else {
+      stage.style.transformOrigin = "center center";
+      wrap.style.position = "fixed";
+      wrap.style.inset = "0";
+      wrap.style.display = "flex";
+      wrap.style.alignItems = "center";
+      wrap.style.justifyContent = "center";
+      wrap.style.overflow = "hidden";
+      wrap.style.width = "";
+      wrap.style.height = "";
+      document.body.style.overflowX = "";
+    }
+    stage.style.transform = "scale(" + s + ")";
+  }
+  // Prev at the first step and Next at the last one are no-ops (both clamp),
+  // so they carry a real disabled state instead of looking live and doing
+  // nothing. Driven from the two bar functions because between them they run
+  // after every step change - manual, autoplay and init alike.
+  function syncEnds(){
+    var p = document.getElementById("btnPrev"), n = document.getElementById("btnNext");
+    if (p) { p.disabled = (step <= 0); }
+    if (n) { n.disabled = (step >= N-1); }
+  }
+  function staticBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; syncEnds(); }
+  function animateBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; void b.offsetWidth; b.style.transition="transform "+STEP_MS+"ms linear"; b.style.transform="scaleX("+((step+1)/N)+")"; syncEnds(); }
+  function schedule(){ clearTimeout(timer); animateBar(); timer = setTimeout(function(){ if(!playing) return; if(step >= N-1){ playing=false; render(); return; } step++; render(); schedule(); }, STEP_MS); }
+  function togglePlay(){ if(playing){ clearTimeout(timer); playing=false; staticBar(); render(); return; } if(step >= N-1) step = 0; playing = true; render(); schedule(); }
+  function next(){ clearTimeout(timer); playing=false; step=Math.min(N-1,step+1); render(); staticBar(); }
+  function prev(){ clearTimeout(timer); playing=false; step=Math.max(0,step-1); render(); staticBar(); }
+
+  document.getElementById("btnPrev").addEventListener("click", prev);
+  document.getElementById("btnNext").addEventListener("click", next);
+  document.getElementById("btnPlay").addEventListener("click", togglePlay);
+
+  // ---- Lead-in slide -------------------------------------------------
+  // Slide zero is a separate overlay inside the stage, NOT step 0: N,
+  // step, the dots and every *ByStep array are untouched. Dismissal
+  // lasts for this page view only - nothing is written to localStorage.
+  var introEl = document.getElementById("intro");
+  var introHidden = [];   // [element, its own inline display] while covered
+  function introShowing(){ return !!introEl && !introEl.hasAttribute("hidden"); }
+  function hideDemoForIntro(){
+    var kids = document.querySelectorAll("#stage > div");
+    // kids[0] is the header bar - left live, so Quickstarts, the ? button
+    // and the NEXT link stay reachable from the lead-in.
+    for (var i = 1; i < kids.length; i++) {
+      introHidden.push([kids[i], kids[i].style.display]);
+      kids[i].style.display = "none";
+    }
+  }
+  function dismissIntro(){
+    if (!introShowing()) { return; }
+    introEl.setAttribute("hidden", "");
+    for (var i = 0; i < introHidden.length; i++) {
+      // Restore the recorded inline value, not "" - stageCol and the
+      // footer bar both depend on an inline display:flex.
+      introHidden[i][0].style.display = introHidden[i][1];
+    }
+    introHidden.length = 0;
+    render(); staticBar();
+    var play = document.getElementById("btnPlay");
+    if (play) { play.focus(); }
+  }
+  if (introEl) {
+    hideDemoForIntro();
+    var btnStart = document.getElementById("btnStart");
+    // A real <button>, so Enter and Space activate it natively; the
+    // keydown handler below stays off the keyboard while it is up.
+    if (btnStart) { btnStart.addEventListener("click", dismissIntro); }
+    // Arriving via a NEXT link (bottom-bar <a class="back">, see the other
+    // walkthroughs) means the reader already opted in to this track by
+    // clicking through the previous page - skip straight to step 1 instead
+    // of making them dismiss the lead-in again. Reusing dismissIntro keeps
+    // this in sync with the Start button's own end state. A reload of this
+    // exact URL (marker still in the address bar) legitimately skips the
+    // intro again; a reload of the bare URL carries no marker and still
+    // shows it.
+    if (window.location.hash === "#skip-intro") { dismissIntro(); }
+  }
+
+  // The pin is read out of whichever citation link the page has, deferred so it
+  // also catches pages that build their citation row during the first render.
+  setTimeout(function(){
+    var lbl = document.getElementById("pinLabel");
+    if (!lbl) { return; }
+    var links = document.querySelectorAll('a[href*="/blob/"]');
+    for (var i = 0; i < links.length; i++) {
+      var m = /\/blob\/([0-9a-f]{7,40})\//.exec(links[i].getAttribute("href") || "");
+      if (m) { lbl.textContent = "PINNED " + m[1].slice(0, 7); return; }
+    }
+  }, 0);
+
+  var btnHelp = document.getElementById("btnHelp");
+  function openTour(){
+    // The tour spotlights stage elements the lead-in is covering, so the
+    // lead-in goes first.
+    if (introShowing()) { dismissIntro(); }
+    if (playing) { togglePlay(); }
+    if (root_EEZTour()) { root_EEZTour().start(); }
+  }
+  function root_EEZTour(){ return (typeof EEZTour !== "undefined") ? EEZTour : null; }
+  if (btnHelp) { btnHelp.addEventListener("click", openTour); }
+  // The lead-in already orients a cold arrival, so the tour does not open
+  // behind it. Stacking the two meant the reader's first click after "Start
+  // the walkthrough" landed on the tour scrim instead of Next. The ? button
+  // still opens the tour on demand.
+  if (!introEl && root_EEZTour()) { root_EEZTour().maybeStart(); }
+
+  function copyFallback(text, done){
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.top = "-1000px";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      done(ok);
+    } catch (e) { done(false); }
+  }
+  // Full-context toggle. The step snippets are hand-wrapped teaching slices with
+  // no pragma, no imports and no contract wrapper; FULL swaps in the whole
+  // compilable file so COPY yields something that actually builds.
+  var btnFull = document.getElementById("btnFull");
+  var citeEl = document.getElementById("srcCite");
+  function applyPanelMode(){
+    if (btnTest) {
+      btnTest.textContent = showTest ? "DEMO" : "TEST";
+      btnTest.style.color = showTest ? "var(--eez-green)" : "var(--muted)";
+      btnTest.style.borderColor = showTest ? "#2c6b3c" : "#2e2e2e";
+      btnTest.title = showTest ? "Back to the walkthrough" : "Show the runnable Foundry test behind this page";
+    }
+    if (btnFull) {
+      btnFull.textContent = showFull ? "STEP" : "FULL";
+      btnFull.style.color = showFull ? "var(--eez-green)" : "var(--muted)";
+      btnFull.style.borderColor = showFull ? "#2c6b3c" : "#2e2e2e";
+      btnFull.title = showFull ? "Back to the step snippet" : "Show the full compilable file";
+    }
+    if (citeEl) {
+      citeEl.innerHTML = showFull
+        ? 'snippets/q8-remote-reads.sol \u00b7 solc 0.8.28'
+        : (showTest ? 'snippets/test/Q8RemoteReads.t.sol \u00b7 forge test'
+                    : (citeByStep[step] || citeEl.getAttribute("data-demo-cite")));
+    }
+    // The whole file is longer and wider than the column, so full-context mode
+    // trades type size for reach and turns the vertical axis into a scroller
+    // instead of clipping the tail off unreachably.
+    var cp = document.getElementById("codePanel");
+    cp.style.fontSize = showFull ? "13px" : (showTest ? "15px" : "19px");
+    cp.style.lineHeight = showFull ? "20px" : (showTest ? "26px" : "34px");
+    cp.style.overflowY = "auto";
+    cp.scrollTop = 0;
+    cp.scrollLeft = 0;
+    render();
+  }
+  var btnTest = document.getElementById("btnTest");
+  if (btnTest) {
+    btnTest.addEventListener("click", function(){
+      showTest = !showTest;
+      if (showTest) showFull = false;
+      applyPanelMode();
+    });
+  }
+  if (btnFull) {
+    btnFull.addEventListener("click", function(){
+      showFull = !showFull;
+      if (showFull) showTest = false;
+      applyPanelMode();
+    });
+  }
+  var btnCopy = document.getElementById("btnCopy");
+  if (btnCopy) {
+    btnCopy.addEventListener("click", function(){
+      // Drop the `del` lines: on screen they carry a "-" and a red gutter, but
+      // the clipboard has no gutters, so copying them ships the mistake welded
+      // to the fix.
+      var marks = (showFull || showTest) ? {} : (diffByStep[step] || {});
+      var lines = currentLines().filter(function(_, i){ return marks[i] !== "del"; });
+      var text = lines.join("\n").replace(/[ \t]+$/gm, "").replace(/\n+$/, "") + "\n";
+      var done = function(ok){
+        btnCopy.textContent = ok ? "COPIED" : "COPY FAILED";
+        btnCopy.style.color = ok ? "var(--eez-green)" : "#f85149";
+        btnCopy.style.borderColor = ok ? "#2c6b3c" : "#6b2c2c";
+        setTimeout(function(){
+          btnCopy.textContent = "COPY";
+          btnCopy.style.color = "var(--muted)";
+          btnCopy.style.borderColor = "#2e2e2e";
+        }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function(){ done(true); },
+                                                function(){ copyFallback(text, done); });
+      } else {
+        copyFallback(text, done);
+      }
+    });
+  }
+  window.addEventListener("keydown", function(e){
+    // The lead-in owns the keyboard while it is showing: no stepping and
+    // no autoplay, and Space has to reach the Start button rather than
+    // being swallowed by Play below.
+    if (introShowing()) {
+      if (e.key === "Escape") { window.location.href = "../index.html"; }
+      return;
+    }
+    if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
+    else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
+    else if(e.key===" "){ e.preventDefault(); togglePlay(); }
+    else if(e.key==="Escape"){ window.location.href = "../index.html"; }
+    else if(e.key==="r"||e.key==="R"){ clearTimeout(timer); step = 0; playing = true; render(); schedule(); }
+  });
+  window.addEventListener("resize", scaleStage);
+  scaleStage(); applyPanelMode(); staticBar();
+  document.documentElement.classList.remove("pre-fit");
+})();
+</script>
+</body></html>
