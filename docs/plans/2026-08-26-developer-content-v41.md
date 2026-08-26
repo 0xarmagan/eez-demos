@@ -170,16 +170,43 @@ selector is `0x55241077`).
 with EEZ has to answer "what does EEZ do that a bridge doesn't" off this page.
 Nothing an agent runs substitutes for that.
 
-**1.2 — Flash-loan guide** · `needs-human` (devnet) · L
-Additionally blocked before the devnet session: the banked draft is unlocated
-(see asset manifest). Step 5's encoding asymmetry still needs protocol-engineer
-review as a publish blocker.
+**1.2 — Flash-loan guide** · `needs-human` (devnet, for the network-mode half) · L
+The banked draft is unlocated (see asset manifest), and step 5's encoding
+asymmetry still needs protocol-engineer review as a publish blocker.
+
+**Less blocked than recorded**, per the 1.4 research. Upstream has a flash-loan
+e2e scenario — `script/e2e/nested/L1_to_L2/flash-loan/E2EFlashLoan.s.sol`, with
+`src/periphery/defiMock/FlashLoan.sol` and `FlashLoanBridgeExecutor.sol` — so the
+guide does not start from nothing even without the missing draft. And the harness
+has a **local mode** that needs no devnet: *"everything on anvil; the test itself
+plays sequencer and posts batches."* `bash script/e2e/run/local-parallel.sh
+nested` exercises it. What genuinely needs the live devnet is the network-mode
+half: the captured trace and the gas numbers feeding 4.2, because local mode has
+the test playing sequencer rather than a real composer.
 
 **1.3 — End-to-end quickstart** · `ready` (1.1 shipped) · L — cold-start test is
 `needs-human`. Inherits the Guide format from 1.5 (below).
 
-**1.4 — Lead Safe at N=2** · `ready` (timeboxed 1 day) · M — module code review
-is a publish blocker.
+**1.4 — Lead Safe at N=2** · `blocked` — moved to Wave 2 · M
+Timebox spent 2026-08-26; research recorded in
+`docs/reviews/2026-08-26/1.4-encoding-research.md`. Outcome per the card's own
+rule — *"overflow → Wave 2, never guess"*.
+
+The protocol supports N=2; the e2e harness does not. There is no `L2_to_L2`
+direction in any of the 22 scenarios, `DeployInfra.s.sol` asserts a single rollup
+(`require(rid == 1)`), `chain.env` and the Kurtosis args each carry one L2, and
+the only batch builder is `immediateSingleRollupBatch` — hardcoded to one
+`RollupIdWithProofSystems` with zero `expectedStateRootPerRollup` pins.
+`multi-call-two-diff`, which the card was reaching for, is two target *contracts*
+on one L2, not two rollups.
+
+Also on the record: the card's input path is wrong. `script/e2e/multi_call/` is in
+`eez-core-protocol` at `contracts_pin`, not `eez-rollup0` at `node_pin`.
+
+Building it means a second rollup in the infra, a second L2 in two configs, and a
+multi-rollup batch builder. That is protocol-engineering work, not content work.
+The card's required "same batch follows" caveat is already grounded for whenever
+it happens — `docs/CAVEATS.md` states the same-batch rule outright.
 
 **1.5 — Rolling hash** · `done` · L
 done-when: covers 4-tuple collapse, seeding, tag chain, `CALL_NOT_FOUND`
