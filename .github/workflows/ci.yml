@@ -56,6 +56,16 @@ jobs:
       - name: Export is not silently lossy
         run: python3 scripts/test_build_llms.py
 
+      # Part III of the v4.1 plan. The manifest is the source of truth for
+      # status, so it has to be asserted against the tree or it becomes the
+      # CLAUDE.md failure: a document that describes a repo it no longer
+      # matches. Checks the header block has no blanks, every card carries a
+      # status and a size, the card count matches the plan, a `done` card names
+      # a check CI actually runs, every asset row resolves, the citation count
+      # has not dropped, and no stale name has come back.
+      - name: Manifest integrity
+        run: python3 scripts/check-manifest.py
+
   panels:
     name: Code panels fit their column
     runs-on: ubuntu-latest

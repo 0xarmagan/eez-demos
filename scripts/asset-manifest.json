@@ -1,0 +1,59 @@
+{
+  "_comment": "Part III asset-manifest assertions. `live` rows must exist; their sha256 is recorded at time of write and drift is reported, not failed, because they are code under active edit. `frozen` rows must exist AND match: a delivered artifact that changes silently is the drift this manifest exists to catch. `unlocated` rows fail closed \u2014 Ground rule 4: nothing is done without a location. Rewrite live hashes with: python3 scripts/check-manifest.py --repin",
+  "assets": [
+    {
+      "asset": "verify_citations.py",
+      "path": "scripts/verify-citations.py",
+      "sha256": "85104858366c9f859b15c900e8f92d5418415fbf219d45cc2c88449105902489",
+      "state": "live"
+    },
+    {
+      "asset": "snippet_drift.py",
+      "path": "scripts/check-snippet-fidelity.py",
+      "sha256": "98ed12a4ebd7109c0e203cc8b64f0aa867c75c01f8b1e05bc19494bf30c1ec3a",
+      "state": "live"
+    },
+    {
+      "asset": "q8-remote-reads.sol",
+      "path": "snippets/q8-remote-reads.sol",
+      "sha256": "d4eb727df600024d51f773d5e1beff6a9c9828d7a03638939c10f0b39a3d280c",
+      "state": "live"
+    },
+    {
+      "asset": "q8 test",
+      "path": "snippets/test/Q8RemoteReads.t.sol",
+      "sha256": "766b436dfaba4e9cce755aedaa56495adff6d78b3b525746dd94aac92d545c6c",
+      "state": "live"
+    },
+    {
+      "asset": "q2-cross-chain-call.sol",
+      "path": "snippets/q2-cross-chain-call.sol",
+      "sha256": "e82e15844ca7b2b9bb5fbea4f5e2a27edfd308199501fc8af722c6ea4aebea44",
+      "state": "live"
+    },
+    {
+      "asset": "q2 test",
+      "path": "snippets/test/Q2CrossChainCall.t.sol",
+      "sha256": "41329d0bc00db3d473d741adaacc16ecf85061c9144d92ffbbb976ea1e6c8adc",
+      "state": "live"
+    },
+    {
+      "asset": "flash-loan-guide.md",
+      "path": null,
+      "sha256": null,
+      "state": "unlocated",
+      "note": "The v4.1 asset manifest records this as 'drafted; 4 items flagged unverified'. It is not on disk: searched this repo, eez-docs, agent-mesh and ~/Downloads on 2026-08-26 and found no such file. Card 1.2 cites it, so 1.2 cannot start from a banked draft until someone produces the path.",
+      "blocks": [
+        "1.2",
+        "4.2"
+      ]
+    },
+    {
+      "asset": "eez-protocol-dev.skill",
+      "path": "EXTERNAL",
+      "sha256": null,
+      "state": "external",
+      "note": "Installed at agent-mesh/eez-agent/skills/eez-protocol-dev/ (SKILL.md + references/), source bundle ~/Downloads/eez-protocol-dev.skill, sha256 b005e2b64eb248f4... Outside this repo, so this repo's CI cannot assert it; recorded for location, not gated."
+    }
+  ]
+}
