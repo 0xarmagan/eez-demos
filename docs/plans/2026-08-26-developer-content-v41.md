@@ -211,26 +211,27 @@ the first command with no indication why. CI cannot catch it — the runners are
 ubuntu, where bash is 5.x. Both are reporting-path only, so the workaround is
 local; details in `docs/reviews/2026-08-26/1.2-flash-loan-local-run.md`.
 
-**1.4 — Lead Safe at N=2** · `blocked` — moved to Wave 2 · M
-Timebox spent 2026-08-26; research recorded in
-`docs/reviews/2026-08-26/1.4-encoding-research.md`. Outcome per the card's own
-rule — *"overflow → Wave 2, never guess"*.
+**1.4 — Lead Safe at N=2** · `ready` (timeboxed research spent) · M
+done-when: two chains, key rotation on lead, follower updates same transaction;
+new module code passes blocking-level review; "same batch follows" caveat inline.
+human-only: module code review — publish blocker.
 
-The protocol supports N=2; the e2e harness does not. There is no `L2_to_L2`
-direction in any of the 22 scenarios, `DeployInfra.s.sol` asserts a single rollup
-(`require(rid == 1)`), `chain.env` and the Kurtosis args each carry one L2, and
-the only batch builder is `immediateSingleRollupBatch` — hardcoded to one
-`RollupIdWithProofSystems` with zero `expectedStateRootPerRollup` pins.
-`multi-call-two-diff`, which the card was reaching for, is two target *contracts*
-on one L2, not two rollups.
+Research done 2026-08-26, `docs/reviews/2026-08-26/1.4-encoding-research.md`.
+**Buildable now.** The card says "two rollups", which read strictly means two
+L2s — and the harness cannot do that. But the plan counts chains (§3 rejects
+"4-chain composition"), and the card's input pointer is
+`script/e2e/multi_call/`, which contains only `L1_to_L2` and `L2_to_L1`. So N=2
+is L1 + one L2, and the `multi-call-*` scenarios are exactly the shape: one L1
+tx driving deliveries on the other chain. The `flash-loan` run proves the
+round-trip case works locally.
 
-Also on the record: the card's input path is wrong. `script/e2e/multi_call/` is in
-`eez-core-protocol` at `contracts_pin`, not `eez-rollup0` at `node_pin`.
+What the research doc maps is the cost of **N≥3** — two or more L2s — which
+would need a second rollup in `DeployInfra`, a second L2 in `chain.env` and the
+Kurtosis args, and a multi-rollup batch builder to replace
+`immediateSingleRollupBatch`. That is real, and it bounds anything beyond N=2.
 
-Building it means a second rollup in the infra, a second L2 in two configs, and a
-multi-rollup batch builder. That is protocol-engineering work, not content work.
-The card's required "same batch follows" caveat is already grounded for whenever
-it happens — `docs/CAVEATS.md` states the same-batch rule outright.
+The required "same batch follows" caveat is grounded: `docs/CAVEATS.md` states
+the same-batch rule outright.
 
 **1.5 — Rolling hash** · `done` · L
 done-when: covers 4-tuple collapse, seeding, tag chain, `CALL_NOT_FOUND`
