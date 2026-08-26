@@ -443,7 +443,7 @@ def build_full(pages):
 # array renamed, a card removed from index.html - would otherwise vanish from
 # llms-full.txt silently, so the count is asserted rather than trusted. Bump it
 # in the same commit that adds or removes a page.
-EXPECTED_WALKTHROUGHS = 18
+EXPECTED_WALKTHROUGHS = 19
 
 
 def main():
