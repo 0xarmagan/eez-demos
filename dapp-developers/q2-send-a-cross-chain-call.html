@@ -144,31 +144,31 @@
     <!-- STEP 1: encode the call, show real calldata bytes -->
     <div id="s1" style="display:flex;flex-direction:column;gap:22px;">
       <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">ENCODE — ORDINARY CALLDATA</div>
-      <div style="font-family:var(--mono);font-size:17px;color:#d8d8d8;">abi.encodeCall(IRemote.setValue, (42))</div>
+      <div style="font-family:var(--mono);font-size:17px;color:#d8d8d8;">abi.encodeCall(IRemote.balanceOf, (user))</div>
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
         <div style="font-family:var(--mono);font-size:13px;color:var(--label);width:110px;">selector</div>
         <div style="display:flex;gap:3px;">
-          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">55</div>
-          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">24</div>
-          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">1f</div>
-          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">6b</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">70</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">a0</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">82</div>
+          <div class="byte" style="background:rgba(124,131,255,0.14);color:#aeb6ec;border:1px solid #3a4173;">31</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:14px;">
-        <div style="font-family:var(--mono);font-size:13px;color:var(--label);width:110px;">arg: 42</div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--label);width:110px;">arg: user</div>
         <div style="display:flex;gap:3px;">
           <div class="byte" style="background:#141b2b;color:var(--muted);border:1px solid #232b36;">00</div>
           <div class="byte" style="background:#141b2b;color:var(--muted);border:1px solid #232b36;">⋯</div>
-          <div class="byte" style="background:rgba(124,131,255,0.22);color:#eef1ff;border:1px solid #5561c9;font-weight:600;">2a</div>
+          <div class="byte" style="background:rgba(124,131,255,0.22);color:#eef1ff;border:1px solid #5561c9;font-weight:600;">user</div>
         </div>
-        <div style="font-family:var(--mono);font-size:13px;color:var(--muted);">32 bytes, right-padded</div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--muted);">20 address bytes, zero-padded to 32</div>
       </div>
       <div style="font-size:16px;color:var(--muted);max-width:820px;margin-top:6px;">No cross-chain-specific ABI — this is calldata for any contract call.</div>
     </div>
 
     <!-- STEP 2: send to proxy address -->
     <div id="s2" style="display:none;flex-direction:column;gap:26px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">SEND — TO THE PROXY, NOT THE TARGET</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">SEND — STATICCALL, NOT CALL</div>
       <svg viewBox="0 0 1080 130" style="width:1080px;height:130px;">
         <defs><marker id="ar1" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#3BE57E"></path></marker></defs>
         <line x1="230" y1="65" x2="700" y2="65" stroke="#3BE57E" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#ar1)" style="animation:dashMove 1s linear infinite;"></line>
@@ -176,7 +176,7 @@
       <div style="display:flex;align-items:center;gap:0;margin-top:-100px;">
         <div style="width:230px;background:#141b2b;border:1.5px solid #7c83ff;border-radius:9px;padding:14px 18px;">
           <div style="font-family:var(--mono);font-size:12px;color:var(--label);">YOU</div>
-          <div style="font-family:var(--mono);font-size:17px;color:#eef1ff;margin-top:4px;">.call(data)</div>
+          <div style="font-family:var(--mono);font-size:17px;color:#eef1ff;margin-top:4px;">.staticcall(data)</div>
         </div>
         <div style="flex:1;"></div>
         <div style="width:290px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:14px 18px;">
@@ -184,12 +184,16 @@
           <div style="font-family:var(--mono);font-size:17px;color:#f1e8ff;margin-top:4px;">fallback()</div>
         </div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:820px;">Same syntax as calling any contract — the proxy's fallback catches it and routes it as a cross-chain execution.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:820px;">Same syntax as calling any contract — the proxy has no matching function, so the fallback catches it.</div>
+      <div style="max-width:900px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">YOUR FRAME DECIDES THE PATH — NOT <span style="font-family:var(--mono);">view</span></div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">The fallback probes itself with a <span style="font-family:var(--mono);">tstore</span>, and a <span style="font-family:var(--mono);">tstore</span> only halts inside a static frame. So the routing is read off <em>your</em> call, not off the callee being <span style="font-family:var(--mono);">view</span>: <span style="font-family:var(--mono);">staticcall</span> reaches <span style="font-family:var(--mono);">staticCrossChainCall</span> and a <span style="font-family:var(--mono);">StaticExecutionEntry</span>, while a plain <span style="font-family:var(--mono);">call</span> reaches <span style="font-family:var(--mono);">executeCrossChainCall</span> and demands an <span style="font-family:var(--mono);">ExecutionEntry</span> no composer wrote for a read.</div>
+      </div>
     </div>
 
     <!-- STEP 3: destination runs it -->
     <div id="s3" style="display:none;flex-direction:column;gap:26px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">EXECUTE — DESTINATION SIDE</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">USE THE ANSWER — A VALUE, NOT A RECEIPT</div>
       <svg viewBox="0 0 1080 130" style="width:1080px;height:130px;">
         <defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#f0a83c"></path></marker></defs>
         <line x1="330" y1="65" x2="700" y2="65" stroke="#f0a83c" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#ar2)" style="animation:dashMove 1s linear infinite;"></line>
@@ -197,18 +201,28 @@
       <div style="display:flex;align-items:center;gap:0;margin-top:-100px;">
         <div style="width:330px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;border-radius:9px;padding:14px 18px;">
           <div style="font-family:var(--mono);font-size:12px;color:#a98ad0;">EEZ manager</div>
-          <div style="font-family:var(--mono);font-size:17px;color:#f1e8ff;margin-top:4px;">executeCrossChainCall</div>
+          <div style="font-family:var(--mono);font-size:17px;color:#f1e8ff;margin-top:4px;">staticCrossChainCall</div>
         </div>
         <div style="flex:1;"></div>
         <div style="width:290px;background:#16120a;border:1.5px solid #f0a83c;border-radius:9px;padding:14px 18px;">
           <div style="font-family:var(--mono);font-size:12px;color:#b9863a;">IRemote</div>
-          <div style="font-family:var(--mono);font-size:17px;color:#fff2dc;margin-top:4px;">setValue(42)</div>
+          <div style="font-family:var(--mono);font-size:17px;color:#fff2dc;margin-top:4px;">balanceOf(user)</div>
         </div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">Runs with the proxy as msg.sender — real return data or revert bubbles straight back to you.</div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:-6px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--label);width:110px;">returns</div>
+        <div style="font-family:var(--mono);font-size:16px;color:#eef1ff;background:#141b2b;border:1px solid #3a4173;border-radius:7px;padding:8px 13px;">abi.decode(ret, (uint256))</div>
+        <div style="font-family:var(--mono);font-size:19px;color:var(--muted);">→</div>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">have &#8805; need &#183; credited[user] += need</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#e0c48c;background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.34);border-radius:6px;padding:6px 11px;">have &lt; need &#183; shortfall[user] = need - have</div>
+        </div>
+      </div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">Runs with the proxy as msg.sender, and the return data comes back to you unwrapped — decode it like any same-chain read, then branch on it. That branch is the thing a bridge cannot give you: not "the message arrived," but a value from another rollup deciding what this transaction does.</div>
       <div style="max-width:900px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
-        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">AND ONLY INSIDE THE RIGHT BLOCK</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">A real execution resolves only in the block that proved it — <span style="font-family:var(--mono);">executeCrossChainCall</span> reverts <span style="font-family:var(--mono);">ExecutionNotInCurrentBlock</span> unless a verified batch for the destination rollup landed in this one. The read path differs by side: on L1 a static entry stays resolvable while its state roots still match, on L2 the same block gate applies. A miss reverts <span style="font-family:var(--mono);">ExecutionNotFound</span> — which you cannot tell apart from the destination reverting.</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">AND ONLY WHERE AN ENTRY ALREADY EXISTS</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">Nothing here is computed on demand. The composer wrote the entry before your transaction ran, so both paths can miss. A real execution resolves only in the block that proved it — <span style="font-family:var(--mono);">executeCrossChainCall</span> reverts <span style="font-family:var(--mono);">ExecutionNotInCurrentBlock</span> unless a verified batch for the destination rollup landed in this one. The read path differs by side: on L1 a static entry stays resolvable while its state roots still match, on L2 the same block gate applies.</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:9px;">Past that gate, the miss is named by the path it took. A state-changing call that finds no entry reverts <span style="font-family:var(--mono);">EntryNotFound(hash, callGas)</span> on L2 and <span style="font-family:var(--mono);">ExecutionNotFound</span> on L1; a read that finds no static entry reverts <span style="font-family:var(--mono);">ExecutionNotFound</span> on either side. None of them is distinguishable from the destination contract reverting on its own — so <span style="font-family:var(--mono);">ok == false</span> tells you the call did not happen, never why.</div>
       </div>
     </div>
 
@@ -222,7 +236,8 @@
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
       <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback ↗</a></div>
-      <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
+      <button id="btnTest" type="button" title="Show the runnable Foundry test behind this page" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TEST</button>
+      <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:114px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
@@ -238,12 +253,12 @@
       <div class="intro-eyebrow">DAPP DEVELOPERS · 02</div>
       <h1 class="intro-title" id="introTitle">How to call a contract on another rollup</h1>
       <p class="intro-lede">Calling a contract on another rollup starts as an ordinary encode — a normal call, with no cross-chain-specific ABI.</p>
-      <p class="intro-lede">You send that encoded call to the proxy address, and the proxy's fallback catches everything.</p>
+      <p class="intro-lede">You send it to the proxy address, and the proxy's fallback catches everything. Send it as a <span style="font-family:var(--mono);">staticcall</span> and the answer comes back as return data you decode and branch on, inside the same transaction.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 · ENCODE IT LIKE ANY CALL</b>A normal call, encoded with no cross-chain-specific ABI.</li>
-        <li><b>02 · SEND TO THE PROXY</b>It goes to the proxy address, whose fallback catches everything.</li>
-        <li><b>03 · VIEW CALL OR REAL ONE?</b>One self-call probes a transient write — a revert marks it a read, routed to the static path.</li>
+        <li><b>02 · STATICCALL, NOT CALL</b>Your frame picks the path: the proxy's probe only halts inside a static one, so a read has to be a staticcall.</li>
+        <li><b>03 · DECODE IT AND BRANCH</b>What comes back is a value, not a receipt — decode it and let it decide what the transaction does.</li>
       </ul>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
@@ -275,25 +290,28 @@
   var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["ENCODE IT LIKE ANY CALL", "SEND TO THE PROXY", "VIEW CALL OR REAL ONE?"];
+  var kickers = ["ENCODE IT LIKE ANY CALL", "STATICCALL, NOT CALL", "DECODE IT AND BRANCH"];
   var captions = [
-    "Encode a normal call — no cross-chain-specific ABI.",
-    "Send it to the proxy address. Its fallback catches everything.",
-    "One self-call probes a transient write. If it reverts, this is a read — routed to staticCrossChainCall, which resolves it against a pre-computed static entry instead of executing."
+    "Encode a normal call \u2014 no cross-chain-specific ABI.",
+    "Send it to the proxy address as a staticcall. The fallback probes itself with a tstore, which only halts inside a static frame \u2014 so your frame, not the callee being view, is what routes this to staticCrossChainCall and a pre-computed static entry.",
+    "The answer arrives as ordinary return data. Decode it and branch: have \u2265 need credits the account, have < need records the shortfall. A value from another rollup just decided what this transaction did."
   ];
 
   var codeByStep = [
     [
       "bytes memory data = abi.encodeCall(",
-      "    IRemote.setValue, (42)",
+      "    IRemote.balanceOf, (user)",
       ");"
     ],
     [
       "bytes memory data = abi.encodeCall(",
-      "    IRemote.setValue, (42)",
+      "    IRemote.balanceOf, (user)",
       ");",
       "",
-      "(bool ok, ) = proxyAddress.call(data);",
+      "// STATICCALL, not CALL: the proxy keys off this",
+      "// frame, not off `view`.",
+      "(bool ok, bytes memory ret) =",
+      "    proxyAddress.staticcall(data);",
       "if (!ok) revert CrossChainCallFailed();",
       "",
       "// CrossChainProxy.sol",
@@ -302,25 +320,23 @@
       "}"
     ],
     [
-      "function _fallback() internal {",
-      "    (bool success,) = address(this).call{",
-      "        gas: STATIC_CHECK_GAS",
-      "    }(abi.encodeCall(this.staticCheck, ()));",
-      "    bytes memory result;",
+      "uint256 have = abi.decode(ret, (uint256));",
+      "if (have < need) {",
+      "    shortfall[user] = need - have;",
+      "    return false;",
+      "}",
+      "credited[user] += need;",
+      "return true;",
+      "",
+      "// CrossChainProxy.sol",
       "    if (!success) {",
       "        (success, result) = EEZ.staticcall(abi.encodeCall(",
       "            IEEZ.staticCrossChainCall,",
       "            (msg.sender, msg.data)));",
-      "    } else {",
-      "        (success, result) = EEZ.call{value: msg.value}(abi.encodeCall(",
-      "            IEEZ.executeCrossChainCall,",
-      "            (msg.sender, msg.data)));",
-      "    }",
-      "    if (success) result = abi.decode(result, (bytes));",
-      "}"
+      "    }"
     ]
   ];
-  var hlByStep = [ [0,1,2], [4,5,8,9,10], [1,2,3] ];
+  var hlByStep = [ [0,1,2], [4,5,6,7,11,12], [0,1,5,10] ];
 
   // Verbatim copy of snippets/q2-cross-chain-call.sol (the whole file, 74 lines).
   // scripts/check-panel-drift.py asserts this array still equals that file
@@ -338,9 +354,15 @@
       "// Caller side is ordinary: encode a call, send it to the proxy address like",
       "// any other contract. The proxy has no matching function, so everything",
       "// lands in fallback() and gets forwarded to the manager.",
+      "//",
+      "// A read is the same code with one difference that matters: STATICCALL",
+      "// instead of CALL. That is what the proxy's probe detects, and it is what",
+      "// decides whether the manager resolves an ExecutionEntry or a",
+      "// StaticExecutionEntry. See `settleIfFunded` below.",
       "",
       "interface IRemote {",
       "    function setValue(uint256 v) external;",
+      "    function balanceOf(address account) external view returns (uint256);",
       "}",
       "",
       "/// @dev A cross-chain call fails for reasons an ordinary same-chain call",
@@ -351,10 +373,24 @@
       "///      here; see docs/CAVEATS.md \"Indistinguishable revert reasons\".",
       "error CrossChainCallFailed();",
       "",
+      "/// @dev Raised on a value that came back from another rollup. The point of the",
+      "///      mechanism is not that the call succeeded \u2014 it is that the answer",
+      "///      decides what the rest of this transaction does.",
+      "error InsufficientRemoteBalance(uint256 have, uint256 need);",
+      "",
       "/// @dev Caller side \u2014 this is all a dapp has to do.",
       "contract Caller {",
       "    address public proxyAddress;",
       "",
+      "    mapping(address account => uint256 amount) public credited;",
+      "    mapping(address account => uint256 amount) public shortfall;",
+      "",
+      "    constructor(address proxyAddress_) {",
+      "        proxyAddress = proxyAddress_;",
+      "    }",
+      "",
+      "    /// @dev The write path. Nothing comes back worth reading, so `ok` is the",
+      "    ///      whole result and the call is an ordinary CALL.",
       "    function send() external {",
       "bytes memory data = abi.encodeCall(",
       "    IRemote.setValue, (42)",
@@ -362,6 +398,39 @@
       "",
       "(bool ok, ) = proxyAddress.call(data);",
       "if (!ok) revert CrossChainCallFailed();",
+      "    }",
+      "",
+      "    /// @dev The read path \u2014 a value from another rollup deciding a branch here.",
+      "    ///",
+      "    ///      The one thing to get right: the proxy picks static-vs-mutable from",
+      "    ///      the CALLER'S frame, not from `view`. Its probe does a `tstore`, and",
+      "    ///      a `tstore` only halts under STATICCALL (CrossChainProxy.sol:71). A",
+      "    ///      plain `.call(data)` here would therefore take the mutable path and",
+      "    ///      demand an ExecutionEntry no composer wrote for a read \u2014 on L2 that",
+      "    ///      is `EntryNotFound(hash, callGas)` (EEZL2.sol:441). STATICCALL is",
+      "    ///      what routes it to `staticCrossChainCall` (EEZL2.sol:594) and a",
+      "    ///      `StaticExecutionEntry`.",
+      "    function settleIfFunded(address user, uint256 need) external returns (bool) {",
+      "bytes memory data = abi.encodeCall(",
+      "    IRemote.balanceOf, (user)",
+      ");",
+      "",
+      "// STATICCALL, not CALL: the proxy keys off this",
+      "// frame, not off `view`.",
+      "(bool ok, bytes memory ret) =",
+      "    proxyAddress.staticcall(data);",
+      "if (!ok) revert CrossChainCallFailed();",
+      "",
+      "// The proxy returns the destination call's raw",
+      "// return data, so decode it exactly as you would",
+      "// a same-chain read \u2014 then branch on the value.",
+      "uint256 have = abi.decode(ret, (uint256));",
+      "if (have < need) {",
+      "    shortfall[user] = need - have;",
+      "    return false;",
+      "}",
+      "credited[user] += need;",
+      "return true;",
       "    }",
       "}",
       "",
@@ -421,8 +490,39 @@
       "}",
       "}"
   ];
+  // Verbatim slice of snippets/test/Q2CrossChainCall.t.sol \u2014 the two branches
+  // the remote value drives, and the proof that the frame picks the path.
+  // check-panel-drift.py asserts these lines still match the file.
+  var testSnippet = [
+      "    function test_fundedBranchCreditsFromARemoteValue() public {",
+      "        _commitBalance(100);",
+      "        bool funded = caller.settleIfFunded(USER, 40);",
+      "        require(funded, \"expected the funded branch\");",
+      "        require(caller.credited(USER) == 40, \"credited should record the need\");",
+      "    }",
+      "",
+      "    function test_shortBranchRecordsTheGapFromTheSameCall() public {",
+      "        _commitBalance(10);",
+      "        bool funded = caller.settleIfFunded(USER, 40);",
+      "        require(!funded, \"expected the short branch\");",
+      "        require(caller.shortfall(USER) == 30, \"shortfall should be need - have\");",
+      "    }",
+      "",
+      "    function test_plainCallTakesTheExecutionPathAndMisses() public {",
+      "        _commitBalance(100);",
+      "        (bool ok, bytes memory ret) = address(proxy).call(readData);",
+      "        require(!ok, \"a plain call must not resolve the static entry\");",
+      "        require(bytes4(ret) == EntryNotFound.selector, \"expected EntryNotFound, not ExecutionNotFound\");",
+      "    }",
+      "",
+      "    function test_destinationRevertIsIndistinguishableFromAMiss() public {",
+      "        vm.expectRevert(CrossChainCallFailed.selector);",
+      "        caller.settleIfFunded(USER, 40);",
+      "    }"
+  ];
+  var showTest = false;
   var showFull = false;
-  function currentLines(){ return showFull ? fullSnippet : (codeByStep[step] || []); }
+  function currentLines(){ return showFull ? fullSnippet : (showTest ? testSnippet : (codeByStep[step] || [])); }
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
 
@@ -530,8 +630,8 @@
     els.s3.style.display = step === 2 ? "flex" : "none";
 
     var code = currentLines();
-    var hl = showFull ? [] : (hlByStep[step] || []);
-    var dm = showFull ? {} : ((typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {});
+    var hl = (showFull || showTest) ? [] : (hlByStep[step] || []);
+    var dm = (showFull || showTest) ? {} : ((typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {});
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
@@ -706,6 +806,13 @@
   var btnFull = document.getElementById("btnFull");
   var citeEl = document.getElementById("srcCite");
   function applyPanelMode(){
+    var btnTest = document.getElementById("btnTest");
+    if (btnTest) {
+      btnTest.textContent = showTest ? "DEMO" : "TEST";
+      btnTest.style.color = showTest ? "var(--eez-green)" : "var(--muted)";
+      btnTest.style.borderColor = showTest ? "#2c6b3c" : "#2e2e2e";
+      btnTest.title = showTest ? "Back to the walkthrough" : "Show the runnable Foundry test behind this page";
+    }
     if (btnFull) {
       btnFull.textContent = showFull ? "STEP" : "FULL";
       btnFull.style.color = showFull ? "var(--eez-green)" : "var(--muted)";
@@ -715,21 +822,34 @@
     if (citeEl) {
       citeEl.innerHTML = showFull
         ? 'snippets/q2-cross-chain-call.sol \u00b7 solc 0.8.28'
-        : citeEl.getAttribute("data-demo-cite");
+        : (showTest ? 'snippets/test/Q2CrossChainCall.t.sol \u00b7 forge test'
+                    : citeEl.getAttribute("data-demo-cite"));
     }
     // The whole file is longer and wider than the column, so full-context mode
     // trades type size for reach and turns the vertical axis into a scroller
     // instead of clipping the tail off unreachably.
     var cp = document.getElementById("codePanel");
-    cp.style.fontSize = showFull ? "13px" : "19px";
-    cp.style.lineHeight = showFull ? "20px" : "34px";
+    cp.style.fontSize = showFull ? "13px" : (showTest ? "15px" : "19px");
+    cp.style.lineHeight = showFull ? "20px" : (showTest ? "26px" : "34px");
     cp.style.overflowY = "auto";
     cp.scrollTop = 0;
     cp.scrollLeft = 0;
     render();
   }
+  var btnTest = document.getElementById("btnTest");
+  if (btnTest) {
+    btnTest.addEventListener("click", function(){
+      showTest = !showTest;
+      if (showTest) showFull = false;
+      applyPanelMode();
+    });
+  }
   if (btnFull) {
-    btnFull.addEventListener("click", function(){ showFull = !showFull; applyPanelMode(); });
+    btnFull.addEventListener("click", function(){
+      showFull = !showFull;
+      if (showFull) showTest = false;
+      applyPanelMode();
+    });
   }
   var btnCopy = document.getElementById("btnCopy");
   if (btnCopy) {

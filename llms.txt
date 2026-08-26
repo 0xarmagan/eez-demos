@@ -62,6 +62,7 @@ Real files, not fragments: pragma, imports and a contract wrapper, all building 
 
 Foundry tests with no forge-std and no submodules, so they drop into an existing suite. `cd snippets && forge test`.
 
+- [snippets/test/Q2CrossChainCall.t.sol](https://eez-demos.vercel.app/snippets/test/Q2CrossChainCall.t.sol): proves the behaviour in How to call a contract on another rollup
 - [snippets/test/Q3MsgSender.t.sol](https://eez-demos.vercel.app/snippets/test/Q3MsgSender.t.sol): proves the behaviour in How to handle msg.sender across chains
 - [snippets/test/Q6ManagerDirect.t.sol](https://eez-demos.vercel.app/snippets/test/Q6ManagerDirect.t.sol): proves the behaviour in How the guard makes sure only proxy calls reach execution
 - [snippets/test/Q5ContentHash.t.sol](https://eez-demos.vercel.app/snippets/test/Q5ContentHash.t.sol): proves the behaviour in How to encode a call's content hash
