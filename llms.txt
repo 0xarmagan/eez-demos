@@ -1,6 +1,6 @@
 # EEZ Quickstarts
 
-> Seventeen interactive walkthroughs of the Ethereum Economic Zone, each built on real
+> Eighteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
 > contracts that call across rollups, running the stack, and how Rollup0 settles and proves.
 
@@ -45,6 +45,7 @@ How Rollup0 actually settles and proves.
 - [How the deriver rebuilds L2 from L1](https://eez-demos.vercel.app/protocol-researchers/pr3-the-deriver.html): Learn how the whole chain is reconstructed from L1 data alone.
 - [How the address is derived](https://eez-demos.vercel.app/protocol-researchers/pr5-how-the-address-is-derived.html): Learn how two values become a salt and a CREATE2 address.
 - [The rolling hash](https://eez-demos.vercel.app/protocol-researchers/pr6-the-rolling-hash.html): Learn how one bytes32 commits to a whole execution tree — and why no call index is folded in.
+- [What the refactor renamed](https://eez-demos.vercel.app/protocol-researchers/pr7-what-the-refactor-renamed.html): Learn which names the feature/simplify refactor moved — and the two places pre-refactor docs assert the opposite of the current design.
 
 ## Compilable source
 
@@ -58,6 +59,7 @@ Real files, not fragments: pragma, imports and a contract wrapper, all building 
 - [snippets/q5-content-hash.sol](https://eez-demos.vercel.app/snippets/q5-content-hash.sol): full source behind How to encode a call's content hash
 - [snippets/q8-remote-reads.sol](https://eez-demos.vercel.app/snippets/q8-remote-reads.sol): full source behind How to read a remote contract's state
 - [snippets/q1-compute-address.sol](https://eez-demos.vercel.app/snippets/q1-compute-address.sol): full source behind How the address is derived
+- [snippets/pr7-renames.sol](https://eez-demos.vercel.app/snippets/pr7-renames.sol): full source behind What the refactor renamed
 
 ## Runnable tests
 

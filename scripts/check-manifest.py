@@ -317,14 +317,36 @@ def check_no_dead_tools(problems):
           % len(os.listdir(os.path.join(ROOT, "scripts"))))
 
 
+# The one page where a stale name is the content rather than a defect: the
+# rename table (card I.8) exists to say what each old name became. Exempting it
+# by name would turn the gate off for the single page most able to rot, so the
+# assertion is INVERTED here instead — every stale name must appear on it, and
+# a name quietly dropped from the table fails the build exactly as a name
+# quietly left in another page does.
+STALE_NAME_TABLE = "protocol-researchers/pr7-what-the-refactor-renamed.html"
+
+
 def check_stale_names(problems):
     """§7's stale-names gate, which the manifest claims is clean."""
     files = subprocess.run(
         ["git", "ls-files", "index.html", "dapp-developers/*.html",
          "rollup-operators/*.html", "protocol-researchers/*.html"],
         cwd=ROOT, capture_output=True, text=True).stdout.split()
+    table_path = os.path.join(ROOT, STALE_NAME_TABLE)
+    table = (open(table_path, encoding="utf-8").read()
+             if os.path.exists(table_path) else None)
+    if table is None:
+        fail(problems, "the rename table is missing at %s — the stale-name gate "
+                       "has nowhere to point a reader who hits an old name"
+             % STALE_NAME_TABLE)
     for name in STALE_NAMES:
+        if table is not None and name not in table:
+            fail(problems, "stale name %r is absent from the rename table (%s) — "
+                           "the gate rejects the name everywhere else, so the "
+                           "table has to say what it became" % (name, STALE_NAME_TABLE))
         for rel in files:
+            if rel == STALE_NAME_TABLE:
+                continue
             src = open(os.path.join(ROOT, rel), encoding="utf-8").read()
             if name in src:
                 fail(problems, "stale name %r appears in %s" % (name, rel))
