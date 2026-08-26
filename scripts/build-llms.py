@@ -28,7 +28,11 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BASE = "https://0xarmagan.github.io/eez-demos"
+# The canonical host. GitHub Pages serves the same content at
+# https://0xarmagan.github.io/eez-demos and is deliberately still enabled, so an
+# agent ingesting llms.txt cites whichever host is written here. README.md names
+# Vercel as the live site, and every page's rel=canonical points at it.
+BASE = "https://eez-demos.vercel.app"
 
 TRACKS = [
     ("dapp-developers", "Dapp developers",

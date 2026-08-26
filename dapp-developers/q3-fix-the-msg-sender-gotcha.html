@@ -7,6 +7,7 @@
 <link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
 <title>How to handle msg.sender across chains — EEZ</title>
+<link rel="canonical" href="https://eez-demos.vercel.app/dapp-developers/q3-fix-the-msg-sender-gotcha.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -134,7 +135,7 @@
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
-      <a class="back" href="q4-check-if-an-address-is-a-proxy.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: How the Proxy Registry Works →</a>
+      <a class="back" href="q4-check-if-an-address-is-a-proxy.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: How to check an address is a real proxy →</a>
     </div>
   </div>
 
@@ -690,7 +691,12 @@
   var btnCopy = document.getElementById("btnCopy");
   if (btnCopy) {
     btnCopy.addEventListener("click", function(){
-      var lines = currentLines();
+      // Drop the `del` lines. On screen they carry a "-" and a red gutter; the
+      // clipboard has neither, so copying them ships the bug this page just
+      // taught the reader to delete, welded to the fix — and the result
+      // compiles, requiring msg.sender to equal both owner and proxy.
+      var marks = (showFull || showTest) ? {} : (diffByStep[step] || {});
+      var lines = currentLines().filter(function(_, i){ return marks[i] !== "del"; });
       var text = lines.join("\n").replace(/[ \t]+$/gm, "").replace(/\n+$/, "") + "\n";
       var done = function(ok){
         btnCopy.textContent = ok ? "COPIED" : "COPY FAILED";

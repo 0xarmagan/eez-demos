@@ -24,7 +24,7 @@ Writing contracts that call across rollups.
 
 Learn how to read it, or deploy it.
 
-- Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q7-your-cross-chain-address.html
+- Page: https://eez-demos.vercel.app/dapp-developers/q7-your-cross-chain-address.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:156 · createCrossChainProxy`
 - Pinned at commit: `9735f53`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L156
@@ -177,7 +177,7 @@ function computeCrossChainProxyAddress(
 
 Learn how to encode it like any normal call and send it to the proxy.
 
-- Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q2-send-a-cross-chain-call.html
+- Page: https://eez-demos.vercel.app/dapp-developers/q2-send-a-cross-chain-call.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback`
 - Pinned at commit: `9735f53`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89
@@ -336,7 +336,7 @@ function _fallback() internal {
 
 Learn how to whitelist the proxy instead of the address you expected.
 
-- Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q3-fix-the-msg-sender-gotcha.html
+- Page: https://eez-demos.vercel.app/dapp-developers/q3-fix-the-msg-sender-gotcha.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:39 · fallback`
 - Pinned at commit: `9735f53`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L39
@@ -536,7 +536,7 @@ contract Q3MsgSenderTest {
 
 Learn how to read the on-chain registry instead of guessing.
 
-- Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q4-check-if-an-address-is-a-proxy.html
+- Page: https://eez-demos.vercel.app/dapp-developers/q4-check-if-an-address-is-a-proxy.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:60 · authorizedProxies`
 - Pinned at commit: `9735f53`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L60
@@ -625,7 +625,7 @@ if (isProxy) { /* real proxy for origAddr@origRid */ }
 
 Learn how UnauthorizedProxy() stops any call that isn't proxy-routed.
 
-- Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q6-why-you-cant-call-the-manager-directly.html
+- Page: https://eez-demos.vercel.app/dapp-developers/q6-why-you-cant-call-the-manager-directly.html
 - Source: `eez-core-protocol/src/EEZ.sol:780 · executeCrossChainCall`
 - Pinned at commit: `9735f53`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L780
@@ -786,7 +786,7 @@ contract Q6ManagerDirectTest {
 
 Learn how to hash eight fields in the one order that works.
 
-- Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q5-encode-a-calls-content-hash.html
+- Page: https://eez-demos.vercel.app/dapp-developers/q5-encode-a-calls-content-hash.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:198`
 - Pinned at commit: `9735f53`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L198
@@ -964,7 +964,7 @@ contract Q5ContentHashTest {
 
 Learn why balance and code size answer about the proxy, and hand back a real number about the wrong contract with no revert.
 
-- Page: https://0xarmagan.github.io/eez-demos/dapp-developers/q8-read-a-remote-contracts-state.html
+- Page: https://eez-demos.vercel.app/dapp-developers/q8-read-a-remote-contracts-state.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback`
 - Pinned at commit: `9735f53`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89
@@ -1443,7 +1443,7 @@ Standing the stack up and driving it.
 
 Learn how to bring up the node, proof-signer and the L1 in a disposable network.
 
-- Page: https://0xarmagan.github.io/eez-demos/rollup-operators/ro1-run-the-devnet-with-kurtosis.html
+- Page: https://eez-demos.vercel.app/rollup-operators/ro1-run-the-devnet-with-kurtosis.html
 - Source: `testing/kurtosis/README.md`
 - Pinned at commit: `a4b9b2f`
 - Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/testing/kurtosis/README.md
@@ -1502,7 +1502,7 @@ $ bash testing/kurtosis/start.sh \
 
 Learn how one command deploys EEZ, the proof system and your manager.
 
-- Page: https://0xarmagan.github.io/eez-demos/rollup-operators/ro2-deploy-the-protocol.html
+- Page: https://eez-demos.vercel.app/rollup-operators/ro2-deploy-the-protocol.html
 - Source: `Makefile:47-65 · scripts/deploy.sh`
 - Pinned at commit: `a4b9b2f`
 - Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/Makefile#L47-L65
@@ -1573,7 +1573,7 @@ deploy-protocol:
 
 Learn how to point the same stack at Chiado instead of a sandbox.
 
-- Page: https://0xarmagan.github.io/eez-demos/rollup-operators/ro3-run-a-real-chiado-l2.html
+- Page: https://eez-demos.vercel.app/rollup-operators/ro3-run-a-real-chiado-l2.html
 - Source: `README.md · Run a chiado L2 (Docker)`
 - Pinned at commit: `a4b9b2f`
 - Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/README.md
@@ -1646,7 +1646,7 @@ $ cast block-number \
 
 Learn how to drive both fronts and read real pass/fail numbers.
 
-- Page: https://0xarmagan.github.io/eez-demos/rollup-operators/ro4-send-and-test-cross-chain-calls.html
+- Page: https://eez-demos.vercel.app/rollup-operators/ro4-send-and-test-cross-chain-calls.html
 - Source: `README.md · scripts/xchain-test.sh`
 - Pinned at commit: `a4b9b2f`
 - Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/README.md
@@ -1734,7 +1734,7 @@ How Rollup0 actually settles and proves.
 
 Learn how sequencer, composer, proof-signer and deriver each fit.
 
-- Page: https://0xarmagan.github.io/eez-demos/protocol-researchers/pr1-the-four-components-of-rollup0.html
+- Page: https://eez-demos.vercel.app/protocol-researchers/pr1-the-four-components-of-rollup0.html
 - Source: `crates/eez-driver/src/sequencer.rs:159 · crates/eez-composer/src/composer.rs:515 · crates/eez-proof-signer/src/attest.rs:52 / :134 · crates/eez-deriver/src/deriver.rs:45`
 - Pinned at commit: `a4b9b2f`
 - Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-driver/src/sequencer.rs#L159
@@ -1793,7 +1793,7 @@ pub struct Deriver<L2>
 
 Learn how an L2 commits first and L1 then settles or repairs it.
 
-- Page: https://0xarmagan.github.io/eez-demos/protocol-researchers/pr2-commit-first-repair-if-needed.html
+- Page: https://eez-demos.vercel.app/protocol-researchers/pr2-commit-first-repair-if-needed.html
 - Source: `crates/eez-composer/src/optimistic.rs`
 - Pinned at commit: `a4b9b2f`
 - Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-composer/src/optimistic.rs
@@ -1865,7 +1865,7 @@ pub fn take_finalized(&self, finalized_l2: u64)
 
 Learn how one gRPC stream carries header, blocks and a signature.
 
-- Page: https://0xarmagan.github.io/eez-demos/protocol-researchers/pr4-how-the-composer-proves-a-batch.html
+- Page: https://eez-demos.vercel.app/protocol-researchers/pr4-how-the-composer-proves-a-batch.html
 - Source: `crates/eez-control-rpc/proto/prove.proto · prove.v1.Prover`
 - Pinned at commit: `a4b9b2f`
 - Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-control-rpc/proto/prove.proto
@@ -1937,7 +1937,7 @@ const MAX_ENCODING_MESSAGE_BYTES: usize = 1024;
 
 Learn how the whole chain is reconstructed from L1 data alone.
 
-- Page: https://0xarmagan.github.io/eez-demos/protocol-researchers/pr3-the-deriver.html
+- Page: https://eez-demos.vercel.app/protocol-researchers/pr3-the-deriver.html
 - Source: `crates/eez-deriver/src/deriver.rs · Deriver<L2>`
 - Pinned at commit: `a4b9b2f`
 - Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-deriver/src/deriver.rs
@@ -2004,7 +2004,7 @@ match anchor {
 
 Learn how two values become a salt and a CREATE2 address.
 
-- Page: https://0xarmagan.github.io/eez-demos/protocol-researchers/pr5-how-the-address-is-derived.html
+- Page: https://eez-demos.vercel.app/protocol-researchers/pr5-how-the-address-is-derived.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:176`
 - Pinned at commit: `9735f53`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L176
