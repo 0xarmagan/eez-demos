@@ -1,6 +1,6 @@
 # EEZ Quickstarts
 
-> Seventeen interactive walkthroughs of the Ethereum Economic Zone, each built on real
+> Nineteen interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
 > contracts that call across rollups, running the stack, and how Rollup0 settles and proves.
 
@@ -25,6 +25,7 @@ Writing contracts that call across rollups.
 - [How the guard makes sure only proxy calls reach execution](https://eez-demos.vercel.app/dapp-developers/q6-why-you-cant-call-the-manager-directly.html): Learn how UnauthorizedProxy() stops any call that isn't proxy-routed.
 - [How to encode a call's content hash](https://eez-demos.vercel.app/dapp-developers/q5-encode-a-calls-content-hash.html): Learn how to hash eight fields in the one order that works.
 - [How to read a remote contract's state](https://eez-demos.vercel.app/dapp-developers/q8-read-a-remote-contracts-state.html): Learn why balance and code size answer about the proxy, and hand back a real number about the wrong contract with no revert.
+- [When the proof fails](https://eez-demos.vercel.app/dapp-developers/q9-when-the-proof-fails.html): Learn what a forged rolling hash and a stale state root actually look like — and the failure that is an event, not a revert.
 
 ## Rollup operators
 
@@ -45,6 +46,7 @@ How Rollup0 actually settles and proves.
 - [How the deriver rebuilds L2 from L1](https://eez-demos.vercel.app/protocol-researchers/pr3-the-deriver.html): Learn how the whole chain is reconstructed from L1 data alone.
 - [How the address is derived](https://eez-demos.vercel.app/protocol-researchers/pr5-how-the-address-is-derived.html): Learn how two values become a salt and a CREATE2 address.
 - [The rolling hash](https://eez-demos.vercel.app/protocol-researchers/pr6-the-rolling-hash.html): Learn how one bytes32 commits to a whole execution tree — and why no call index is folded in.
+- [What the refactor renamed](https://eez-demos.vercel.app/protocol-researchers/pr7-what-the-refactor-renamed.html): Learn which names the feature/simplify refactor moved — and the two places pre-refactor docs assert the opposite of the current design.
 
 ## Compilable source
 
@@ -57,7 +59,9 @@ Real files, not fragments: pragma, imports and a contract wrapper, all building 
 - [snippets/q6-manager-direct.sol](https://eez-demos.vercel.app/snippets/q6-manager-direct.sol): full source behind How the guard makes sure only proxy calls reach execution
 - [snippets/q5-content-hash.sol](https://eez-demos.vercel.app/snippets/q5-content-hash.sol): full source behind How to encode a call's content hash
 - [snippets/q8-remote-reads.sol](https://eez-demos.vercel.app/snippets/q8-remote-reads.sol): full source behind How to read a remote contract's state
+- [snippets/q9-when-the-proof-fails.sol](https://eez-demos.vercel.app/snippets/q9-when-the-proof-fails.sol): full source behind When the proof fails
 - [snippets/q1-compute-address.sol](https://eez-demos.vercel.app/snippets/q1-compute-address.sol): full source behind How the address is derived
+- [snippets/pr7-renames.sol](https://eez-demos.vercel.app/snippets/pr7-renames.sol): full source behind What the refactor renamed
 
 ## Runnable tests
 

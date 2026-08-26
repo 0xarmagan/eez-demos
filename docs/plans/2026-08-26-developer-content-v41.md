@@ -170,16 +170,68 @@ selector is `0x55241077`).
 with EEZ has to answer "what does EEZ do that a bridge doesn't" off this page.
 Nothing an agent runs substitutes for that.
 
-**1.2 — Flash-loan guide** · `needs-human` (devnet) · L
-Additionally blocked before the devnet session: the banked draft is unlocated
-(see asset manifest). Step 5's encoding asymmetry still needs protocol-engineer
-review as a publish blocker.
+**1.2 — Flash-loan guide** · `needs-human` (devnet, for the network-mode half) · L
+The banked draft is unlocated (see asset manifest), and step 5's encoding
+asymmetry still needs protocol-engineer review as a publish blocker.
+
+**Run locally 2026-08-26; findings in
+`docs/reviews/2026-08-26/1.2-flash-loan-local-run.md`.** The scenario
+`script/e2e/nested/L1_to_L2/flash-loan/E2EFlashLoan.s.sol` executes and verifies
+on anvil with no devnet — exit 0, seven PASS assertions across the L1 batch, the
+L2 table and the L2 calls. That replaces the unlocated draft with something
+better: an entry construction that can be read rather than guessed.
+
+**Step 5's asymmetry is resolved, and the answer inverts the fear.** The scenario
+hashes the return leg two ways — `crossChainCallHash` on the L1 side,
+`crossChainCallHashL2Out` on the L2-outgoing side — but the second is a one-line
+wrapper around the first, so they are byte-identical today. The run confirms it:
+the L1 and L2 expected-hash lists are the same two values. The separate name is a
+marker for when `useGasLeft` flips on, per its own doc comment. So *"the return
+leg is hashed differently"* is wrong today, and *"one call, one hash"* is right
+today and wrong the moment gas keying turns on. Same fact `q5` teaches under 0.5.
+
+Protocol review is still a publish blocker, but the question is now a yes/no
+rather than an open review: *is it correct to document the L2-outgoing key as
+identical to the L1 key today, flagging `useGasLeft` as the single condition that
+separates them?*
+
+Still needs the live devnet: only the captured trace and the gas numbers feeding
+4.2, because local mode has the test playing sequencer rather than a real
+composer.
 
 **1.3 — End-to-end quickstart** · `ready` (1.1 shipped) · L — cold-start test is
 `needs-human`. Inherits the Guide format from 1.5 (below).
 
-**1.4 — Lead Safe at N=2** · `ready` (timeboxed 1 day) · M — module code review
-is a publish blocker.
+One cold-start defect is already known and should be in the quickstart or fixed
+upstream first: **the e2e harness does not run on stock macOS.** `declare -A`
+(bash 4+) at `E2EBase.sh:182` and three sites in `decode-trace.sh`, plus `set -u`
+with empty-array expansion, which bash 3.2 calls unbound. macOS ships 3.2.57, so
+a reader following `script/e2e/README.md` hits `declare: -A: invalid option` on
+the first command with no indication why. CI cannot catch it — the runners are
+ubuntu, where bash is 5.x. Both are reporting-path only, so the workaround is
+local; details in `docs/reviews/2026-08-26/1.2-flash-loan-local-run.md`.
+
+**1.4 — Lead Safe at N=2** · `ready` (timeboxed research spent) · M
+done-when: two chains, key rotation on lead, follower updates same transaction;
+new module code passes blocking-level review; "same batch follows" caveat inline.
+human-only: module code review — publish blocker.
+
+Research done 2026-08-26, `docs/reviews/2026-08-26/1.4-encoding-research.md`.
+**Buildable now.** The card says "two rollups", which read strictly means two
+L2s — and the harness cannot do that. But the plan counts chains (§3 rejects
+"4-chain composition"), and the card's input pointer is
+`script/e2e/multi_call/`, which contains only `L1_to_L2` and `L2_to_L1`. So N=2
+is L1 + one L2, and the `multi-call-*` scenarios are exactly the shape: one L1
+tx driving deliveries on the other chain. The `flash-loan` run proves the
+round-trip case works locally.
+
+What the research doc maps is the cost of **N≥3** — two or more L2s — which
+would need a second rollup in `DeployInfra`, a second L2 in `chain.env` and the
+Kurtosis args, and a multi-rollup batch builder to replace
+`immediateSingleRollupBatch`. That is real, and it bounds anything beyond N=2.
+
+The required "same batch follows" caveat is grounded: `docs/CAVEATS.md` states
+the same-batch rule outright.
 
 **1.5 — Rolling hash** · `done` · L
 done-when: covers 4-tuple collapse, seeding, tag chain, `CALL_NOT_FOUND`

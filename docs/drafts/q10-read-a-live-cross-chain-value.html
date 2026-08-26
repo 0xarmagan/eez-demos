@@ -6,8 +6,8 @@
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
-<title>How to deploy the protocol — EEZ</title>
-<link rel="canonical" href="https://eez-demos.vercel.app/rollup-operators/ro2-deploy-the-protocol.html">
+<title>Read a live cross-chain value — EEZ</title>
+<link rel="canonical" href="https://eez-demos.vercel.app/dapp-developers/q10-read-a-live-cross-chain-value.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -32,23 +32,6 @@
   a.back:not([style]):hover{transform:translateX(-3px);}
   a.back[style]:hover{transform:translateX(3px);}
   .byte{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;border-radius:4px;padding:5px 8px;}
-  .lbl{font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);}
-  .term{font-family:var(--mono);font-size:16px;color:#7ee08c;background:#10151c;border:1px solid #232b36;border-radius:8px;padding:10px 16px;}
-  .term-alt{font-family:var(--mono);font-size:16px;font-weight:600;color:#7ee08c;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:10px 16px;}
-  .arrow{font-size:26px;color:var(--eez-green);}
-  .chip{font-family:var(--mono);font-size:14px;border-radius:8px;padding:10px 16px;border:1px solid;}
-  .chip-core{background:rgba(124,131,255,0.14);color:#aeb6ec;border-color:#3a4173;}
-  .chip-proof{background:rgba(63,185,80,0.12);color:#9edba8;border-color:#2f6b3a;}
-  .chip-mgr{background:rgba(180,120,240,0.14);color:#d9bdf5;border-color:#5a3f7a;}
-  .note{font-size:16px;color:var(--muted);max-width:820px;}
-  .filehdr{font-family:var(--mono);font-size:15px;color:#d8d8d8;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 14px;}
-  .filehdr-sm{font-family:var(--mono);font-size:14px;color:#d8d8d8;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 13px;}
-  .badge-gitignore{font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;background:rgba(240,168,60,0.12);border:1px solid #463a1e;border-radius:5px;padding:4px 10px;}
-  .envfile{background:var(--eez-screen);border:1px solid #232b36;border-radius:9px;padding:18px 22px;display:flex;flex-direction:column;gap:12px;}
-  .envline{font-family:var(--mono);font-size:17px;}
-  .plus{font-size:22px;color:var(--muted);}
-  .node-box{font-family:var(--mono);font-size:16px;color:#7ee08c;background:rgba(63,185,80,0.08);border:1px solid #2f6b3a;border-radius:9px;padding:12px 20px;}
-  .payoff{margin-top:6px;background:rgba(63,185,80,0.06);border:1.5px dashed var(--eez-green);border-radius:9px;padding:16px 22px;display:inline-flex;align-items:center;gap:16px;animation:riseIn .4s ease both;}
 
   /* Mobile reflow: below 820px, the fixed 1920x1080 stage becomes a normal
      stacked document instead of a scaled-and-panned deck. !important is
@@ -147,93 +130,83 @@
     <div style="display:flex;align-items:center;gap:18px;">
       <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-      <div style="font-size:22px;font-weight:600;color:#fff;">Deploy the Protocol</div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">Read a Live Cross-Chain Value</div>
       <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#8a8a8a;">PRE-MAINNET</div>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
-      <a class="back" href="ro3-run-a-real-chiado-l2.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: How to run against a real testnet →</a>
+      <a class="back" href="../rollup-operators/ro1-run-the-devnet-with-kurtosis.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: How to run the whole stack locally →</a>
     </div>
   </div>
 
-  <!-- ===== DIAGRAM ===== -->
+  <!-- ===== DIAGRAM — inspection is local, invocation is resolved ===== -->
   <div id="stageCol" style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
 
-    <!-- STEP 1: the .env prerequisite, then one command fans out into the
-         5-step deploy sequence the Makefile documents at :52-59. -->
+    <!-- STEP 1: the command -->
     <div id="s1" style="display:flex;flex-direction:column;gap:20px;">
-      <div class="lbl">ONE COMMAND · .env → Makefile → scripts/deploy.sh</div>
-      <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:12px 18px;max-width:980px;">
-        <div style="font-family:var(--mono);font-size:15px;color:#7ee08c;">$ <span style="color:#d8d8d8;">cp .env.example .env</span></div>
-        <div style="font-family:var(--mono);font-size:14px;color:var(--muted);padding-left:18px;"># EEZ_L1_RPC_URL · EEZ_L1_POSTER_KEY · EEZ_PROOF_SIGNER_KEY · EEZ_L2_SYSTEM_KEY</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">ONE COMMAND &#183; NOTHING TO INSTALL BUT cast</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;line-height:1.5;">No Kurtosis, no Docker, no node. These contracts are already deployed on Chiado and the answer is already proven and on-chain. You are reading it.</div>
+      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">cast call $READER \
+  "readUint(address,bytes)(uint256)" \
+  $PROXY $(cast calldata "getValue()") \
+  --rpc-url https://rpc.chiadochain.net</div>
+      <div style="font-family:var(--mono);font-size:17px;color:var(--eez-green);background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-radius:8px;padding:12px 16px;display:inline-block;">123</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;line-height:1.5;">That number was produced on another chain, proven, and written to Chiado before you ran the command. Nothing fetched it while you waited.</div>
+      <div style="display:flex;flex-direction:column;gap:8px;padding-top:4px;">
+        <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">ADDRESSES</div>
+        <div style="display:flex;align-items:center;gap:14px;"><div style="font-family:var(--mono);font-size:14px;color:var(--muted);width:210px;flex:none;">READER</div><div style="font-family:var(--mono);font-size:13px;color:#c9b183;background:rgba(232,177,94,0.10);border:1px dashed rgba(232,177,94,0.45);border-radius:5px;padding:3px 9px;">TBD &#183; not yet deployed</div></div>
+        <div style="display:flex;align-items:center;gap:14px;"><div style="font-family:var(--mono);font-size:14px;color:var(--muted);width:210px;flex:none;">PROXY</div><div style="font-family:var(--mono);font-size:13px;color:#c9b183;background:rgba(232,177,94,0.10);border:1px dashed rgba(232,177,94,0.45);border-radius:5px;padding:3px 9px;">TBD &#183; not yet deployed</div></div>
+        <div style="display:flex;align-items:center;gap:14px;"><div style="font-family:var(--mono);font-size:14px;color:var(--muted);width:210px;flex:none;">EEZ</div><div style="font-family:var(--mono);font-size:13px;color:#c9b183;background:rgba(232,177,94,0.10);border:1px dashed rgba(232,177,94,0.45);border-radius:5px;padding:3px 9px;">TBD &#183; not yet deployed</div></div>
+        <div style="display:flex;align-items:center;gap:14px;"><div style="font-family:var(--mono);font-size:14px;color:var(--muted);width:210px;flex:none;">deploy commit</div><div style="font-family:var(--mono);font-size:13px;color:#c9b183;background:rgba(232,177,94,0.10);border:1px dashed rgba(232,177,94,0.45);border-radius:5px;padding:3px 9px;">TBD &#183; not yet deployed</div></div>
       </div>
-      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
-        <div class="term">$ make deploy-protocol</div>
-        <div class="arrow">→</div>
-        <div class="term-alt">./scripts/deploy.sh</div>
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:2px;">
-        <div class="chip chip-core">1 · DeployEEZ</div>
-        <div class="chip chip-proof">2 · DeployECDSAProofSystem</div>
-        <div class="chip chip-mgr">3 · DeployRollup</div>
-        <div class="chip chip-core">4 · RegisterRollup</div>
-        <div class="chip chip-proof">5 · DeployBridgeL1</div>
-      </div>
-      <div class="note">One script, one run — deploy.sh runs the same five steps, in order, every time. It reads .env, and hard-fails if any of those four variables is unset.</div>
     </div>
 
-    <!-- STEP 2: real deployments.env content, gitignored -->
-    <div id="s2" style="display:none;flex-direction:column;gap:24px;">
-      <div class="lbl">OUTPUTS · deployments.env</div>
-      <div style="display:flex;align-items:center;gap:12px;">
-        <div class="filehdr">deployments.env</div>
-        <div class="badge-gitignore">gitignored</div>
+    <!-- STEP 2: why it resolves with nothing running -->
+    <div id="s2" style="display:none;flex-direction:column;gap:20px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">WHY IT ANSWERS WITH NOTHING RUNNING</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;line-height:1.5;">The read does not travel anywhere. A <span style="font-family:var(--mono);">StaticExecutionEntry</span> holding the answer was posted to Chiado in one batch and sits in that rollup's queue. Your call matches it by hash and returns the value.</div>
+      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">staticEntryQueue[rid]
+  &#8627; proxyEntryHash      == keccak(your call)
+  &#8627; destinationRollupId == the proxy's rollup
+  &#8627; every pinned state root still live
+     &#8594; return returnData</div>
+      <div style="max-width:900px;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-left:3px solid #3BE57E;border-radius:8px;padding:13px 17px;">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#A8F3CE;">AND WHY IT HAS TO GO THROUGH $READER</div>
+        <div style="font-size:15px;line-height:1.55;color:#bfe6cf;margin-top:7px;">Calling the proxy directly does not work. <span style="font-family:var(--mono);">cast call</span> is an eth_call, which the EVM runs as a non-static frame; the proxy probes for static context with a <span style="font-family:var(--mono);">tstore</span> that succeeds there, so it routes to the mutating path and reverts <span style="font-family:var(--mono);">ExecutionNotInCurrentBlock</span>. A Solidity <span style="font-family:var(--mono);">view</span> call compiles to a real STATICCALL, which is the whole job <span style="font-family:var(--mono);">$READER</span> does.</div>
       </div>
-      <!-- Illustrative excerpt of the template deploy.sh writes at :262-289.
-           The address values are placeholders, not captured output — every
-           one is derived from your own deploy. EEZL2_ADDRESS is the one
-           literal upstream hardcodes. -->
-      <div class="envfile">
-        <div class="envline" style="animation:riseIn .35s ease both;"><span style="color:#7ee08c;">EEZ_REGISTRY_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:var(--muted);">0x…</span></div>
-        <div class="envline" style="animation:riseIn .35s .1s ease both;"><span style="color:#9edba8;">EEZ_ECDSA_PROOF_SYSTEM_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:var(--muted);">0x…</span></div>
-        <div class="envline" style="animation:riseIn .35s .2s ease both;"><span style="color:#d9bdf5;">EEZ_ROLLUP_MANAGER_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:var(--muted);">0x…</span></div>
-        <div class="envline" style="animation:riseIn .35s .3s ease both;"><span style="color:#d8d8d8;">EEZL2_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:#d8d8d8;">0x4200000000000000000000000000000000000007</span></div>
-      </div>
-      <div class="note">An illustrative excerpt — deploy.sh writes 19 keys here, including the vkey, attester, rollup id, initial state root, genesis path and the three L1 bridge addresses. Values come from your deploy; there is nothing to copy by hand.</div>
+      <div style="font-family:var(--mono);font-size:12px;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L1266" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:1266 &#183; staticCrossChainCall &#8599;</a></div>
     </div>
 
-    <!-- STEP 3: run-node loads both env files, zero manual config -->
-    <div id="s3" style="display:none;flex-direction:column;gap:26px;">
-      <div class="lbl">STARTUP · make run-node</div>
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-        <div class="filehdr-sm">deployments.env</div>
-        <div class="plus">+</div>
-        <div class="filehdr-sm">.env</div>
-        <div class="arrow">→</div>
-        <div class="term-alt">make run-node</div>
+    <!-- STEP 3: the honest constraint + failure triage -->
+    <div id="s3" style="display:none;flex-direction:column;gap:18px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">WHAT THIS IS, EXACTLY &#183; AND WHEN IT STOPS</div>
+      <div style="max-width:900px;background:rgba(232,177,94,0.07);border:1px solid rgba(232,177,94,0.30);border-left:3px solid #8B7B55;border-radius:8px;padding:13px 17px;">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#c9b183;">THE ROLLUP BEHIND THIS READ IS INTENTIONALLY PAUSED</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">This is a real cross-chain read resolving against a real proven entry &#8212; and the state it reads is frozen. A queued static entry is deleted the moment any later batch verifies that rollup (<span style="font-family:var(--mono);">EEZ.sol:745</span> wipes the queue on every verify, roots untouched or not), so a permanently-answering playground is one where nothing is posting. That is the trade: a command that works forever, over a chain that is still moving.</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">Which runs opposite to intuition. A composer running against this rollup would destroy the entry every block, not sustain it.</div>
       </div>
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div class="node-box">eez-node starting…</div>
-        <div style="width:8px;height:8px;border-radius:50%;background:var(--eez-green);animation:pulse 1.8s ease-in-out infinite;"></div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">WHEN THE COMMAND FAILS</div>
+      <div style="display:flex;flex-direction:column;gap:9px;">
+        <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;"><div style="font-family:var(--mono);font-size:15px;color:#e8c07d;width:290px;flex:none;">ExecutionNotInCurrentBlock</div><div style="font-size:15px;color:var(--muted);flex:1;min-width:260px;">You called the proxy, not <span style="font-family:var(--mono);">$READER</span>. Route through the helper.</div></div>
+        <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;"><div style="font-family:var(--mono);font-size:15px;color:#e8c07d;width:290px;flex:none;">ExecutionNotFound</div><div style="font-size:15px;color:var(--muted);flex:1;min-width:260px;">No entry matched: the calldata differs from the seeded one, a pinned root moved, or a later batch wiped the queue. Not distinguishable from the destination reverting.</div></div>
+        <div style="display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;"><div style="font-family:var(--mono);font-size:15px;color:#e8c07d;width:290px;flex:none;">UnauthorizedProxy</div><div style="font-size:15px;color:var(--muted);flex:1;min-width:260px;">The address in <span style="font-family:var(--mono);">$PROXY</span> is not a registered CrossChainProxy. Check the table in step 1.</div></div>
       </div>
-      <div class="payoff">
-        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#5e9e6b;">THE POINT</div>
-        <div style="font-size:24px;font-weight:600;color:#eef3f8;">no address-pasting step</div>
-        <div style="font-family:var(--mono);font-size:15px;color:#7ee08c;">.env you write once · deployments.env writes itself</div>
-      </div>
+      <div style="font-family:var(--mono);font-size:12px;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L745" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:745 &#183; _markVerifiedBlockAndDeletePreviousEntries &#8599;</a></div>
     </div>
 
   </div>
 
   <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:var(--eez-chrome);border:1px solid var(--eez-edge);border-radius:10px;overflow:hidden;">
     <div aria-hidden="true" style="position:absolute;left:0;top:0;right:0;height:2px;background:var(--eez-grad);z-index:4;"></div>
-    <div style="display:flex;align-items:center;gap:14px;padding:14px 66px 14px 20px;border-bottom:1px solid var(--eez-edge);background:var(--eez-chrome);position:relative;">
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 164px 14px 20px;border-bottom:1px solid var(--eez-edge);background:var(--eez-chrome);position:relative;">
       <div style="display:flex;align-items:center;gap:8px;flex:none;" title="This source is cited at a pinned commit, not a moving branch">
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/Makefile#L47-L65" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">Makefile:47-65 · scripts/deploy.sh ↗</a></div>
+      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/CrossChainProxy.sol:89 &#183; _fallback &#8599;</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:89 &#183; _fallback &#8599;</a></div>
+      <button id="btnTest" type="button" title="Show the runnable Foundry test behind this page" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TEST</button>
+      <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:114px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
@@ -246,18 +219,18 @@
        Inserted as the 4th child of #stage; see the CSS note. -->
   <section id="intro" aria-labelledby="introTitle">
     <div class="intro-inner">
-      <div class="intro-eyebrow">ROLLUP OPERATORS · 02</div>
-      <h1 class="intro-title" id="introTitle">How to deploy the protocol</h1>
-      <p class="intro-lede">Copy .env.example to .env and fill in four variables; then one command — make deploy-protocol — runs ./scripts/deploy.sh through its five deploy steps.</p>
-      <p class="intro-lede">Every address it produces lands in a gitignored deployments.env file, not your notes.</p>
+      <div class="intro-eyebrow">DAPP DEVELOPERS &#183; 09</div>
+      <h1 class="intro-title" id="introTitle">Read a live cross-chain value</h1>
+      <p class="intro-lede">Every other way of seeing EEZ work starts with standing up a devnet. That is a fair ask of someone who has decided to build, and an excessive one for someone deciding whether to.</p>
+      <p class="intro-lede">So: contracts already deployed, one command, a value that came from another chain. If you have <span style="font-family:var(--mono);">cast</span> installed you are about ten minutes from it, and you will not install anything else.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
-        <li><b>01 · ONE COMMAND</b>With .env in place, make deploy-protocol runs the 5-step sequence: DeployEEZ, DeployECDSAProofSystem, DeployRollup, RegisterRollup, DeployBridgeL1.</li>
-        <li><b>02 · OUTPUTS LAND IN DEPLOYMENTS.ENV</b>Every address deploy.sh produces lands in a gitignored deployments.env file.</li>
-        <li><b>03 · RUN-NODE JUST WORKS</b>make run-node loads deployments.env alongside .env at startup, so there’s no paste-the-address-into-.env step.</li>
+        <li><b>01 &#183; ONE COMMAND</b>The call, the addresses, and the number that comes back.</li>
+        <li><b>02 &#183; WHY IT ANSWERS</b>The answer was proven and queued before you called. Nothing fetched it, and nothing is running.</li>
+        <li><b>03 &#183; WHAT THIS IS EXACTLY</b>The rollup behind it is paused on purpose &#8212; why that is what makes it permanent, and how to read each failure.</li>
       </ul>
       <div class="intro-actions">
-        <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
+        <button id="btnStart" class="btn-play" type="button">Start the walkthrough &#8594;</button>
       </div>
     </div>
   </section>
@@ -286,43 +259,195 @@
   var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["ONE COMMAND", "OUTPUTS LAND IN DEPLOYMENTS.ENV", "RUN-NODE JUST WORKS"];
+  var kickers = ["TEN MINUTES, ONE COMMAND", "ALREADY PROVEN, ALREADY THERE", "PAUSED ON PURPOSE"];
   var captions = [
-    "With `.env` in place, `make deploy-protocol` runs `./scripts/deploy.sh` through its five steps: DeployEEZ, DeployECDSAProofSystem, DeployRollup, RegisterRollup, DeployBridgeL1.",
-    "Every address deploy.sh produces lands in a gitignored `deployments.env` file, not your notes — 19 keys in all.",
-    "`make run-node` loads `deployments.env` alongside `.env` at startup, so there's no paste-the-address-into-.env step."
+    "One cast call against a deployed reader returns a value that was produced on another chain. No Kurtosis, no Docker, no node — the contracts are already on Chiado and the answer is already on-chain.",
+    "Nothing fetched that value while you waited. A StaticExecutionEntry holding it was posted in one batch and sits in the rollup's queue; your call matches it by hash. The read has to go through the helper because cast call is an eth_call, which is not a static frame — the proxy would route it to the block-gated mutating path instead.",
+    "The rollup behind this read is paused on purpose. Any later batch verifying it deletes the whole static queue (EEZ.sol:745), roots untouched or not — so a playground that answers forever is one where nothing is posting. A running composer would destroy the entry every block, not sustain it."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
-  // so the panel never dumps the full target ungrouped.
-  var makefileLines = [
-    "# Reads .env (gitignored). Copy .env.example first.",
-    "$ cp .env.example .env",
-    "#   EEZ_L1_RPC_URL   EEZ_L1_POSTER_KEY",
-    "#   EEZ_PROOF_SIGNER_KEY   EEZ_L2_SYSTEM_KEY",
-    "",
-    "# Runs the 5-step deploy sequence:",
-    "#   1. DeployEEZ    2. DeployECDSAProofSystem",
-    "#   3. DeployRollup  4. RegisterRollup",
-    "#   5. DeployBridgeL1",
-    "",
-    "# Outputs land in deployments.env (gitignored).",
-    "# eez-node loads it alongside .env at startup, so",
-    "# a successful deploy means `make run-node` Just",
-    "# Works without any paste-the-address-into-.env step.",
-    "deploy-protocol:",
-    "\t@./scripts/deploy.sh"
-  ];
+  // so the panel never dumps the full function ungrouped.
   var codeByStep = [
-    makefileLines.slice(0, 9),
-    makefileLines.slice(0, 16),
-    makefileLines.slice(0, 16)
+    [
+      "(bool ok, bytes memory ret) = proxy.staticcall(data);",
+      "if (!ok) {",
+      "    assembly {",
+      "        revert(add(ret, 0x20), mload(ret))",
+      "    }",
+      "}",
+      "return ret;"
+    ],
+    [
+      "(bool ok, bytes memory ret) = proxy.staticcall(data);",
+      "if (!ok) {",
+      "    assembly {",
+      "        revert(add(ret, 0x20), mload(ret))",
+      "    }",
+      "}",
+      "return ret;"
+    ],
+    [
+      "// `view` => the compiler emits STATICCALL, which is what the",
+      "// proxy's tstore probe detects. A plain .call() here would",
+      "// route to the mutating path and defeat the whole contract."
+    ]
+  ];
+  // The panel's citation follows the step: step 1 is the proxy's own fallback,
+  // step 2 is the caveat that names the opcodes, step 3 is the manager entry
+  // point a routed read actually reaches. A single fixed citation would send a
+  // step-2 reader to code that says nothing about which opcodes lie. Written as
+  // literal anchors so verify-citations.py sees and pins them.
+  var citeByStep = [
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L95" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:95 &#183; staticCheck &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L1266" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:1266 &#183; staticCrossChainCall &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L745" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:745 &#183; _markVerifiedBlockAndDeletePreviousEntries &#8599;</a>'
   ];
   var hlByStep = [
-    [1,5],
-    [10,14,15],
-    [11,12,13]
+    [0],
+    [0,1,5,6],
+    [0,1,2]
   ];
+  // Step 2's four reads are marked `del` because they are the mistake, and
+  // step 3 puts the routed read beside the one it replaces. COPY drops every
+  // `del` line (see btnCopy below), so the clipboard never carries the bug the
+  // panel just crossed out.
+  var diffByStep = [
+    null,
+    null,
+    null
+  ];
+
+  // Verbatim copy of snippets/q8-remote-reads.sol (the whole file).
+  // scripts/check-panel-drift.py asserts this array still equals that file
+  // line for line, so an embedded copy cannot rot unnoticed. Regenerate it
+  // with scripts/sync-embedded-snippets.py after editing the .sol.
+  var fullSnippet = [
+      "// SPDX-License-Identifier: MIT",
+      "pragma solidity ^0.8.28;",
+      "",
+      "// The read helper the Chiado playground needs (card I.1).",
+      "// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:95 and :107",
+      "// and eez-core-protocol/src/EEZ.sol:1266",
+      "// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda",
+      "//",
+      "// WHY THIS CONTRACT EXISTS. The obvious playground command does not work:",
+      "//",
+      "//   cast call <proxy> \"balanceOf(address)(uint256)\" <user> --rpc-url <chiado>",
+      "//",
+      "// `cast call` is an eth_call, and the EVM runs an eth_call as a NON-static",
+      "// frame. CrossChainProxy detects static context by self-calling `staticCheck()`",
+      "// and seeing whether a `tstore` reverts (CrossChainProxy.sol:95-107). Under",
+      "// eth_call that tstore SUCCEEDS, so `_fallback` concludes it is in a normal",
+      "// context and routes to `executeCrossChainCall` \u2014 the MUTATING path, which is",
+      "// block-gated at EEZ.sol:794 and reverts `ExecutionNotInCurrentBlock(rid)`",
+      "// unless a batch verified this rollup in the very block you are calling.",
+      "//",
+      "// Reaching `staticCrossChainCall` needs a real STATICCALL. Solidity compiles a",
+      "// high-level call to an external `view` function into exactly that, so routing",
+      "// the read through a `view` function on any contract is enough. That is the",
+      "// whole trick, and it is the difference between a command that reverts and a",
+      "// command that returns.",
+      "//",
+      "// Verified against the real contracts, not reasoned about:",
+      "// test_StaticLookup_ReadHelperWorksWhereADirectCallDoesNot asserts both halves",
+      "// in one test \u2014 the helper read returns its value 50 blocks after the entry was",
+      "// posted with nothing running, and the direct call against that same state",
+      "// reverts ExecutionNotInCurrentBlock.",
+      "//",
+      "// WHEN THE READ RESOLVES, AND THE TWO WAYS IT STOPS. Top-level",
+      "// `staticCrossChainCall` (EEZ.sol:1266) has no block gate: it scans",
+      "// `verificationByRollup[destRid].staticEntryQueue` and matches on",
+      "// `proxyEntryHash`, `destinationRollupId` and `_stateRootsMatch`. Upstream's own",
+      "// comment at EEZ.sol:1308 \u2014 \"Note that static calls do not obsolete after a",
+      "// block passes.\" A queued entry therefore serves reads indefinitely, subject to",
+      "// two conditions that both have tests:",
+      "//",
+      "//   1. Every pinned state root must still be live.",
+      "//      (test_StaticLookup_StaleStateRootStopsResolving)",
+      "//   2. No later batch may verify that rollup. `_markVerifiedBlockAndDelete-",
+      "//      PreviousEntries` (EEZ.sol:745) deletes entryQueue AND staticEntryQueue on",
+      "//      EVERY verify, roots untouched or not.",
+      "//      (test_StaticLookup_LaterBatchWipesTheQueue)",
+      "//",
+      "// Condition 2 is the one that decides how a playground is operated, and it runs",
+      "// opposite to intuition: a composer posting every block DESTROYS the seeded",
+      "// entry each time unless it deliberately re-posts it. A paused rollup preserves",
+      "// it. The playground wants nothing running, not something running.",
+      "//",
+      "// A read with no matching entry reverts `ExecutionNotFound()` \u2014 and that is",
+      "// indistinguishable from the destination itself reverting (docs/CAVEATS.md,",
+      "// \"Indistinguishable revert reasons when calling a proxy\"). Do not write a",
+      "// try/catch that claims to tell them apart. See q8.",
+      "",
+      "/// @title CrossChainReader",
+      "/// @notice Routes a read through a CrossChainProxy as a real STATICCALL, so it",
+      "///         resolves against a pre-computed static entry instead of hitting the",
+      "///         block-gated mutating path.",
+      "/// @dev Deliberately generic: one deployment serves every read on the",
+      "///      playground. It holds no state and has no owner.",
+      "contract CrossChainReader {",
+      "    /// @notice Raw read. `proxy` is the CrossChainProxy standing for the remote",
+      "    ///         contract; `data` is the calldata you would send it directly.",
+      "    /// @return The pre-computed return data of the matching static entry.",
+      "    function read(address proxy, bytes calldata data)",
+      "        external",
+      "        view",
+      "        returns (bytes memory)",
+      "    {",
+      "// `view` => the compiler emits STATICCALL, which is what the",
+      "// proxy's tstore probe detects. A plain .call() here would",
+      "// route to the mutating path and defeat the whole contract.",
+      "(bool ok, bytes memory ret) = proxy.staticcall(data);",
+      "if (!ok) {",
+      "    // Forward the raw revert. It may be ExecutionNotFound()",
+      "    // or the destination's own revert - you cannot tell.",
+      "    assembly {",
+      "        revert(add(ret, 0x20), mload(ret))",
+      "    }",
+      "}",
+      "return ret;",
+      "    }",
+      "",
+      "    /// @notice Convenience for the common case of a single uint256 return.",
+      "    function readUint(address proxy, bytes calldata data)",
+      "        external",
+      "        view",
+      "        returns (uint256)",
+      "    {",
+      "        return abi.decode(this.read(proxy, data), (uint256));",
+      "    }",
+      "}"
+  ];
+  // Verbatim slice of snippets/test/Q8RemoteReads.t.sol (the routed read and
+  // the two ways it fails). check-panel-drift.py asserts these lines still
+  // match the file.
+  var testSnippet = [
+      "    function test_routedReadReturnsThePreCommittedEntry() public view {",
+      "        uint256 seen = reader.readRemoteBalance(USER);",
+      "        require(seen == COMMITTED_BALANCE, \"routed read returns the committed outcome\");",
+      "        require(counterpart.calls() == 0, \"resolution never calls the counterpart\");",
+      "    }",
+      "",
+      "    function test_unresolvedReadRevertsExecutionNotFound() public {",
+      "        vm.expectRevert(ExecutionNotFound.selector);",
+      "        reader.readRemoteBalance(STRANGER);",
+      "    }",
+      "",
+      "        // A: nothing committed for STRANGER, so the table itself reverts.",
+      "        (bool okMiss, bytes memory fromMiss) = address(proxy).staticcall(callData);",
+      "",
+      "        // B: an entry EXISTS and records that the destination call reverted,",
+      "        // carrying the destination's own revert bytes.",
+      "        table.commit(address(this), callData, false, abi.encodeWithSelector(ExecutionNotFound.selector));",
+      "        (bool okReverted, bytes memory fromReverted) = address(proxy).staticcall(callData);",
+      "",
+      "        require(!okMiss && !okReverted, \"both fail\");",
+      "        require(keccak256(fromMiss) == keccak256(fromReverted), \"the caller cannot tell them apart\");"
+  ];
+  var showTest = false;
+  var showFull = false;
+  function currentLines(){ return showFull ? fullSnippet : (showTest ? testSnippet : (codeByStep[step] || [])); }
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
 
@@ -424,14 +549,16 @@
     document.getElementById("kicker").textContent = kickers[step];
     document.getElementById("caption").textContent = captions[step];
     document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
+    var cite = document.getElementById("srcCite");
+    if (cite && !showFull && !showTest) { cite.innerHTML = citeByStep[step] || cite.getAttribute("data-demo-cite"); }
 
     els.s1.style.display = step === 0 ? "flex" : "none";
     els.s2.style.display = step === 1 ? "flex" : "none";
     els.s3.style.display = step === 2 ? "flex" : "none";
 
-    var code = codeByStep[step];
-    var hl = hlByStep[step] || [];
-    var dm = (typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {};
+    var code = currentLines();
+    var hl = (showFull || showTest) ? [] : (hlByStep[step] || []);
+    var dm = (showFull || showTest) ? {} : ((typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {});
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
@@ -570,21 +697,20 @@
   }, 0);
 
   var btnHelp = document.getElementById("btnHelp");
-  function eezTour(){ return (typeof EEZTour !== "undefined") ? EEZTour : null; }
-  if (btnHelp) {
-    btnHelp.addEventListener("click", function(){
-      // The tour spotlights stage elements the lead-in is covering, so the
-      // lead-in goes first.
-      if (introShowing()) { dismissIntro(); }
-      if (playing) { togglePlay(); }
-      if (eezTour()) { eezTour().start(); }
-    });
+  function openTour(){
+    // The tour spotlights stage elements the lead-in is covering, so the
+    // lead-in goes first.
+    if (introShowing()) { dismissIntro(); }
+    if (playing) { togglePlay(); }
+    if (root_EEZTour()) { root_EEZTour().start(); }
   }
+  function root_EEZTour(){ return (typeof EEZTour !== "undefined") ? EEZTour : null; }
+  if (btnHelp) { btnHelp.addEventListener("click", openTour); }
   // The lead-in already orients a cold arrival, so the tour does not open
   // behind it. Stacking the two meant the reader's first click after "Start
   // the walkthrough" landed on the tour scrim instead of Next. The ? button
   // still opens the tour on demand.
-  if (!introEl && eezTour()) { eezTour().maybeStart(); }
+  if (!introEl && root_EEZTour()) { root_EEZTour().maybeStart(); }
 
   function copyFallback(text, done){
     try {
@@ -600,10 +726,64 @@
       done(ok);
     } catch (e) { done(false); }
   }
+  // Full-context toggle. The step snippets are hand-wrapped teaching slices with
+  // no pragma, no imports and no contract wrapper; FULL swaps in the whole
+  // compilable file so COPY yields something that actually builds.
+  var btnFull = document.getElementById("btnFull");
+  var citeEl = document.getElementById("srcCite");
+  function applyPanelMode(){
+    if (btnTest) {
+      btnTest.textContent = showTest ? "DEMO" : "TEST";
+      btnTest.style.color = showTest ? "var(--eez-green)" : "var(--muted)";
+      btnTest.style.borderColor = showTest ? "#2c6b3c" : "#2e2e2e";
+      btnTest.title = showTest ? "Back to the walkthrough" : "Show the runnable Foundry test behind this page";
+    }
+    if (btnFull) {
+      btnFull.textContent = showFull ? "STEP" : "FULL";
+      btnFull.style.color = showFull ? "var(--eez-green)" : "var(--muted)";
+      btnFull.style.borderColor = showFull ? "#2c6b3c" : "#2e2e2e";
+      btnFull.title = showFull ? "Back to the step snippet" : "Show the full compilable file";
+    }
+    if (citeEl) {
+      citeEl.innerHTML = showFull
+        ? 'snippets/q8-remote-reads.sol \u00b7 solc 0.8.28'
+        : (showTest ? 'snippets/test/Q8RemoteReads.t.sol \u00b7 forge test'
+                    : (citeByStep[step] || citeEl.getAttribute("data-demo-cite")));
+    }
+    // The whole file is longer and wider than the column, so full-context mode
+    // trades type size for reach and turns the vertical axis into a scroller
+    // instead of clipping the tail off unreachably.
+    var cp = document.getElementById("codePanel");
+    cp.style.fontSize = showFull ? "13px" : (showTest ? "15px" : "19px");
+    cp.style.lineHeight = showFull ? "20px" : (showTest ? "26px" : "34px");
+    cp.style.overflowY = "auto";
+    cp.scrollTop = 0;
+    cp.scrollLeft = 0;
+    render();
+  }
+  var btnTest = document.getElementById("btnTest");
+  if (btnTest) {
+    btnTest.addEventListener("click", function(){
+      showTest = !showTest;
+      if (showTest) showFull = false;
+      applyPanelMode();
+    });
+  }
+  if (btnFull) {
+    btnFull.addEventListener("click", function(){
+      showFull = !showFull;
+      if (showFull) showTest = false;
+      applyPanelMode();
+    });
+  }
   var btnCopy = document.getElementById("btnCopy");
   if (btnCopy) {
     btnCopy.addEventListener("click", function(){
-      var lines = codeByStep[step] || [];
+      // Drop the `del` lines: on screen they carry a "-" and a red gutter, but
+      // the clipboard has no gutters, so copying them ships the mistake welded
+      // to the fix.
+      var marks = (showFull || showTest) ? {} : (diffByStep[step] || {});
+      var lines = currentLines().filter(function(_, i){ return marks[i] !== "del"; });
       var text = lines.join("\n").replace(/[ \t]+$/gm, "").replace(/\n+$/, "") + "\n";
       var done = function(ok){
         btnCopy.textContent = ok ? "COPIED" : "COPY FAILED";
@@ -638,7 +818,7 @@
     else if(e.key==="r"||e.key==="R"){ clearTimeout(timer); step = 0; playing = true; render(); schedule(); }
   });
   window.addEventListener("resize", scaleStage);
-  scaleStage(); render(); staticBar();
+  scaleStage(); applyPanelMode(); staticBar();
   document.documentElement.classList.remove("pre-fit");
 })();
 </script>

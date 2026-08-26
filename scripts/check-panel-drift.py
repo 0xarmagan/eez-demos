@@ -50,6 +50,8 @@ SNIPPET_MAP = {
     "q6-why-you-cant-call-the-manager-directly.html": "q6-manager-direct.sol",
     "q7-your-cross-chain-address.html": "q7-create-proxy.sol",
     "q8-read-a-remote-contracts-state.html": "q8-remote-reads.sol",
+    "q9-when-the-proof-fails.html": "q9-when-the-proof-fails.sol",
+    "pr7-what-the-refactor-renamed.html": "pr7-renames.sol",
 }
 
 # Pages whose panels are deliberately illustrative rather than compilable, and

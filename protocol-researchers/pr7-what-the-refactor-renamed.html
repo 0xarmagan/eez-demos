@@ -6,8 +6,8 @@
 <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
-<title>The rolling hash — EEZ</title>
-<link rel="canonical" href="https://eez-demos.vercel.app/protocol-researchers/pr6-the-rolling-hash.html">
+<title>What the refactor renamed — EEZ</title>
+<link rel="canonical" href="https://eez-demos.vercel.app/protocol-researchers/pr7-what-the-refactor-renamed.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -130,12 +130,12 @@
     <div style="display:flex;align-items:center;gap:18px;">
       <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-      <div style="font-size:22px;font-weight:600;color:#fff;">The Rolling Hash</div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">What the Refactor Renamed</div>
       <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#8a8a8a;">PRE-MAINNET</div>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
-      <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 07</div>
+      <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 06</div>
       <a class="back" href="../index.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">ALL EXAMPLES →</a>
     </div>
   </div>
@@ -144,119 +144,80 @@
   <div id="stageCol" style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
 
     <!-- STEP 1 -->
-    <div id="s1" style="display:flex;flex-direction:column;gap:20px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">THE PROBLEM — ONE VALUE FOR A WHOLE EXECUTION TREE</div>
-      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">An <span style="font-family:var(--mono);">ExecutionEntry</span> is written before your transaction runs: it states what the calls are and what each returns. Execution then has to be checked against it. Not call by call, with a list of comparisons — with one equality.</div>
-      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">require(_rollingHash == entry.rollingHash);   // RollingHashMismatch</div>
-      <div style="max-width:960px;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-left:3px solid #3BE57E;border-radius:8px;padding:13px 17px;">
-        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#A8F3CE;">WHAT THAT ONE COMPARISON CATCHES</div>
-        <div style="font-size:15px;line-height:1.55;color:#bfe6cf;margin-top:7px;">Wrong return data for any call &middot; wrong success/failure flag &middot; missing or extra calls &middot; a skipped or extra reentrant frame &middot; reordered operations &middot; a reentrant call the table did not expect.</div>
-        <div style="font-size:15px;line-height:1.55;color:#bfe6cf;margin-top:7px;">Six distinct classes of divergence, and none of them needs its own check. That is the property worth understanding — the rest of this guide is how it is bought.</div>
-      </div>
+    <div id="s1" style="display:flex;flex-direction:column;gap:16px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">THE TABLE — TEN NAMES THE feature/simplify REFACTOR MOVED</div>
+      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">PR #34 renamed most of the execution-table vocabulary. Nothing in the repo tells you what became what, and the repo's own <span style="font-family:var(--mono);">CLAUDE.md</span> still describes the design that existed before it. This page is that missing table.</div>
+      <div style="display:flex;flex-direction:column;gap:7px;"><div style="display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;gap:10px;"><div style="font-family:var(--mono);font-size:15px;color:#c9b183;background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.30);border-radius:6px;padding:7px 12px;">StateDelta</div><div style="text-align:center;color:var(--muted);font-size:17px;">&rarr;</div><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-radius:6px;padding:7px 12px;">StateUpdate</div></div><div style="display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;gap:10px;"><div style="font-family:var(--mono);font-size:15px;color:#c9b183;background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.30);border-radius:6px;padding:7px 12px;">stateDeltas</div><div style="text-align:center;color:var(--muted);font-size:17px;">&rarr;</div><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-radius:6px;padding:7px 12px;">stateUpdates</div></div><div style="display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;gap:10px;"><div style="font-family:var(--mono);font-size:15px;color:#c9b183;background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.30);border-radius:6px;padding:7px 12px;">LookupCall</div><div style="text-align:center;color:var(--muted);font-size:17px;">&rarr;</div><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-radius:6px;padding:7px 12px;">StaticExecutionEntry</div></div><div style="display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;gap:10px;"><div style="font-family:var(--mono);font-size:15px;color:#c9b183;background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.30);border-radius:6px;padding:7px 12px;">staticCallLookup</div><div style="text-align:center;color:var(--muted);font-size:17px;">&rarr;</div><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-radius:6px;padding:7px 12px;">staticCrossChainCall</div></div><div style="display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;gap:10px;"><div style="font-family:var(--mono);font-size:15px;color:#c9b183;background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.30);border-radius:6px;padding:7px 12px;">revertSpan</div><div style="text-align:center;color:var(--muted);font-size:17px;">&rarr;</div><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-radius:6px;padding:7px 12px;">revertNextNCalls</div></div></div>
     </div>
 
     <!-- STEP 2 -->
-    <div id="s2" style="display:none;flex-direction:column;gap:20px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">SEED — STARTING STATE AND IDENTITY, BEFORE ANY RESULT</div>
-      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">The accumulator does not start at zero. It starts from the state context the entry was written against, closed with the entry's own identity — so the hash commits to <em>what the world looked like</em> as well as what happened.</div>
-      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">// L1 — ordered (rollupId, currentState) deltas, then identity
-seed         = keccak256(&hellip;keccak256(0 &#8214; rollupId&#8321; &#8214; currentState&#8321;)&hellip;)
-_rollingHash = keccak256(seed &#8214; proxyEntryHash)
-
-// L2 — the same formula with an empty delta prefix
-_rollingHash = keccak256(bytes32(0) &#8214; proxyEntryHash)</div>
-      <div style="max-width:960px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
-        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">IT MUST BE CLEAR FIRST</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;"><span style="font-family:var(--mono);">_rollingHashEntryBegin</span> reverts <span style="font-family:var(--mono);">RollingHashNotCleared</span> if <span style="font-family:var(--mono);">_rollingHash</span> is non-zero on entry. A prior entry that left residue cannot bleed into this one, and the check is cheap because the accumulator is transient — it is zero again by the next transaction whether or not anything cleaned up.</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">Deltas are strictly increasing by <span style="font-family:var(--mono);">rollupId</span>, so the fold over them is deterministic and needs no sort at verification time.</div>
+    <div id="s2" style="display:none;flex-direction:column;gap:16px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">THE TABLE, CONTINUED — AND TWO THAT ARE NOT RENAMES</div>
+      <div style="display:flex;flex-direction:column;gap:7px;"><div style="display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;gap:10px;"><div style="font-family:var(--mono);font-size:15px;color:#c9b183;background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.30);border-radius:6px;padding:7px 12px;">executeL2TX</div><div style="text-align:center;color:var(--muted);font-size:17px;">&rarr;</div><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-radius:6px;padding:7px 12px;">executeL2Txs</div></div><div style="display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;gap:10px;"><div style="font-family:var(--mono);font-size:15px;color:#c9b183;background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.30);border-radius:6px;padding:7px 12px;">IZKVerifier</div><div style="text-align:center;color:var(--muted);font-size:17px;">&rarr;</div><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-radius:6px;padding:7px 12px;">IProofSystem</div></div><div style="display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;gap:10px;"><div style="font-family:var(--mono);font-size:15px;color:#c9b183;background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.30);border-radius:6px;padding:7px 12px;">ExpectedLookup</div><div style="text-align:center;color:var(--muted);font-size:17px;">&rarr;</div><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-radius:6px;padding:7px 12px;">merged into ExpectedL1ToL2Call</div></div><div style="display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;gap:10px;"><div style="font-family:var(--mono);font-size:15px;color:#c9b183;background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.30);border-radius:6px;padding:7px 12px;">ProofSystemRegistry</div><div style="text-align:center;color:var(--muted);font-size:17px;">&rarr;</div><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-radius:6px;padding:7px 12px;">deleted &#183; policy per rollup</div></div><div style="display:grid;grid-template-columns:1fr 26px 1fr;align-items:center;gap:10px;"><div style="font-family:var(--mono);font-size:15px;color:#c9b183;background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.30);border-radius:6px;padding:7px 12px;">l2ToL1CallNumber&#8202;/&#8202;executingLookupIndex</div><div style="text-align:center;color:var(--muted);font-size:17px;">&rarr;</div><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-radius:6px;padding:7px 12px;">expectedRollingHash</div></div></div>
+      <div style="max-width:960px;background:rgba(232,177,94,0.07);border:1px solid rgba(232,177,94,0.30);border-left:3px solid #8B7B55;border-radius:8px;padding:13px 17px;">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#c9b183;">TWO OF THESE ARE DELETIONS, NOT RENAMES</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;"><span style="font-family:var(--mono);">ExpectedLookup</span> did not get a new name — it was merged into the one unified <span style="font-family:var(--mono);">ExpectedL1ToL2Call</span> table, which now holds every kind of reentrant row. <span style="font-family:var(--mono);">ProofSystemRegistry</span> was removed outright: each rollup's own manager declares its accepted proof systems, vkeys and threshold, so there is no central policy contract to look for.</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">Searching for a replacement symbol for either one is a dead end. That is worth knowing before you spend an afternoon on it.</div>
       </div>
     </div>
 
     <!-- STEP 3 -->
-    <div id="s3" style="display:none;flex-direction:column;gap:20px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">FIVE TAGGED EVENTS</div>
-      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">Each fold carries a domain byte. The tag is not decoration: it is what stops one set of inputs from meaning two different things.</div>
-      <div style="display:flex;flex-direction:column;gap:9px;background:#10151c;border:1px solid #232b36;border-radius:9px;padding:16px 18px;">
-        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:150px;flex:none;">CALL_BEGIN</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">1</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 1 &#8214; crossChainCallHash)</div></div>
-        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:150px;flex:none;">CALL_END</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">2</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 2 &#8214; success &#8214; retData)</div></div>
-        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:150px;flex:none;">NESTED_BEGIN</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">3</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 3 &#8214; crossChainCallHash)</div></div>
-        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:150px;flex:none;">NESTED_END</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">4</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 4)</div></div>
-        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:150px;flex:none;">CALL_NOT_FOUND</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">5</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 5 &#8214; crossChainCallHash)</div></div>
+    <div id="s3" style="display:none;flex-direction:column;gap:18px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">REVERSAL 1 — THE FLAT ARRAY AND ITS GLOBAL CURSOR ARE GONE</div>
+      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">This is where a rename table stops being enough. Pre-refactor content does not just use old words; on two points it asserts the opposite of the current design.</div>
+      <div style="display:flex;align-items:stretch;gap:16px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:300px;max-width:960px;background:rgba(232,177,94,0.07);border:1px solid rgba(232,177,94,0.30);border-left:3px solid #8B7B55;border-radius:8px;padding:13px 17px;max-width:none;">
+          <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#c9b183;">WAS</div>
+          <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">One flat <span style="font-family:var(--mono);">flatCalls</span> array walked by a single global cursor, with a partition invariant to maintain: <span style="font-family:var(--mono);">callCount + &Sigma; nested == flatCalls.length</span>.</div>
+        </div>
+        <div style="flex:1;min-width:300px;max-width:960px;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-left:3px solid #3BE57E;border-radius:8px;padding:13px 17px;max-width:none;">
+          <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#A8F3CE;">IS</div>
+          <div style="font-size:15px;line-height:1.55;color:#bfe6cf;margin-top:7px;">Each reentrant frame carries its own <span style="font-family:var(--mono);">l2ToL1Calls[]</span> sub-array and is run to completion. There is no partition invariant, because there is no partition.</div>
+        </div>
       </div>
-      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;"><span style="font-family:var(--mono);">CALL_BEGIN</span> folds the call's full identity hash, not just its position — so the chain commits to <em>which</em> call ran, and a substituted call with an identical return value still diverges.</div>
-      <div style="max-width:960px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
-        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">THESE ARE PROTOCOL CONSTANTS, NOT PER-CHAIN CHOICES</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">The same call must hash identically on either chain for the proof to mean anything, so the tags live on <span style="font-family:var(--mono);">EEZBase</span> and both managers inherit them. "Nested" here is the neutral frame concept — it is not a direction. Directional naming lives in the per-side children.</div>
-      </div>
+      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">If you are carrying that invariant in your head, you are maintaining a constraint the protocol no longer has — and reasoning about a cursor that no longer exists.</div>
     </div>
 
     <!-- STEP 4 -->
-    <div id="s4" style="display:none;flex-direction:column;gap:20px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">NO CALL INDEX IS FOLDED IN — AND THAT IS THE INTERESTING PART</div>
-      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">The obvious design folds a counter: call 0, call 1, call 2. This one does not, and the omission is deliberate.</div>
-      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">_rollingHash = keccak256(_rollingHash, TAG, &hellip;)
-//             ^^^^^^^^^^^^ every fold depends on the previous value</div>
-      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">Because each fold consumes the prior hash, <b>order, count and nesting are already bound by the chain itself</b>. An explicit index would be a deterministic 1, 2, 3, &hellip; — it adds no information a verifier did not already have.</div>
+    <div id="s4" style="display:none;flex-direction:column;gap:18px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">REVERSAL 2 — AN ENTRY DOES CARRY A FAILURE FLAG</div>
+      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">Older documentation argues that no failure flag is needed, on the reasoning that a reverting top-level call is a lookup rather than an execution. That argument was reversed, and the field is right there in the struct.</div>
+      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">struct ExecutionEntry {
+    StateUpdate[] stateUpdates;
+    ...
+    bool success;      // &lt;- this
+    bytes returnData;
+}</div>
       <div style="max-width:960px;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-left:3px solid #3BE57E;border-radius:8px;padding:13px 17px;">
-        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#A8F3CE;">THE PAYOFF, AND THE IDEA WORTH STEALING</div>
-        <div style="font-size:15px;line-height:1.55;color:#bfe6cf;margin-top:7px;">Omitting the index is what lets a <span style="font-family:var(--mono);">revertNextNCalls</span> span be processed as a 0-based sub-slice and still produce a hash identical to a continuous run. Had an absolute index been folded in, the same calls executed inside a span would hash differently from the same calls executed normally, and the span could not be modelled at all.</div>
-        <div style="font-size:15px;line-height:1.55;color:#bfe6cf;margin-top:7px;">Generalised: <b>a hash chain plus domain tags already encodes sequence, so folding a position counter is redundant — and the redundancy is not free, because it forbids re-running a subsequence out of its original offset.</b> That trade shows up in any commit-to-a-transcript design, not just this one.</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#A8F3CE;">WHAT success == false ACTUALLY DOES</div>
+        <div style="font-size:15px;line-height:1.55;color:#bfe6cf;margin-top:7px;">It does not mean "skipped". The entry executes, is verified against its rolling hash, and is <em>then</em> reverted with its <span style="font-family:var(--mono);">returnData</span> — so every state effect rolls back and the caller may <span style="font-family:var(--mono);">try/catch</span> it. A failure is proven, not merely asserted.</div>
       </div>
     </div>
 
     <!-- STEP 5 -->
-    <div id="s5" style="display:none;flex-direction:column;gap:20px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">A NO-MATCH CANNOT BE FORGED AS A NORMAL RETURN</div>
-      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">A reentrant call that finds no matching row in the table is a real outcome, and it has to be committed to. The tempting shortcut is to treat it as "returned nothing".</div>
-      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#f0e0d0;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">// what a normal empty return folds
-keccak(prev &#8214; CALL_END(2) &#8214; true &#8214; "")
-
-// what a no-match folds — different domain byte
-keccak(prev &#8214; CALL_NOT_FOUND(5) &#8214; crossChainCallHash)</div>
-      <div style="max-width:960px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
-        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">WHY THE SEPARATE TAG IS LOAD-BEARING</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">With one tag for both, a prover could present a call that silently found nothing as a call that succeeded and returned empty bytes. The distinct domain byte makes those two histories hash differently, so the substitution is caught at the entry's rolling-hash check.</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">It survives the awkward paths too: the divergence rides the accumulator across an intermediate try/catch and across a revert-span boundary in the <span style="font-family:var(--mono);">ContextResult</span> payload, so no side flag is needed to carry "a no-match happened" back out.</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">And it is not a trap for honest provers: one that deliberately pre-hashes <span style="font-family:var(--mono);">CALL_NOT_FOUND</span> is committing to a not-found at that exact position. That is a faithful outcome, not an attack.</div>
+    <div id="s5" style="display:none;flex-direction:column;gap:18px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">THE TRAP — ONE ERROR KEPT THE OLD WORD</div>
+      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">The field renamed. An error that names it did not. Grep the old name and you find a live, reachable error, which reads as evidence the rename never happened.</div>
+      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">error RevertSpanOutOfBounds(
+    uint256 start, uint256 span, uint256 length
+);   // EEZ.sol:256, thrown at :1180</div>
+      <div style="max-width:960px;background:rgba(232,177,94,0.07);border:1px solid rgba(232,177,94,0.30);border-left:3px solid #8B7B55;border-radius:8px;padding:13px 17px;">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#c9b183;">READ IT THE RIGHT WAY ROUND</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">The struct field is <span style="font-family:var(--mono);">revertNextNCalls</span> (<span style="font-family:var(--mono);">L2ToL1Call</span>). The error is <span style="font-family:var(--mono);">RevertSpanOutOfBounds</span>. Both are current at this pin — one carries the new vocabulary and one carries the old, and there is no third name hiding behind either.</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">Worth being precise about what it is <em>for</em>, since the name invites the wrong use: <span style="font-family:var(--mono);">revertNextNCalls</span> forces rollback of calls that <em>succeeded</em>. A call that naturally reverts wants <span style="font-family:var(--mono);">revertNextNCalls = 0</span> — the proxy's <span style="font-family:var(--mono);">.call</span> already captures the failure. Using it for a natural revert is a real bug that still passes a happy-path test.</div>
       </div>
     </div>
 
     <!-- STEP 6 -->
-    <div id="s6" style="display:none;flex-direction:column;gap:20px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">THE POSITION KEY — A TRIPLE COLLAPSED INTO ONE COMPARISON</div>
-      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">Rows of the unified reentrant table are content-addressed. The key has to pin both <em>which</em> call this is and <em>where in the execution</em> it fires.</div>
-      <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap;">
-        <div style="font-family:var(--mono);font-size:15px;color:#c9b183;background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.30);border-radius:7px;padding:10px 14px;">(hash, rollingHash, isStatic)</div>
-        <div style="font-size:22px;color:var(--muted);">&rarr;</div>
-        <div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-radius:7px;padding:10px 14px;">keccak256(crossChainCallHash &#8214; rollingHash)</div>
-      </div>
-      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">function _computeExpectedL1toL2Hash(bytes32 crossChainCallHash, bytes32 rollingHash)
-    internal pure returns (bytes32)
-{
-    return keccak256(abi.encodePacked(crossChainCallHash, rollingHash));
-}</div>
+    <div id="s6" style="display:none;flex-direction:column;gap:18px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">THE CONSEQUENCE WORTH MORE THAN THE TABLE</div>
+      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">The same refactor changed a rule, not just a spelling. A builder who ports field-by-field from the old names gets code that compiles and then fails at post time.</div>
+      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">// at least one StateUpdate per entry, on-chain
+error EntryHasNoStateUpdates();   // EEZ.sol:283</div>
       <div style="max-width:960px;background:rgba(59,229,126,0.07);border:1px solid rgba(59,229,126,0.28);border-left:3px solid #3BE57E;border-radius:8px;padding:13px 17px;">
-        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#A8F3CE;">WHY isStatic DROPPED OUT</div>
-        <div style="font-size:15px;line-height:1.55;color:#bfe6cf;margin-top:7px;">It did not stop mattering — it moved. <span style="font-family:var(--mono);">isStatic</span> is the first of the eight fields inside <span style="font-family:var(--mono);">crossChainCallHash</span> itself, so a read already keys distinctly from an otherwise-identical write. Carrying it again in the position key would have committed to the same bit twice.</div>
-        <div style="font-size:15px;line-height:1.55;color:#bfe6cf;margin-top:7px;">That is what routes static rows and call rows through one table with no mode field: the bit that decides which resolution path can reach a row is already inside the row's address.</div>
-      </div>
-    </div>
-
-    <!-- STEP 7 -->
-    <div id="s7" style="display:none;flex-direction:column;gap:20px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">THE UNTAGGED EXCEPTION — STATIC SUB-HASHES</div>
-      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">Static resolution carries its own expected hash, and it is a <b>separate accumulator</b> — not <span style="font-family:var(--mono);">_rollingHash</span>. Its formula drops the tags entirely.</div>
-      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">hash = bytes32(0)
-for cc in calls:
-    (success, retData) = sourceProxy.staticcall(&hellip;)
-    hash = keccak256(abi.encodePacked(hash, success, retData))
-require(hash == expected);   // RollingHashMismatch</div>
-      <div style="max-width:960px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
-        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">AN ASYMMETRY WITH A STATED REASON</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">No domain bytes, no call-identity folds, and no nesting at all. Read as a diff against the tagged scheme that looks like a weaker version of it.</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">It is safe because <b>the surrounding key already pins everything the tags disambiguate.</b> A nested static row is addressed by <span style="font-family:var(--mono);">keccak256(crossChainCallHash, rollingHash-at-fire-point)</span> inside its entry; a top-level static entry by <span style="font-family:var(--mono);">proxyEntryHash</span> plus queue routing plus, on L1, the expected-state-root pins. All that is left for the static hash to commit to is the outcome of the read-only sub-calls in order — which is exactly what the untagged chain captures.</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">Nesting is absent for a structural reason rather than a chosen one: STATICCALL forbids state writes, so a proxy's <span style="font-family:var(--mono);">executeOnBehalf</span> cannot reenter the mutating entrypoints. A reentrant read re-enters <span style="font-family:var(--mono);">staticCrossChainCall</span> and resolves independently.</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">There is also no cross-contamination: <span style="font-family:var(--mono);">_processNStaticCalls</span> returns a local hash and never reads or writes <span style="font-family:var(--mono);">_rollingHash</span>.</div>
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#A8F3CE;">SO THE REAL ADVICE IS NOT "SWAP THE NAMES"</div>
+        <div style="font-size:15px;line-height:1.55;color:#bfe6cf;margin-top:7px;">If you pulled your mental model from <span style="font-family:var(--mono);">CLAUDE.md</span>, your <em>source</em> is contaminated, not just your glossary — re-read the entry structure itself. The trust order is source code, then <span style="font-family:var(--mono);">docs/CORE_PROTOCOL_SPEC.md</span>, then the other <span style="font-family:var(--mono);">docs/</span> files, then READMEs. <span style="font-family:var(--mono);">CLAUDE.md</span> is last, and the README still links a <span style="font-family:var(--mono);">docs/LOOKUP_SPEC.md</span> that <span style="font-family:var(--mono);">STATIC_ENTRY.md</span> replaced.</div>
+        <div style="font-size:15px;line-height:1.55;color:#bfe6cf;margin-top:7px;">And expect this page to age. Both repos state that interfaces and storage layout are still in flux — which is why every declaration behind it is checked against upstream on each build rather than trusted to the day it was written.</div>
       </div>
     </div>
 
@@ -264,12 +225,13 @@ require(hash == expected);   // RollingHashMismatch</div>
 
   <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:var(--eez-chrome);border:1px solid var(--eez-edge);border-radius:10px;overflow:hidden;">
     <div aria-hidden="true" style="position:absolute;left:0;top:0;right:0;height:2px;background:var(--eez-grad);z-index:4;"></div>
-    <div style="display:flex;align-items:center;gap:14px;padding:14px 114px 14px 20px;border-bottom:1px solid var(--eez-edge);background:var(--eez-chrome);position:relative;">
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 176px 14px 20px;border-bottom:1px solid var(--eez-edge);background:var(--eez-chrome);position:relative;">
       <div style="display:flex;align-items:center;gap:8px;flex:none;" title="This source is cited at a pinned commit, not a moving branch">
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L290&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/EEZBase.sol:290 · _rollingHashEntryBegin ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L290" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:290 · _rollingHashEntryBegin ↗</a></div>
+      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/interfaces/IEEZ.sol#L126&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/interfaces/IEEZ.sol:126 &amp;#183; ExecutionEntry &amp;#8599;</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/interfaces/IEEZ.sol#L126" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/interfaces/IEEZ.sol:126 · ExecutionEntry ↗</a></div>
+      <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:114px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
@@ -282,19 +244,18 @@ require(hash == expected);   // RollingHashMismatch</div>
        Inserted as the 4th child of #stage; see the CSS note. -->
   <section id="intro" aria-labelledby="introTitle">
     <div class="intro-inner">
-      <div class="intro-eyebrow">PROTOCOL RESEARCHERS · 06 · GUIDE</div>
-      <h1 class="intro-title" id="introTitle">The rolling hash</h1>
-      <p class="intro-lede">An execution entry says what should happen. Something has to commit to what did — and it is one <span style="font-family:var(--mono);">bytes32</span>, folded as execution runs.</p>
-      <p class="intro-lede">This is a guide, not a three-step walkthrough: seven steps, and the code is illustrative rather than copy-pasteable. What you take home is not an EEZ API. It is a design: a hash chain plus domain tags, which together make an explicit index redundant — and what dropping that index buys.</p>
+      <div class="intro-eyebrow">PROTOCOL RESEARCHERS · 07 · GUIDE</div>
+      <h1 class="intro-title" id="introTitle">What the refactor renamed</h1>
+      <p class="intro-lede">The <span style="font-family:var(--mono);">feature/simplify</span> refactor renamed most of the execution-table vocabulary. Anyone who built against the old names has no migration path, and the repo's own <span style="font-family:var(--mono);">CLAUDE.md</span> still describes the design from before it.</p>
+      <p class="intro-lede">Six steps. The table itself is the first two; the rest is the part a table would hide — two places where pre-refactor content asserts the <em>opposite</em> of the current design, one error that kept the old word, and one rule that changed underneath a rename.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
-        <li><b>01 · ONE VALUE, WHOLE TREE</b>Six distinct classes of divergence, caught by a single equality check.</li>
-        <li><b>02 · SEEDED WITH STATE</b>It starts from the entry's starting state and identity, not from its first result.</li>
-        <li><b>03 · FIVE TAGGED EVENTS</b>A domain byte per event type, so one input set cannot collide across two of them.</li>
-        <li><b>04 · NO INDEX IS FOLDED IN</b>The chain already binds order, count and nesting — and omitting the index is what makes a revert span reprocessable.</li>
-        <li><b>05 · A NO-MATCH CANNOT BE FORGED</b>Why CALL_NOT_FOUND is its own tag and not CALL_END(true, "").</li>
-        <li><b>06 · A TRIPLE COLLAPSED TO ONE</b>The reentrant table's position key, and why isStatic did not need to be in it.</li>
-        <li><b>07 · THE UNTAGGED EXCEPTION</b>Static sub-hashes drop the tags entirely — with a stated reason, not an oversight.</li>
+        <li><b>01 · THE TABLE</b>Five renames, old name to current name.</li>
+        <li><b>02 · AND TWO DELETIONS</b>Five more — two of which have no replacement symbol to find.</li>
+        <li><b>03 · REVERSAL 1</b>The flat array and its global cursor are gone, and so is the partition invariant.</li>
+        <li><b>04 · REVERSAL 2</b>An entry does carry a failure flag, and what a false one actually does.</li>
+        <li><b>05 · THE TRAP</b>One live error still carries the old word, so grepping it misleads.</li>
+        <li><b>06 · THE RULE THAT CHANGED</b>Why a field-by-field port compiles and then fails at post time.</li>
       </ul>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the guide →</button>
@@ -323,189 +284,267 @@ require(hash == expected);   // RollingHashMismatch</div>
 <script src="../assets/eez-tour.js"></script>
 <script>
 (function(){
-  var N = 7, STEP_MS = 4200;
+  var N = 6, STEP_MS = 4200;
   var step = 0, playing = false, timer = null;
 
   var citeByStep = [
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L107" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:107 &#183; RollingHashMismatch &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L290" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:290 &#183; _rollingHashEntryBegin &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L303" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:303 &#183; _rollingHashCallBegin &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L67" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:67 &#183; _rollingHash &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L331" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:331 &#183; _rollingHashCallNotFound &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L246" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:246 &#183; _computeExpectedL1toL2Hash &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L339" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:339 &#183; _rollingHashStaticResult &#8599;</a>'
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/interfaces/IEEZ.sol#L126" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/interfaces/IEEZ.sol:126 &#183; ExecutionEntry &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/interfaces/IEEZ.sol#L114" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/interfaces/IEEZ.sol:114 &#183; ExpectedL1ToL2Call &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/interfaces/IEEZ.sol#L133" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/interfaces/IEEZ.sol:133 &#183; success &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L256" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:256 &#183; RevertSpanOutOfBounds &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L283" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:283 &#183; EntryHasNoStateUpdates &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/interfaces/IEEZ.sol#L144" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/interfaces/IEEZ.sol:144 &#183; StaticExecutionEntry &#8599;</a>'
   ];
 
   var kickers = [
-    "ONE VALUE, WHOLE TREE",
-    "SEEDED WITH STATE",
-    "FIVE TAGGED EVENTS",
-    "NO INDEX IS FOLDED IN",
-    "A NO-MATCH CANNOT BE FORGED",
-    "A TRIPLE COLLAPSED TO ONE",
-    "THE UNTAGGED EXCEPTION"
+    "TEN NAMES THAT MOVED",
+    "TWO HAVE NO REPLACEMENT",
+    "NO FLAT ARRAY, NO CURSOR",
+    "AN ENTRY CAN FAIL",
+    "ONE ERROR KEPT THE OLD WORD",
+    "A RULE CHANGED, NOT A SPELLING"
   ];
   var captions = [
-    "An entry states what should happen; the rolling hash commits to what did. Six distinct classes of divergence — wrong return data, wrong success flag, missing or extra calls, a skipped or extra reentrant frame, reordering, an unexpected reentrant call — all collapse into one equality check.",
-    "It is seeded, not zeroed: the entry's starting state context closed with its own identity, so the hash binds what the world looked like as well as what happened. It must be clear beforehand, or _rollingHashEntryBegin reverts RollingHashNotCleared.",
-    "Five events, each folded with its own domain byte, so one set of inputs cannot mean two things. CALL_BEGIN folds the call's full identity hash — a substituted call with an identical return value still diverges.",
-    "No call index is folded in. Because each fold consumes the prior hash, order, count and nesting are already bound by the chain, and an explicit counter would add nothing. Dropping it is what lets a revert span be reprocessed as a 0-based sub-slice and still hash like a continuous run.",
-    "A reentrant call that finds no matching row folds CALL_NOT_FOUND, not CALL_END(true, \"\"). Sharing a tag would let a silent no-match be presented as a successful empty return; the separate domain byte makes those two histories hash differently.",
-    "The reentrant table's position key was (hash, rollingHash, isStatic) and is now keccak256(crossChainCallHash, rollingHash). isStatic did not stop mattering — it is already the first of the eight fields inside crossChainCallHash, so carrying it again committed to the same bit twice.",
-    "Static sub-hashes drop the tags entirely, into a separate accumulator. That is safe because the surrounding key already pins what the tags disambiguate — an asymmetry with a stated reason, not an oversight."
+    "The feature/simplify refactor (PR #34) renamed most of the execution-table vocabulary and nothing in the repo records what became what. StateDelta is StateUpdate, LookupCall is StaticExecutionEntry, revertSpan is revertNextNCalls.",
+    "Two entries on this half are not renames at all. ExpectedLookup was merged into the one unified ExpectedL1ToL2Call table, and ProofSystemRegistry was deleted outright — policy now lives in each rollup's own manager. There is no replacement symbol to search for.",
+    "The flat-array-with-one-global-cursor model is gone, and so is the partition invariant that came with it. Each reentrant frame now carries its own l2ToL1Calls sub-array and runs to completion. Content written before the refactor asserts the opposite.",
+    "ExecutionEntry does have a bool success. Older docs argue no failure flag is needed because a reverting top-level call is a lookup rather than an execution; that was reversed. A false entry executes, verifies, then reverts with its returnData.",
+    "The field renamed and one error did not. RevertSpanOutOfBounds is live at EEZ.sol:256 and thrown at :1180, so grepping the old word revertSpan finds a current error and reads as evidence the rename never happened.",
+    "The same refactor made stateUpdates mandatory — at least one per entry, enforced on-chain as EntryHasNoStateUpdates. A port done field-by-field from the old names compiles and then fails at post time, which is why the advice is to re-read the struct, not swap the words."
   ];
 
   var codeByStep = [
     [
-      "require(_rollingHash == entry.rollingHash);",
-      "// reverts RollingHashMismatch",
-      "",
-      "// EEZBase.sol:107 declares the error;",
-      "// the check runs after every call and",
-      "// every nesting in the entry completes."
-    ],
-    [
-      "// EEZBase.sol:290  _rollingHashEntryBegin",
-      "if (_rollingHash != bytes32(0))",
-      "    revert RollingHashNotCleared();",
-      "",
-      "bytes32 statesHash;",
-      "for (i in deltas)",
-      "    statesHash = keccak256(abi.encodePacked(",
-      "        statesHash,",
-      "        deltas[i].rollupId,",
-      "        deltas[i].currentState));",
-      "",
-      "_rollingHash = keccak256(abi.encodePacked(",
-      "    statesHash, proxyEntryHash));"
-    ],
-    [
-      "// EEZBase.sol:39-43 — the domain bytes",
-      "CALL_BEGIN     = 1;",
-      "CALL_END       = 2;",
-      "NESTED_BEGIN   = 3;",
-      "NESTED_END     = 4;",
-      "CALL_NOT_FOUND = 5;",
-      "",
-      "// :303",
-      "keccak256(abi.encodePacked(",
-      "    _rollingHash, CALL_BEGIN,",
-      "    crossChainCallHash));",
-      "",
-      "// :309",
-      "keccak256(abi.encodePacked(",
-      "    _rollingHash, CALL_END,",
-      "    success, retData));"
-    ],
-    [
-      "// each fold consumes the previous value",
-      "_rollingHash = keccak256(abi.encodePacked(",
-      "    _rollingHash,   // <- the chain",
-      "    TAG,",
-      "    ...));",
-      "",
-      "// so this is NOT folded anywhere:",
-      "//     uint256 callIndex",
-      "",
-      "// and that omission is what lets a",
-      "// revertNextNCalls span run as a",
-      "// 0-based sub-slice without diverging",
-      "// from a continuous run."
-    ],
-    [
-      "// a normal empty return (:309)",
-      "keccak256(abi.encodePacked(",
-      "    _rollingHash, CALL_END,",
-      "    true, \"\"));",
-      "",
-      "// a no-match (:331) — different tag",
-      "keccak256(abi.encodePacked(",
-      "    _rollingHash, CALL_NOT_FOUND,",
-      "    crossChainCallHash));",
-      "",
-      "// one tag for both would let the first",
-      "// stand in for the second."
-    ],
-    [
-      "// EEZBase.sol:246",
-      "function _computeExpectedL1toL2Hash(",
-      "    bytes32 crossChainCallHash,",
-      "    bytes32 rollingHash",
-      ") internal pure returns (bytes32) {",
-      "    return keccak256(abi.encodePacked(",
-      "        crossChainCallHash,",
-      "        rollingHash));",
+      "struct StateUpdate {",
+      "    uint64 rollupId;",
+      "    bytes32 currentState;",
+      "    bytes32 newState;",
+      "    int256 etherDelta;",
       "}",
       "",
-      "// isStatic is already field 1 of the",
-      "// eight inside crossChainCallHash."
+      "// was: StateDelta",
+      "// the field on an entry: stateDeltas -> stateUpdates"
     ],
     [
-      "// EEZBase.sol:339  _rollingHashStaticResult",
-      "// pure: never touches _rollingHash",
-      "return keccak256(abi.encodePacked(",
-      "    prev, success, retData));",
+      "struct ExpectedL1ToL2Call {",
+      "    bytes32 expectedL1toL2Hash;",
+      "    L2ToL1Call[] l2ToL1Calls;",
+      "    bytes32 revertedOrStaticRollingHash;",
+      "    bool success;",
+      "    bytes returnData;",
+      "}",
       "",
-      "// EEZL2.sol:674  _processNStaticCalls",
-      "computedHash = bytes32(0);",
-      "for (cc in calls) {",
-      "    (success, retData) =",
-      "        sourceProxy.staticcall(...);",
-      "    computedHash = _rollingHashStaticResult(",
-      "        computedHash, success, retData);",
+      "// ExpectedLookup was merged into this one table"
+    ],
+    [
+      "struct ExpectedL1ToL2Call {",
+      "    bytes32 expectedL1toL2Hash;",
+      "    L2ToL1Call[] l2ToL1Calls;",
+      "    bytes32 revertedOrStaticRollingHash;",
+      "    bool success;",
+      "    bytes returnData;",
+      "}",
+      "",
+      "// l2ToL1Calls is the FRAME'S OWN sub-array,",
+      "// not a slice of one flat array"
+    ],
+    [
+      "struct ExecutionEntry {",
+      "    StateUpdate[] stateUpdates;",
+      "    bytes32 proxyEntryHash;",
+      "    L2ToL1Call[] l2ToL1Calls;",
+      "    ExpectedL1ToL2Call[] expectedL1ToL2Calls;",
+      "    bytes32 rollingHash;",
+      "    uint64 destinationRollupId;",
+      "    bool success;",
+      "    bytes returnData;",
       "}"
+    ],
+    [
+      "struct L2ToL1Call {",
+      "    uint16 revertNextNCalls;",
+      "    bool isStatic;",
+      "    uint64 gas;",
+      "    address sourceAddress;",
+      "    uint64 sourceRollupId;",
+      "    address targetAddress;",
+      "    uint256 value;",
+      "    bytes data;",
+      "}",
+      "",
+      "// the field renamed; RevertSpanOutOfBounds did not"
+    ],
+    [
+      "struct ExecutionEntry {",
+      "    StateUpdate[] stateUpdates;",
+      "    bytes32 proxyEntryHash;",
+      "    L2ToL1Call[] l2ToL1Calls;",
+      "    ExpectedL1ToL2Call[] expectedL1ToL2Calls;",
+      "    bytes32 rollingHash;",
+      "    uint64 destinationRollupId;",
+      "    bool success;",
+      "    bytes returnData;",
+      "}",
+      "",
+      "// >= 1 stateUpdates, or EntryHasNoStateUpdates"
     ]
   ];
   var hlByStep = [
     [
       0,
-      1
-    ],
-    [
-      1,
-      2,
-      11,
-      12
-    ],
-    [
-      1,
-      2,
-      3,
-      4,
-      5
-    ],
-    [
-      1,
-      2,
       7
     ],
     [
-      2,
-      3,
-      6,
-      7,
-      8
-    ],
-    [
-      5,
-      6,
-      7,
+      0,
       8
     ],
     [
       2,
-      3,
-      9,
-      10,
+      8,
+      9
+    ],
+    [
+      7
+    ],
+    [
+      1,
+      11
+    ],
+    [
+      1,
       11
     ]
   ];
 
-  // This guide teaches a hashing scheme, not an API surface, so its panels are
-  // illustrative rather than copy-pasteable and there is no compilable snippet
-  // behind a FULL toggle. The button is absent and this stays empty: the player
-  // guards every use on `btnFull` existing, so nothing else changes.
-  var fullSnippet = [];
+  // The panels are hand-wrapped slices; this is the whole file behind the
+  // FULL toggle, asserted line-for-line against snippets/pr7-renames.sol by
+  // check-panel-drift.py. That file's struct declarations are in turn checked
+  // against upstream at the pin, so the page's central claim - these are the
+  // current names - fails the build the day it stops being true.
+  var fullSnippet = [
+    "// SPDX-License-Identifier: MIT",
+    "pragma solidity ^0.8.28;",
+    "",
+    "// Panel source for: protocol-researchers/pr7-what-the-refactor-renamed.html",
+    "// Mirrors eez-core-protocol/src/interfaces/IEEZ.sol:20, :75, :83, :114 and :126",
+    "// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda",
+    "//",
+    "// Every declaration below is copied verbatim from upstream, which is the point",
+    "// of the file: this page's whole claim is \"these are the current names\", and a",
+    "// claim like that has to be enforced by something other than the day it was",
+    "// written. check-snippet-fidelity.py asserts each declaration against upstream",
+    "// at the pin, so the day a name moves again, this page fails the build instead",
+    "// of quietly becoming the thing it warns about.",
+    "//",
+    "// WHAT MOVED. The `feature/simplify` refactor (PR #34, merged as 9735f53)",
+    "// renamed most of the execution-table vocabulary. The old names still appear",
+    "// in the repo's own CLAUDE.md, which predates the refactor and was never",
+    "// updated \u2014 so a reader who started there builds a stale mental model, not",
+    "// just a stale glossary.",
+    "//",
+    "//   StateDelta                \u2192 StateUpdate",
+    "//   LookupCall                \u2192 StaticExecutionEntry",
+    "//   ExpectedLookup            \u2192 (merged into the unified ExpectedL1ToL2Call table)",
+    "//   revertSpan                \u2192 revertNextNCalls",
+    "//   staticCallLookup          \u2192 staticCrossChainCall",
+    "//   executeL2TX               \u2192 executeL2Txs",
+    "//   IZKVerifier               \u2192 IProofSystem",
+    "//   ProofSystemRegistry       \u2192 (deleted \u2014 policy lives in each rollup's manager)",
+    "//   stateDeltas               \u2192 stateUpdates",
+    "//   l2ToL1CallNumber /",
+    "//     executingLookupIndex    \u2192 expectedRollingHash (one key, not two)",
+    "//",
+    "// TWO REVERSALS, which is the part a rename table alone would hide. Content",
+    "// written before the refactor does not merely use old words; it asserts the",
+    "// opposite of the current design on two points.",
+    "//",
+    "//   1. The flat-array-with-one-global-cursor model is GONE. There is no",
+    "//      partition invariant (`callCount + \u03a3 nested == flatCalls.length`) to",
+    "//      maintain. Each reentrant frame carries its own `l2ToL1Calls[]` sub-array",
+    "//      and is run to completion \u2014 see ExpectedL1ToL2Call below.",
+    "//",
+    "//   2. `ExecutionEntry` DOES carry a `bool success`. Older docs argue no failure",
+    "//      flag is needed, on the reasoning that a reverting top-level call is a",
+    "//      lookup rather than an execution. That was reversed: a `success == false`",
+    "//      entry executes, verifies, and then reverts with its `returnData`, so the",
+    "//      state effects roll back and a caller may try/catch it.",
+    "//",
+    "// ONE TRAP THE TABLE ABOVE DOES NOT CATCH. The field renamed; an error that",
+    "// names it did not. `RevertSpanOutOfBounds` is live at",
+    "// eez-core-protocol/src/EEZ.sol:256 and thrown at :1180. So grepping for the",
+    "// old word `revertSpan` finds a current, reachable error and reads as evidence",
+    "// the rename never happened. It did \u2014 the error kept the old vocabulary.",
+    "//",
+    "// AND ONE CONSEQUENCE WORTH MORE THAN THE RENAME. The same refactor made",
+    "// `stateUpdates` mandatory: at least one, enforced on-chain, reverting",
+    "// `EntryHasNoStateUpdates` (EEZ.sol:283). An entry builder ported field-by-field",
+    "// from the old names compiles and then fails at post time. If you pulled your",
+    "// mental model from CLAUDE.md, check the entry structure itself, not just the",
+    "// identifiers.",
+    "",
+    "struct ExpectedStateRootPerRollup {",
+    "    uint64 rollupId;",
+    "    bytes32 stateRoot;",
+    "}",
+    "",
+    "// WAS: StateDelta. The rename travelled with a rule change \u2014 see the note",
+    "// above: at least one of these per entry, enforced on-chain.",
+    "struct StateUpdate {",
+    "    uint64 rollupId;",
+    "    bytes32 currentState;",
+    "    bytes32 newState;",
+    "    int256 etherDelta;",
+    "}",
+    "",
+    "// The field WAS revertSpan. Note that `RevertSpanOutOfBounds` (EEZ.sol:256)",
+    "// still carries the old word, so grepping the old name finds a live error.",
+    "struct L2ToL1Call {",
+    "    uint16 revertNextNCalls;",
+    "    bool isStatic;",
+    "    uint64 gas;",
+    "    address sourceAddress;",
+    "    uint64 sourceRollupId;",
+    "    address targetAddress;",
+    "    uint256 value;",
+    "    bytes data;",
+    "}",
+    "",
+    "// Reversal 1 lives here. `l2ToL1Calls` is the frame's OWN sub-array, run to",
+    "// completion \u2014 not a slice of one flat array walked by a global cursor.",
+    "// ExpectedLookup was merged into this one unified table.",
+    "struct ExpectedL1ToL2Call {",
+    "    bytes32 expectedL1toL2Hash;",
+    "    L2ToL1Call[] l2ToL1Calls;",
+    "    bytes32 revertedOrStaticRollingHash;",
+    "    bool success;",
+    "    bytes returnData;",
+    "}",
+    "",
+    "// Reversal 2 lives here: `bool success`. A false entry executes, verifies,",
+    "// then reverts with returnData. `stateDeltas` is now `stateUpdates`.",
+    "struct ExecutionEntry {",
+    "    StateUpdate[] stateUpdates;",
+    "    bytes32 proxyEntryHash;",
+    "    L2ToL1Call[] l2ToL1Calls;",
+    "    ExpectedL1ToL2Call[] expectedL1ToL2Calls;",
+    "    bytes32 rollingHash;",
+    "    uint64 destinationRollupId;",
+    "    bool success;",
+    "    bytes returnData;",
+    "}",
+    "",
+    "// WAS: LookupCall. Resolved by staticCrossChainCall (was staticCallLookup).",
+    "// No reentrant table: a nested read re-enters the pool as another one of these.",
+    "struct StaticExecutionEntry {",
+    "    ExpectedStateRootPerRollup[] expectedStateRoots;",
+    "    bytes32 proxyEntryHash;",
+    "    L2ToL1Call[] l2ToL1Calls;",
+    "    bytes32 rollingHash;",
+    "    uint64 destinationRollupId;",
+    "    bool success;",
+    "    bytes returnData;",
+    "}"
+  ];
   var showFull = false;
   function currentLines(){ return showFull ? fullSnippet : (codeByStep[step] || []); }
 

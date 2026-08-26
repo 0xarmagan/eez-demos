@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # Structural audit — a fast automated first pass for a new/changed demo.
 #
-# This checks only what's verifiable from the repo alone. Three companion
-# scripts cover the rest, and CI runs all four:
+# This checks only what's verifiable from the repo alone, offline. The list
+# below used to read "companion scripts ... and CI runs all four", which mixed
+# gates with fixers and was FALSE for a day: check-snippet-fidelity.py's own
+# commit edited that sentence from "three" to "four" and never touched ci.yml,
+# so the comment was the only thing making the claim true. It is split in two
+# now, and check-manifest.py asserts the first list against ci.yml on every
+# build — the sentence cannot go stale silently again.
+#
+# GATES — every one of these runs in CI and blocks merge:
 #
 #   scripts/verify-citations.py    fetches each cited file at its pinned SHA
 #                                  and asserts the line and symbol still match
@@ -10,10 +17,17 @@
 #                                  exists verbatim in a compilable snippet
 #   scripts/check-snippet-fidelity.py  asserts every declaration a snippet shares
 #                                  with upstream still matches upstream at the pin
-#   scripts/sync-embedded-snippets.py  re-embeds a snippet after editing the .sol
-#   scripts/build-llms.py          regenerates llms.txt / llms-full.txt
+#   scripts/check-panel-height.cjs asserts no code panel overflows its column
+#   scripts/test_build_llms.py     asserts the export loses no step
+#   scripts/test_snippet_fidelity.py  self-test: proves the fidelity checker
+#                                  still catches injected drift
 #   scripts/check-manifest.py      asserts docs/plans/2026-08-26-developer-content-v41.md
 #                                  (the v4.1 execution manifest) against the tree
+#
+# FIXERS — you run these; a gate above is what fails when you have not:
+#
+#   scripts/sync-embedded-snippets.py  re-embeds a snippet after editing the .sol
+#   scripts/build-llms.py          regenerates llms.txt / llms-full.txt
 #
 # See CONTRIBUTING.md's "Audit, before merge" section for what remains manual.
 set -uo pipefail
