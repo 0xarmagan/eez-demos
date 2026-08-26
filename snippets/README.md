@@ -1,6 +1,6 @@
 # Snippets
 
-Compilable Solidity behind the code panels on the `dapp-developers/` walkthroughs (q2–q7) plus one `protocol-researchers/` walkthrough — `pr5`, which reuses the `q1` snippet.
+Compilable Solidity behind the code panels on the `dapp-developers/` walkthroughs (q2–q8) plus one `protocol-researchers/` walkthrough — `pr5`, which reuses the `q1` snippet.
 
 ## Why this exists
 
@@ -12,7 +12,7 @@ Two checks close that, without making the HTML generated:
 
 | Check | What it proves |
 |---|---|
-| `forge build` / `forge test` (CI) | these files are valid Solidity, and the q3 test actually passes |
+| `forge build` / `forge test` (CI) | these files are valid Solidity, and the q3, q5, q6 and q8 tests actually pass |
 | `scripts/check-panel-drift.py` | every non-comment line in a panel exists verbatim in its snippet |
 
 So a panel edit that invents invalid Solidity fails the drift check, and a genuine
@@ -23,10 +23,11 @@ panel edit forces the same line into a file the compiler checks.
 ```
 lib/IEEZ.sol           signatures copied verbatim from upstream IEEZ
 lib/IEEZManager.sol    the two EEZBase members the demos use that IEEZ lacks
-q1..q7-*.sol           one per walkthrough panel (q1 backs pr5, the
-                        protocol-researcher page; q2..q7 back their
+q1..q8-*.sol           one per walkthrough panel (q1 backs pr5, the
+                        protocol-researcher page; q2..q8 back their
                         matching dapp-developer pages)
-test/Q3MsgSender.t.sol runnable proof of the q3 gotcha (the TEST tab shows a slice)
+test/*.t.sol           runnable proofs for q3, q5, q6 and q8 (each page's
+                        TEST tab shows a slice of its own file)
 foundry.toml           no forge-std, no submodules — builds on a bare checkout
 ```
 
@@ -38,17 +39,18 @@ forge build
 forge test -vv
 ```
 
-Expected: 12 files compile, 13 tests pass. The interesting one is
+Expected: 14 files compile, 19 tests pass. The interesting one is
 `test_sameChainCheck_passesOnSameChain` — it passes, which is *why* the bug ships.
 An owner check looks correct until a call actually arrives through a proxy, and a
-same-chain test never exercises that path.
+same-chain test never exercises that path. `Q8RemoteReads.t.sol`'s first three
+cases are the same shape: nothing reverts, and that is the hazard.
 
 Without Foundry installed, `solc` alone is enough to confirm the files compile;
 only the tests need `forge`.
 
 ## Scope
 
-Only the Solidity walkthroughs: the six `dapp-developers/` pages and one
+Only the Solidity walkthroughs: the seven `dapp-developers/` pages and one
 `protocol-researchers/` page (`pr5`). `rollup-operators/` panels are shell, and
 the rest of `protocol-researchers/` is Rust and protobuf — different
 toolchains, not covered here.

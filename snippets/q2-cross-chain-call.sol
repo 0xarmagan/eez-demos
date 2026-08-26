@@ -15,6 +15,14 @@ interface IRemote {
     function setValue(uint256 v) external;
 }
 
+/// @dev A cross-chain call fails for reasons an ordinary same-chain call
+///      cannot, and the proxy forwards raw revert data either way
+///      (CrossChainProxy.sol:109-113). So `ok == false` tells you the call
+///      did not happen — never why. No matching entry in this block and a
+///      genuine revert in the destination contract are indistinguishable
+///      here; see docs/CAVEATS.md "Indistinguishable revert reasons".
+error CrossChainCallFailed();
+
 /// @dev Caller side — this is all a dapp has to do.
 contract Caller {
     address public proxyAddress;
@@ -25,14 +33,19 @@ bytes memory data = abi.encodeCall(
 );
 
 (bool ok, ) = proxyAddress.call(data);
-        ok;
+if (!ok) revert CrossChainCallFailed();
     }
 }
 
 /// @dev Proxy side — how the forward actually happens.
 contract CrossChainProxySnippet {
     address internal immutable EEZ;
-    uint256 internal constant STATIC_CHECK_GAS = 5000;
+
+    /// @dev Upstream value, from CrossChainProxy.sol:23. The cap IS the cost: in a
+    ///      static context the tstore is an exceptional halt, which consumes every
+    ///      unit forwarded to it, so the probe must be given only what you are
+    ///      willing to burn on every call. The mutable path spends ~300 of it.
+    uint256 internal constant STATIC_CHECK_GAS = 1_000;
 
     constructor(address eez_) {
         EEZ = eez_;
@@ -40,6 +53,13 @@ contract CrossChainProxySnippet {
 
     /// @dev tstore reverts in a STATICCALL context, tload does not. A self-call
     ///      isolates the tstore so the revert can be caught instead of bubbling.
+    ///
+    ///      STAND-IN: upstream declares a named `uint256 transient _staticDetector`
+    ///      (CrossChainProxy.sol:18) and writes it in staticCheck() (:71). Raw slot 0
+    ///      is used here only to keep the probe to one readable line. Do not copy it:
+    ///      raw slot 0 is not reserved for you, so in a real contract that also uses
+    ///      transient storage this probe is a collision risk. Declare a named
+    ///      `transient` variable, as upstream does, and let the compiler place it.
     function staticCheck() external {
         assembly { tstore(0, 1) }
     }

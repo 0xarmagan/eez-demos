@@ -7,6 +7,7 @@
 <link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
 <title>How to deploy the protocol — EEZ</title>
+<link rel="canonical" href="https://eez-demos.vercel.app/rollup-operators/ro2-deploy-the-protocol.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -147,31 +148,39 @@
       <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
       <div style="font-size:22px;font-weight:600;color:#fff;">Deploy the Protocol</div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#8a8a8a;">PRE-MAINNET</div>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
-      <a class="back" href="ro3-run-a-real-chiado-l2.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Run the Chiado L2 →</a>
+      <a class="back" href="ro3-run-a-real-chiado-l2.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: How to run against a real testnet →</a>
     </div>
   </div>
 
   <!-- ===== DIAGRAM ===== -->
   <div id="stageCol" style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
 
-    <!-- STEP 1: one command fans out into three deployments -->
-    <div id="s1" style="display:flex;flex-direction:column;gap:26px;">
-      <div class="lbl">ONE COMMAND · Makefile → scripts/deploy.sh</div>
+    <!-- STEP 1: the .env prerequisite, then one command fans out into the
+         5-step deploy sequence the Makefile documents at :52-59. -->
+    <div id="s1" style="display:flex;flex-direction:column;gap:20px;">
+      <div class="lbl">ONE COMMAND · .env → Makefile → scripts/deploy.sh</div>
+      <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:12px 18px;max-width:980px;">
+        <div style="font-family:var(--mono);font-size:15px;color:#7ee08c;">$ <span style="color:#d8d8d8;">cp .env.example .env</span></div>
+        <div style="font-family:var(--mono);font-size:14px;color:var(--muted);padding-left:18px;"># EEZ_L1_RPC_URL · EEZ_L1_POSTER_KEY · EEZ_PROOF_SIGNER_KEY · EEZ_L2_SYSTEM_KEY</div>
+      </div>
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
         <div class="term">$ make deploy-protocol</div>
         <div class="arrow">→</div>
         <div class="term-alt">./scripts/deploy.sh</div>
       </div>
-      <div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:4px;">
-        <div class="chip chip-core">EEZ Core Protocol</div>
-        <div class="chip chip-proof">Proof System</div>
-        <div class="chip chip-mgr">Your Manager Contract</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:2px;">
+        <div class="chip chip-core">1 · DeployEEZ</div>
+        <div class="chip chip-proof">2 · DeployECDSAProofSystem</div>
+        <div class="chip chip-mgr">3 · DeployRollup</div>
+        <div class="chip chip-core">4 · RegisterRollup</div>
+        <div class="chip chip-proof">5 · DeployBridgeL1</div>
       </div>
-      <div class="note">One script, one run — deploy.sh brings up all three, in order, every time.</div>
+      <div class="note">One script, one run — deploy.sh runs the same five steps, in order, every time. It reads .env, and hard-fails if any of those four variables is unset.</div>
     </div>
 
     <!-- STEP 2: real deployments.env content, gitignored -->
@@ -181,12 +190,17 @@
         <div class="filehdr">deployments.env</div>
         <div class="badge-gitignore">gitignored</div>
       </div>
+      <!-- Illustrative excerpt of the template deploy.sh writes at :262-289.
+           The address values are placeholders, not captured output — every
+           one is derived from your own deploy. EEZL2_ADDRESS is the one
+           literal upstream hardcodes. -->
       <div class="envfile">
-        <div class="envline" style="animation:riseIn .35s ease both;"><span style="color:#7ee08c;">EEZ_REGISTRY_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:#d8d8d8;">0x9F2c8a41B7D3e6F1024AaC8e5D6B7F3A1C9E0D42</span></div>
-        <div class="envline" style="animation:riseIn .35s .1s ease both;"><span style="color:#9edba8;">EEZ_ECDSA_PROOF_SYSTEM_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:#d8d8d8;">0x4C1A7Fe9B3D2568e1Aa0Fc3B6D9E7A2F58C0B144</span></div>
-        <div class="envline" style="animation:riseIn .35s .2s ease both;"><span style="color:#d9bdf5;">EEZ_ROLLUP_MANAGER_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:#d8d8d8;">0x7B3E9A2C5D4F1608eE0Ab7D3C6F9A21B4E8D5C77</span></div>
+        <div class="envline" style="animation:riseIn .35s ease both;"><span style="color:#7ee08c;">EEZ_REGISTRY_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:var(--muted);">0x…</span></div>
+        <div class="envline" style="animation:riseIn .35s .1s ease both;"><span style="color:#9edba8;">EEZ_ECDSA_PROOF_SYSTEM_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:var(--muted);">0x…</span></div>
+        <div class="envline" style="animation:riseIn .35s .2s ease both;"><span style="color:#d9bdf5;">EEZ_ROLLUP_MANAGER_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:var(--muted);">0x…</span></div>
+        <div class="envline" style="animation:riseIn .35s .3s ease both;"><span style="color:#d8d8d8;">EEZL2_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:#d8d8d8;">0x4200000000000000000000000000000000000007</span></div>
       </div>
-      <div class="note">Three real addresses, written once by deploy.sh — nothing to copy by hand.</div>
+      <div class="note">An illustrative excerpt — deploy.sh writes 19 keys here, including the vkey, attester, rollup id, initial state root, genesis path and the three L1 bridge addresses. Values come from your deploy; there is nothing to copy by hand.</div>
     </div>
 
     <!-- STEP 3: run-node loads both env files, zero manual config -->
@@ -205,8 +219,8 @@
       </div>
       <div class="payoff">
         <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#5e9e6b;">THE POINT</div>
-        <div style="font-size:24px;font-weight:600;color:#eef3f8;">zero manual config</div>
-        <div style="font-family:var(--mono);font-size:15px;color:#7ee08c;">no paste-the-address-into-.env step</div>
+        <div style="font-size:24px;font-weight:600;color:#eef3f8;">no address-pasting step</div>
+        <div style="font-family:var(--mono);font-size:15px;color:#7ee08c;">.env you write once · deployments.env writes itself</div>
       </div>
     </div>
 
@@ -219,7 +233,7 @@
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/Makefile#L64-L65" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">Makefile:64-65 · scripts/deploy.sh ↗</a></div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/Makefile#L47-L65" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">Makefile:47-65 · scripts/deploy.sh ↗</a></div>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
@@ -234,11 +248,11 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">ROLLUP OPERATORS · 02</div>
       <h1 class="intro-title" id="introTitle">How to deploy the protocol</h1>
-      <p class="intro-lede">One command — make deploy-protocol — runs ./scripts/deploy.sh, deploying the EEZ core protocol, the proof system, and your manager contract in one shot.</p>
+      <p class="intro-lede">Copy .env.example to .env and fill in four variables; then one command — make deploy-protocol — runs ./scripts/deploy.sh through its five deploy steps.</p>
       <p class="intro-lede">Every address it produces lands in a gitignored deployments.env file, not your notes.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
-        <li><b>01 · ONE COMMAND</b>make deploy-protocol deploys EEZ, the proof system and your manager in one shot.</li>
+        <li><b>01 · ONE COMMAND</b>With .env in place, make deploy-protocol runs the 5-step sequence: DeployEEZ, DeployECDSAProofSystem, DeployRollup, RegisterRollup, DeployBridgeL1.</li>
         <li><b>02 · OUTPUTS LAND IN DEPLOYMENTS.ENV</b>Every address deploy.sh produces lands in a gitignored deployments.env file.</li>
         <li><b>03 · RUN-NODE JUST WORKS</b>make run-node loads deployments.env alongside .env at startup, so there’s no paste-the-address-into-.env step.</li>
       </ul>
@@ -274,31 +288,40 @@
 
   var kickers = ["ONE COMMAND", "OUTPUTS LAND IN DEPLOYMENTS.ENV", "RUN-NODE JUST WORKS"];
   var captions = [
-    "`make deploy-protocol` runs `./scripts/deploy.sh`, deploying the EEZ core protocol, the proof system, and your manager contract in one shot.",
-    "Every address deploy.sh produces lands in a gitignored `deployments.env` file, not your notes.",
+    "With `.env` in place, `make deploy-protocol` runs `./scripts/deploy.sh` through its five steps: DeployEEZ, DeployECDSAProofSystem, DeployRollup, RegisterRollup, DeployBridgeL1.",
+    "Every address deploy.sh produces lands in a gitignored `deployments.env` file, not your notes — 19 keys in all.",
     "`make run-node` loads `deployments.env` alongside `.env` at startup, so there's no paste-the-address-into-.env step."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
   // so the panel never dumps the full target ungrouped.
   var makefileLines = [
+    "# Reads .env (gitignored). Copy .env.example first.",
+    "$ cp .env.example .env",
+    "#   EEZ_L1_RPC_URL   EEZ_L1_POSTER_KEY",
+    "#   EEZ_PROOF_SIGNER_KEY   EEZ_L2_SYSTEM_KEY",
+    "",
+    "# Runs the 5-step deploy sequence:",
+    "#   1. DeployEEZ    2. DeployECDSAProofSystem",
+    "#   3. DeployRollup  4. RegisterRollup",
+    "#   5. DeployBridgeL1",
+    "",
     "# Outputs land in deployments.env (gitignored).",
     "# eez-node loads it alongside .env at startup, so",
     "# a successful deploy means `make run-node` Just",
-    "# Works without any paste-the-address-into-.env",
-    "# step.",
+    "# Works without any paste-the-address-into-.env step.",
     "deploy-protocol:",
     "\t@./scripts/deploy.sh"
   ];
   var codeByStep = [
-    makefileLines.slice(0, 6),
-    makefileLines.slice(0, 7),
-    makefileLines.slice(0, 7)
+    makefileLines.slice(0, 9),
+    makefileLines.slice(0, 16),
+    makefileLines.slice(0, 16)
   ];
   var hlByStep = [
-    [5],
-    [6],
-    [1]
+    [1,5],
+    [10,14,15],
+    [11,12,13]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

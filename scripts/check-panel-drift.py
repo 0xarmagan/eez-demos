@@ -45,6 +45,7 @@ SNIPPET_MAP = {
     "q5-encode-a-calls-content-hash.html": "q5-content-hash.sol",
     "q6-why-you-cant-call-the-manager-directly.html": "q6-manager-direct.sol",
     "q7-your-cross-chain-address.html": "q7-create-proxy.sol",
+    "q8-read-a-remote-contracts-state.html": "q8-remote-reads.sol",
 }
 
 # Panel lines that are prose or deliberate elision, not Solidity to compile.
@@ -56,6 +57,7 @@ TEST_SNIPPET_MAP = {
     "q3-fix-the-msg-sender-gotcha.html": "test/Q3MsgSender.t.sol",
     "q5-encode-a-calls-content-hash.html": "test/Q5ContentHash.t.sol",
     "q6-why-you-cant-call-the-manager-directly.html": "test/Q6ManagerDirect.t.sol",
+    "q8-read-a-remote-contracts-state.html": "test/Q8RemoteReads.t.sol",
 }
 
 # Every Solidity walkthrough also embeds its whole snippet behind the FULL

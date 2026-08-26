@@ -7,6 +7,7 @@
 <link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
 <title>How to send and test a cross-chain call — EEZ</title>
+<link rel="canonical" href="https://eez-demos.vercel.app/rollup-operators/ro4-send-and-test-cross-chain-calls.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -156,20 +157,26 @@
       <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
       <div style="font-size:22px;font-weight:600;color:#fff;">Send &amp; Test Cross-Chain Calls</div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#8a8a8a;">PRE-MAINNET</div>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
-      <a class="back" href="../protocol-researchers/pr1-the-four-components-of-rollup0.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: The Four Components of Rollup0 →</a>
+      <a class="back" href="../protocol-researchers/pr1-the-four-components-of-rollup0.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: How the four components divide the work →</a>
     </div>
   </div>
 
   <!-- ===== DIAGRAM — real endpoints, real config, real command ===== -->
   <div id="stageCol" style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
 
-    <!-- STEP 1: the four real endpoints, two of them transparent proxy fronts -->
-    <div id="s1" style="display:flex;flex-direction:column;gap:20px;">
-      <div class="lbl">ENDPOINTS · README.md</div>
+    <!-- STEP 1: the four real endpoints, two of them transparent proxy fronts.
+         The ports are the chiado docker-compose stack's, not a devnet's. -->
+    <div id="s1" style="display:flex;flex-direction:column;gap:18px;">
+      <div class="lbl">PREREQUISITE</div>
+      <div style="border:1.5px dashed #7a5f2e;border-radius:9px;padding:10px 16px;max-width:1000px;">
+        <div style="font-family:var(--mono);font-size:13px;color:#f0cf9e;line-height:1.5;">Bring the node up first — the Chiado stack from step 03 (scripts/chiado-up.sh). xchain-test.sh checks the eez-node-chiado container and deployments.env before it starts, and exits if either is missing.</div>
+      </div>
+      <div class="lbl">ENDPOINTS · README.md · the chiado compose stack</div>
       <div style="display:flex;flex-direction:column;gap:12px;">
         <div class="row">
           <div class="epname">L2 RPC</div>
@@ -204,7 +211,7 @@
         <div class="arrow">→</div>
         <div class="epuse" style="font-family:var(--mono);font-size:14px;color:#9edba8;">forwarded to that front's source-chain RPC</div>
       </div>
-      <div class="note">The two ingress fronts are transparent proxies sitting in front of L1 and L2, not separate chains of their own.</div>
+      <div class="note">The two ingress fronts are transparent proxies sitting in front of L1 and L2, not separate chains of their own. These four ports are the compose stack's fixed ones; a Kurtosis devnet assigns host ports dynamically — <span style="font-family:var(--mono);font-size:14px;">source testing/kurtosis/ports.sh</span> for those.</div>
     </div>
 
     <!-- STEP 2: the bundle cap, and the silent-drop gotcha -->
@@ -224,7 +231,9 @@
       <div class="note">The cap is generous for one op — it's the first thing to check when a wave of txs comes up short.</div>
     </div>
 
-    <!-- STEP 3: the real test driver, the full matrix, real reported metrics -->
+    <!-- STEP 3: the test driver, the full matrix, and the shape of the RESULTS
+         block it prints (xchain-test.sh:263-264). The values below are
+         placeholders showing the output format — not a captured run. -->
     <div id="s3" style="display:none;flex-direction:column;gap:24px;">
       <div class="lbl">RUN · scripts/xchain-test.sh</div>
       <div class="term-alt" style="display:inline-block;">$ EEZ_WAVE_COUNT=5 bash scripts/xchain-test.sh</div>
@@ -244,12 +253,12 @@
           <div class="mchip mchip-mode">wrapper</div>
         </div>
       </div>
-      <div class="metricbox">
-        <div class="metric">N+1 next-slot hit-rate <b>100%</b></div>
-        <div class="metric">bundle drops/evictions <b>0</b></div>
-        <div class="metric">divergence <b>none</b></div>
+      <div class="metricbox" style="flex-direction:column;align-items:flex-start;gap:8px;">
+        <div class="metric" style="color:var(--muted);letter-spacing:0.08em;">RESULTS · output format, not a captured run</div>
+        <div class="metric">N+1 next-slot hit-rate: <b>&lt;n1&gt;</b> | postBatch L1 blocks: consecutive=<b>&lt;n&gt;</b> gapped=<b>&lt;n&gt;</b></div>
+        <div class="metric">bundle target-misses(drops)=<b>&lt;n&gt;</b> evictions(3-strike)=<b>&lt;n&gt;</b> | divergence=<b>&lt;n&gt;</b> reconcile=<b>&lt;PASS|FAIL&gt;</b></div>
       </div>
-      <div class="note">Five waves of the full matrix, plus pure-L2 and one poison case, each run minting fresh senders and recipients.</div>
+      <div class="note">Five waves of the full matrix, plus pure-L2 and one poison case, each run minting fresh senders and recipients. The run passes on divergence=0 and reconcile=PASS — divergence is a count, so a clean run prints 0.</div>
     </div>
 
   </div>
@@ -277,12 +286,12 @@
       <div class="intro-eyebrow">ROLLUP OPERATORS · 04</div>
       <h1 class="intro-title" id="introTitle">How to send and test a cross-chain call</h1>
       <p class="intro-lede">Two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block, while everything else passes straight through.</p>
-      <p class="intro-lede">Driving both fronts is how you read real pass/fail numbers.</p>
+      <p class="intro-lede">Bring the stack from step 03 up first, then drive both fronts to read the pipeline's own pass/fail numbers.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 · TWO FRONTS, ONE JOB</b>sendRawTransaction is held for the next Sync block — once per L1 block, for cross-chain work.</li>
         <li><b>02 · MIND THE BUNDLE SIZE</b>EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it.</li>
-        <li><b>03 · EXERCISE IT FOR REAL</b>xchain-test.sh drives both fronts through the full matrix and reports real pipeline metrics.</li>
+        <li><b>03 · EXERCISE IT</b>xchain-test.sh drives both fronts through the full matrix and prints a RESULTS block of pipeline metrics.</li>
       </ul>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
@@ -314,24 +323,22 @@
   var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["TWO FRONTS, ONE JOB", "MIND THE BUNDLE SIZE", "EXERCISE IT FOR REAL"];
+  var kickers = ["TWO FRONTS, ONE JOB", "MIND THE BUNDLE SIZE", "EXERCISE IT"];
   var captions = [
-    "Two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block — once per L1 block, for cross-chain work — while everything else passes straight through.",
+    "With the Chiado stack from step 03 running, two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block — once per L1 block, for cross-chain work — while everything else passes straight through.",
     "EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it, so measure before you raise it.",
-    "xchain-test.sh drives both fronts through the full op × direction × direct/wrapper matrix and reports real pipeline metrics."
+    "xchain-test.sh drives both fronts through the full op × direction × direct/wrapper matrix and prints a RESULTS block of pipeline metrics — the box shows that block's format, not a captured run."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
   // so the panel never dumps the whole README + script ungrouped.
   var lines = [
-    "# README.md · Endpoints & cross-chain fronts",
-    "#",
-    "# | Endpoint                | URL           |",
-    "# |--------------------------|----------------|",
-    "# | L2 RPC                  | :18688        |",
-    "# | Embedded chiado L1 RPC  | :18645        |",
-    "# | L1→L2 front (Inbound)   | :18999        |",
-    "# | L2→L1 front (Outbound)  | :18998        |",
+    "# README.md · Endpoints (chiado compose stack)",
+    "#   L2 RPC                   :18688",
+    "#   Embedded chiado L1 RPC   :18645",
+    "#   L1→L2 front (Inbound)    :18999",
+    "#   L2→L1 front (Outbound)   :18998",
+    "# (Kurtosis devnet: source testing/kurtosis/ports.sh)",
     "",
     "# both fronts: eth_sendRawTransaction is held",
     "# + composed into the next Sync block; every",
@@ -340,23 +347,25 @@
     "",
     "# compose mode caps bundle size:",
     "EEZ_MAX_USER_TXS_PER_BUNDLE=3   # default",
-    "",
     "# ⚠ rbuilder-chiado silently drops txs beyond",
     "#   ~3 per bundle — raise only against a",
     "#   builder proven to include larger bundles",
     "#   atomically. Measure before bumping.",
-    "",
-    "$ EEZ_WAVE_COUNT=5 bash scripts/xchain-test.sh"
+    "# bring the node up first: scripts/chiado-up.sh",
+    "$ EEZ_WAVE_COUNT=5 bash scripts/xchain-test.sh",
+    "# prints a RESULTS block: hit-rate, consecutive",
+    "# / gapped postBatch blocks, drops, evictions,",
+    "# divergence (a count) and reconcile PASS/FAIL"
   ];
   var codeByStep = [
-    lines.slice(0, 13),
-    lines.slice(0, 21),
+    lines.slice(0, 11),
+    lines.slice(0, 18),
     lines.slice(0, 23)
   ];
   var hlByStep = [
-    [6,7,9,10,11,12],
-    [15,17,18,19,20],
-    [22]
+    [3,4,7,8,9,10],
+    [13,14,15,16,17],
+    [18,19,20,21,22]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

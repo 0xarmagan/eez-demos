@@ -7,6 +7,7 @@
 <link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
 <title>How the composer proves a batch — EEZ</title>
+<link rel="canonical" href="https://eez-demos.vercel.app/protocol-researchers/pr4-how-the-composer-proves-a-batch.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -138,11 +139,12 @@
       <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
       <div style="font-size:22px;font-weight:600;color:#fff;">How the Composer Proves a Batch</div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#8a8a8a;">PRE-MAINNET</div>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
-      <a class="back" href="pr3-the-deriver.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: The Deriver: Rebuilding L2 State from L1 Alone →</a>
+      <a class="back" href="pr3-the-deriver.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: How the deriver rebuilds L2 from L1 →</a>
     </div>
   </div>
 
@@ -231,8 +233,12 @@
         <div class="pill" style="color:#1c0b2e;background:#b478f0;font-weight:700;padding:6px 12px;">TRUSTED</div>
         <div style="width:6px;height:6px;border-radius:50%;background:var(--eez-green);animation:pulse 1.8s ease-in-out infinite;"></div>
       </div>
-      <div style="display:inline-flex;align-items:center;gap:10px;margin-top:2px;">
-        <div class="pill" style="color:#e8b15e;background:rgba(232,177,94,0.08);border:1px dashed #8a6a2e;font-size:13px;">MAX_MESSAGE_BYTES = 1,073,741,824 (1 GiB) — encode + decode, both sides</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:2px;max-width:920px;">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div class="pill" style="color:#e8b15e;background:rgba(232,177,94,0.08);border:1px dashed #8a6a2e;font-size:13px;">MAX_MESSAGE_BYTES = 1,073,741,824 (1 GiB) — the CLIENT's limit</div>
+          <div class="pill" style="color:#c9d1dc;background:rgba(232,177,94,0.05);border:1px dashed #8a6a2e;font-size:13px;">server: decode ≤ 256 MiB · encode = 1,024 B</div>
+        </div>
+        <div style="font-size:14px;line-height:1.5;color:#8f98a8;">Two Rust constants, not part of prove.proto: eez-control-rpc/src/lib.rs:19 sets the client's limit; eez-proof-signer/src/service.rs:26 and :29 set the server's, clamped in at :184-186. lib.rs's own comment still claims the 1 GiB limit applies to both sides — it does not.</div>
       </div>
       <div style="font-size:16px;color:var(--muted);max-width:920px;">The signature only counts once it recovers to the registered attester — that check is the real gate, not the response arriving.</div>
     </div>
@@ -307,8 +313,13 @@
   ];
 
   // Progressive code reveal: each step shows only the message defs relevant so
-  // far, so the panel never dumps the whole prove.proto ungrouped. All lines
-  // are verbatim from prove.v1's Prover service / message definitions.
+  // far, so the panel never dumps the whole prove.proto ungrouped. Every code
+  // line is verbatim from the file named in the comment above it — prove.v1's
+  // Prover service / message definitions in steps 1-2, and two Rust files in
+  // step 3, because the message-size limits are Rust constants and are not in
+  // the .proto at all. Two inline // comments are abridged to fit the column:
+  // "Header MUST be first" and "// posted + 1" (upstream: "Header MUST be the
+  // first chunk; blocks follow in ascending block order." / "OD-5 anchor + 1").
   var codeByStep = [
     [
       "service Prover {",
@@ -351,14 +362,18 @@
       "  bytes signature          = 2;  // 65B",
       "}",
       "",
-      "// MAX_MESSAGE_BYTES = 1024 * 1024 * 1024",
-      "// (1 GiB) — applied to encode + decode"
+      "// eez-control-rpc/src/lib.rs:19 — Rust, not the proto",
+      "pub const MAX_MESSAGE_BYTES: usize = 1024 * 1024 * 1024;",
+      "",
+      "// eez-proof-signer/src/service.rs:26, :29 — the server",
+      "const MAX_DECODING_MESSAGE_BYTES: usize = 256 * 1024 * 1024;",
+      "const MAX_ENCODING_MESSAGE_BYTES: usize = 1024;"
     ]
   ];
   var hlByStep = [
     [1,5,6,7,8,9,10],
     [0,1,2,3,4,5,6],
-    [0,1,2]
+    [0,1,2,9,10]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

@@ -7,6 +7,7 @@
 <link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
 <title>How the address is derived — EEZ</title>
+<link rel="canonical" href="https://eez-demos.vercel.app/protocol-researchers/pr5-how-the-address-is-derived.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -130,6 +131,7 @@
       <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
       <div style="font-size:22px;font-weight:600;color:#fff;">How the Address Is Derived</div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#8a8a8a;">PRE-MAINNET</div>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
@@ -276,6 +278,7 @@
         <div style="width:6px;height:6px;border-radius:50%;background:#e8b15e;animation:pulse 1.8s ease-in-out infinite;"></div>
         <div style="font-family:var(--mono);font-size:13px;color:#e8b15e;">not deployed yet</div>
       </div>
+      <div style="font-size:15px;line-height:1.5;color:#8f98a8;max-width:900px;">And not always deployable: <span style="font-family:var(--mono);color:#c9d1dc;">computeCrossChainProxyAddress</span> has no same-network guard, so entering your own rollup id still returns an address. Creating one there reverts — <span style="font-family:var(--mono);color:#c9d1dc;">SameNetworkProxy</span>, eez-core-protocol/src/base/EEZBase.sol:166.</div>
     </div>
 
   </div>
