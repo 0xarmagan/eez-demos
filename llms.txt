@@ -18,9 +18,9 @@ a commit SHA, so a link tells you exactly which revision a claim was true of.
 
 Writing contracts that call across rollups.
 
-- [Read another chain](https://eez-demos.vercel.app/dapp-developers/q8-read-a-remote-contracts-state.html): Your contract reads state from a contract on another rollup. The answer was written down before your transaction ran — not fetched while you wait.
-- [Call another chain, and use the answer](https://eez-demos.vercel.app/dapp-developers/q2-send-a-cross-chain-call.html): The value that comes back decides what the rest of your transaction does. No callback, no timeout, no retry, no half-finished state — that machinery exists to survive a gap, and here there isn’t one.
-- [The trap: msg.sender is a proxy](https://eez-demos.vercel.app/dapp-developers/q3-fix-the-msg-sender-gotcha.html): Every onlyOwner, allowlist and approve on the far side keys to a proxy address, not to your contract. Three real numbers about the wrong thing, and nothing reverts.
+- [How to read another rollup's state from your contract](https://eez-demos.vercel.app/dapp-developers/q8-read-a-remote-contracts-state.html): Learn how the answer is written down before your transaction runs, instead of being fetched while you wait.
+- [How to use another chain's answer in the same transaction](https://eez-demos.vercel.app/dapp-developers/q2-send-a-cross-chain-call.html): Learn how the value that comes back decides what the rest of your transaction does — and why that removes the callback, the timeout and the retry you would otherwise have to write.
+- [Why msg.sender isn't your contract on the other side](https://eez-demos.vercel.app/dapp-developers/q3-fix-the-msg-sender-gotcha.html): Learn why every onlyOwner, allowlist and approve on the far side keys to a proxy address instead of your contract — and why nothing reverts when it does.
 - [How to get your contract's address on another rollup](https://eez-demos.vercel.app/dapp-developers/q7-your-cross-chain-address.html): Learn how to read it, or deploy it.
 - [How to check an address is a real proxy](https://eez-demos.vercel.app/dapp-developers/q4-check-if-an-address-is-a-proxy.html): Learn how to read the on-chain registry instead of guessing.
 - [How the guard makes sure only proxy calls reach execution](https://eez-demos.vercel.app/dapp-developers/q6-why-you-cant-call-the-manager-directly.html): Learn how UnauthorizedProxy() stops any call that isn't proxy-routed.
@@ -50,9 +50,9 @@ How Rollup0 actually settles and proves.
 
 Real files, not fragments: pragma, imports and a contract wrapper, all building under solc 0.8.28. Each mirrors the upstream function its walkthrough cites.
 
-- [snippets/q8-remote-reads.sol](https://eez-demos.vercel.app/snippets/q8-remote-reads.sol): full source behind Read another chain
-- [snippets/q2-cross-chain-call.sol](https://eez-demos.vercel.app/snippets/q2-cross-chain-call.sol): full source behind Call another chain, and use the answer
-- [snippets/q3-msg-sender.sol](https://eez-demos.vercel.app/snippets/q3-msg-sender.sol): full source behind The trap: msg.sender is a proxy
+- [snippets/q8-remote-reads.sol](https://eez-demos.vercel.app/snippets/q8-remote-reads.sol): full source behind How to read another rollup's state from your contract
+- [snippets/q2-cross-chain-call.sol](https://eez-demos.vercel.app/snippets/q2-cross-chain-call.sol): full source behind How to use another chain's answer in the same transaction
+- [snippets/q3-msg-sender.sol](https://eez-demos.vercel.app/snippets/q3-msg-sender.sol): full source behind Why msg.sender isn't your contract on the other side
 - [snippets/q7-create-proxy.sol](https://eez-demos.vercel.app/snippets/q7-create-proxy.sol): full source behind How to get your contract's address on another rollup
 - [snippets/q4-proxy-registry.sol](https://eez-demos.vercel.app/snippets/q4-proxy-registry.sol): full source behind How to check an address is a real proxy
 - [snippets/q6-manager-direct.sol](https://eez-demos.vercel.app/snippets/q6-manager-direct.sol): full source behind How the guard makes sure only proxy calls reach execution
@@ -63,9 +63,9 @@ Real files, not fragments: pragma, imports and a contract wrapper, all building 
 
 Foundry tests with no forge-std and no submodules, so they drop into an existing suite. `cd snippets && forge test`.
 
-- [snippets/test/Q8RemoteReads.t.sol](https://eez-demos.vercel.app/snippets/test/Q8RemoteReads.t.sol): proves the behaviour in Read another chain
-- [snippets/test/Q2CrossChainCall.t.sol](https://eez-demos.vercel.app/snippets/test/Q2CrossChainCall.t.sol): proves the behaviour in Call another chain, and use the answer
-- [snippets/test/Q3MsgSender.t.sol](https://eez-demos.vercel.app/snippets/test/Q3MsgSender.t.sol): proves the behaviour in The trap: msg.sender is a proxy
+- [snippets/test/Q8RemoteReads.t.sol](https://eez-demos.vercel.app/snippets/test/Q8RemoteReads.t.sol): proves the behaviour in How to read another rollup's state from your contract
+- [snippets/test/Q2CrossChainCall.t.sol](https://eez-demos.vercel.app/snippets/test/Q2CrossChainCall.t.sol): proves the behaviour in How to use another chain's answer in the same transaction
+- [snippets/test/Q3MsgSender.t.sol](https://eez-demos.vercel.app/snippets/test/Q3MsgSender.t.sol): proves the behaviour in Why msg.sender isn't your contract on the other side
 - [snippets/test/Q6ManagerDirect.t.sol](https://eez-demos.vercel.app/snippets/test/Q6ManagerDirect.t.sol): proves the behaviour in How the guard makes sure only proxy calls reach execution
 - [snippets/test/Q5ContentHash.t.sol](https://eez-demos.vercel.app/snippets/test/Q5ContentHash.t.sol): proves the behaviour in How to encode a call's content hash
 

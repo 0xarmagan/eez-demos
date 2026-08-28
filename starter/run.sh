@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Walk the three EEZ functions in order, then the trap that bites first.
+# Walk the three EEZ functions in order, then the surprise that bites first.
 #
 # Runs tests that live in ../snippets — this script owns no Solidity of its own,
 # so it cannot drift from what CI checks.
@@ -38,7 +38,7 @@ step() {
   rm -f /tmp/eez-starter-$$.log
 }
 
-printf '\033[1mEEZ starter\033[0m — three functions, then the trap.\n'
+printf '\033[1mEEZ starter\033[0m — three functions, then the one surprise.\n'
 printf 'Running against %s\n' "$SNIPPETS"
 
 step 1 "Read another chain" \
@@ -53,7 +53,7 @@ step 3 "Use the answer" \
   "   The branch turns on the value that came back, not on success. This is the one." \
   "test_fundedBranchCreditsFromARemoteValue|test_shortBranchRecordsTheGapFromTheSameCall|test_theBranchTracksTheValueNotTheSuccessFlag"
 
-step "!" "The trap: msg.sender is a proxy" \
+step "!" "Why msg.sender isn't your contract" \
   "   Three real numbers about the wrong thing. Nothing reverts." \
   "test_sameChainCheck_revertsWhenCalledViaProxy|test_balanceReadsTheProxyNotTheCounterpart|test_blockContextIsLocal"
 
