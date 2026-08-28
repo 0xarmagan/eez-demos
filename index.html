@@ -148,29 +148,35 @@ h1 .l{font-weight:300;color:#dcdcdc}
 
   <!-- ================= FIRST TIME HERE ================= -->
   <div class="sec-head" style="margin:0 0 18px">
-    <h2 class="eyebrow">[ FIRST TIME HERE? TRY THESE ]</h2>
+    <h2 class="eyebrow">[ FIRST TIME HERE? THREE STEPS, IN THIS ORDER ]</h2>
   </div>
   <div class="grid starter">
 
-    <a class="card" href="./dapp-developers/q7-your-cross-chain-address.html">
-      <div class="card-head"><h3 class="card-title">How to get your contract's address on another rollup</h3><span class="badge">DAPP DEVS</span></div>
-      <p class="card-hook">Learn how to read it, or deploy it.</p>
+    <a class="card" href="./dapp-developers/q8-read-a-remote-contracts-state.html">
+      <div class="card-head"><h3 class="card-title"><span class="card-num">01</span>Read another chain</h3><span class="badge">DAPP DEVS</span></div>
+      <p class="card-hook">Your contract reads state from a contract on another rollup. The answer was written down before your transaction ran — not fetched while you wait.</p>
       <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
     </a>
 
-    <a class="card" href="./rollup-operators/ro1-run-the-devnet-with-kurtosis.html">
-      <div class="card-head"><h3 class="card-title">How to run the whole stack locally</h3><span class="badge">ROLLUP OPS</span></div>
-      <p class="card-hook">Learn how to bring up the node, proof-signer and the L1 in a disposable network.</p>
+    <a class="card" href="./dapp-developers/q2-send-a-cross-chain-call.html">
+      <div class="card-head"><h3 class="card-title"><span class="card-num">02</span>Call another chain, and use the answer</h3><span class="badge">THE DIFFERENTIATOR</span></div>
+      <p class="card-hook">The value that comes back decides what the rest of your transaction does. No callback, no timeout, no retry, no half-finished state — that machinery exists to survive a gap, and here there isn’t one.</p>
       <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
     </a>
 
-    <a class="card" href="./protocol-researchers/pr1-the-four-components-of-rollup0.html">
-      <div class="card-head"><h3 class="card-title">How the four components divide the work</h3><span class="badge">RESEARCH</span></div>
-      <p class="card-hook">Learn how sequencer, composer, proof-signer and deriver each fit.</p>
+    <a class="card" href="./dapp-developers/q3-fix-the-msg-sender-gotcha.html">
+      <div class="card-head"><h3 class="card-title"><span class="card-num">03</span>The trap: msg.sender is a proxy</h3><span class="badge">BEFORE YOU BUILD</span></div>
+      <p class="card-hook">Every <code>onlyOwner</code>, allowlist and <code>approve</code> on the far side keys to a proxy address, not to your contract. Three real numbers about the wrong thing, and nothing reverts.</p>
       <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
     </a>
 
   </div>
+
+  <p class="card-hook" style="margin:16px 0 0">
+    Run all three locally in about ten minutes — <a href="https://github.com/0xarmagan/eez-demos/tree/main/starter" style="color:#fff">starter/</a>.
+    Not a dapp developer? <a href="./rollup-operators/ro1-run-the-devnet-with-kurtosis.html" style="color:#fff">Rollup operators start here</a> ·
+    <a href="./protocol-researchers/pr1-the-four-components-of-rollup0.html" style="color:#fff">protocol researchers here</a>.
+  </p>
 
   <!-- ================= DAPP DEVELOPERS ================= -->
   <section class="sec" id="dapp-developers">
