@@ -1,6 +1,7 @@
 # Start here
 
-Three things EEZ does, in the order that makes them make sense. About ten minutes.
+Three things EEZ does, in the order that makes them make sense — then the one surprise worth
+knowing before you build. About ten minutes.
 
 Every step below runs code that this repo's CI already compiles and tests. Nothing here
 is a sketch, and nothing here is new — the starter is a *path* through
@@ -69,9 +70,9 @@ state to reconcile later. That machinery exists to survive a gap. Here there is 
 
 ---
 
-## The trap, before you build anything
+## Why msg.sender isn't your contract on the other side
 
-One detour, because it is the first thing that bites and it does not announce itself.
+One detour before you build anything, because this is the first thing that bites and it does not announce itself.
 
 ```bash
 forge test --match-test "test_sameChainCheck_revertsWhenCalledViaProxy|test_balanceReadsTheProxyNotTheCounterpart|test_blockContextIsLocal" -vv

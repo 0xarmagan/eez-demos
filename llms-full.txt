@@ -20,9 +20,9 @@ a commit SHA, so a link tells you exactly which revision a claim was true of.
 
 Writing contracts that call across rollups.
 
-## Read another chain
+## How to read another rollup's state from your contract
 
-Your contract reads state from a contract on another rollup. The answer was written down before your transaction ran — not fetched while you wait.
+Learn how the answer is written down before your transaction runs, instead of being fetched while you wait.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q8-read-a-remote-contracts-state.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback`
@@ -493,9 +493,9 @@ contract Q8RemoteReadsTest {
 }
 ```
 
-## Call another chain, and use the answer
+## How to use another chain's answer in the same transaction
 
-The value that comes back decides what the rest of your transaction does. No callback, no timeout, no retry, no half-finished state — that machinery exists to survive a gap, and here there isn’t one.
+Learn how the value that comes back decides what the rest of your transaction does — and why that removes the callback, the timeout and the retry you would otherwise have to write.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q2-send-a-cross-chain-call.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback`
@@ -984,9 +984,9 @@ contract Q2CrossChainCallTest {
 }
 ```
 
-## The trap: msg.sender is a proxy
+## Why msg.sender isn't your contract on the other side
 
-Every onlyOwner, allowlist and approve on the far side keys to a proxy address, not to your contract. Three real numbers about the wrong thing, and nothing reverts.
+Learn why every onlyOwner, allowlist and approve on the far side keys to a proxy address instead of your contract — and why nothing reverts when it does.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q3-fix-the-msg-sender-gotcha.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:39 · fallback`
