@@ -375,15 +375,12 @@
       "    );"
     ],
     [
-      "    bytes32 salt = keccak256(",
+      "    bytes32 bytecodeHash = keccak256(",
       "        abi.encodePacked(",
-      "            originalRollupId, originalAddress",
+      "            type(CrossChainProxy).creationCode,",
+      "            abi.encode(address(this))",
       "        )",
       "    );",
-      "    bytes32 bytecodeHash = keccak256(abi.encodePacked(",
-      "        type(CrossChainProxy).creationCode,",
-      "        abi.encode(address(this))",
-      "    ));",
       "    return address(uint160(uint256(keccak256(",
       "        abi.encodePacked(",
       "            bytes1(0xff), address(this),",
@@ -396,10 +393,10 @@
   var hlByStep = [
     [0,1,2,3],
     [5,6,7,8,9],
-    [9,10,11,12,13,14]
+    [6,7,8,9,10,11]
   ];
 
-  // Verbatim copy of snippets/q1-compute-address.sol (the whole file, 43 lines).
+  // Verbatim copy of snippets/q1-compute-address.sol (the whole file, 45 lines).
   // scripts/check-panel-drift.py asserts this array still equals that file
   // line for line, so an embedded copy cannot rot unnoticed.
   var fullSnippet = [
@@ -434,10 +431,12 @@
       "            originalRollupId, originalAddress",
       "        )",
       "    );",
-      "    bytes32 bytecodeHash = keccak256(abi.encodePacked(",
-      "        type(CrossChainProxy).creationCode,",
-      "        abi.encode(address(this))",
-      "    ));",
+      "    bytes32 bytecodeHash = keccak256(",
+      "        abi.encodePacked(",
+      "            type(CrossChainProxy).creationCode,",
+      "            abi.encode(address(this))",
+      "        )",
+      "    );",
       "    return address(uint160(uint256(keccak256(",
       "        abi.encodePacked(",
       "            bytes1(0xff), address(this),",

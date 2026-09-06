@@ -330,7 +330,8 @@
       "",
       "// CrossChainProxy.sol",
       "    if (!success) {",
-      "        (success, result) = EEZ.staticcall(abi.encodeCall(",
+      "        (success, result) = EEZ.staticcall(",
+      "            abi.encodeCall(",
       "            IEEZ.staticCrossChainCall,",
       "            (msg.sender, msg.data)));",
       "    }"
@@ -338,7 +339,7 @@
   ];
   var hlByStep = [ [0,1,2], [4,5,6,7,11,12], [0,1,5,10] ];
 
-  // Verbatim copy of snippets/q2-cross-chain-call.sol (the whole file, 74 lines).
+  // Verbatim copy of snippets/q2-cross-chain-call.sol (the whole file, 149 lines).
   // scripts/check-panel-drift.py asserts this array still equals that file
   // line for line, so an embedded copy cannot rot unnoticed.
   var fullSnippet = [
@@ -472,11 +473,13 @@
       "    }(abi.encodeCall(this.staticCheck, ()));",
       "    bytes memory result;",
       "    if (!success) {",
-      "        (success, result) = EEZ.staticcall(abi.encodeCall(",
+      "        (success, result) = EEZ.staticcall(",
+      "            abi.encodeCall(",
       "            IEEZ.staticCrossChainCall,",
       "            (msg.sender, msg.data)));",
       "    } else {",
-      "        (success, result) = EEZ.call{value: msg.value}(abi.encodeCall(",
+      "        (success, result) = EEZ.call{value: msg.value}(",
+      "            abi.encodeCall(",
       "            IEEZ.executeCrossChainCall,",
       "            (msg.sender, msg.data)));",
       "    }",

@@ -328,9 +328,9 @@
     [
       "service Prover {",
       "  // Header MUST be first; blocks follow in order.",
-      "  rpc Prove(stream ProveChunk) returns (ProveResponse);",
+      "  rpc Prove(stream ProveChunk)",
+      "      returns (ProveResponse);",
       "}",
-      "",
       "message ProveHeader {",
       "  uint64 rollup_id  = 1;",
       "  uint64 from_block = 2;  // posted + 1",
@@ -365,18 +365,22 @@
       "  bytes signature          = 2;  // 65B",
       "}",
       "",
-      "// eez-control-rpc/src/lib.rs:19 — Rust, not the proto",
-      "pub const MAX_MESSAGE_BYTES: usize = 1024 * 1024 * 1024;",
+      "// eez-control-rpc/src/lib.rs:19",
+      "// — Rust, not the proto",
+      "pub const MAX_MESSAGE_BYTES: usize =",
+      "    1024 * 1024 * 1024;",
       "",
-      "// eez-proof-signer/src/service.rs:26, :29 — the server",
-      "const MAX_DECODING_MESSAGE_BYTES: usize = 256 * 1024 * 1024;",
+      "// eez-proof-signer/src/service.rs:26, :29",
+      "// — the server",
+      "const MAX_DECODING_MESSAGE_BYTES: usize =",
+      "    256 * 1024 * 1024;",
       "const MAX_ENCODING_MESSAGE_BYTES: usize = 1024;"
     ]
   ];
   var hlByStep = [
     [1,5,6,7,8,9,10],
     [0,1,2,3,4,5,6],
-    [0,1,2,9,10]
+    [0,1,2,12,13,14]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

@@ -310,7 +310,8 @@
       "$ kurtosis engine start",
       "",
       "$ export KURTOSIS_ENCLAVE=eez-dev",
-      "$ export KURTOSIS_ARGS_FILE=\"$PWD/testing/kurtosis/ci-args.yaml\"",
+      "$ export KURTOSIS_ARGS_FILE=\\",
+      "    \"$PWD/testing/kurtosis/ci-args.yaml\"",
       "",
       "# ci-args.yaml carries deterministic private-",
       "# network keys. Never use them on a public",
@@ -320,7 +321,8 @@
       "$ kurtosis engine start",
       "",
       "$ export KURTOSIS_ENCLAVE=eez-dev",
-      "$ export KURTOSIS_ARGS_FILE=\"$PWD/testing/kurtosis/ci-args.yaml\"",
+      "$ export KURTOSIS_ARGS_FILE=\\",
+      "    \"$PWD/testing/kurtosis/ci-args.yaml\"",
       "",
       "$ bash testing/kurtosis/start.sh \\",
       "    \"$KURTOSIS_ARGS_FILE\"",
@@ -331,8 +333,8 @@
   ];
   var hlByStep = [
     [3,4],
-    [6,8,9,11,12,13],
-    [5,6,8,9]
+    [6,8,9,10,12,13,14],
+    [6,7,9,10]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

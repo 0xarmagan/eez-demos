@@ -128,11 +128,13 @@ function _fallback() internal {
     }(abi.encodeCall(this.staticCheck, ()));
     bytes memory result;
     if (!success) {
-        (success, result) = EEZ.staticcall(abi.encodeCall(
+        (success, result) = EEZ.staticcall(
+            abi.encodeCall(
             IEEZ.staticCrossChainCall,
             (msg.sender, msg.data)));
     } else {
-        (success, result) = EEZ.call{value: msg.value}(abi.encodeCall(
+        (success, result) = EEZ.call{value: msg.value}(
+            abi.encodeCall(
             IEEZ.executeCrossChainCall,
             (msg.sender, msg.data)));
     }

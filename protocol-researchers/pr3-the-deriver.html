@@ -325,15 +325,18 @@
     ],
     [
       "// deriver.rs:786",
-      "async fn handle_event(&self, event: L1Event) -> DeriverResult<()> {",
+      "async fn handle_event(&self, event: L1Event)",
+      "    -> DeriverResult<()> {",
       "",
       "// deriver.rs:836",
       "async fn on_batch_posted(",
       "    // params omitted — signature verified, body not",
       ") -> DeriverResult<()> {",
       "",
-      "// deriver.rs:849 — the log is the trigger, this is the data",
-      "let decoded = eez_payload_codec::decode(call_data.as_ref())?;",
+      "// deriver.rs:849 — the log is the trigger,",
+      "// this is the data",
+      "let decoded =",
+      "    eez_payload_codec::decode(call_data.as_ref())?;",
       "",
       "// deriver.rs:516",
       "pub fn execute_block("
@@ -341,26 +344,26 @@
     [
       "// deriver.rs:169",
       "pub async fn catch_up(&self) -> DeriverResult<()> {",
-      "",
-      "// deriver.rs:257 — phase 1: walk the index tail BACKWARD,",
-      "// dropping batches whose recorded L1 hash is no longer",
-      "// canonical; returns the highest still-canonical anchor",
-      "async fn revalidate_index_tail(&self) -> DeriverResult<Option<u64>> {",
-      "",
-      "// deriver.rs:246-249 — phase 2: scan forward (arms wrapped)",
+      "// deriver.rs:257 — phase 1: walk the index tail",
+      "// BACKWARD, drop batches whose recorded L1 hash",
+      "// is stale; return the highest canonical anchor",
+      "async fn revalidate_index_tail(&self)",
+      "    -> DeriverResult<Option<u64>> {",
+      "// deriver.rs:246-249 — phase 2, arms wrapped",
       "match anchor {",
       "    Some(anchor_l1_block) =>",
-      "        self.sync_batches_inner(anchor_l1_block, cursor).await,",
+      "        self.sync_batches_inner(",
+      "            anchor_l1_block, cursor).await,",
       "    // cold start: deploy_block, NOT L1 genesis",
-      "    None =>",
-      "        self.sync_batches_inner(self.inner.deploy_block, 0).await,",
+      "    None => self.sync_batches_inner(",
+      "        self.inner.deploy_block, 0).await,",
       "}"
     ]
   ];
   var hlByStep = [
     [0,1],
-    [9,12],
-    [6,10,11,13,14]
+    [11,12,15],
+    [5,6,9,10,11,13,14]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

@@ -321,7 +321,7 @@
   // return type. begin() returns unit (optimistic.rs:117-123).
   var codeByStep = [
     [
-      "// optimistic.rs:67 — private; variant doc comments omitted",
+      "// optimistic.rs:67 — private; variant docs omitted",
       "enum Resolution {",
       "    Pending,",
       "    Settled,",
@@ -345,34 +345,39 @@
       "}",
       "",
       "// optimistic.rs:191 — observer verdict",
-      "pub fn mark_failed(&self, sync_height: u64, slot_skipped: bool) {",
+      "pub fn mark_failed(&self, sync_height: u64,",
+      "    slot_skipped: bool) {",
       "    // observer verdict: the bundle didn't land",
       "}",
       "",
-      "// optimistic.rs:160 — the Deriver's cursor overrides Failed",
-      "pub fn resolve_below_cursor(&self, cursor: u64) -> Vec<HeldTx> {",
-      "    // flips Pending AND Failed at or below cursor to Settled",
+      "// optimistic.rs:160 — the Deriver's cursor wins",
+      "pub fn resolve_below_cursor(&self, cursor: u64)",
+      "    -> Vec<HeldTx> {",
+      "    // flips Pending AND Failed \u2264 cursor to Settled",
       "}"
     ],
     [
       "// optimistic.rs:247",
-      "pub fn take_rolled_out(&self, new_l2_cursor: u64) -> Vec<HeldTx> {",
-      "    // L1 reorg: removes Settled entries ABOVE the retreated",
-      "    // cursor and returns their txs. Pending entries stay.",
+      "pub fn take_rolled_out(&self, new_l2_cursor: u64)",
+      "    -> Vec<HeldTx> {",
+      "    // L1 reorg: removes Settled entries ABOVE",
+      "    // the retreated cursor and returns their",
+      "    // txs. Pending entries stay.",
       "}",
       "",
-      "// optimistic.rs:270 (one line in source; wrapped here)",
+      "// optimistic.rs:270 \u2014 wrapped; one line in source",
       "pub fn take_finalized(&self, finalized_l2: u64)",
       "    -> Vec<(u64, TxHash, Vec<HeldTx>)> {",
-      "    // the only clean exit — and the caller still checks",
-      "    // each postBatch receipt exists on L1 before discarding",
+      "    // the only clean exit — and the caller",
+      "    // still checks each postBatch receipt",
+      "    // exists on L1 before discarding",
       "}"
     ]
   ];
   var hlByStep = [
     [8,9,13,15],
-    [1,6,11],
-    [1,7,8]
+    [1,6,7,12,13],
+    [1,2,9,10]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

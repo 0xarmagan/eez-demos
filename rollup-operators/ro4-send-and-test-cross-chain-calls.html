@@ -347,7 +347,8 @@
     "#   Embedded chiado L1 RPC   :18645",
     "#   L1→L2 front (Inbound)    :18999",
     "#   L2→L1 front (Outbound)   :18998",
-    "# (Kurtosis devnet: source testing/kurtosis/ports.sh)",
+    "# (Kurtosis devnet:",
+    "#   source testing/kurtosis/ports.sh)",
     "",
     "# both fronts: eth_sendRawTransaction is held",
     "# + composed into the next Sync block; every",
@@ -367,13 +368,13 @@
     "# divergence (a count) and reconcile PASS/FAIL"
   ];
   var codeByStep = [
-    lines.slice(0, 11),
-    lines.slice(7, 18),
-    lines.slice(12, 23)
+    lines.slice(0, 12),
+    lines.slice(8, 19),
+    lines.slice(13, 24)
   ];
   // Highlights are window-relative, so they shift with the slice above.
   var hlByStep = [
-    [3,4,7,8,9,10],
+    [3,4,8,9,10,11],
     [6,7,8,9,10],
     [1,2,6,7,8,9,10]
   ];
