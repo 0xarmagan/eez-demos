@@ -14,7 +14,7 @@
  *    script would describe buttons that are not there.
  *
  * 3. It shows once per SITE, not once per page. Someone working through all
- *    15 walkthroughs should meet this once.
+ *    17 walkthroughs should meet this once.
  *
  * No dependencies, no build step, ES5-compatible.
  */
@@ -98,7 +98,7 @@
     if (q(".search-box-row")) {
       steps.push({ els: [q(".search-box-row")], pad: 10,
         kicker: "FIND ONE",
-        body: "Search all 15 walkthroughs by keyword \u2014 try msg.sender, CREATE2 or Kurtosis. " +
+        body: "Search all 17 walkthroughs by keyword \u2014 try msg.sender, CREATE2 or Kurtosis. " +
               "Pressing / jumps here from anywhere on the page." });
     }
     if (q(".filter-tabs")) {

@@ -1,10 +1,10 @@
 # eez-demos
 
-15 short animated walkthroughs (diagram, real code, one-sentence caption) showing how EEZ actually works. Live at [eez-demos.vercel.app](https://eez-demos.vercel.app).
+17 short animated walkthroughs (diagram, real code, one-sentence caption) showing how EEZ actually works. Live at [eez-demos.vercel.app](https://eez-demos.vercel.app).
 
-- **Dapp developers** (6) — making or receiving cross-chain calls
+- **Dapp developers** (7) — making or receiving cross-chain calls
 - **Rollup operators** (4) — standing up or running a rollup
-- **Protocol researchers** (5) — execution model, settlement, invariants
+- **Protocol researchers** (6) — execution model, settlement, invariants
 
 Every code panel cites a real, verified `file:line` — pre-mainnet, every page says so.
 
