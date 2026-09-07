@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deploy on the EEZ testnet — EEZ Quickstarts</title>
+<link rel="canonical" href="https://eez-demos.vercel.app/deploy.html">
+<meta name="description" content="One contract, live on the EEZ L2, in about fifteen minutes — prerequisites, endpoints, the deploy command, and what to do when it fails.">
+<meta property="og:title" content="Deploy on the EEZ testnet — EEZ Quickstarts">
+<meta property="og:description" content="One contract, live on the EEZ L2, in about fifteen minutes.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Deploy on the EEZ testnet — EEZ Quickstarts">
+<meta name="twitter:description" content="One contract, live on the EEZ L2, in about fifteen minutes.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="alternate" type="text/markdown" href="llms.txt" title="llms.txt — agent-readable index">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#000}
+:root{--sans:'Geist',system-ui,-apple-system,sans-serif;--mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,monospace;--grad:linear-gradient(180deg,#8ce8ab,#3f2acd);--muted:#9aa3b3;--eez-green:#3BE57E;--eez-amber:#8B7B55;--eez-canvas:#0A0A0A;--eez-screen:#0b0b0b;--eez-edge:#1f1f1f}
+body{
+  color:#fff;font-family:var(--sans);
+  background-color:var(--eez-canvas);
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:42px 42px;
+}
+.wrap{max-width:1200px;margin:0 auto;padding:48px 32px 100px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.back{font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;transition:color .15s ease}
+.back:hover{color:#fff}
+.pill{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--muted);border:1px solid #2a2a2a;border-radius:100px;padding:3px 10px;white-space:nowrap}
+a:focus-visible{outline:2px solid var(--eez-green);outline-offset:2px;border-radius:4px}
+
+h1{font-size:40px;line-height:1.12;font-weight:700;letter-spacing:-.02em;margin:34px 0 0;max-width:22ch}
+.lede{font-size:15.5px;line-height:1.6;color:#8f8f8f;margin:16px 0 0;max-width:64ch}
+.eyebrow{font-family:var(--mono);font-size:12.5px;font-weight:400;letter-spacing:.1em;color:var(--muted);margin:0 0 18px}
+.sec-head{margin:56px 0 18px}
+.sec-note{font-size:13.5px;line-height:1.55;color:#8f8f8f;margin:-6px 0 18px;max-width:64ch}
+
+.banner{margin:26px 0 0;border:1px solid rgba(139,123,85,.55);background:rgba(139,123,85,.08);border-radius:12px;padding:14px 18px;font-size:13.5px;line-height:1.55;color:#cbbf9e;max-width:76ch}
+.banner b{color:#e6dcc0;font-weight:600}
+.banner[hidden]{display:none}
+
+.box{background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:16px;padding:24px 26px}
+.box h3{margin:0 0 10px;font-size:15px;font-weight:600}
+.box p{margin:0 0 14px;font-size:13.5px;line-height:1.55;color:#8f8f8f;max-width:70ch}
+.box p:last-child{margin-bottom:0}
+pre{margin:0;background:#070707;border:1px solid #1a1a1a;border-radius:10px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.75;color:#b8b8b8}
+pre .c{color:#5e5e5e}
+pre .ok{color:var(--eez-green)}
+code{font-family:var(--mono);font-size:.92em;color:#cfcfcf}
+.amber{color:var(--eez-amber)}
+.warn{margin:14px 0 0;font-family:var(--mono);font-size:12px;line-height:1.6;color:var(--eez-amber)}
+
+table.net{width:100%;border-collapse:collapse;font-size:13px}
+table.net th{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.06em;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid #1a1a1a}
+table.net td{padding:10px;border-bottom:1px solid #141414;vertical-align:top}
+table.net tr:last-child td{border-bottom:none}
+td.k{font-weight:600;white-space:nowrap;color:#e6e6e6}
+.val{font-family:var(--mono);font-size:12.5px;color:#cfcfcf;word-break:break-all}
+.val.pending{color:var(--eez-amber);letter-spacing:.04em}
+.copy{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:var(--muted);background:none;border:1px solid #2a2a2a;border-radius:6px;padding:2px 8px;margin-left:8px;cursor:pointer;vertical-align:middle}
+.copy:hover:not(:disabled){color:#fff;border-color:#555}
+.copy:disabled{opacity:.35;cursor:not-allowed}
+.net a{color:#b8b8b8;text-decoration:none;border-bottom:1px solid #2a2a2a}
+.net a:hover{color:#fff}
+.netwrap{overflow-x:auto}
+
+.fails{display:flex;flex-direction:column;gap:0}
+.fail{display:flex;gap:14px;padding:12px 0;border-bottom:1px solid #141414;font-size:13.5px;line-height:1.55}
+.fail:last-child{border-bottom:none}
+.fail code{white-space:nowrap}
+.fail .sym{font-family:var(--mono);font-size:12px;color:var(--eez-amber);flex:none;width:14ch}
+.fail .fix{color:#8f8f8f;margin:0}
+.fail .fix a{color:#b8b8b8;text-decoration:none;border-bottom:1px solid #2a2a2a}
+.fail .fix a:hover{color:#fff}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.card{position:relative;text-decoration:none;color:inherit;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:16px;padding:28px 26px 26px;display:flex;flex-direction:column;gap:16px;min-width:0;overflow:hidden;transition:transform .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease}
+.card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad);opacity:0;transition:opacity .25s ease}
+.card:hover{transform:translateY(-4px);background:#0d0d0d;border-color:#333;box-shadow:0 20px 44px -20px rgba(0,0,0,.75)}
+.card:hover::before{opacity:1}
+.card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.card-title{font-size:17.5px;font-weight:600;color:#fff;line-height:1.35;margin:0}
+.card-num{font-family:var(--mono);font-size:12px;font-weight:500;color:#4d4d4d;letter-spacing:.03em;margin-right:9px}
+.card-hook{font-size:13.5px;line-height:1.55;color:#8f8f8f;margin:0}
+.cta{margin-top:auto;padding-top:2px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--muted);letter-spacing:.02em}
+.cta .circ{width:26px;height:26px;border-radius:50%;border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none;color:#fff}
+
+.closer{margin-top:72px;padding-top:28px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;font-family:var(--mono);font-size:12px}
+.closer-label{color:var(--muted);letter-spacing:.08em}
+.closer-links{display:flex;gap:18px;flex-wrap:wrap}
+.closer-links a{color:#9a9a9a;text-decoration:none}
+.closer-links a:hover{color:#fff}
+.pin{margin-top:14px;font-family:var(--mono);font-size:11.5px;line-height:1.6;color:#6f6f6f;width:100%}
+
+@media(max-width:640px){.wrap{padding:32px 18px 72px}h1{font-size:32px}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="back" href="./index.html">&larr; Quickstarts</a>
+    <span class="pill">PRE-MAINNET</span>
+  </div>
+
+  <h1>Deploy on the EEZ testnet</h1>
+  <p class="lede">One contract, live on the EEZ L2, in about fifteen minutes. Everything you need is on this page &mdash; the walkthroughs explain <em>why</em> it works, and none of them are prerequisites.</p>
+
+  <div class="banner" id="pendingBanner">
+    <b>Public endpoints are not live yet.</b> Every command on this page is final; the network table fills in the day they are. Meanwhile the same protocol runs on your own machine &mdash; <a href="./start-here.html" style="color:#e6dcc0">run the three dapp steps locally</a>.
+  </div>
+
+  <!-- ================= 0 · PREREQS ================= -->
+  <div class="sec-head"><h2 class="eyebrow">[ 00 &middot; BEFORE THE CLOCK STARTS ]</h2></div>
+  <div class="box">
+    <h3>Two prerequisites, then two exports</h3>
+    <p><a href="https://book.getfoundry.sh/getting-started/installation" style="color:#cfcfcf">Foundry v1.7.1</a> and a funded key. The <a href="" data-href="faucet" id="faucetLink" style="color:#cfcfcf">faucet</a> hands out xDAI on Chiado, which funds both layers.</p>
+<pre>curl -L https://foundry.paradigm.xyz | bash &amp;&amp; foundryup
+
+export EEZ_RPC=<span data-val="l2.rpcUrl" class="val pending">COMING SOON</span>   <span class="c"># the EEZ L2 RPC from the table below</span>
+export KEY=0x&hellip;               <span class="c"># your funded private key</span></pre>
+    <p class="warn">&#9888; Use a throwaway key. Never a key that holds real assets &mdash; testnet or not.</p>
+  </div>
+
+  <!-- ================= 1 · NETWORK ================= -->
+  <div class="sec-head"><h2 class="eyebrow">[ 01 &middot; THE NETWORK ]</h2></div>
+  <div class="box">
+    <div class="netwrap">
+    <table class="net">
+      <tr><th>CHAIN</th><th>RPC URL</th><th>CHAIN ID</th><th>EEZ MANAGER</th><th>EXPLORER</th></tr>
+      <tr>
+        <td class="k">EEZ L2 (testnet)</td>
+        <td><span class="val pending" data-val="l2.rpcUrl">COMING SOON</span><button class="copy" data-copy="l2.rpcUrl" disabled>COPY</button></td>
+        <td><span class="val pending" data-val="l2.chainId">COMING SOON</span></td>
+        <td><span class="val" data-val="l2.managerAddress">0x4200&hellip;0007</span><button class="copy" data-copy="l2.managerAddress">COPY</button></td>
+        <td><span class="val pending" data-val="l2.explorer" data-link>COMING SOON</span></td>
+      </tr>
+      <tr>
+        <td class="k">Chiado (L1)</td>
+        <td><span class="val" data-val="l1.rpcUrl">https://rpc.chiadochain.net</span><button class="copy" data-copy="l1.rpcUrl">COPY</button></td>
+        <td><span class="val" data-val="l1.chainId">10200</span></td>
+        <td><span class="val pending" data-val="l1.managerAddress">COMING SOON</span><button class="copy" data-copy="l1.managerAddress" disabled>COPY</button></td>
+        <td><span class="val" data-val="l1.explorer" data-link>gnosis-chiado.blockscout.com</span></td>
+      </tr>
+    </table>
+    </div>
+    <p style="margin-top:14px">The L2 manager is a predeploy &mdash; the same <code>0x4200&hellip;0007</code> address on every EEZ L2, known before the network is. The L1 manager address comes from the canonical protocol deploy.</p>
+  </div>
+
+  <!-- ================= 2 · DEPLOY ================= -->
+  <div class="sec-head"><h2 class="eyebrow">[ 02 &middot; DEPLOY ]</h2></div>
+  <div class="box">
+    <h3>One command</h3>
+<pre>forge create src/MyContract.sol:MyContract --rpc-url $EEZ_RPC --private-key $KEY</pre>
+    <p style="margin-top:14px">Expected output &mdash; if you see the last line, you're done:</p>
+<pre>Deployer: 0x&hellip;
+Deployed to: <span class="ok">0x&hellip;</span>
+Transaction hash: 0x&hellip;</pre>
+    <p style="margin-top:14px">Verify it landed: <code>cast code &lt;address&gt; --rpc-url $EEZ_RPC</code> &mdash; non-empty bytes means deployed.</p>
+  </div>
+
+  <!-- ================= 3 · FAILURES ================= -->
+  <div class="sec-head"><h2 class="eyebrow">[ 03 &middot; IF IT FAILS ]</h2></div>
+  <div class="box">
+    <div class="fails">
+      <div class="fail"><span class="sym">insufficient funds</span><p class="fix">The key isn't funded on the L2 &mdash; go back to the <a href="" data-href="faucet">faucet</a>, then <code>cast balance $ADDR --rpc-url $EEZ_RPC</code> to confirm before retrying.</p></div>
+      <div class="fail"><span class="sym">connection refused / timeout</span><p class="fix"><code>$EEZ_RPC</code> doesn't match the table above &mdash; re-copy it. <code>cast chain-id --rpc-url $EEZ_RPC</code> should print the chain id from the table.</p></div>
+      <div class="fail"><span class="sym">nonce too low</span><p class="fix">An earlier transaction from this key is stuck or already mined &mdash; <code>cast nonce $ADDR --rpc-url $EEZ_RPC</code> to inspect, then resend.</p></div>
+    </div>
+  </div>
+
+  <!-- ================= 4 · NEXT ================= -->
+  <div class="sec-head"><h2 class="eyebrow">[ 04 &middot; NEXT ]</h2></div>
+  <p class="sec-note">Deployed. Now make it cross-chain &mdash; in this order.</p>
+  <div class="grid">
+    <a class="card" href="./dapp-developers/q7-your-cross-chain-address.html">
+      <div class="card-head"><h3 class="card-title"><span class="card-num">01</span>Give it a cross-chain address</h3></div>
+      <p class="card-hook">Your contract's stand-in on every other rollup &mdash; readable before anything is deployed.</p>
+      <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">&rarr;</span></div>
+    </a>
+    <a class="card" href="./dapp-developers/q2-send-a-cross-chain-call.html">
+      <div class="card-head"><h3 class="card-title"><span class="card-num">02</span>Call it from the other side</h3></div>
+      <p class="card-hook">An ordinary encode, sent to the proxy &mdash; the answer comes back in the same transaction.</p>
+      <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">&rarr;</span></div>
+    </a>
+    <a class="card" href="./dapp-developers/q3-fix-the-msg-sender-gotcha.html">
+      <div class="card-head"><h3 class="card-title"><span class="card-num">03</span>Before you build on it</h3></div>
+      <p class="card-hook">Cross-chain, msg.sender is the proxy &mdash; not your contract. Fix the check before it ships.</p>
+      <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">&rarr;</span></div>
+    </a>
+  </div>
+
+  <div class="closer">
+    <span class="closer-label">EEZ QUICKSTARTS</span>
+    <span class="closer-links">
+      <a href="./index.html">All walkthroughs</a>
+      <a href="./start-here.html">Start here</a>
+      <a href="./llms.txt">llms.txt</a>
+      <a href="https://github.com/0xarmagan/eez-demos">GitHub</a>
+    </span>
+    <span class="pin" id="pinLine">Verified against <a href="https://github.com/eez-association/eez-core-protocol/tree/9735f53abbb6b9f5e863f405ad4555b4701b7fda" style="color:#9a9a9a;text-decoration:none;border-bottom:1px dotted #444">eez-core-protocol @ 9735f53</a> &mdash; pre-mainnet; interfaces may move.</span>
+  </div>
+
+</div>
+<script src="assets/testnet-config.js"></script>
+<script>
+(function(){
+  var cfg = window.EEZ_TESTNET; if(!cfg) return;
+  var live = cfg.status === "live";
+  function get(path){ return path.split(".").reduce(function(o,k){ return o && o[k]; }, cfg) || ""; }
+
+  document.querySelectorAll("[data-val]").forEach(function(el){
+    var v = get(el.getAttribute("data-val"));
+    if(!v){ el.textContent = "COMING SOON"; el.classList.add("pending"); return; }
+    el.classList.remove("pending");
+    if(el.hasAttribute("data-link")){
+      el.innerHTML = "";
+      var a = document.createElement("a");
+      a.href = v; a.textContent = v.replace(/^https?:\/\//,""); a.target = "_blank"; a.rel = "noopener";
+      el.appendChild(a);
+    } else {
+      el.textContent = v;
+    }
+  });
+
+  document.querySelectorAll("[data-copy]").forEach(function(btn){
+    var v = get(btn.getAttribute("data-copy"));
+    btn.disabled = !v;
+    if(v) btn.addEventListener("click", function(){
+      navigator.clipboard.writeText(v).then(function(){
+        btn.textContent = "COPIED"; setTimeout(function(){ btn.textContent = "COPY"; }, 1200);
+      });
+    });
+  });
+
+  document.querySelectorAll("[data-href]").forEach(function(a){
+    var v = get(a.getAttribute("data-href"));
+    if(v){ a.href = v; a.target = "_blank"; a.rel = "noopener"; }
+  });
+
+  var banner = document.getElementById("pendingBanner");
+  if(live && banner) banner.hidden = true;
+  if(live && cfg.deployedAt){
+    var pin = document.getElementById("pinLine");
+    if(pin) pin.insertAdjacentText("beforeend", " Canonical deploy: " + cfg.deployedAt + ".");
+  }
+})();
+</script>
+</body></html>
