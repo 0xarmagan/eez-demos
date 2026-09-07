@@ -48,6 +48,10 @@ h1{font-size:40px;line-height:1.12;font-weight:700;letter-spacing:-.02em;margin:
 .box p{margin:0 0 14px;font-size:13.5px;line-height:1.55;color:#8f8f8f;max-width:70ch}
 .box p:last-child{margin-bottom:0}
 pre{margin:0;background:#070707;border:1px solid #1a1a1a;border-radius:10px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.75;color:#b8b8b8}
+.codewrap{position:relative}
+.codewrap pre{padding-right:74px}
+.copyblock{position:absolute;top:10px;right:10px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted);background:#141414;border:1px solid #2a2a2a;border-radius:6px;padding:3px 9px;cursor:pointer}
+.copyblock:hover{color:#fff;border-color:#555}
 pre .c{color:#5e5e5e}
 pre .ok{color:var(--eez-green)}
 code{font-family:var(--mono);font-size:.92em;color:#cfcfcf}
@@ -120,10 +124,10 @@ td.k{font-weight:600;white-space:nowrap;color:#e6e6e6}
   <div class="box">
     <h3>Two prerequisites, then two exports</h3>
     <p><a href="https://book.getfoundry.sh/getting-started/installation" style="color:#cfcfcf">Foundry v1.7.1</a> and a funded key. The <a href="" data-href="faucet" id="faucetLink" style="color:#cfcfcf">faucet</a> hands out xDAI on Chiado, which funds both layers.</p>
-<pre>curl -L https://foundry.paradigm.xyz | bash &amp;&amp; foundryup
+<div class="codewrap"><pre>curl -L https://foundry.paradigm.xyz | bash &amp;&amp; foundryup
 
 export EEZ_RPC=<span data-val="l2.rpcUrl" class="val pending">COMING SOON</span>   <span class="c"># the EEZ L2 RPC from the table below</span>
-export KEY=0x&hellip;               <span class="c"># your funded private key</span></pre>
+export KEY=0x&hellip;               <span class="c"># your funded private key</span></pre><button class="copyblock" type="button">COPY</button></div>
     <p class="warn">&#9888; Use a throwaway key. Never a key that holds real assets &mdash; testnet or not.</p>
   </div>
 
@@ -156,7 +160,7 @@ export KEY=0x&hellip;               <span class="c"># your funded private key</s
   <div class="sec-head"><h2 class="eyebrow">[ 02 &middot; DEPLOY ]</h2></div>
   <div class="box">
     <h3>One command</h3>
-<pre>forge create src/MyContract.sol:MyContract --rpc-url $EEZ_RPC --private-key $KEY</pre>
+<div class="codewrap"><pre>forge create src/MyContract.sol:MyContract --rpc-url $EEZ_RPC --private-key $KEY</pre><button class="copyblock" type="button">COPY</button></div>
     <p style="margin-top:14px">Expected output &mdash; if you see the last line, you're done:</p>
 <pre>Deployer: 0x&hellip;
 Deployed to: <span class="ok">0x&hellip;</span>
@@ -241,6 +245,15 @@ Transaction hash: 0x&hellip;</pre>
   document.querySelectorAll("[data-href]").forEach(function(a){
     var v = get(a.getAttribute("data-href"));
     if(v){ a.href = v; a.target = "_blank"; a.rel = "noopener"; }
+  });
+
+  document.querySelectorAll(".copyblock").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var pre = btn.parentElement.querySelector("pre");
+      navigator.clipboard.writeText(pre.textContent.trim()).then(function(){
+        btn.textContent = "COPIED"; setTimeout(function(){ btn.textContent = "COPY"; }, 1200);
+      });
+    });
   });
 
   var banner = document.getElementById("pendingBanner");
