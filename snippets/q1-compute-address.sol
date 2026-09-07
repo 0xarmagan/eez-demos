@@ -29,10 +29,12 @@ function computeCrossChainProxyAddress(
             originalRollupId, originalAddress
         )
     );
-    bytes32 bytecodeHash = keccak256(abi.encodePacked(
-        type(CrossChainProxy).creationCode,
-        abi.encode(address(this))
-    ));
+    bytes32 bytecodeHash = keccak256(
+        abi.encodePacked(
+            type(CrossChainProxy).creationCode,
+            abi.encode(address(this))
+        )
+    );
     return address(uint160(uint256(keccak256(
         abi.encodePacked(
             bytes1(0xff), address(this),

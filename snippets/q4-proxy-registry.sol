@@ -35,7 +35,9 @@ contract RegistryReader {
 (bool isProxy, address origAddr, uint64 origRid)
     = eez.authorizedProxies(someAddress);
 
-if (isProxy) { /* real proxy for origAddr@origRid */ }
+if (isProxy) {
+    /* real proxy for origAddr@origRid */
+}
         origAddr;
         origRid;
         return isProxy;

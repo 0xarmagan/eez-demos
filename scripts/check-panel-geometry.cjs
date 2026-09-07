@@ -1,13 +1,14 @@
 #!/usr/bin/env node
-/* Assert no walkthrough's code panel overflows its fixed height at any step.
+/* Assert no walkthrough's code panel overflows its fixed 662x663 column at
+ * any step, on either axis.
  *
- * The panel is a fixed 663px column: 16 lines of the 34px step type fit, 17
- * do not. It is overflow-y:auto, so a 17th line is not destroyed — it moves
- * below the fold behind a scrollbar nobody looks for, and the ~11px overflow
- * is invisible in a screenshot. audit.sh cannot see this at all; it has
- * passed on a file that was silently over-height.
+ * The panel is overflow:auto, so overflowing content is not destroyed — it
+ * moves behind a scrollbar nobody looks for. Horizontally that means a line
+ * cut mid-identifier; vertically it means lines below the fold. Neither is
+ * visible in a screenshot and audit.sh cannot see either. On 2026-08-25 ten
+ * of fifteen pages were overflowing while every existing gate passed.
  *
- * Usage: node scripts/check-panel-height.cjs [file.html ...]
+ * Usage: node scripts/check-panel-geometry.cjs [file.html ...]
  *        (no args = every tracked walkthrough)
  *
  * Needs puppeteer. This repo has no node_modules, so if `require` cannot
@@ -108,13 +109,38 @@ async function main() {
         failures++;
         break;
       }
-      const m = await page.$eval("#codePanel", (el) => ({
-        scroll: el.scrollHeight,
-        client: el.clientHeight,
-      }));
-      if (m.scroll > m.client) {
+      const m = await page.$eval("#codePanel", (el) => {
+        const panelRight = el.getBoundingClientRect().right;
+        // Leaf nodes only: a wrapper's rect is the union of its children and
+        // would report every ancestor of one long line as also too wide.
+        const wide = Array.from(el.querySelectorAll("*"))
+          .filter((n) => !n.children.length && (n.textContent || "").trim())
+          .filter((n) => n.getBoundingClientRect().right > panelRight - 2)
+          .map((n) => (n.textContent || "").trim());
+        // One rendered line's height, used only to turn a pixel overflow into
+        // a line count in the message. 41 is the 1920-stage step type; the
+        // fallback keeps the message sane if a page ever differs.
+        const lh = parseFloat(getComputedStyle(el).lineHeight) || 41;
+        return {
+          scrollH: el.scrollHeight,
+          clientH: el.clientHeight,
+          scrollW: el.scrollWidth,
+          clientW: el.clientWidth,
+          hidden: Math.ceil((el.scrollHeight - el.clientHeight) / lh),
+          wide: wide.slice(0, 3),
+        };
+      });
+      if (m.scrollH > m.clientH) {
         console.error(
-          `OVER  ${f}  step ${i + 1}/${steps}  ${m.scroll} > ${m.client}`
+          `OVER  ${f}  step ${i + 1}/${steps}  height ${m.scrollH} > ${m.clientH}  ` +
+            `(${m.hidden} line(s) below the fold)`
+        );
+        failures++;
+      }
+      if (m.scrollW > m.clientW) {
+        const which = m.wide.length ? `  ${JSON.stringify(m.wide[0])}` : "";
+        console.error(
+          `OVER  ${f}  step ${i + 1}/${steps}  width ${m.scrollW} > ${m.clientW}${which}`
         );
         failures++;
       }
@@ -138,7 +164,7 @@ async function main() {
 
   console.log(
     failures === 0
-      ? `No over-height panels across ${checked} file(s).`
+      ? `No over-height or over-width panels across ${checked} file(s).`
       : `${failures} failure(s).`
   );
   process.exit(failures === 0 ? 0 : 1);

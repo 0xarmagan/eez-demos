@@ -548,7 +548,8 @@ return true;
 
 // CrossChainProxy.sol
     if (!success) {
-        (success, result) = EEZ.staticcall(abi.encodeCall(
+        (success, result) = EEZ.staticcall(
+            abi.encodeCall(
             IEEZ.staticCrossChainCall,
             (msg.sender, msg.data)));
     }
@@ -687,11 +688,13 @@ function _fallback() internal {
     }(abi.encodeCall(this.staticCheck, ()));
     bytes memory result;
     if (!success) {
-        (success, result) = EEZ.staticcall(abi.encodeCall(
+        (success, result) = EEZ.staticcall(
+            abi.encodeCall(
             IEEZ.staticCrossChainCall,
             (msg.sender, msg.data)));
     } else {
-        (success, result) = EEZ.call{value: msg.value}(abi.encodeCall(
+        (success, result) = EEZ.call{value: msg.value}(
+            abi.encodeCall(
             IEEZ.executeCrossChainCall,
             (msg.sender, msg.data)));
     }
@@ -1375,7 +1378,9 @@ struct ProxyInfo {
     uint64 originalRollupId;
 }
 
-if (isProxy) { /* real proxy for origAddr@origRid */ }
+if (isProxy) {
+    /* real proxy for origAddr@origRid */
+}
 ```
 
 ### Full compilable source — snippets/q4-proxy-registry.sol
@@ -1418,7 +1423,9 @@ contract RegistryReader {
 (bool isProxy, address origAddr, uint64 origRid)
     = eez.authorizedProxies(someAddress);
 
-if (isProxy) { /* real proxy for origAddr@origRid */ }
+if (isProxy) {
+    /* real proxy for origAddr@origRid */
+}
         origAddr;
         origRid;
         return isProxy;
@@ -1806,7 +1813,8 @@ $ git submodule update --init --recursive \
 $ kurtosis engine start
 
 $ export KURTOSIS_ENCLAVE=eez-dev
-$ export KURTOSIS_ARGS_FILE="$PWD/testing/kurtosis/ci-args.yaml"
+$ export KURTOSIS_ARGS_FILE=\
+    "$PWD/testing/kurtosis/ci-args.yaml"
 
 # ci-args.yaml carries deterministic private-
 # network keys. Never use them on a public
@@ -1821,7 +1829,8 @@ One script deploys contracts, generates the L2 genesis, and boots the L1, MEV-bu
 $ kurtosis engine start
 
 $ export KURTOSIS_ENCLAVE=eez-dev
-$ export KURTOSIS_ARGS_FILE="$PWD/testing/kurtosis/ci-args.yaml"
+$ export KURTOSIS_ARGS_FILE=\
+    "$PWD/testing/kurtosis/ci-args.yaml"
 
 $ bash testing/kurtosis/start.sh \
     "$KURTOSIS_ARGS_FILE"
@@ -1873,7 +1882,7 @@ $ cp .env.example .env
 # Outputs land in deployments.env (gitignored).
 # eez-node loads it alongside .env at startup, so
 # a successful deploy means `make run-node` Just
-# Works without any paste-the-address-into-.env step.
+# Works with no paste-the-address-into-.env step.
 deploy-protocol:
 	@./scripts/deploy.sh
 ```
@@ -1896,7 +1905,7 @@ $ cp .env.example .env
 # Outputs land in deployments.env (gitignored).
 # eez-node loads it alongside .env at startup, so
 # a successful deploy means `make run-node` Just
-# Works without any paste-the-address-into-.env step.
+# Works with no paste-the-address-into-.env step.
 deploy-protocol:
 	@./scripts/deploy.sh
 ```
@@ -1993,7 +2002,8 @@ With the Chiado stack from step 03 running, two transparent proxy fronts sit in 
 #   Embedded chiado L1 RPC   :18645
 #   L1→L2 front (Inbound)    :18999
 #   L2→L1 front (Outbound)   :18998
-# (Kurtosis devnet: source testing/kurtosis/ports.sh)
+# (Kurtosis devnet:
+#   source testing/kurtosis/ports.sh)
 
 # both fronts: eth_sendRawTransaction is held
 # + composed into the next Sync block; every
@@ -2058,7 +2068,8 @@ Ordinary blocks are the sequencer alone. One Sync block per L1 block adds the co
 
 ```rust
 pub struct Sequencer<T, ChainSpec>
-    where T: PayloadTypes<PayloadAttributes = EthPayloadAttributes> { ... }
+    where T: PayloadTypes<
+    PayloadAttributes = EthPayloadAttributes> { ... }
 
 pub struct Composer<L2: BlockReader> { ... }
 ```
@@ -2069,15 +2080,18 @@ Once Composer finishes, the Attester signs a hash of the result so the block can
 
 ```rust
 pub struct Sequencer<T, ChainSpec>
-    where T: PayloadTypes<PayloadAttributes = EthPayloadAttributes> { ... }
+    where T: PayloadTypes<
+    PayloadAttributes = EthPayloadAttributes> { ... }
 
 pub struct Composer<L2: BlockReader> { ... }
 
 pub(crate) struct Attester { ... }
 
-pub(crate) fn sign(&self, public_inputs_hash: AttestablePublicInputsHash)
-    -> Result<Bytes, SignerError> {
-    self.signer.sign_prehash(public_inputs_hash.into_inner())
+pub(crate) fn sign(&self,
+    public_inputs_hash: AttestablePublicInputsHash,
+) -> Result<Bytes, SignerError> {
+    self.signer.sign_prehash(
+        public_inputs_hash.into_inner())
 }
 ```
 
@@ -2087,15 +2101,18 @@ Deriver never trusts any of the three — it independently re-derives the same s
 
 ```rust
 pub struct Sequencer<T, ChainSpec>
-    where T: PayloadTypes<PayloadAttributes = EthPayloadAttributes> { ... }
+    where T: PayloadTypes<
+    PayloadAttributes = EthPayloadAttributes> { ... }
 
 pub struct Composer<L2: BlockReader> { ... }
 
 pub(crate) struct Attester { ... }
 
-pub(crate) fn sign(&self, public_inputs_hash: AttestablePublicInputsHash)
-    -> Result<Bytes, SignerError> {
-    self.signer.sign_prehash(public_inputs_hash.into_inner())
+pub(crate) fn sign(&self,
+    public_inputs_hash: AttestablePublicInputsHash,
+) -> Result<Bytes, SignerError> {
+    self.signer.sign_prehash(
+        public_inputs_hash.into_inner())
 }
 
 pub struct Deriver<L2>
@@ -2116,7 +2133,7 @@ Learn how an L2 commits first and L1 then settles or repairs it.
 The committer commits the Sync block; begin() records it in the ledger at its sync_height as Pending. Two adjacent acts.
 
 ```rust
-// optimistic.rs:67 — private; variant doc comments omitted
+// optimistic.rs:67 — private; variant docs omitted
 enum Resolution {
     Pending,
     Settled,
@@ -2145,13 +2162,15 @@ pub fn mark_settled(&self, sync_height: u64) {
 }
 
 // optimistic.rs:191 — observer verdict
-pub fn mark_failed(&self, sync_height: u64, slot_skipped: bool) {
+pub fn mark_failed(&self, sync_height: u64,
+    slot_skipped: bool) {
     // observer verdict: the bundle didn't land
 }
 
-// optimistic.rs:160 — the Deriver's cursor overrides Failed
-pub fn resolve_below_cursor(&self, cursor: u64) -> Vec<HeldTx> {
-    // flips Pending AND Failed at or below cursor to Settled
+// optimistic.rs:160 — the Deriver's cursor wins
+pub fn resolve_below_cursor(&self, cursor: u64)
+    -> Vec<HeldTx> {
+    // flips Pending AND Failed ≤ cursor to Settled
 }
 ```
 
@@ -2161,16 +2180,19 @@ Settled is not permanent. An L1 reorg takes rolled-out Settled entries back out;
 
 ```rust
 // optimistic.rs:247
-pub fn take_rolled_out(&self, new_l2_cursor: u64) -> Vec<HeldTx> {
-    // L1 reorg: removes Settled entries ABOVE the retreated
-    // cursor and returns their txs. Pending entries stay.
+pub fn take_rolled_out(&self, new_l2_cursor: u64)
+    -> Vec<HeldTx> {
+    // L1 reorg: removes Settled entries ABOVE
+    // the retreated cursor and returns their
+    // txs. Pending entries stay.
 }
 
-// optimistic.rs:270 (one line in source; wrapped here)
+// optimistic.rs:270 — wrapped; one line in source
 pub fn take_finalized(&self, finalized_l2: u64)
     -> Vec<(u64, TxHash, Vec<HeldTx>)> {
-    // the only clean exit — and the caller still checks
-    // each postBatch receipt exists on L1 before discarding
+    // the only clean exit — and the caller
+    // still checks each postBatch receipt
+    // exists on L1 before discarding
 }
 ```
 
@@ -2190,9 +2212,9 @@ The composer opens one gRPC stream to the proof-signer and sends a ProveHeader f
 ```protobuf
 service Prover {
   // Header MUST be first; blocks follow in order.
-  rpc Prove(stream ProveChunk) returns (ProveResponse);
+  rpc Prove(stream ProveChunk)
+      returns (ProveResponse);
 }
-
 message ProveHeader {
   uint64 rollup_id  = 1;
   uint64 from_block = 2;  // posted + 1
@@ -2237,11 +2259,15 @@ message ProveResponse {
   bytes signature          = 2;  // 65B
 }
 
-// eez-control-rpc/src/lib.rs:19 — Rust, not the proto
-pub const MAX_MESSAGE_BYTES: usize = 1024 * 1024 * 1024;
+// eez-control-rpc/src/lib.rs:19
+// — Rust, not the proto
+pub const MAX_MESSAGE_BYTES: usize =
+    1024 * 1024 * 1024;
 
-// eez-proof-signer/src/service.rs:26, :29 — the server
-const MAX_DECODING_MESSAGE_BYTES: usize = 256 * 1024 * 1024;
+// eez-proof-signer/src/service.rs:26, :29
+// — the server
+const MAX_DECODING_MESSAGE_BYTES: usize =
+    256 * 1024 * 1024;
 const MAX_ENCODING_MESSAGE_BYTES: usize = 1024;
 ```
 
@@ -2275,15 +2301,18 @@ handle_event routes the event to on_batch_posted, which decodes that calldata an
 
 ```rust
 // deriver.rs:786
-async fn handle_event(&self, event: L1Event) -> DeriverResult<()> {
+async fn handle_event(&self, event: L1Event)
+    -> DeriverResult<()> {
 
 // deriver.rs:836
 async fn on_batch_posted(
     // params omitted — signature verified, body not
 ) -> DeriverResult<()> {
 
-// deriver.rs:849 — the log is the trigger, this is the data
-let decoded = eez_payload_codec::decode(call_data.as_ref())?;
+// deriver.rs:849 — the log is the trigger,
+// this is the data
+let decoded =
+    eez_payload_codec::decode(call_data.as_ref())?;
 
 // deriver.rs:516
 pub fn execute_block(
@@ -2296,19 +2325,19 @@ catch_up() first re-checks the batches it already indexed and drops any whose L1
 ```rust
 // deriver.rs:169
 pub async fn catch_up(&self) -> DeriverResult<()> {
-
-// deriver.rs:257 — phase 1: walk the index tail BACKWARD,
-// dropping batches whose recorded L1 hash is no longer
-// canonical; returns the highest still-canonical anchor
-async fn revalidate_index_tail(&self) -> DeriverResult<Option<u64>> {
-
-// deriver.rs:246-249 — phase 2: scan forward (arms wrapped)
+// deriver.rs:257 — phase 1: walk the index tail
+// BACKWARD, drop batches whose recorded L1 hash
+// is stale; return the highest canonical anchor
+async fn revalidate_index_tail(&self)
+    -> DeriverResult<Option<u64>> {
+// deriver.rs:246-249 — phase 2, arms wrapped
 match anchor {
     Some(anchor_l1_block) =>
-        self.sync_batches_inner(anchor_l1_block, cursor).await,
+        self.sync_batches_inner(
+            anchor_l1_block, cursor).await,
     // cold start: deploy_block, NOT L1 genesis
-    None =>
-        self.sync_batches_inner(self.inner.deploy_block, 0).await,
+    None => self.sync_batches_inner(
+        self.inner.deploy_block, 0).await,
 }
 ```
 
@@ -2354,15 +2383,12 @@ function computeCrossChainProxyAddress(
 CREATE2 turns (manager, salt, bytecodeHash) into an address — before deployment.
 
 ```solidity
-    bytes32 salt = keccak256(
+    bytes32 bytecodeHash = keccak256(
         abi.encodePacked(
-            originalRollupId, originalAddress
+            type(CrossChainProxy).creationCode,
+            abi.encode(address(this))
         )
     );
-    bytes32 bytecodeHash = keccak256(abi.encodePacked(
-        type(CrossChainProxy).creationCode,
-        abi.encode(address(this))
-    ));
     return address(uint160(uint256(keccak256(
         abi.encodePacked(
             bytes1(0xff), address(this),
@@ -2406,10 +2432,12 @@ function computeCrossChainProxyAddress(
             originalRollupId, originalAddress
         )
     );
-    bytes32 bytecodeHash = keccak256(abi.encodePacked(
-        type(CrossChainProxy).creationCode,
-        abi.encode(address(this))
-    ));
+    bytes32 bytecodeHash = keccak256(
+        abi.encodePacked(
+            type(CrossChainProxy).creationCode,
+            abi.encode(address(this))
+        )
+    );
     return address(uint160(uint256(keccak256(
         abi.encodePacked(
             bytes1(0xff), address(this),

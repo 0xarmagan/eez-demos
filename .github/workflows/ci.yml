@@ -72,10 +72,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # A panel taller than its 663px column puts the tail below the fold
-      # behind a scrollbar nobody looks for, and audit.sh cannot see it at all.
-      # The checker needs a browser; this repo has no node_modules, so install
-      # puppeteer here rather than vendoring it.
+      # The code panel is a fixed 662x663 column with overflow:auto, so an
+      # over-long line is not destroyed — it hides behind a scrollbar nobody
+      # looks for: horizontally a line cut mid-identifier, vertically lines
+      # below the fold. audit.sh cannot see either. The checker needs a
+      # browser; this repo has no node_modules, so install puppeteer here
+      # rather than vendoring it.
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
@@ -83,8 +85,8 @@ jobs:
       - name: Install puppeteer
         run: npm install --no-save puppeteer
 
-      - name: No over-height code panels
-        run: NODE_PATH="$PWD/node_modules" node scripts/check-panel-height.cjs
+      - name: Code panel geometry
+        run: NODE_PATH="$PWD/node_modules" node scripts/check-panel-geometry.cjs
 
   solidity:
     name: Snippets compile and tests pass

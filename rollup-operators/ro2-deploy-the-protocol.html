@@ -309,7 +309,7 @@
     "# Outputs land in deployments.env (gitignored).",
     "# eez-node loads it alongside .env at startup, so",
     "# a successful deploy means `make run-node` Just",
-    "# Works without any paste-the-address-into-.env step.",
+    "# Works with no paste-the-address-into-.env step.",
     "deploy-protocol:",
     "\t@./scripts/deploy.sh"
   ];
@@ -529,6 +529,11 @@
   }
   function dismissIntro(){
     if (!introShowing()) { return; }
+    // One orientation per session: remember the dismissal so the next
+    // walkthrough opens straight at step 1 (same end state as a NEXT-link
+    // arrival). sessionStorage so a fresh visit gets the lead-in again;
+    // guarded because storage access can throw (private windows, blocked).
+    try { window.sessionStorage.setItem("eez-demos:intro-dismissed:v1", "1"); } catch (e) { /* no-op */ }
     introEl.setAttribute("hidden", "");
     for (var i = 0; i < introHidden.length; i++) {
       // Restore the recorded inline value, not "" - stageCol and the
@@ -555,6 +560,11 @@
     // intro again; a reload of the bare URL carries no marker and still
     // shows it.
     if (window.location.hash === "#skip-intro") { dismissIntro(); }
+    // Already dismissed a lead-in this session — the reader is oriented,
+    // skip this one too. A cold arrival (shared link, new tab) still gets it.
+    try {
+      if (window.sessionStorage.getItem("eez-demos:intro-dismissed:v1") === "1") { dismissIntro(); }
+    } catch (e) { /* treat as a cold arrival */ }
   }
 
   // The pin is read out of whichever citation link the page has, deferred so it

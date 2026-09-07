@@ -14,7 +14,7 @@
  *    script would describe buttons that are not there.
  *
  * 3. It shows once per SITE, not once per page. Someone working through all
- *    15 walkthroughs should meet this once.
+ *    17 walkthroughs should meet this once.
  *
  * No dependencies, no build step, ES5-compatible.
  */
@@ -22,6 +22,7 @@
   "use strict";
 
   var KEY = "eez-demos:tour-seen:v1";
+  var PULSE_KEY = "eez-demos:help-pulse:v1";
   var STAGE_W = 1920;
   var CARD_W = 430;
   var GAP = 20;
@@ -98,14 +99,14 @@
     if (q(".search-box-row")) {
       steps.push({ els: [q(".search-box-row")], pad: 10,
         kicker: "FIND ONE",
-        body: "Search all 15 walkthroughs by keyword \u2014 try msg.sender, CREATE2 or Kurtosis. " +
+        body: "Search all 17 walkthroughs by keyword \u2014 try msg.sender, CREATE2 or Kurtosis. " +
               "Pressing / jumps here from anywhere on the page." });
     }
     if (q(".filter-tabs")) {
       steps.push({ els: [q(".filter-tabs")], pad: 10,
         kicker: "OR BROWSE BY AUDIENCE",
-        body: "Three tracks: 6 for dapp developers, 4 for rollup operators, 5 for protocol " +
-              "researchers. The counts are live, so a filter never lands you on an empty list." });
+        body: "Three tracks: 7 for dapp developers, 4 for rollup operators, 6 for protocol " +
+              "researchers. A filter never lands you on an empty list." });
     }
     var firstTime = q(".sec-head");
     if (firstTime) {
@@ -341,16 +342,35 @@
     draw();
   }
 
+  /* First-visit affordance: instead of auto-running the tour, pulse the ?
+     button a few times so a new reader knows help exists. Once per browser
+     (its own key — opening the tour is a separate act), guarded like every
+     other storage access. */
+  function pulseHelp() {
+    var btn = document.getElementById("btnHelp");
+    if (!btn) { return; }
+    try {
+      if (root.localStorage.getItem(PULSE_KEY) === "1") { return; }
+      root.localStorage.setItem(PULSE_KEY, "1");
+    } catch (e) { return; }
+    var st = document.createElement("style");
+    st.textContent =
+      "@keyframes eezHelpPulse{0%{box-shadow:0 0 0 0 rgba(138,229,172,.75)}" +
+      "70%{box-shadow:0 0 0 11px rgba(138,229,172,0)}100%{box-shadow:0 0 0 0 rgba(138,229,172,0)}}";
+    document.head.appendChild(st);
+    btn.style.animation = "eezHelpPulse 1.6s ease-out 3";
+  }
+  pulseHelp();
+
   root.EEZTour = {
     start: start,
     hasSeen: hasSeen,
-    /* Auto-run on a first visit only. Skipped narrow, where the layout stacks
-       and "left / right" would be a lie. */
-    maybeStart: function (opts) {
-      if (hasSeen()) { return false; }
-      if (!isPageMode() && root.innerWidth && root.innerWidth <= 820) { return false; }
-      start(opts);
-      return true;
-    }
+    /* The tour no longer auto-runs anywhere. A cold arrival already meets the
+       lead-in slide on a walkthrough and the "first time here?" row on the
+       index; stacking a spotlight tour on top of those was the popup pile-up
+       this replaced. The ? button (pulsed once above) opens it on demand.
+       Kept as a callable no-op so the 17 pages' maybeStart() sites and any
+       scaffolded page stay valid. */
+    maybeStart: function () { return false; }
   };
 })(typeof window !== "undefined" ? window : this);
