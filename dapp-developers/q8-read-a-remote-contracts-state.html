@@ -172,7 +172,7 @@
         <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">the fallback forwards it to the manager</div>
       </div>
       <div style="font-family:var(--mono);font-size:12px;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:89 &#183; _fallback &#8599;</a></div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">A CrossChainProxy is an ordinary contract with an address on this chain. Only a call is routed. Everything the EVM can tell you about that address, it tells you about the local contract.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">Only a call is routed — every other question the EVM answers about the local contract.</div>
     </div>
 
     <!-- STEP 2: three reads, three real numbers, no revert -->
@@ -309,7 +309,7 @@
   var captions = [
     "The proxy is an ordinary contract, deployed on this chain. Every opcode that asks the EVM about an address answers about it \u2014 not about the contract it stands for.",
     "balance, extcodesize, extcodecopy and delegatecall describe the proxy; block-state opcodes describe the chain you are executing on. Each read succeeds and returns a real number about the wrong contract.",
-    "Call through the proxy instead. The read is routed and resolves against an entry written before your transaction ran \u2014 or reverts ExecutionNotFound(), which looks exactly like the destination reverting."
+    "Call through the proxy instead \u2014 the read is routed, and resolves against an entry written before your transaction ran."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,

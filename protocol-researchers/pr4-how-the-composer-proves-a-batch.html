@@ -238,7 +238,7 @@
           <div class="pill" style="color:#e8b15e;background:rgba(232,177,94,0.08);border:1px dashed #8a6a2e;font-size:13px;">MAX_MESSAGE_BYTES = 1,073,741,824 (1 GiB) — the CLIENT's limit</div>
           <div class="pill" style="color:#c9d1dc;background:rgba(232,177,94,0.05);border:1px dashed #8a6a2e;font-size:13px;">server: decode ≤ 256 MiB · encode = 1,024 B</div>
         </div>
-        <div style="font-size:14px;line-height:1.5;color:#8f98a8;">Two Rust constants, not part of prove.proto: eez-control-rpc/src/lib.rs:19 sets the client's limit; eez-proof-signer/src/service.rs:26 and :29 set the server's, clamped in at :184-186. lib.rs's own comment still claims the 1 GiB limit applies to both sides — it does not.</div>
+        <div style="font-size:14px;line-height:1.5;color:#8f98a8;">Rust constants, not prove.proto: lib.rs:19 is the client's limit, service.rs:26/:29 the server's (clamped at :184-186). lib.rs's comment claiming 1 GiB for both sides is wrong.</div>
       </div>
       <div style="font-size:16px;color:var(--muted);max-width:920px;">The signature only counts once it recovers to the registered attester — that check is the real gate, not the response arriving.</div>
     </div>

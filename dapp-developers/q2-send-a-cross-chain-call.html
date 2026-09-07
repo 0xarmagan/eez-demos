@@ -187,7 +187,7 @@
       <div style="font-size:16px;color:var(--muted);max-width:820px;">Same syntax as calling any contract — the proxy has no matching function, so the fallback catches it.</div>
       <div style="max-width:900px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
         <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">YOUR FRAME DECIDES THE PATH — NOT <span style="font-family:var(--mono);">view</span></div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">The fallback probes itself with a <span style="font-family:var(--mono);">tstore</span>, and a <span style="font-family:var(--mono);">tstore</span> only halts inside a static frame. So the routing is read off <em>your</em> call, not off the callee being <span style="font-family:var(--mono);">view</span>: <span style="font-family:var(--mono);">staticcall</span> reaches <span style="font-family:var(--mono);">staticCrossChainCall</span> and a <span style="font-family:var(--mono);">StaticExecutionEntry</span>, while a plain <span style="font-family:var(--mono);">call</span> reaches <span style="font-family:var(--mono);">executeCrossChainCall</span> and demands an <span style="font-family:var(--mono);">ExecutionEntry</span> no composer wrote for a read.</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">A <span style="font-family:var(--mono);">tstore</span> probe halts only inside a static frame, so the path is read off <em>your</em> frame, not the callee’s <span style="font-family:var(--mono);">view</span>: <span style="font-family:var(--mono);">staticcall</span> → <span style="font-family:var(--mono);">staticCrossChainCall</span>, plain <span style="font-family:var(--mono);">call</span> → <span style="font-family:var(--mono);">executeCrossChainCall</span>.</div>
       </div>
     </div>
 
@@ -218,11 +218,10 @@
           <div style="font-family:var(--mono);font-size:14px;color:#e0c48c;background:rgba(232,177,94,0.08);border:1px solid rgba(232,177,94,0.34);border-radius:6px;padding:6px 11px;">have &lt; need &#183; shortfall[user] = need - have</div>
         </div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">Runs with the proxy as msg.sender, and the return data comes back to you unwrapped — decode it like any same-chain read, then branch on it. That branch is the thing a bridge cannot give you: not "the message arrived," but a value from another rollup deciding what this transaction does.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">Runs with the proxy as msg.sender; the return data comes back unwrapped. Decode it like any same-chain read, then branch.</div>
       <div style="max-width:900px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
         <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">AND ONLY WHERE AN ENTRY ALREADY EXISTS</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">Nothing here is computed on demand. The composer wrote the entry before your transaction ran, so both paths can miss. A real execution resolves only in the block that proved it — <span style="font-family:var(--mono);">executeCrossChainCall</span> reverts <span style="font-family:var(--mono);">ExecutionNotInCurrentBlock</span> unless a verified batch for the destination rollup landed in this one. The read path differs by side: on L1 a static entry stays resolvable while its state roots still match, on L2 the same block gate applies.</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:9px;">Past that gate, the miss is named by the path it took. A state-changing call that finds no entry reverts <span style="font-family:var(--mono);">EntryNotFound(hash, callGas)</span> on L2 and <span style="font-family:var(--mono);">ExecutionNotFound</span> on L1; a read that finds no static entry reverts <span style="font-family:var(--mono);">ExecutionNotFound</span> on either side. None of them is distinguishable from the destination contract reverting on its own — so <span style="font-family:var(--mono);">ok == false</span> tells you the call did not happen, never why.</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">The composer wrote the entry before your transaction ran, and it resolves only in the block that proved it (<span style="font-family:var(--mono);">ExecutionNotInCurrentBlock</span>); only L1 static entries outlive that block, while their state roots still match. A miss — <span style="font-family:var(--mono);">EntryNotFound</span> on L2, <span style="font-family:var(--mono);">ExecutionNotFound</span> on L1 — is indistinguishable from the destination reverting on its own: <span style="font-family:var(--mono);">ok == false</span> says the call did not happen, never why.</div>
       </div>
     </div>
 
@@ -293,8 +292,8 @@
   var kickers = ["ENCODE IT LIKE ANY CALL", "STATICCALL, NOT CALL", "DECODE IT AND BRANCH"];
   var captions = [
     "Encode a normal call \u2014 no cross-chain-specific ABI.",
-    "Send it to the proxy address as a staticcall. The fallback probes itself with a tstore, which only halts inside a static frame \u2014 so your frame, not the callee being view, is what routes this to staticCrossChainCall and a pre-computed static entry.",
-    "The answer arrives as ordinary return data. Decode it and branch: have \u2265 need credits the account, have < need records the shortfall. A value from another rollup just decided what this transaction did."
+    "Send it to the proxy as a staticcall. The proxy keys off your frame, not the callee's view \u2014 that is what routes a read to its pre-computed static entry.",
+    "The answer arrives as ordinary return data. Decode it and branch — a value from another rollup just decided what this transaction did."
   ];
 
   var codeByStep = [

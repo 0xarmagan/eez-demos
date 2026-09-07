@@ -174,7 +174,7 @@
     <div id="s1" style="display:flex;flex-direction:column;gap:18px;">
       <div class="lbl">PREREQUISITE</div>
       <div style="border:1.5px dashed #7a5f2e;border-radius:9px;padding:10px 16px;max-width:1000px;">
-        <div style="font-family:var(--mono);font-size:13px;color:#f0cf9e;line-height:1.5;">Bring the node up first — the Chiado stack from step 03 (scripts/chiado-up.sh). xchain-test.sh checks the eez-node-chiado container and deployments.env before it starts, and exits if either is missing.</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#f0cf9e;line-height:1.5;">Bring the Chiado stack from step 03 up first (scripts/chiado-up.sh) — xchain-test.sh exits if the node container or deployments.env is missing.</div>
       </div>
       <div class="lbl">ENDPOINTS · README.md · the chiado compose stack</div>
       <div style="display:flex;flex-direction:column;gap:12px;">
@@ -211,7 +211,7 @@
         <div class="arrow">→</div>
         <div class="epuse" style="font-family:var(--mono);font-size:14px;color:#9edba8;">forwarded to that front's source-chain RPC</div>
       </div>
-      <div class="note">The two ingress fronts are transparent proxies sitting in front of L1 and L2, not separate chains of their own. These four ports are the compose stack's fixed ones; a Kurtosis devnet assigns host ports dynamically — <span style="font-family:var(--mono);font-size:14px;">source testing/kurtosis/ports.sh</span> for those.</div>
+      <div class="note">The fronts are transparent proxies, not separate chains. These ports are the compose stack's; a Kurtosis devnet assigns its own — <span style="font-family:var(--mono);font-size:14px;">source testing/kurtosis/ports.sh</span>.</div>
     </div>
 
     <!-- STEP 2: the bundle cap, and the silent-drop gotcha -->
@@ -225,14 +225,11 @@
       </div>
       <div class="warnbox">
         <div class="warnhdr">⚠ FRICTION · rbuilder-chiado</div>
-        <div class="warntxt">rbuilder-chiado silently drops the excess beyond ~3 — that's lost tx inclusion, not a queued retry.</div>
-        <div class="warntxt">Raise this only against a builder proven to include larger bundles atomically. Measure before bumping.</div>
+        <div class="warntxt">rbuilder-chiado silently drops the excess beyond ~3 — lost tx inclusion, not a queued retry. The raise-only-when-measured rule is in the config on the right.</div>
       </div>
       <div class="warnbox" style="border-left-color:#e8b15e;">
         <div class="warnhdr">⚠ WHAT "ATOMIC" ACTUALLY COVERS HERE</div>
-        <div class="warntxt">Cross-chain atomicity is bounded twice, and both bounds are visible from this config line. <b>One L1 block:</b> an execution resolves only in the block whose batch verified it — <span style="font-family:var(--mono);font-size:14px;">executeCrossChainCall</span> reverts <span style="font-family:var(--mono);font-size:14px;">ExecutionNotInCurrentBlock</span> otherwise (EEZL2.sol:228, EEZ.sol:209). There is no "later": nothing queues, nothing retries on its own.</div>
-        <div class="warntxt"><b>One bundle the builder took whole:</b> atomicity is a property of a bundle that landed intact. It is not enforced against the builder. rbuilder-chiado drops the excess past ~3 silently, and a bundle that loses members is not a failed transaction you can resend — the members that did land already executed.</div>
-        <div class="warntxt">So the guarantee to design against is: atomic within one bundle, in one L1 block, if the builder included all of it. Raising the cap widens the first two and leaves the third to a builder you have measured.</div>
+        <div class="warntxt">Atomic within one bundle, in one L1 block, if the builder included all of it. An execution resolves only in the block whose batch verified it — <span style="font-family:var(--mono);font-size:14px;">executeCrossChainCall</span> reverts <span style="font-family:var(--mono);font-size:14px;">ExecutionNotInCurrentBlock</span> otherwise (EEZL2.sol:228, EEZ.sol:209); nothing queues or retries. And a bundle that loses members is not resendable — the members that did land already executed.</div>
       </div>
       <div class="note">The cap is generous for one op — it's the first thing to check when a wave of txs comes up short.</div>
     </div>
@@ -331,8 +328,8 @@
 
   var kickers = ["TWO FRONTS, ONE JOB", "MIND THE BUNDLE SIZE", "EXERCISE IT"];
   var captions = [
-    "With the Chiado stack from step 03 running, two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block — once per L1 block, for cross-chain work — while everything else passes straight through.",
-    "EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it. That drop is also the limit of atomicity: cross-chain work is atomic within one bundle, in one L1 block, if the builder took the bundle whole \u2014 nothing queues and nothing retries.",
+    "Two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block, everything else passes straight through.",
+    "The cap defaults to 3 and rbuilder-chiado silently drops anything past it \u2014 that drop is also the limit of atomicity: one bundle, one L1 block, taken whole.",
     "xchain-test.sh drives both fronts through the full op × direction × direct/wrapper matrix and prints a RESULTS block of pipeline metrics — the box shows that block's format, not a captured run."
   ];
 

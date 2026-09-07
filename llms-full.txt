@@ -62,7 +62,7 @@ balance, extcodesize, extcodecopy and delegatecall describe the proxy; block-sta
 
 ### Step 3 — ASK IT, DON'T INSPECT IT
 
-Call through the proxy instead. The read is routed and resolves against an entry written before your transaction ran — or reverts ExecutionNotFound(), which looks exactly like the destination reverting.
+Call through the proxy instead — the read is routed, and resolves against an entry written before your transaction ran.
 
 ```diff
  address proxy = eez.computeCrossChainProxyAddress(
@@ -514,7 +514,7 @@ bytes memory data = abi.encodeCall(
 
 ### Step 2 — STATICCALL, NOT CALL
 
-Send it to the proxy address as a staticcall. The fallback probes itself with a tstore, which only halts inside a static frame — so your frame, not the callee being view, is what routes this to staticCrossChainCall and a pre-computed static entry.
+Send it to the proxy as a staticcall. The proxy keys off your frame, not the callee's view — that is what routes a read to its pre-computed static entry.
 
 ```solidity
 bytes memory data = abi.encodeCall(
@@ -535,7 +535,7 @@ fallback() external payable {
 
 ### Step 3 — DECODE IT AND BRANCH
 
-The answer arrives as ordinary return data. Decode it and branch: have ≥ need credits the account, have < need records the shortfall. A value from another rollup just decided what this transaction did.
+The answer arrives as ordinary return data. Decode it and branch — a value from another rollup just decided what this transaction did.
 
 ```solidity
 uint256 have = abi.decode(ret, (uint256));
@@ -1944,7 +1944,7 @@ $ mkdir -p configs && \
 
 ### Step 2 — DEPLOY, THEN START
 
-deploy-protocol writes deployments.env and genesis.json before docker compose starts the node, signer, and lighthouse. .env.chiado.example ships its three keys as 0xCHANGE_ME, and the proof signer must be the same key the deploy used.
+deploy-protocol writes deployments.env and genesis.json before compose starts the stack — and the proof signer must be the same key the deploy used.
 
 ```bash
 $ cp .env.example .env
@@ -1994,7 +1994,7 @@ Learn how to drive both fronts and read real pass/fail numbers.
 
 ### Step 1 — TWO FRONTS, ONE JOB
 
-With the Chiado stack from step 03 running, two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block — once per L1 block, for cross-chain work — while everything else passes straight through.
+Two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block, everything else passes straight through.
 
 ```bash
 # README.md · Endpoints (chiado compose stack)
@@ -2013,7 +2013,7 @@ With the Chiado stack from step 03 running, two transparent proxy fronts sit in 
 
 ### Step 2 — MIND THE BUNDLE SIZE
 
-EEZ_MAX_USER_TXS_PER_BUNDLE defaults to 3, and rbuilder-chiado silently drops anything past it. That drop is also the limit of atomicity: cross-chain work is atomic within one bundle, in one L1 block, if the builder took the bundle whole — nothing queues and nothing retries.
+The cap defaults to 3 and rbuilder-chiado silently drops anything past it — that drop is also the limit of atomicity: one bundle, one L1 block, taken whole.
 
 ```bash
 # both fronts: eth_sendRawTransaction is held
