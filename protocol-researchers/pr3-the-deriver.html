@@ -216,7 +216,7 @@
           <div class="byte" style="background:rgba(232,177,94,0.16);color:#f2dfb3;border:1px dashed #8a6a2e;">L1 #21,004,331 · hash ✗</div>
           <div class="byte" style="background:rgba(63,185,80,0.20);color:#eef8ee;border:1.5px solid var(--eez-green);font-weight:600;">L1 #21,004,318 · hash ✓</div>
         </div>
-        <div style="font-size:15px;color:#c9b894;max-width:960px;">Batches whose recorded L1 block hash is no longer canonical are dropped and the L2 safe cursor retreats. The highest still-canonical batch becomes the anchor.</div>
+        <div style="font-size:15px;color:#c9b894;max-width:960px;">Non-canonical batches drop and the safe cursor retreats — the highest still-canonical batch is the anchor.</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:9px;">
         <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:var(--eez-green);">PHASE 2 · SCAN FORWARD FROM THE ANCHOR — deriver.rs:246-249</div>

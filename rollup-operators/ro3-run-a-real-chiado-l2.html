@@ -170,7 +170,7 @@
         <div style="font-family:var(--mono);font-size:14px;color:#f0cf9e;background:rgba(232,177,94,0.1);border:1px solid #7a5f2e;border-radius:7px;padding:7px 13px;">faucet.chiadochain.net</div>
         <div style="font-size:15px;color:var(--muted);">funds the operator + poster keys with xDAI</div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:820px;">The contracts submodule, two Docker builds, a minimal Chiado L1 snapshot, a shared engine-API JWT, cloned consensus configs, and faucet-funded keys — once.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:820px;">All of it once — nothing here repeats on later runs.</div>
     </div>
 
     <!-- STEP 2: deploy, then start -->
@@ -196,9 +196,9 @@
         <div class="term" style="color:#d8d8d8;padding-left:20px;">-f docker-compose.chiado-node.yml up</div>
       </div>
       <div style="border:1.5px dashed #7a5f2e;border-radius:9px;padding:10px 16px;max-width:960px;">
-        <div style="font-family:var(--mono);font-size:13px;color:#f0cf9e;line-height:1.5;">EEZ_PROOF_SIGNER_KEY must be the same key the deploy used — its address was baked into ECDSAProofSystem as authorizedSigner. A fresh key here boots and produces blocks, and every attestation is rejected on L1.</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#f0cf9e;line-height:1.5;">EEZ_PROOF_SIGNER_KEY must be the deploy-time key (baked into ECDSAProofSystem as authorizedSigner) — a fresh key boots, produces blocks, and has every attestation rejected on L1.</div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:820px;">deploy-protocol writes deployments.env and datadir/genesis.json, then docker compose starts eez-node, eez-proof-signer, and lighthouse together.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:820px;">Deploy first; compose then starts eez-node, eez-proof-signer, and lighthouse together.</div>
     </div>
 
     <!-- STEP 3: health check -->
@@ -284,7 +284,7 @@
   var kickers = ["ONE-TIME SETUP", "DEPLOY, THEN START", "HEALTH CHECK"];
   var captions = [
     "One-time setup: the contracts submodule, local build tooling, plus everything the embedded L1 needs before it can sync.",
-    "deploy-protocol writes deployments.env and genesis.json before docker compose starts the node, signer, and lighthouse. .env.chiado.example ships its three keys as 0xCHANGE_ME, and the proof signer must be the same key the deploy used.",
+    "deploy-protocol writes deployments.env and genesis.json before compose starts the stack \u2014 and the proof signer must be the same key the deploy used.",
     "cast block-number against both ports confirms the embedded L1 is climbing and the L2 is producing."
   ];
 
