@@ -64,6 +64,10 @@ h1{font-size:40px;line-height:1.12;font-weight:700;letter-spacing:-.02em;margin:
 .run h3{margin:0 0 10px;font-size:15px;font-weight:600}
 .run p{margin:0 0 14px;font-size:13.5px;line-height:1.55;color:#8f8f8f;max-width:66ch}
 pre{margin:0;background:#070707;border:1px solid #1a1a1a;border-radius:10px;padding:14px 16px;overflow-x:auto;font-family:var(--mono);font-size:12.5px;line-height:1.75;color:#b8b8b8}
+.codewrap{position:relative}
+.codewrap pre{padding-right:74px}
+.copyblock{position:absolute;top:10px;right:10px;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted);background:#141414;border:1px solid #2a2a2a;border-radius:6px;padding:3px 9px;cursor:pointer}
+.copyblock:hover{color:#fff;border-color:#555}
 pre .c{color:#5e5e5e}
 code{font-family:var(--mono);font-size:.92em;color:#cfcfcf}
 
@@ -83,11 +87,11 @@ code{font-family:var(--mono);font-size:.92em;color:#cfcfcf}
   <a class="back" href="./index.html">&larr; Quickstarts</a>
 
   <h1>Start here</h1>
-  <p class="lede">Eighteen walkthroughs is a lot to land on. These are three reading orders through the ones that already exist &mdash; one per audience. No new material, just the order that makes them make sense and the reason each step follows the last.</p>
+  <p class="lede">Seventeen walkthroughs is a lot to land on. These are three reading orders through the ones that already exist &mdash; one per audience. No new material, just the order that makes them make sense and the reason each step follows the last.</p>
 
   <!-- ================= DAPP DEVELOPERS ================= -->
   <div class="sec-head"><h2 class="eyebrow">[ DAPP DEVELOPERS &middot; ABOUT TEN MINUTES ]</h2></div>
-  <p class="sec-note">Three functions, then the one surprise worth knowing before you build anything.</p>
+  <p class="sec-note">Three functions, then the one surprise worth knowing before you build anything. Here to ship, not read? <a href="./deploy.html" style="color:#cfcfcf">Deploy a contract on the EEZ testnet</a> &mdash; about fifteen minutes, no walkthroughs required.</p>
 
   <div class="grid">
     <a class="card" href="./dapp-developers/q8-read-a-remote-contracts-state.html">
@@ -118,15 +122,29 @@ code{font-family:var(--mono);font-size:.92em;color:#cfcfcf}
 
   <div class="run">
     <h3>Run all three locally</h3>
-    <p>The same three steps as runnable tests, on your own machine. No testnet, no Docker &mdash; the snippets carry no <code>forge-std</code> and no submodules, so they build on a bare checkout. You need <a href="https://book.getfoundry.sh/getting-started/installation" style="color:#cfcfcf">Foundry</a> and nothing else.</p>
-<pre>git clone https://github.com/0xarmagan/eez-demos.git
+    <p>The same three steps as runnable tests, on your own machine. No testnet, no Docker &mdash; the snippets carry no <code>forge-std</code> and no submodules, so they build on a bare checkout. You need <a href="https://book.getfoundry.sh/getting-started/installation" style="color:#cfcfcf">Foundry v1.7.1</a> and nothing else.</p>
+<div class="codewrap"><pre>git clone https://github.com/0xarmagan/eez-demos.git
 cd eez-demos/starter &amp;&amp; ./run.sh
 
 <span class="c"># or run one step at a time, from eez-demos/snippets:</span>
 forge test --match-test test_routedReadReturnsThePreCommittedEntry -vv   <span class="c"># 01</span>
 forge test --match-test test_theBranchTracksTheValueNotTheSuccessFlag -vv <span class="c"># 02</span>
-forge test --match-test test_sameChainCheck_revertsWhenCalledViaProxy -vv <span class="c"># 03</span></pre>
+forge test --match-test test_sameChainCheck_revertsWhenCalledViaProxy -vv <span class="c"># 03</span>
+
+<span class="c"># expected: ./run.sh prints one line per step, all three ending</span>
+<span class="c">#   pass</span>
+<span class="c"># anything else prints the failing test's output below the step.</span></pre><button class="copyblock" type="button">COPY</button></div>
   </div>
+<script>
+document.querySelectorAll(".copyblock").forEach(function(btn){
+  btn.addEventListener("click", function(){
+    var pre = btn.parentElement.querySelector("pre");
+    navigator.clipboard.writeText(pre.textContent.trim()).then(function(){
+      btn.textContent = "COPIED"; setTimeout(function(){ btn.textContent = "COPY"; }, 1200);
+    });
+  });
+});
+</script>
 
   <!-- ================= ROLLUP OPERATORS ================= -->
   <div class="sec-head"><h2 class="eyebrow">[ ROLLUP OPERATORS ]</h2></div>

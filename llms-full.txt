@@ -1841,7 +1841,7 @@ $ bash testing/kurtosis/start.sh \
 
 ## How to deploy the protocol
 
-Learn how one command deploys EEZ, the proof system and your manager.
+Learn what lands on L1 and L2, and in what order, once the network is up.
 
 - Page: https://eez-demos.vercel.app/rollup-operators/ro2-deploy-the-protocol.html
 - Source: `Makefile:47-65 · scripts/deploy.sh`
@@ -1912,7 +1912,7 @@ deploy-protocol:
 
 ## How to run against a real testnet
 
-Learn how to point the same stack at Chiado instead of a sandbox.
+Learn what changes when the L1 underneath you is Chiado rather than a disposable devnet.
 
 - Page: https://eez-demos.vercel.app/rollup-operators/ro3-run-a-real-chiado-l2.html
 - Source: `README.md · Run a chiado L2 (Docker)`
@@ -1985,7 +1985,7 @@ $ cast block-number \
 
 ## How to send and test a cross-chain call
 
-Learn how to drive both fronts and read real pass/fail numbers.
+Learn how to drive traffic through the stack you just brought up, and how to tell that it worked.
 
 - Page: https://eez-demos.vercel.app/rollup-operators/ro4-send-and-test-cross-chain-calls.html
 - Source: `README.md · scripts/xchain-test.sh`
@@ -2121,7 +2121,7 @@ pub struct Deriver<L2>
 
 ## How L1 stays the source of truth
 
-Learn how an L2 commits first and L1 then settles or repairs it.
+Learn why the L2 block is added immediately and rolled back if L1 never confirms it.
 
 - Page: https://eez-demos.vercel.app/protocol-researchers/pr2-commit-first-repair-if-needed.html
 - Source: `crates/eez-composer/src/optimistic.rs`
@@ -2198,7 +2198,7 @@ pub fn take_finalized(&self, finalized_l2: u64)
 
 ## How the composer attests a batch
 
-Learn why it is an attestation and not yet a proof, and who can swap that.
+Learn what is actually checked before a batch is accepted, and by whom.
 
 - Page: https://eez-demos.vercel.app/protocol-researchers/pr4-how-the-composer-proves-a-batch.html
 - Source: `crates/eez-control-rpc/proto/prove.proto · prove.v1.Prover`

@@ -136,7 +136,7 @@
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
-      <a class="back" href="../rollup-operators/ro1-run-the-devnet-with-kurtosis.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: How to run the whole stack locally →</a>
+      <a class="back" href="../deploy.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Deploy on the EEZ testnet →</a>
     </div>
   </div>
 
@@ -275,6 +275,8 @@
         <li><b>02 &#183; FOUR READS, NO REVERT</b>balance, extcodesize, extcodecopy and delegatecall describe the proxy; block-state opcodes describe this chain.</li>
         <li><b>03 &#183; ASK IT, DON'T INSPECT IT</b>A routed read resolves against a pre-computed entry, or reverts ExecutionNotFound() &#8212; indistinguishably from the destination reverting.</li>
       </ul>
+      <p style="margin:18px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#8a8a8a;letter-spacing:0.02em;">RUN IT YOURSELF &middot; <span style="color:#cfcfcf">forge test --match-test test_routedReadReturnsThePreCommittedEntry -vv</span> &mdash; from <a href="https://github.com/0xarmagan/eez-demos/tree/main/snippets" target="_blank" style="color:#8a8a8a;border-bottom:1px dotted #444;text-decoration:none;">eez-demos/snippets</a>, Foundry only.</p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:11.5px;line-height:1.7;color:#6f6f6f;letter-spacing:0.02em;">Verified against eez-core-protocol @ 9735f53 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough &#8594;</button>
       </div>
