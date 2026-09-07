@@ -118,14 +118,18 @@ code{font-family:var(--mono);font-size:.92em;color:#cfcfcf}
 
   <div class="run">
     <h3>Run all three locally</h3>
-    <p>The same three steps as runnable tests, on your own machine. No testnet, no Docker &mdash; the snippets carry no <code>forge-std</code> and no submodules, so they build on a bare checkout. You need <a href="https://book.getfoundry.sh/getting-started/installation" style="color:#cfcfcf">Foundry</a> and nothing else.</p>
+    <p>The same three steps as runnable tests, on your own machine. No testnet, no Docker &mdash; the snippets carry no <code>forge-std</code> and no submodules, so they build on a bare checkout. You need <a href="https://book.getfoundry.sh/getting-started/installation" style="color:#cfcfcf">Foundry v1.7.1</a> and nothing else.</p>
 <pre>git clone https://github.com/0xarmagan/eez-demos.git
 cd eez-demos/starter &amp;&amp; ./run.sh
 
 <span class="c"># or run one step at a time, from eez-demos/snippets:</span>
 forge test --match-test test_routedReadReturnsThePreCommittedEntry -vv   <span class="c"># 01</span>
 forge test --match-test test_theBranchTracksTheValueNotTheSuccessFlag -vv <span class="c"># 02</span>
-forge test --match-test test_sameChainCheck_revertsWhenCalledViaProxy -vv <span class="c"># 03</span></pre>
+forge test --match-test test_sameChainCheck_revertsWhenCalledViaProxy -vv <span class="c"># 03</span>
+
+<span class="c"># expected: ./run.sh prints one line per step, all three ending</span>
+<span class="c">#   pass</span>
+<span class="c"># anything else prints the failing test's output below the step.</span></pre>
   </div>
 
   <!-- ================= ROLLUP OPERATORS ================= -->
