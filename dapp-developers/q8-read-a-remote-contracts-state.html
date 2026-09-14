@@ -33,11 +33,11 @@
   a.back[style]:hover{transform:translateX(3px);}
   .byte{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;border-radius:4px;padding:5px 8px;}
 
-  /* Mobile reflow: below 820px, the fixed 1920x1080 stage becomes a normal
+  /* Mobile reflow: below 1120px, the fixed 1920x1080 stage becomes a normal
      stacked document instead of a scaled-and-panned deck. !important is
      required to win over the inline styles the markup and scaleStage() set. */
   a:focus-visible{outline:2px solid var(--eez-green);outline-offset:2px;}
-  @media (max-width:820px){
+  @media (max-width:1120px){
     .stage-wrap{position:static !important;inset:auto !important;display:block !important;overflow:visible !important;height:auto !important;width:100% !important;}
     #stage{position:static !important;width:100% !important;height:auto !important;transform:none !important;background-size:24px 24px;}
     #stage > div{position:static !important;width:100% !important;height:auto !important;}
@@ -72,7 +72,7 @@
      and no explanatory figure.)
 
      It is a <section>, and it is inserted as the FOURTH child of
-     #stage, on purpose: the shared <820px block above addresses
+     #stage, on purpose: the shared <1120px block above addresses
      #stage > div:first-child / :nth-child(2) / :nth-child(3) /
      :last-child, and a non-div in slot 4 leaves all four of those
      resolving to exactly the same elements as before.
@@ -100,7 +100,7 @@
      the shared button:focus-visible green ring. */
   #btnStart{font-size:20px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:1px solid #6283BD;border-radius:100px;padding:16px 34px;cursor:pointer;}
 
-  @media (max-width:820px){
+  @media (max-width:1120px){
     #intro{position:static !important;padding:28px 20px 36px;}
     .intro-title{font-size:30px;margin-top:14px;}
     .intro-lede{font-size:17px;margin-top:16px;}
@@ -135,7 +135,7 @@
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
-      <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">01 / 03</div>
+      <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">STEP 1 OF 3</div>
       <a class="back" href="../deploy.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Deploy on the EEZ testnet →</a>
     </div>
   </div>
@@ -261,11 +261,11 @@
   <!-- ===== LEAD-IN SLIDE - shown before the walkthrough begins =====
        This is a lead-in, NOT step 0. N, step, stepLabel, the dots,
        kickers, captions and codeByStep are all untouched, so the
-       counter still reads 01 / 03 and there are still three dots.
+       counter still reads STEP 1 OF 3 and there are still three dots.
        Inserted as the 4th child of #stage; see the CSS note. -->
   <section id="intro" aria-labelledby="introTitle">
     <div class="intro-inner">
-      <div class="intro-eyebrow">DAPP DEVELOPERS &#183; 07</div>
+      <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">How to read a remote contract's state</h1>
       <p class="intro-lede">The contract you want to read lives on another rollup. Here it has a stand-in &#8212; a proxy &#8212; and that proxy is a real contract on this chain, with its own code and its own balance.</p>
       <p class="intro-lede">So inspecting it answers about it. This is the caveat with no compiler help: the read succeeds and hands back a real number about the wrong contract. The fix is to call through the proxy instead of inspecting it.</p>
@@ -631,7 +631,7 @@
   }
 
   function render(){
-    document.getElementById("stepLabel").textContent = String(step+1).padStart(2,"0") + " / " + String(N).padStart(2,"0");
+    document.getElementById("stepLabel").textContent = "STEP " + (step+1) + " OF " + N;
     document.getElementById("kicker").textContent = kickers[step];
     document.getElementById("caption").textContent = captions[step];
     document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
@@ -668,10 +668,20 @@
       + '<span style="display:inline-block;width:10px;height:20px;background:var(--eez-green);animation:blink 1s step-end infinite;vertical-align:middle;"></span></div>';
     document.getElementById("codePanel").innerHTML = html;
 
+    // Named stepper: the current step shows its kicker name, the others stay
+    // compact (number + title tooltip) so seven steps still fit the footer.
     var d = "";
     for(var j=0;j<N;j++){
-      var st = j===step ? "width:30px;background:var(--eez-grad);" : (j<step ? "width:13px;background:#3a4250;" : "width:13px;background:#222a35;");
-      d += '<div style="height:6px;border-radius:3px;transition:width .2s,background .2s;'+st+'"></div>';
+      var cur = j===step;
+      var st = cur
+        ? "color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:1px solid transparent;"
+        : (j<step ? "color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;" : "color:var(--muted);background:transparent;border:1px solid #222;");
+      d += '<button type="button" data-step="'+j+'" title="'+kickers[j]+'"'
+        + (cur ? ' aria-current="step"' : '')
+        + ' style="display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:13px;letter-spacing:0.06em;border-radius:100px;padding:8px 14px;cursor:pointer;transition:background .2s,color .2s;'+st+'">'
+        + '<span>'+(j+1)+'</span>'
+        + (cur ? '<span style="letter-spacing:0.1em;">'+kickers[j]+'</span>' : '')
+        + '</button>';
     }
     document.getElementById("dots").innerHTML = d;
   }
@@ -722,6 +732,15 @@
 
   document.getElementById("btnPrev").addEventListener("click", prev);
   document.getElementById("btnNext").addEventListener("click", next);
+  document.getElementById("dots").addEventListener("click", function(e){
+    var b = e.target && e.target.closest ? e.target.closest("button[data-step]") : null;
+    if(!b) return;
+    clearTimeout(timer); playing = false; step = +b.getAttribute("data-step"); render(); staticBar();
+  });
+  // Reading beats autoplay: starting a selection in the code pauses the timer.
+  document.getElementById("codePanel").addEventListener("mousedown", function(){
+    if(playing){ clearTimeout(timer); playing = false; render(); staticBar(); }
+  });
   document.getElementById("btnPlay").addEventListener("click", togglePlay);
 
   // ---- Lead-in slide -------------------------------------------------
@@ -912,6 +931,7 @@
     else if(e.key===" "){ e.preventDefault(); togglePlay(); }
     else if(e.key==="Escape"){ window.location.href = "../index.html"; }
     else if(e.key==="r"||e.key==="R"){ clearTimeout(timer); step = 0; playing = true; render(); schedule(); }
+    else if(e.key==="?"){ var hb = document.getElementById("btnHelp"); if (hb) hb.click(); }
   });
   window.addEventListener("resize", scaleStage);
   scaleStage(); applyPanelMode(); staticBar();

@@ -184,13 +184,13 @@
     }
 
     if ($("stepNav")) {
-      var n = document.querySelectorAll("#dots > div").length;
+      var n = document.querySelectorAll("#dots > button").length;
       steps.push({
         els: [$("stepNav")],
         pad: 14,
         kicker: "BOTTOM RIGHT · MOVING THROUGH IT",
         body: (n ? n + " steps. " : "") + "Next and Prev step manually, Play advances on its own. " +
-              "The arrow keys work too, and the dots show where you are."
+              "The arrow keys work too, and the step pills show where you are — click one to jump to it."
       });
     }
 
