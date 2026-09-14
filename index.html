@@ -45,6 +45,8 @@ a:focus-visible,.card:focus-visible{outline:2px solid var(--eez-green);outline-o
 h1{font-size:48px;line-height:1.08;margin:0 0 32px;letter-spacing:-.01em;text-wrap:balance}
 h1 .w{font-weight:800}
 h1 .l{font-weight:300;color:#dcdcdc}
+.hero-sub{font-size:18px;line-height:1.55;color:#c9cfda;max-width:640px;margin:-14px 0 32px;text-wrap:pretty}
+@media(max-width:640px){.hero-sub{font-size:15.5px}}
 
 /* pill CTAs */
 .pill-row{display:flex;gap:12px;margin-bottom:60px;flex-wrap:wrap}
@@ -121,6 +123,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
   </div>
 
   <h1><span class="w">Learn</span> <span class="l">how EEZ</span><br><span class="w">actually</span> <span class="l">works</span></h1>
+  <p class="hero-sub">EEZ lets a contract call another rollup and use the answer in the same transaction &mdash; no callback, no timeout, no retry.</p>
 
   <div class="search-filter-wrap">
     <div class="search-box-row">
