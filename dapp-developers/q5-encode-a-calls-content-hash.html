@@ -555,7 +555,7 @@
     for(var j=0;j<N;j++){
       var cur = j===step;
       var st = cur
-        ? "color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:1px solid transparent;"
+        ? "color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;"
         : (j<step ? "color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;" : "color:var(--muted);background:transparent;border:1px solid #222;");
       d += '<button type="button" data-step="'+j+'" title="'+kickers[j]+'"'
         + (cur ? ' aria-current="step"' : '')
