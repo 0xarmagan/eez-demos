@@ -161,12 +161,12 @@
   <div id="stageCol" style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
 
     <!-- STEP 1: the .env prerequisite, then one command fans out into the
-         5-step deploy sequence the Makefile documents at :52-59. -->
+         4-step deploy sequence the Makefile documents at :52-58. -->
     <div id="s1" style="display:flex;flex-direction:column;gap:20px;">
       <div class="lbl">ONE COMMAND · .env → Makefile → scripts/deploy.sh</div>
       <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:12px 18px;max-width:980px;">
         <div style="font-family:var(--mono);font-size:15px;color:#7ee08c;">$ <span style="color:#d8d8d8;">cp .env.example .env</span></div>
-        <div style="font-family:var(--mono);font-size:14px;color:var(--muted);padding-left:18px;"># EEZ_L1_RPC_URL · EEZ_L1_POSTER_KEY · EEZ_PROOF_SIGNER_KEY · EEZ_L2_SYSTEM_KEY</div>
+        <div style="font-family:var(--mono);font-size:14px;color:var(--muted);padding-left:18px;"># EEZ_L1_RPC_URL · EEZ_L1_POSTER_KEY · EEZ_PROOF_SIGNER_KEY</div>
       </div>
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
         <div class="term">$ make deploy-protocol</div>
@@ -178,9 +178,8 @@
         <div class="chip chip-proof">2 · DeployECDSAProofSystem</div>
         <div class="chip chip-mgr">3 · DeployRollup</div>
         <div class="chip chip-core">4 · RegisterRollup</div>
-        <div class="chip chip-proof">5 · DeployBridgeL1</div>
       </div>
-      <div class="note">One script, one run — deploy.sh runs the same five steps, in order, every time. It reads .env, and hard-fails if any of those four variables is unset.</div>
+      <div class="note">One script, one run — deploy.sh first renders the L2 genesis against a finalized L1 reference, then runs the same four steps, in order, every time. It reads .env, and hard-fails if any of those three variables is unset.</div>
     </div>
 
     <!-- STEP 2: real deployments.env content, gitignored -->
@@ -190,17 +189,18 @@
         <div class="filehdr">deployments.env</div>
         <div class="badge-gitignore">gitignored</div>
       </div>
-      <!-- Illustrative excerpt of the template deploy.sh writes at :262-289.
+      <!-- Illustrative excerpt of the template deploy.sh writes at :325-359.
            The address values are placeholders, not captured output — every
            one is derived from your own deploy. EEZL2_ADDRESS is the one
-           literal upstream hardcodes. -->
+           literal upstream hardcodes (scripts/update-eezl2-genesis.sh:15),
+           read back from the genesis profile. -->
       <div class="envfile">
         <div class="envline" style="animation:riseIn .35s ease both;"><span style="color:#7ee08c;">EEZ_REGISTRY_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:var(--muted);">0x…</span></div>
         <div class="envline" style="animation:riseIn .35s .1s ease both;"><span style="color:#9edba8;">EEZ_ECDSA_PROOF_SYSTEM_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:var(--muted);">0x…</span></div>
         <div class="envline" style="animation:riseIn .35s .2s ease both;"><span style="color:#d9bdf5;">EEZ_ROLLUP_MANAGER_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:var(--muted);">0x…</span></div>
-        <div class="envline" style="animation:riseIn .35s .3s ease both;"><span style="color:#d8d8d8;">EEZL2_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:#d8d8d8;">0x4200000000000000000000000000000000000007</span></div>
+        <div class="envline" style="animation:riseIn .35s .3s ease both;"><span style="color:#d8d8d8;">EEZL2_ADDRESS</span><span style="color:var(--muted);">=</span><span style="color:#d8d8d8;">0x4B2760F84B83d6b3829E30A7573B0172B6d6402C</span></div>
       </div>
-      <div class="note">An illustrative excerpt — deploy.sh writes 19 keys here, including the vkey, attester, rollup id, initial state root, genesis path and the three L1 bridge addresses. Values come from your deploy; there is nothing to copy by hand.</div>
+      <div class="note">An illustrative excerpt — deploy.sh writes 24 keys here, including the vkey, attester, rollup id, initial block hash, genesis state root and paths, and the implementation and ProxyAdmin behind each proxy. Values come from your deploy; there is nothing to copy by hand.</div>
     </div>
 
     <!-- STEP 3: run-node loads both env files, zero manual config -->
@@ -240,7 +240,7 @@
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/Makefile#L47-L65" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">Makefile:47-65 · scripts/deploy.sh ↗</a></div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/Makefile#L50-L64" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">Makefile:50-64 · scripts/deploy.sh ↗</a></div>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
@@ -255,16 +255,16 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">ROLLUP OPERATORS</div>
       <h1 class="intro-title" id="introTitle">How to deploy the protocol</h1>
-      <p class="intro-lede">Copy .env.example to .env and fill in four variables; then one command — make deploy-protocol — runs ./scripts/deploy.sh through its five deploy steps.</p>
+      <p class="intro-lede">Copy .env.example to .env and fill in three variables; then one command — make deploy-protocol — renders the L2 genesis and runs ./scripts/deploy.sh through its four deploy steps.</p>
       <p class="intro-lede">Every address it produces lands in a gitignored deployments.env file, not your notes.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
-        <li><b>01 · ONE COMMAND</b>With .env in place, make deploy-protocol runs the 5-step sequence: DeployEEZ, DeployECDSAProofSystem, DeployRollup, RegisterRollup, DeployBridgeL1.</li>
+        <li><b>01 · ONE COMMAND</b>With .env in place, make deploy-protocol runs the 4-step sequence: DeployEEZ, DeployECDSAProofSystem, DeployRollup, RegisterRollup.</li>
         <li><b>02 · OUTPUTS LAND IN DEPLOYMENTS.ENV</b>Every address deploy.sh produces lands in a gitignored deployments.env file.</li>
         <li><b>03 · RUN-NODE JUST WORKS</b>make run-node loads deployments.env alongside .env at startup, so there’s no paste-the-address-into-.env step.</li>
       </ul>
-      <p style="margin:18px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#8a8a8a;letter-spacing:0.02em;">YOU KNOW IT WORKED &middot; <span style="color:#cfcfcf">deployments.env</span> exists and holds 19 keys &mdash; deploy.sh hard-fails before writing a partial one.</p>
-      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-rollup0 @ a4b9b2f &mdash; pre-mainnet; interfaces may move.</p>
+      <p style="margin:18px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#8a8a8a;letter-spacing:0.02em;">YOU KNOW IT WORKED &middot; <span style="color:#cfcfcf">deployments.env</span> exists and holds 24 keys &mdash; deploy.sh hard-fails before writing a partial one.</p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-rollupX @ 2c19e36 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
       </div>
@@ -293,8 +293,8 @@
 
   var kickers = ["ONE COMMAND", "OUTPUTS LAND IN DEPLOYMENTS.ENV", "RUN-NODE JUST WORKS"];
   var captions = [
-    "With `.env` in place, `make deploy-protocol` runs `./scripts/deploy.sh` through its five steps: DeployEEZ, DeployECDSAProofSystem, DeployRollup, RegisterRollup, DeployBridgeL1.",
-    "Every address deploy.sh produces lands in a gitignored `deployments.env` file, not your notes — 19 keys in all.",
+    "With `.env` in place, `make deploy-protocol` runs `./scripts/deploy.sh` through its four steps: DeployEEZ, DeployECDSAProofSystem, DeployRollup, RegisterRollup.",
+    "Every address deploy.sh produces lands in a gitignored `deployments.env` file, not your notes — 24 keys in all.",
     "`make run-node` loads `deployments.env` alongside `.env` at startup, so there's no paste-the-address-into-.env step."
   ];
 
@@ -304,12 +304,11 @@
     "# Reads .env (gitignored). Copy .env.example first.",
     "$ cp .env.example .env",
     "#   EEZ_L1_RPC_URL   EEZ_L1_POSTER_KEY",
-    "#   EEZ_PROOF_SIGNER_KEY   EEZ_L2_SYSTEM_KEY",
+    "#   EEZ_PROOF_SIGNER_KEY",
     "",
-    "# Runs the 5-step deploy sequence:",
+    "# Runs the 4-step deploy sequence:",
     "#   1. DeployEEZ    2. DeployECDSAProofSystem",
     "#   3. DeployRollup  4. RegisterRollup",
-    "#   5. DeployBridgeL1",
     "",
     "# Outputs land in deployments.env (gitignored).",
     "# eez-node loads it alongside .env at startup, so",
@@ -319,14 +318,14 @@
     "\t@./scripts/deploy.sh"
   ];
   var codeByStep = [
-    makefileLines.slice(0, 9),
-    makefileLines.slice(0, 16),
-    makefileLines.slice(0, 16)
+    makefileLines.slice(0, 8),
+    makefileLines.slice(0, 15),
+    makefileLines.slice(0, 15)
   ];
   var hlByStep = [
     [1,5],
-    [10,14,15],
-    [11,12,13]
+    [9,13,14],
+    [10,11,12]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

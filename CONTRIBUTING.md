@@ -28,9 +28,9 @@ Scaffolds a structurally-correct file from the `pr5` template (stage, code panel
 
 ## Source of truth
 
-Every snippet is verbatim, cited by exact `file:line`, against `eez-rollup0`:
+Every snippet is verbatim, cited by exact `file:line`, against `eez-rollupX`:
 
-- **Infra** — cite `eez-rollup0` @ `main`.
+- **Infra** — cite `eez-rollupX` at the commit pinned in `scripts/citation-pins.json`.
 - **Contracts** — `eez-core-protocol` is a submodule, pinned to a commit, not tracking `main`. Cite `eez-core-protocol/<path>:<line>` and verify against that pinned commit (`git ls-tree HEAD eez-core-protocol`), not its own `main` — they drift.
 
 Re-pull before writing anything, and again before merge if a PR sat open a while. If you can't verify something, say so rather than inventing a plausible signature.

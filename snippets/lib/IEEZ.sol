@@ -6,7 +6,7 @@ pragma solidity ^0.8.28;
 ///         protocol. Every signature below is copied verbatim from upstream:
 ///
 ///   eez-core-protocol/src/interfaces/IEEZ.sol
-///   @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+///   @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 ///
 /// If upstream changes a signature, scripts/check-snippets.mjs keeps compiling
 /// happily — it only proves the snippets are valid Solidity, not that they
@@ -29,8 +29,17 @@ interface IEEZ {
         external
         returns (address proxy);
 
+    /// @notice Returns the authorized proxy for a remote address, deploying it if needed.
+    function getOrCreateCrossChainProxy(address originalAddress, uint64 originalRollupId)
+        external
+        returns (address proxy);
+
     /// @notice Recipient of ether swept from proxies.
     function RECOVERY_ADDRESS() external view returns (address);
+
+    /// @notice Gas cap for the proxy's static-context probe. Proxies read it from
+    ///         the manager on every call rather than hardcoding it.
+    function STATIC_CHECK_GAS() external view returns (uint256);
 
     /// @notice Computes the deterministic CREATE2 address of the CrossChainProxy
     ///         for an (address, rollup) pair.

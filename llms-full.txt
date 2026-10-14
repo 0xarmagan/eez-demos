@@ -2,7 +2,7 @@
 
 > Seventeen interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
-> contracts that call across rollups, running the stack, and how Rollup0 settles and proves.
+> contracts that call across rollups, running the stack, and how RollupX settles and proves.
 
 Every code panel on this site is rendered from JavaScript at runtime, so fetching a page
 gives you the shell and not the content. This file is the whole thing in one document: each
@@ -25,9 +25,9 @@ Writing contracts that call across rollups.
 Learn how the answer is written down before your transaction runs, instead of being fetched while you wait.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q8-read-a-remote-contracts-state.html
-- Source: `eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback`
-- Pinned at commit: `9735f53`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89
+- Source: `eez-core-protocol/src/base/CrossChainProxy.sol:113 · _fallback`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113
 
 ### Step 1 — A CONTRACT ON THIS CHAIN
 
@@ -84,10 +84,10 @@ pragma solidity ^0.8.28;
 import {IEEZ} from "./lib/IEEZ.sol";
 
 // Panel source for: dapp-developers/q8-read-a-remote-contracts-state.html
-// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:89
+// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:113
 // and eez-core-protocol/docs/CAVEATS.md, "Opcodes that differ on cross-chain
-// proxies" and "Indistinguishable revert reasons when calling a proxy"
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// proxies" and "Missing entries and destination reverts"
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // This is the caveat with no compiler help. q3's mistake reverts, so you find
 // it the first time a call arrives through a proxy. The reads below SUCCEED and
@@ -96,7 +96,7 @@ import {IEEZ} from "./lib/IEEZ.sol";
 // WHY: a CrossChainProxy is an ordinary contract, deployed on THIS chain, with
 // its own code and its own balance. An opcode that asks the EVM about an
 // address answers about that local contract. Only a CALL is routed: the proxy's
-// fallback (CrossChainProxy.sol:89, `_fallback`) forwards to the manager, which
+// fallback (CrossChainProxy.sol:113, `_fallback`) forwards to the manager, which
 // resolves an outcome that was written down before your transaction ran. So
 // inspection is local, invocation is resolved.
 //
@@ -109,34 +109,35 @@ import {IEEZ} from "./lib/IEEZ.sol";
 // `delegatecall` deserves its own line: delegatecalling a proxy runs the
 // PROXY's code in your storage context. It does not reach the remote contract.
 //
-// WHEN A ROUTED READ RESOLVES — the rule is side-specific, so do not learn one
-// half of it and carry it to the other chain:
+// WHEN A ROUTED READ RESOLVES — both sides gate on the block, but what else
+// must match differs, so do not learn one half and carry it to the other chain:
 //
-//   L1 has NO block gate on the read path. `staticCrossChainCall`
-//   (EEZ.sol:1266-1328) falls through to
-//   `verificationByRollup[destRid].staticEntryQueue` (:1309-1310) and matches on
-//   `proxyEntryHash`, `destinationRollupId` and `_stateRootsMatch(...)`
-//   (:1317-1319). Upstream's own comment at :1308: "Note that static calls do
-//   not obsolete after a block passes. As long as the state roots matches it can
-//   be execute".
+//   L1: `staticCrossChainCall` (EEZ.sol:1379-1449) opens with
+//   `_validateProxyAndGetDestinationInfo()` (:1380), which reverts
+//   `ExecutionNotInCurrentBlock(destRid)` unless that rollup was verified in
+//   this block (:1578-1580). It then scans `staticEntryQueue` (:1420), or the
+//   batch's transient pool while one is mid-flight, and matches on
+//   `proxyEntryHash`, `destinationRollupId` and `_rootsMatch(...)` (:1437-1438).
+//   Upstream's own comment: "Static entries require both current-block
+//   verification (checked above) and matching root pins."
 //
-//   L2 DOES gate it. `EEZL2.sol:634` is
+//   L2: `staticCrossChainCall` (EEZL2.sol:660) opens with the same-named helper,
+//   whose gate at EEZL2.sol:791 is
 //   `if (lastLoadBlock != block.number) revert ExecutionNotInCurrentBlock();`,
-//   and the docstring at :588-589 gives the reason: "no pins on L2 — the block
-//   gate bounds staleness".
+//   and matches on the call hash and the live entry cursor (:705).
 //
-//   Mutating calls are block-gated on both sides. On L1 that is EEZ.sol:794-797,
-//   `revert ExecutionNotInCurrentBlock(destRid)`.
+//   Mutating calls go through the same helper on both sides, so they are
+//   block-gated too (EEZ.sol:863, EEZL2.sol:272).
 //
-// A read with nothing to resolve against reverts `ExecutionNotFound()` —
-// EEZ.sol:1327 and EEZL2.sol:644. That is the string to search for.
+// A read with nothing to resolve against reverts — `ExecutionNotFound()` on L1
+// (EEZ.sol:1410, :1448), `EntryNotFound(bytes32 crossChainCallHash, uint64
+// callGas)` on L2 (EEZL2.sol:699, :714). Those are the strings to search for.
 //
-// AND YOU CANNOT TELL WHY IT FAILED. CAVEATS.md, "Indistinguishable revert
-// reasons when calling a proxy": a caller cannot differentiate a call reverting
-// because no matching entry existed from the destination call actually
-// reverting. Both bubble up as a revert from the proxy, because
-// CrossChainProxy.sol:109-113 forwards the raw revert data unmodified. Do not
-// write a `try/catch` that claims to know which one happened.
+// AND REVERT DATA WON'T TELL YOU WHY IT FAILED. CAVEATS.md, "Missing entries
+// and destination reverts": a static lookup miss reverts at the proxy, as does a
+// matched reverting destination, and revert data alone is not a reliable way to
+// distinguish them — CrossChainProxy.sol:138-139 forwards the raw revert data
+// unmodified. Do not write a `try/catch` that claims to know which one happened.
 
 interface IRemote {
     function balanceOf(address account) external view returns (uint256);
@@ -179,11 +180,13 @@ bool sameChain =
     ///      against an entry the composer already wrote — so what comes back is
     ///      the remote contract's state, not the proxy's.
     ///
-    ///      When it resolves is side-specific: on L1 a static entry stays valid
-    ///      as long as the state roots still match (EEZ.sol:1308-1319), on L2 it
-    ///      is gated on the current block (EEZL2.sol:634). With no matching
-    ///      entry on either side, this reverts `ExecutionNotFound()` — and that
-    ///      revert is indistinguishable from the destination reverting.
+    ///      Both sides resolve it only in the block the entries were loaded: on
+    ///      L1 the rollup must be verified this block and the entry's root pins
+    ///      must match (EEZ.sol:1578-1580, :1437-1438), on L2 the table must be
+    ///      loaded this block (EEZL2.sol:791). With no matching entry this
+    ///      reverts — `ExecutionNotFound()` on L1, `EntryNotFound(...)` on L2 —
+    ///      and revert data alone cannot reliably tell that from the
+    ///      destination reverting.
     function readRemoteBalance(address user) external view returns (uint256) {
 address proxy = eez.computeCrossChainProxyAddress(
     remote, remoteRollupId
@@ -240,9 +243,10 @@ import {RemoteReader, IRemote} from "../q8-remote-reads.sol";
 // that, and nothing in a local table could stand in for it.
 //
 // Deliberately not modelled, because a local table cannot: the composer, the
-// rolling hash, state roots, the entry queues, and the side-specific rule for
-// when a static entry is still valid (L1 matches on state roots with no block
-// gate, EEZ.sol:1308-1319; L2 gates on the block, EEZL2.sol:634). The key below
+// rolling hash, state roots, the entry queues, and the rule for when a static
+// entry is still valid (both sides gate on the block, EEZ.sol:1578-1580 and
+// EEZL2.sol:791; L1 also requires the entry's root pins to match the live
+// roots, EEZ.sol:1437-1438). The key below
 // is a REDUCED stand-in for `computeCrossChainCallHash` — q5 has the real
 // eight-field preimage. What is under test is lookup-then-revert, not the
 // field list.
@@ -254,8 +258,10 @@ interface Vm {
     function expectRevert(bytes4) external;
 }
 
-/// @dev Named exactly as upstream names it (EEZ.sol:1327, EEZL2.sol:644), so a
-///      reader who hits it in production can search for the same string.
+/// @dev Named exactly as L1 names it (EEZ.sol:1410, :1448), so a reader who
+///      hits it in production can search for the same string. L2 reports its
+///      miss as `EntryNotFound(bytes32 crossChainCallHash, uint64 callGas)`
+///      instead (EEZL2.sol:173), which this local model does not reproduce.
 error ExecutionNotFound();
 
 /// @dev The destination's own error, for the case where an entry exists and
@@ -317,7 +323,7 @@ contract EntryTable {
 // @stand-in a two-line model of CrossChainProxy's read path: a real local
 //           contract with its own code and balance, whose fallback forwards to
 //           the manager's view entry point and hands back exactly what comes
-//           out — including raw revert data (CrossChainProxy.sol:104-113).
+//           out — including raw revert data (CrossChainProxy.sol:113-142).
 contract StubProxy {
     address internal immutable manager;
 
@@ -457,15 +463,19 @@ contract Q8RemoteReadsTest {
 
     /// @dev The honest limit. With no matching entry the routed read reverts
     ///      `ExecutionNotFound()` rather than returning zero. In production that
-    ///      is a read whose static entry is not in scope: on L2 because the block
-    ///      moved on (EEZL2.sol:634), on L1 because no entry in the queue matches
-    ///      the call and the live state roots (EEZ.sol:1308-1319).
+    ///      is an L1 read whose static entry is not in scope: no entry in the
+    ///      queue matches the call and the live root pins (EEZ.sol:1437-1438).
+    ///      A read after the block moved on fails earlier, with
+    ///      `ExecutionNotInCurrentBlock` (EEZ.sol:1580, EEZL2.sol:791), and an L2
+    ///      miss reverts `EntryNotFound(...)` instead (EEZL2.sol:699, :714).
     function test_unresolvedReadRevertsExecutionNotFound() public {
         vm.expectRevert(ExecutionNotFound.selector);
         reader.readRemoteBalance(STRANGER);
     }
 
-    /// @dev CAVEATS.md, "Indistinguishable revert reasons when calling a proxy".
+    /// @dev CAVEATS.md, "Missing entries and destination reverts": revert data
+    ///      alone is not a reliable way to tell a lookup miss from a matched
+    ///      reverting destination.
     ///      The proxy forwards raw revert data and adds nothing of its own, so
     ///      the caller has no field saying which layer failed — only the bytes it
     ///      was handed. Both cases below hand back the same bytes.
@@ -498,9 +508,9 @@ contract Q8RemoteReadsTest {
 Learn how the value that comes back decides what the rest of your transaction does — and why that removes the callback, the timeout and the retry you would otherwise have to write.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q2-send-a-cross-chain-call.html
-- Source: `eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback`
-- Pinned at commit: `9735f53`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89
+- Source: `eez-core-protocol/src/base/CrossChainProxy.sol:113 · _fallback`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113
 
 ### Step 1 — ENCODE IT LIKE ANY CALL
 
@@ -529,6 +539,7 @@ if (!ok) revert CrossChainCallFailed();
 
 // CrossChainProxy.sol
 fallback() external payable {
+    // ⋯ manager + self-probe branches
     _fallback();
 }
 ```
@@ -564,12 +575,13 @@ pragma solidity ^0.8.28;
 import {IEEZ} from "./lib/IEEZ.sol";
 
 // Panel source for: dapp-developers/q2-send-a-cross-chain-call.html
-// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:39 and :89
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:67 and :113
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // Caller side is ordinary: encode a call, send it to the proxy address like
 // any other contract. The proxy has no matching function, so everything
-// lands in fallback() and gets forwarded to the manager.
+// lands in fallback() and, unless the caller is the manager or the proxy
+// itself, gets forwarded to the manager.
 //
 // A read is the same code with one difference that matters: STATICCALL
 // instead of CALL. That is what the proxy's probe detects, and it is what
@@ -583,10 +595,10 @@ interface IRemote {
 
 /// @dev A cross-chain call fails for reasons an ordinary same-chain call
 ///      cannot, and the proxy forwards raw revert data either way
-///      (CrossChainProxy.sol:109-113). So `ok == false` tells you the call
+///      (CrossChainProxy.sol:137-141). So `ok == false` tells you the call
 ///      did not happen — never why. No matching entry in this block and a
 ///      genuine revert in the destination contract are indistinguishable
-///      here; see docs/CAVEATS.md "Indistinguishable revert reasons".
+///      here; see docs/CAVEATS.md "Missing entries and destination reverts".
 error CrossChainCallFailed();
 
 /// @dev Raised on a value that came back from another rollup. The point of the
@@ -620,12 +632,12 @@ if (!ok) revert CrossChainCallFailed();
     ///
     ///      The one thing to get right: the proxy picks static-vs-mutable from
     ///      the CALLER'S frame, not from `view`. Its probe does a `tstore`, and
-    ///      a `tstore` only halts under STATICCALL (CrossChainProxy.sol:71). A
+    ///      a `tstore` only halts under STATICCALL (CrossChainProxy.sol:89). A
     ///      plain `.call(data)` here would therefore take the mutable path and
     ///      demand an ExecutionEntry no composer wrote for a read — on L2 that
-    ///      is `EntryNotFound(hash, callGas)` (EEZL2.sol:441). STATICCALL is
-    ///      what routes it to `staticCrossChainCall` (EEZL2.sol:594) and a
-    ///      `StaticExecutionEntry`.
+    ///      is `EntryNotFound(hash, callGas)` (EEZL2.sol:501), with a hash that
+    ///      folds `isStatic = false`. STATICCALL is what routes it to
+    ///      `staticCrossChainCall` (EEZL2.sol:660) and a static entry.
     function settleIfFunded(address user, uint256 need) external returns (bool) {
 bytes memory data = abi.encodeCall(
     IRemote.balanceOf, (user)
@@ -650,42 +662,58 @@ return true;
     }
 }
 
-/// @dev Proxy side — how the forward actually happens.
+/// @dev The manager-only forwarding ABI the proxy dispatches by selector.
+///      Copied from eez-core-protocol/src/interfaces/ICrossChainProxy.sol:13.
+interface ICrossChainProxy {
+    function executeOnBehalf(address destination, uint64 callGas, bytes calldata data) external payable;
+}
+
+/// @dev Proxy side — how the forward actually happens. Upstream has no
+///      `staticCheck()` function and no hardcoded gas cap any more: both the
+///      manager's `executeOnBehalf` and the self-probe are served by selector
+///      inside fallback(), and the probe's cap is read from the manager
+///      (EEZBase.sol:65) so an upgraded manager can retune it without
+///      redeploying a single proxy.
 contract CrossChainProxySnippet {
     address internal immutable EEZ;
 
-    /// @dev Upstream value, from CrossChainProxy.sol:23. The cap IS the cost: in a
-    ///      static context the tstore is an exceptional halt, which consumes every
-    ///      unit forwarded to it, so the probe must be given only what you are
-    ///      willing to burn on every call. The mutable path spends ~300 of it.
-    uint256 internal constant STATIC_CHECK_GAS = 1_000;
+    /// @dev Upstream's detector variable (CrossChainProxy.sol:30). Writing it
+    ///      is a TSTORE, which halts in a static context.
+    uint256 transient _staticDetector;
 
-    constructor(address eez_) {
-        EEZ = eez_;
-    }
+    bytes4 private constant STATIC_CHECK_SELECTOR = bytes4(keccak256("staticCheck()"));
 
-    /// @dev tstore reverts in a STATICCALL context, tload does not. A self-call
-    ///      isolates the tstore so the revert can be caught instead of bubbling.
-    ///
-    ///      STAND-IN: upstream declares a named `uint256 transient _staticDetector`
-    ///      (CrossChainProxy.sol:18) and writes it in staticCheck() (:71). Raw slot 0
-    ///      is used here only to keep the probe to one readable line. Do not copy it:
-    ///      raw slot 0 is not reserved for you, so in a real contract that also uses
-    ///      transient storage this probe is a collision risk. Declare a named
-    ///      `transient` variable, as upstream does, and let the compiler place it.
-    function staticCheck() external {
-        assembly { tstore(0, 1) }
+    /// @dev The deploying manager is the only caller that can forward through
+    ///      this proxy. Upstream takes no constructor argument for it.
+    constructor() {
+        EEZ = msg.sender;
     }
 
 // CrossChainProxy.sol
 fallback() external payable {
+    if (msg.sender == EEZ && msg.sig == ICrossChainProxy.executeOnBehalf.selector) {
+        (address destination, uint64 callGas, bytes memory data) =
+            abi.decode(msg.data[4:], (address, uint64, bytes));
+        (bool ok, bytes memory ret) = callGas == 0
+            ? destination.call{value: msg.value}(data)
+            : destination.call{value: msg.value, gas: callGas}(data);
+        assembly {
+            switch ok
+            case 0 { revert(add(ret, 0x20), mload(ret)) }
+            default { return(add(ret, 0x20), mload(ret)) }
+        }
+    }
+    if (msg.sender == address(this) && msg.sig == STATIC_CHECK_SELECTOR) {
+        _staticDetector = 0;
+        return;
+    }
     _fallback();
 }
 
 function _fallback() internal {
-    (bool success,) = address(this).call{
-        gas: STATIC_CHECK_GAS
-    }(abi.encodeCall(this.staticCheck, ()));
+    uint256 staticCheckGas = IEEZ(EEZ).STATIC_CHECK_GAS();
+    (bool success,) = address(this).call{gas: staticCheckGas}(
+        abi.encodeWithSelector(STATIC_CHECK_SELECTOR));
     bytes memory result;
     if (!success) {
         (success, result) = EEZ.staticcall(
@@ -740,9 +768,9 @@ import {Caller, IRemote, CrossChainCallFailed} from "../q2-cross-chain-call.sol"
 // It models one property the whole design rests on: the outcome was written
 // BEFORE this transaction ran, it is addressed by the content of the call, and
 // a miss reverts. Deliberately not modelled, because a local table cannot: the
-// composer, the rolling hash, state roots, the entry queues, the block gate,
-// and the side-specific rule for when a static entry is still valid (L1 matches
-// on state roots, EEZ.sol:1308-1319; L2 gates on the block, EEZL2.sol:634).
+// composer, the rolling hash, state roots, the entry queues, the block gate
+// both sides apply (EEZ.sol:1580, EEZL2.sol:791), and L1's extra rule that a
+// static entry's state-root pins must still match (EEZ.sol:1352).
 //
 // The key below is a REDUCED stand-in for `computeCrossChainCallHash` — the
 // real preimage is eight fields in a fixed order (q5). What is under test is
@@ -754,12 +782,13 @@ interface Vm {
     function label(address, string calldata) external;
 }
 
-/// @dev Named as upstream names them, so a reader who hits one in production can
-///      search for the same string. The read path reverts `ExecutionNotFound` on
-///      either side (EEZ.sol:1327, EEZL2.sol:644); the L2 execution path reverts
-///      `EntryNotFound` and carries the observed `callGas` in the payload so the
-///      entry-builder can reproduce the key (EEZL2.sol:98, :441).
-error ExecutionNotFound();
+/// @dev Named as upstream names it, so a reader who hits one in production can
+///      search for the same string. This table models the L2 side, where BOTH
+///      paths miss with `EntryNotFound` and carry the call's hash and observed
+///      `callGas` in the payload (EEZL2.sol:173; read path :714, execution path
+///      :501). L1 misses with a bare `ExecutionNotFound` on both paths
+///      (EEZ.sol:1289, :1448). So the error NAME never tells you which path ran;
+///      on L2 the hash in the payload does, because it folds `isStatic`.
 error EntryNotFound(bytes32 crossChainCallHash, uint64 callGas);
 
 /// @dev The destination's own error, for the case where an entry exists and
@@ -788,7 +817,7 @@ contract EntryTable {
     }
 
     /// @dev Reduced stand-in for computeCrossChainCallHash. `isStatic` is folded
-    ///      in because upstream folds it in (EEZBase.sol:197) — it is what makes
+    ///      in because upstream folds it in (EEZBase.sol:300) — it is what makes
     ///      a read hash distinctly from an otherwise-identical write.
     function keyFor(bool isStatic, address sourceAddress, bytes memory callData) public view returns (bytes32) {
         return keccak256(abi.encode(isStatic, sourceAddress, destAddress, destRollupId, callData));
@@ -807,7 +836,7 @@ contract EntryTable {
         returns (bytes memory)
     {
         Entry storage entry = staticEntries[keyFor(true, sourceAddress, callData)];
-        if (!entry.present) revert ExecutionNotFound();
+        if (!entry.present) revert EntryNotFound(keyFor(true, sourceAddress, callData), 0);
         if (!entry.success) {
             bytes memory reason = entry.data;
             assembly {
@@ -820,7 +849,7 @@ contract EntryTable {
     /// @dev Same name and signature as the manager's execution entry point. The
     ///      execution pool is left empty on purpose: no composer writes an
     ///      ExecutionEntry for a read, which is exactly why a plain `call` for a
-    ///      read fails, and fails with the OTHER error name.
+    ///      read fails — under the same error name, with the non-static key.
     function executeCrossChainCall(address sourceAddress, bytes calldata callData)
         external
         payable
@@ -835,25 +864,27 @@ contract EntryTable {
 
 // @stand-in a model of CrossChainProxy's routing decision, and the only part of
 //           the protocol this test reproduces for real: the self-probe. The
-//           `tstore` and the gas cap are upstream's (CrossChainProxy.sol:23,
-//           :71, :89). Unlike the page snippet this declares a NAMED transient
-//           variable rather than writing raw slot 0 — which is what upstream
-//           does and what the snippet's STAND-IN note tells you to do.
+//           `tstore`, the selector-keyed self-probe and the 1_000 gas cap are
+//           upstream's (CrossChainProxy.sol:87-91, :119-120; EEZBase.sol:65).
+//           Upstream reads the cap from the manager on every call; this table
+//           has no such getter, so it is inlined here.
 contract ProbeProxy {
     address internal immutable manager;
 
     uint256 transient _staticDetector;
 
+    bytes4 private constant STATIC_CHECK_SELECTOR = bytes4(keccak256("staticCheck()"));
+
     constructor(address manager_) {
         manager = manager_;
     }
 
-    function staticCheck() external {
-        _staticDetector = 1;
-    }
-
     fallback() external payable {
-        (bool probeOk,) = address(this).call{gas: 1_000}(abi.encodeCall(this.staticCheck, ()));
+        if (msg.sender == address(this) && msg.sig == STATIC_CHECK_SELECTOR) {
+            _staticDetector = 0;
+            return;
+        }
+        (bool probeOk,) = address(this).call{gas: 1_000}(abi.encodeWithSelector(STATIC_CHECK_SELECTOR));
 
         bool ok;
         bytes memory result;
@@ -935,21 +966,24 @@ contract Q2CrossChainCallTest {
 
     /// @dev A plain CALL with the very same calldata does NOT reach the read
     ///      path. It reaches `executeCrossChainCall` and misses, because no
-    ///      composer writes an ExecutionEntry for a read — and it misses under
-    ///      the other error name. This is the failure a `.call(data)` read
-    ///      produces in production.
+    ///      composer writes an ExecutionEntry for a read. The error name is the
+    ///      same one a read miss uses; the key in the payload is what shows the
+    ///      path: it was hashed with `isStatic = false`. This is the failure a
+    ///      `.call(data)` read produces in production.
     function test_plainCallTakesTheExecutionPathAndMisses() public {
         _commitBalance(100);
         (bool ok, bytes memory ret) = address(proxy).call(readData);
         require(!ok, "a plain call must not resolve the static entry");
-        require(bytes4(ret) == EntryNotFound.selector, "expected EntryNotFound, not ExecutionNotFound");
+        require(keccak256(ret) == keccak256(abi.encodeWithSelector(
+            EntryNotFound.selector, table.keyFor(false, address(this), readData), uint64(0)
+        )), "expected EntryNotFound keyed isStatic = false");
     }
 
     /// @dev And the staticcall reaches the read path even though the committed
     ///      static entry is the ONLY entry that exists. Committed for THIS
     ///      contract, because the entry is keyed by the source address —
     ///      `sourceAddress` is the second field of the real preimage too
-    ///      (EEZBase.sol:197), so the same call from a different caller is a
+    ///      (EEZBase.sol:300), so the same call from a different caller is a
     ///      different entry.
     function test_staticcallTakesTheReadPath() public {
         table.commitStatic(address(this), readData, true, abi.encode(uint256(100)));
@@ -964,7 +998,7 @@ contract Q2CrossChainCallTest {
         _commitBalance(100);
         (bool ok, bytes memory ret) = address(proxy).staticcall(readData);
         require(!ok, "another caller's entry must not resolve");
-        require(bytes4(ret) == ExecutionNotFound.selector, "expected ExecutionNotFound");
+        require(bytes4(ret) == EntryNotFound.selector, "expected EntryNotFound");
     }
 
     // ── Both failure modes, and why they are the same failure to a caller ──
@@ -976,7 +1010,7 @@ contract Q2CrossChainCallTest {
 
     /// @dev An entry exists and records that the destination reverted. The
     ///      caller sees the identical outcome as the miss above — this is
-    ///      docs/CAVEATS.md "Indistinguishable revert reasons", executable.
+    ///      docs/CAVEATS.md "Missing entries and destination reverts", executable.
     function test_destinationRevertIsIndistinguishableFromAMiss() public {
         table.commitStatic(
             address(caller), readData, false, abi.encodeWithSelector(RemoteBalanceUnavailable.selector)
@@ -992,9 +1026,9 @@ contract Q2CrossChainCallTest {
 Learn why every onlyOwner, allowlist and approve on the far side keys to a proxy address instead of your contract — and why nothing reverts when it does.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q3-fix-the-msg-sender-gotcha.html
-- Source: `eez-core-protocol/src/base/CrossChainProxy.sol:39 · fallback`
-- Pinned at commit: `9735f53`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L39
+- Source: `eez-core-protocol/src/base/CrossChainProxy.sol:67 · fallback`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L67
 
 ### Step 1 — WHO ACTUALLY CALLS
 
@@ -1037,8 +1071,8 @@ pragma solidity ^0.8.28;
 import {IEEZ} from "./lib/IEEZ.sol";
 
 // Panel source for: dapp-developers/q3-fix-the-msg-sender-gotcha.html
-// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:39
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:67
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // Cross-chain, the destination never sees your EOA. It sees the proxy the
 // manager forwards through. So an owner check that passes on the same chain
@@ -1116,8 +1150,11 @@ interface Vm {
     function label(address, string calldata) external;
 }
 
-/// @dev Stands in for the manager. Uses the real derivation so the proxy
-///      address in the test is the one the protocol would actually produce.
+/// @dev Stands in for the manager. Uses the real derivation shape
+///      (eez-core-protocol EEZBase.sol:250 @ 9a1f815): CREATE2 over the manager's
+///      own address, the (rollupId, address) salt, and the hash of the
+///      argument-free proxy creation code. `Dummy` replaces the real proxy, so
+///      the address differs from production; the shape does not.
 contract MockEEZ {
     function computeCrossChainProxyAddress(address originalAddress, uint64 originalRollupId)
         external
@@ -1125,18 +1162,20 @@ contract MockEEZ {
         returns (address)
     {
         bytes32 salt = keccak256(abi.encodePacked(originalRollupId, originalAddress));
-        bytes32 bytecodeHash = keccak256(abi.encodePacked(type(Dummy).creationCode, abi.encode(address(this))));
+        bytes32 initCodeHash = keccak256(type(Dummy).creationCode);
         return address(
-            uint160(uint256(keccak256(abi.encodePacked(bytes1(0xff), address(this), salt, bytecodeHash))))
+            uint160(uint256(keccak256(abi.encodePacked(bytes1(0xff), address(this), salt, initCodeHash))))
         );
     }
 }
 
+/// @dev Like upstream's proxy, takes no constructor argument: the deploying
+///      manager is captured from msg.sender.
 contract Dummy {
     address public immutable manager;
 
-    constructor(address manager_) {
-        manager = manager_;
+    constructor() {
+        manager = msg.sender;
     }
 }
 
@@ -1192,9 +1231,9 @@ contract Q3MsgSenderTest {
 Learn how to read it, or deploy it.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q7-your-cross-chain-address.html
-- Source: `eez-core-protocol/src/base/EEZBase.sol:156 · createCrossChainProxy`
-- Pinned at commit: `9735f53`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L156
+- Source: `eez-core-protocol/src/base/EEZBase.sol:204 · createCrossChainProxy`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L204
 
 ### Step 1 — CALL IT INTO EXISTENCE
 
@@ -1250,24 +1289,28 @@ if (originalRollupId == _getRollupId())
 pragma solidity ^0.8.28;
 
 // Panel source for: dapp-developers/q7-your-cross-chain-address.html
-// Mirrors eez-core-protocol/src/base/EEZBase.sol:156, :166 and :176
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// Mirrors eez-core-protocol/src/base/EEZBase.sol:204, :239 and :250
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
-// The two calls a dapp developer *can* make. Neither is usually required:
-// the protocol creates the proxy itself on the first inbound call, at
-// eez-core-protocol/src/EEZ.sol:1139-1142. Neither call requires knowing
-// how the address is derived — that is protocol-researcher territory.
+// The two calls this page teaches. Neither is usually required: the protocol
+// creates the proxy itself on the first inbound call, through the public
+// getOrCreateCrossChainProxy (eez-core-protocol/src/base/EEZBase.sol:214),
+// called at eez-core-protocol/src/EEZ.sol:1169 and src/L2/EEZL2.sol:596.
+// Neither call requires knowing how the address is derived — that is
+// protocol-researcher territory.
 //
 // Signatures and bodies are hand-wrapped to the code panel's column, the
 // same way snippets/q1-compute-address.sol is, so that every line the panel
 // shows exists verbatim here. scripts/check-panel-drift.py asserts that.
 
-/// @dev Stand-in for the real proxy. Only `type(...).creationCode` matters here.
+/// @dev Stand-in for the real proxy. Only `type(...).creationCode` matters
+///      here; like upstream, the constructor takes no arguments and records
+///      its deployer (the manager) as msg.sender.
 contract CrossChainProxy {
-    address public immutable manager;
+    address internal immutable EEZ;
 
-    constructor(address manager_) {
-        manager = manager_;
+    constructor() {
+        EEZ = msg.sender;
     }
 }
 
@@ -1284,18 +1327,30 @@ function computeCrossChainProxyAddress(
 ) external view returns (address);
 }
 
+struct ProxyInfo {
+    bool isProxy;
+    address originalAddress;
+    uint64 originalRollupId;
+}
+
 contract CreateProxySnippet {
     /// @notice Error when a proxy is requested for an address on THIS
     ///         manager's own network.
     error SameNetworkProxy(uint64 rollupId);
 
-    mapping(address => bool) public authorizedProxies;
+    bytes32 public immutable PROXY_INIT_CODE_HASH;
+
+    mapping(address proxy => ProxyInfo info) public authorizedProxies;
 
     event CrossChainProxyCreated(
         address indexed proxy,
         address indexed originalAddress,
         uint64 originalRollupId
     );
+
+    constructor() {
+        PROXY_INIT_CODE_HASH = keccak256(type(CrossChainProxy).creationCode);
+    }
 
     function _getRollupId() internal pure returns (uint64) {
         return 0;
@@ -1305,6 +1360,13 @@ function createCrossChainProxy(
     address originalAddress,
     uint64 originalRollupId
 ) external returns (address proxy) {
+    return _createCrossChainProxyInternal(originalAddress, originalRollupId);
+}
+
+function _createCrossChainProxyInternal(
+    address originalAddress,
+    uint64 originalRollupId
+) internal returns (address proxy) {
 // A proxy stands in for a REMOTE address.
 if (originalRollupId == _getRollupId())
     revert SameNetworkProxy(originalRollupId);
@@ -1312,8 +1374,9 @@ if (originalRollupId == _getRollupId())
     bytes32 salt = keccak256(
         abi.encodePacked(originalRollupId, originalAddress)
     );
-    proxy = address(new CrossChainProxy{salt: salt}(address(this)));
-    authorizedProxies[proxy] = true;
+    proxy = address(new CrossChainProxy{salt: salt}());
+    authorizedProxies[proxy] =
+        ProxyInfo(true, originalAddress, originalRollupId);
     emit CrossChainProxyCreated(
         proxy, originalAddress, originalRollupId
     );
@@ -1326,14 +1389,10 @@ function computeCrossChainProxyAddress(
     bytes32 salt = keccak256(
         abi.encodePacked(originalRollupId, originalAddress)
     );
-    bytes32 bytecodeHash = keccak256(abi.encodePacked(
-        type(CrossChainProxy).creationCode,
-        abi.encode(address(this))
-    ));
     return address(uint160(uint256(keccak256(
         abi.encodePacked(
             bytes1(0xff), address(this),
-            salt, bytecodeHash
+            salt, PROXY_INIT_CODE_HASH
         )
     ))));
 }
@@ -1345,9 +1404,9 @@ function computeCrossChainProxyAddress(
 Learn how to read the on-chain registry instead of guessing.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q4-check-if-an-address-is-a-proxy.html
-- Source: `eez-core-protocol/src/base/EEZBase.sol:60 · authorizedProxies`
-- Pinned at commit: `9735f53`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L60
+- Source: `eez-core-protocol/src/base/EEZBase.sol:85 · authorizedProxies`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L85
 
 ### Step 1 — ONE PUBLIC MAPPING
 
@@ -1392,8 +1451,8 @@ pragma solidity ^0.8.28;
 import {IEEZManager} from "./lib/IEEZManager.sol";
 
 // Panel source for: dapp-developers/q4-check-if-an-address-is-a-proxy.html
-// Mirrors eez-core-protocol/src/base/EEZBase.sol:60
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// Mirrors eez-core-protocol/src/base/EEZBase.sol:85
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // The registry is a public mapping, so anyone can read it directly — no
 // events to replay, no indexer required. Because it maps to a struct, the
@@ -1438,9 +1497,9 @@ if (isProxy) {
 Learn how UnauthorizedProxy() stops any call that isn't proxy-routed.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q6-why-you-cant-call-the-manager-directly.html
-- Source: `eez-core-protocol/src/EEZ.sol:780 · executeCrossChainCall`
-- Pinned at commit: `9735f53`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L780
+- Source: `eez-core-protocol/src/EEZ.sol:855 · executeCrossChainCall`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L855
 
 ### Step 1 — ONLY A REAL PROXY
 
@@ -1450,7 +1509,9 @@ Anyone can try calling the manager's entry point directly.
 function executeCrossChainCall(
     address sourceAddress,
     bytes calldata callData
-) external payable returns (bytes memory) {
+) external payable returns (bytes memory result) {
+(address destAddress, uint64 destRid) =
+    _validateProxyAndGetDestinationInfo();
 ```
 
 ### Step 2 — THE GUARD
@@ -1458,9 +1519,10 @@ function executeCrossChainCall(
 It reverts — UnauthorizedProxy(). Only a real proxy gets through.
 
 ```solidity
+function _validateProxyAndGetDestinationInfo()
+    internal view returns (address, uint64) {
 ProxyInfo storage proxyInfo =
     authorizedProxies[msg.sender];
-
 if (!proxyInfo.isProxy)
     revert UnauthorizedProxy();
 ```
@@ -1470,12 +1532,12 @@ if (!proxyInfo.isProxy)
 Both proxy entry points open with this check, so no proxy-routed call reaches execution without it.
 
 ```solidity
+function _validateProxyAndGetDestinationInfo()
+    internal view returns (address, uint64) {
 ProxyInfo storage proxyInfo =
     authorizedProxies[msg.sender];
-
 if (!proxyInfo.isProxy)
     revert UnauthorizedProxy();
-
 // msg.sender must be a real proxy —
 // never the caller's own address
 ```
@@ -1487,12 +1549,17 @@ if (!proxyInfo.isProxy)
 pragma solidity ^0.8.28;
 
 // Panel source for: dapp-developers/q6-why-you-cant-call-the-manager-directly.html
-// Mirrors eez-core-protocol/src/EEZ.sol:780
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// Mirrors eez-core-protocol/src/EEZ.sol:855 and :1561
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
-// The registry check is the first thing the entry point does. There is no
-// path into execution that skips it, which is why calling the manager
-// yourself cannot work no matter how the calldata is shaped.
+// The registry check is the first thing the entry point does: its first line
+// calls _validateProxyAndGetDestinationInfo, whose first check is the registry
+// lookup. staticCrossChainCall opens with the same helper (EEZ.sol:1380).
+// There is no path into execution that skips it, which is why calling the
+// manager yourself cannot work no matter how the calldata is shaped.
+//
+// Omitted here: the helper's second check, _requireVerifiedThisBlock(destRid)
+// (EEZ.sol:1571), which only runs once the caller is already a proxy.
 
 struct ProxyInfo {
     bool isProxy;
@@ -1508,17 +1575,27 @@ contract ManagerEntrySnippet {
 function executeCrossChainCall(
     address sourceAddress,
     bytes calldata callData
-) external payable returns (bytes memory) {
+) external payable returns (bytes memory result) {
+(address destAddress, uint64 destRid) =
+    _validateProxyAndGetDestinationInfo();
+    sourceAddress;
+    callData;
+    destAddress;
+    destRid;
+    return "";
+}
+
+function _validateProxyAndGetDestinationInfo()
+    internal view returns (address, uint64) {
 ProxyInfo storage proxyInfo =
     authorizedProxies[msg.sender];
-
 if (!proxyInfo.isProxy)
     revert UnauthorizedProxy();
 // msg.sender must be a real proxy —
 // never the caller's own address
-    sourceAddress;
-    callData;
-    return "";
+    address destAddress = proxyInfo.originalAddress;
+    uint64 destRid = proxyInfo.originalRollupId;
+    return (destAddress, destRid);
 }
 }
 ```
@@ -1599,9 +1676,9 @@ contract Q6ManagerDirectTest {
 Learn how to hash eight fields in the one order that works.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q5-encode-a-calls-content-hash.html
-- Source: `eez-core-protocol/src/base/EEZBase.sol:198`
-- Pinned at commit: `9735f53`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L198
+- Source: `eez-core-protocol/src/base/EEZBase.sol:285`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L285
 
 ### Step 1 — 8 FIELDS, FIXED ORDER
 
@@ -1652,8 +1729,8 @@ return keccak256(abi.encode(
 pragma solidity ^0.8.28;
 
 // Panel source for: dapp-developers/q5-encode-a-calls-content-hash.html
-// Mirrors eez-core-protocol/src/base/EEZBase.sol:198
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// Mirrors eez-core-protocol/src/base/EEZBase.sol:285
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // Field order is load-bearing. abi.encode (not encodePacked) 32-byte pads
 // every static field and length-prefixes `data`, so reordering two fields
@@ -1784,12 +1861,12 @@ Learn how to bring up the node, proof-signer and the L1 in a disposable network.
 
 - Page: https://eez-demos.vercel.app/rollup-operators/ro1-run-the-devnet-with-kurtosis.html
 - Source: `testing/kurtosis/README.md`
-- Pinned at commit: `a4b9b2f`
-- Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/testing/kurtosis/README.md
+- Pinned at commit: `2c19e36`
+- Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/testing/kurtosis/README.md
 
 ### Step 1 — PREREQS + SUBMODULE
 
-A Linux host with Docker, all local tooling, plus the real contract source pulled in via submodule.
+A Linux host with Docker, all local tooling, plus the real contract source pulled in via submodule and the standalone eez-rollup-ui repo.
 
 ```bash
 # disposable local devnet
@@ -1823,11 +1900,9 @@ $ export KURTOSIS_ARGS_FILE=\
 
 ### Step 3 — ONE SCRIPT → FULL STACK
 
-One script deploys contracts, generates the L2 genesis, and boots the L1, MEV-builder, node and proof-signer together — several minutes on the first run.
+One script deploys contracts, generates the L2 genesis, and boots the L1, MEV-builder, node, proof-signer and protocol playground together — several minutes on the first run. ports.sh then prints and exports every endpoint.
 
 ```bash
-$ kurtosis engine start
-
 $ export KURTOSIS_ENCLAVE=eez-dev
 $ export KURTOSIS_ARGS_FILE=\
     "$PWD/testing/kurtosis/ci-args.yaml"
@@ -1835,8 +1910,13 @@ $ export KURTOSIS_ARGS_FILE=\
 $ bash testing/kurtosis/start.sh \
     "$KURTOSIS_ARGS_FILE"
 
-# the first start builds three images and
+# the first start builds four images and
 # pulls the client images: several minutes
+
+$ source testing/kurtosis/ports.sh
+#   L1 cross-chain front:  http://127.0.0.1:<port>
+#   L2 cross-chain front:  http://127.0.0.1:<port>
+#   Protocol playground:   http://127.0.0.1:<port>
 ```
 
 ## How to deploy the protocol
@@ -1844,40 +1924,38 @@ $ bash testing/kurtosis/start.sh \
 Learn what lands on L1 and L2, and in what order, once the network is up.
 
 - Page: https://eez-demos.vercel.app/rollup-operators/ro2-deploy-the-protocol.html
-- Source: `Makefile:47-65 · scripts/deploy.sh`
-- Pinned at commit: `a4b9b2f`
-- Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/Makefile#L47-L65
+- Source: `Makefile:50-64 · scripts/deploy.sh`
+- Pinned at commit: `2c19e36`
+- Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/Makefile#L50-L64
 
 ### Step 1 — ONE COMMAND
 
-With `.env` in place, `make deploy-protocol` runs `./scripts/deploy.sh` through its five steps: DeployEEZ, DeployECDSAProofSystem, DeployRollup, RegisterRollup, DeployBridgeL1.
+With `.env` in place, `make deploy-protocol` runs `./scripts/deploy.sh` through its four steps: DeployEEZ, DeployECDSAProofSystem, DeployRollup, RegisterRollup.
 
 ```bash
 # Reads .env (gitignored). Copy .env.example first.
 $ cp .env.example .env
 #   EEZ_L1_RPC_URL   EEZ_L1_POSTER_KEY
-#   EEZ_PROOF_SIGNER_KEY   EEZ_L2_SYSTEM_KEY
+#   EEZ_PROOF_SIGNER_KEY
 
-# Runs the 5-step deploy sequence:
+# Runs the 4-step deploy sequence:
 #   1. DeployEEZ    2. DeployECDSAProofSystem
 #   3. DeployRollup  4. RegisterRollup
-#   5. DeployBridgeL1
 ```
 
 ### Step 2 — OUTPUTS LAND IN DEPLOYMENTS.ENV
 
-Every address deploy.sh produces lands in a gitignored `deployments.env` file, not your notes — 19 keys in all.
+Every address deploy.sh produces lands in a gitignored `deployments.env` file, not your notes — 24 keys in all.
 
 ```bash
 # Reads .env (gitignored). Copy .env.example first.
 $ cp .env.example .env
 #   EEZ_L1_RPC_URL   EEZ_L1_POSTER_KEY
-#   EEZ_PROOF_SIGNER_KEY   EEZ_L2_SYSTEM_KEY
+#   EEZ_PROOF_SIGNER_KEY
 
-# Runs the 5-step deploy sequence:
+# Runs the 4-step deploy sequence:
 #   1. DeployEEZ    2. DeployECDSAProofSystem
 #   3. DeployRollup  4. RegisterRollup
-#   5. DeployBridgeL1
 
 # Outputs land in deployments.env (gitignored).
 # eez-node loads it alongside .env at startup, so
@@ -1895,12 +1973,11 @@ deploy-protocol:
 # Reads .env (gitignored). Copy .env.example first.
 $ cp .env.example .env
 #   EEZ_L1_RPC_URL   EEZ_L1_POSTER_KEY
-#   EEZ_PROOF_SIGNER_KEY   EEZ_L2_SYSTEM_KEY
+#   EEZ_PROOF_SIGNER_KEY
 
-# Runs the 5-step deploy sequence:
+# Runs the 4-step deploy sequence:
 #   1. DeployEEZ    2. DeployECDSAProofSystem
 #   3. DeployRollup  4. RegisterRollup
-#   5. DeployBridgeL1
 
 # Outputs land in deployments.env (gitignored).
 # eez-node loads it alongside .env at startup, so
@@ -1915,72 +1992,69 @@ deploy-protocol:
 Learn what changes when the L1 underneath you is Chiado rather than a disposable devnet.
 
 - Page: https://eez-demos.vercel.app/rollup-operators/ro3-run-a-real-chiado-l2.html
-- Source: `README.md · Run a chiado L2 (Docker)`
-- Pinned at commit: `a4b9b2f`
-- Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/README.md
+- Source: `docs/runbooks/chiado-quickstart.md`
+- Pinned at commit: `2c19e36`
+- Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/docs/runbooks/chiado-quickstart.md
 
-### Step 1 — ONE-TIME SETUP
+### Step 1 — CONFIGURE ONCE
 
-One-time setup: the contracts submodule, local build tooling, plus everything the embedded L1 needs before it can sync.
+Configure once: .env from the Chiado example with a synchronized RPC and dedicated poster and proof-signer keys, plus the L1 snapshot and JWT the embedded L1 needs to sync.
 
 ```bash
-# one-time setup
-$ git submodule update --init --recursive
+# 1. Configure
+$ cp .env.chiado.example .env
+$ chmod 600 .env
+# set EEZ_L1_RPC_URL, EEZ_L1_POSTER_KEY,
+#     EEZ_PROOF_SIGNER_KEY
 
-$ docker build -t eez-node:local .
-$ docker build -f Dockerfile.signer \
-    -t eez-proof-signer:local .
+# 2. Prepare chain data — once
+$ mkdir -p data
 $ docker run --rm -v "$PWD/data/chiado-l1:/data" \
     ghcr.io/gnosischain/reth_gnosis:v2.0.0 \
     download --chain chiado --minimal \
     --datadir /data
 $ openssl rand -hex 32 > data/jwt.hex
-$ git clone \
-    https://github.com/gnosischain/configs.git \
-    /tmp/gnosis-configs
-$ mkdir -p configs && \
-    cp -r /tmp/gnosis-configs/chiado configs/chiado
 ```
 
-### Step 2 — DEPLOY, THEN START
+### Step 2 — DEPLOY ONCE
 
-deploy-protocol writes deployments.env and genesis.json before compose starts the stack — and the proof signer must be the same key the deploy used.
+Deploy once with the published deploy image: it writes deployments.env and the genesis files, and it broadcasts transactions — never rerun it blindly, and never as a restart.
 
 ```bash
-$ cp .env.example .env
-# set EEZ_L1_RPC_URL, EEZ_L1_POSTER_KEY,
-#     EEZ_PROOF_SIGNER_KEY, EEZ_L2_SYSTEM_KEY
-$ EEZ_DEPLOY_SKIP_SIMULATION=1 \
-    make deploy-protocol
-
-# -> writes deployments.env
-# -> writes datadir/genesis.json
-# (deploy runs before up --
-#  no separate genesis step)
-
-$ cp .env.chiado.example .env.chiado
-# host paths + funded keys + bundler URL
-# EEZ_PROOF_SIGNER_KEY = the deploy-time key
-$ docker compose --env-file .env.chiado \
-    -f docker-compose.chiado-node.yml up
+# 3. Deploy contracts — once
+$ source .env
+$ mkdir -p datadir contracts/broadcast
+$ docker run --rm --pull always \
+  --platform linux/amd64 --network host \
+  -v "$PWD:$PWD" \
+  -v "$PWD/.env:/repo/.env:ro" \
+  -v "$PWD/contracts/broadcast:\
+/repo/contracts/broadcast" \
+  -e EEZ_DEPLOYMENTS_FILE=\
+"$PWD/deployments.env" \
+  -e EEZ_GENESIS_OUT="$PWD/datadir/genesis.json" \
+  -e EEZ_DEPLOY_SKIP_SIMULATION=1 \
+  "$EEZ_DEPLOY_IMAGE"
 ```
 
-### Step 3 — HEALTH CHECK
+### Step 3 — START AND CHECK
 
-cast block-number against both ports confirms the embedded L1 is climbing and the L2 is producing.
+chiado-up.sh starts eez-node, eez-proof-signer and Lighthouse, then reports chiado L2 is UP only after L2 production, an L1 settlement and retrievable blobs.
 
 ```bash
-$ cp .env.chiado.example .env.chiado
-$ docker compose --env-file .env.chiado \
-    -f docker-compose.chiado-node.yml up
+# 4. Start and check
+$ bash scripts/chiado-up.sh
 
-# ~5 min: lighthouse checkpoint-syncs L1,
-# catches up past the deploy block
+# success: chiado L2 is UP + a settlement
+# transaction hash
+#   L2 RPC                   :18688
+#   Embedded chiado L1 RPC   :18645
+#   L1→L2 front (Inbound)    :18999
+#   L2→L1 front (Outbound)   :18998
 
-$ cast block-number \
-    --rpc-url http://localhost:18645
-$ cast block-number \
-    --rpc-url http://localhost:18688
+# a timeout leaves containers running:
+$ docker compose logs --tail=100 \
+    eez-node eez-proof-signer lighthouse
 ```
 
 ## How to send and test a cross-chain call
@@ -1989,12 +2063,12 @@ Learn how to drive traffic through the stack you just brought up, and how to tel
 
 - Page: https://eez-demos.vercel.app/rollup-operators/ro4-send-and-test-cross-chain-calls.html
 - Source: `README.md · scripts/xchain-test.sh`
-- Pinned at commit: `a4b9b2f`
-- Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/README.md
+- Pinned at commit: `2c19e36`
+- Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/README.md
 
 ### Step 1 — TWO FRONTS, ONE JOB
 
-Two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is held for the next Sync block, everything else passes straight through.
+Two transparent proxy fronts sit in front of L1 and L2: a signed tx that enters the EEZ dispatcher is held for the next Sync block, ordinary traffic passes straight through.
 
 ```bash
 # README.md · Endpoints (chiado compose stack)
@@ -2005,28 +2079,28 @@ Two transparent proxy fronts sit in front of L1 and L2: sendRawTransaction is he
 # (Kurtosis devnet:
 #   source testing/kurtosis/ports.sh)
 
-# both fronts: eth_sendRawTransaction is held
-# + composed into the next Sync block; every
-# other eth_* call is forwarded to the front's
-# source-chain RPC.
+# both fronts: a signed tx that enters the
+# source chain's EEZ cross-chain dispatcher is
+# held + composed into the next Sync block;
+# ordinary txs go to the source-chain mempool.
 ```
 
 ### Step 2 — MIND THE BUNDLE SIZE
 
-The cap defaults to 3 and rbuilder-chiado silently drops anything past it — that drop is also the limit of atomicity: one bundle, one L1 block, taken whole.
+On Chiado the cap is auto: overflow stays queued for a later Sync block, and a tx that fails settlement three times is evicted. Atomicity is one bundle, one L1 block, taken whole.
 
 ```bash
-# both fronts: eth_sendRawTransaction is held
-# + composed into the next Sync block; every
-# other eth_* call is forwarded to the front's
-# source-chain RPC.
+# both fronts: a signed tx that enters the
+# source chain's EEZ cross-chain dispatcher is
+# held + composed into the next Sync block;
+# ordinary txs go to the source-chain mempool.
 
-# compose mode caps bundle size:
-EEZ_MAX_USER_TXS_PER_BUNDLE=3   # default
-# ⚠ rbuilder-chiado silently drops txs beyond
-#   ~3 per bundle — raise only against a
-#   builder proven to include larger bundles
-#   atomically. Measure before bumping.
+# Maximum held user cross-chain txs, combined
+# across both directions, offered to one Sync
+# block. Auto adapts to measured preparation
+# time and actual gas/blob capacity. Overflow
+# stays queued.
+EEZ_MAX_USER_TXS_PER_BUNDLE=auto
 ```
 
 ### Step 3 — EXERCISE IT
@@ -2034,12 +2108,12 @@ EEZ_MAX_USER_TXS_PER_BUNDLE=3   # default
 xchain-test.sh drives both fronts through the full op × direction × direct/wrapper matrix and prints a RESULTS block of pipeline metrics — the box shows that block's format, not a captured run.
 
 ```bash
-# compose mode caps bundle size:
-EEZ_MAX_USER_TXS_PER_BUNDLE=3   # default
-# ⚠ rbuilder-chiado silently drops txs beyond
-#   ~3 per bundle — raise only against a
-#   builder proven to include larger bundles
-#   atomically. Measure before bumping.
+# Maximum held user cross-chain txs, combined
+# across both directions, offered to one Sync
+# block. Auto adapts to measured preparation
+# time and actual gas/blob capacity. Overflow
+# stays queued.
+EEZ_MAX_USER_TXS_PER_BUNDLE=auto
 # bring the node up first: scripts/chiado-up.sh
 $ EEZ_WAVE_COUNT=5 bash scripts/xchain-test.sh
 # prints a RESULTS block: hit-rate, consecutive
@@ -2051,47 +2125,50 @@ $ EEZ_WAVE_COUNT=5 bash scripts/xchain-test.sh
 
 # Protocol researchers
 
-How Rollup0 actually settles and proves.
+How RollupX actually settles and proves.
 
 ## How the four components divide the work
 
 Learn how sequencer, composer, proof-signer and deriver each fit.
 
 - Page: https://eez-demos.vercel.app/protocol-researchers/pr1-the-four-components-of-rollup0.html
-- Source: `crates/eez-driver/src/sequencer.rs:159 · crates/eez-composer/src/composer.rs:515 · crates/eez-proof-signer/src/attest.rs:52 / :134 · crates/eez-deriver/src/deriver.rs:45`
-- Pinned at commit: `a4b9b2f`
-- Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-driver/src/sequencer.rs#L159
+- Source: `crates/eez-driver/src/sequencer.rs:1068 · crates/eez-composer/src/composer.rs:1339 · crates/eez-proof-signer/src/attest.rs:52 / :136 · crates/eez-deriver/src/deriver.rs:55`
+- Pinned at commit: `2c19e36`
+- Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-driver/src/sequencer.rs#L1068
 
 ### Step 1 — THE LIVE PATH
 
-Ordinary blocks are the sequencer alone. One Sync block per L1 block adds the composer — and that block cannot be emitted until the proof-signer returns an attestation.
+Ordinary blocks are the sequencer alone. One Sync block per L1 block adds the composer — and its batch cannot be posted to L1 until the proof-signer returns an attestation.
 
 ```rust
 pub struct Sequencer<T, ChainSpec>
-    where T: PayloadTypes<
-    PayloadAttributes = EthPayloadAttributes> { ... }
+where
+    T: PayloadTypes<PayloadAttributes = EthPayloadAttributes>,
+{ ... }
 
 pub struct Composer<L2: BlockReader> { ... }
 ```
 
 ### Step 2 — ATTESTATION
 
-Once Composer finishes, the Attester signs a hash of the result so the block can be trusted downstream.
+The proof-signer re-executes the batch itself and validates its settlement effects; only then does its Attester sign the recomputed public-inputs hash.
 
 ```rust
 pub struct Sequencer<T, ChainSpec>
-    where T: PayloadTypes<
-    PayloadAttributes = EthPayloadAttributes> { ... }
+where
+    T: PayloadTypes<PayloadAttributes = EthPayloadAttributes>,
+{ ... }
 
 pub struct Composer<L2: BlockReader> { ... }
 
 pub(crate) struct Attester { ... }
 
-pub(crate) fn sign(&self,
+pub(crate) fn sign(
+    &self,
     public_inputs_hash: AttestablePublicInputsHash,
 ) -> Result<Bytes, SignerError> {
-    self.signer.sign_prehash(
-        public_inputs_hash.into_inner())
+    // #[cfg(test)] signing-call counter elided
+    self.signer.sign_prehash(public_inputs_hash.into_inner())
 }
 ```
 
@@ -2101,98 +2178,115 @@ Deriver never trusts any of the three — it independently re-derives the same s
 
 ```rust
 pub struct Sequencer<T, ChainSpec>
-    where T: PayloadTypes<
-    PayloadAttributes = EthPayloadAttributes> { ... }
+where
+    T: PayloadTypes<PayloadAttributes = EthPayloadAttributes>,
+{ ... }
 
 pub struct Composer<L2: BlockReader> { ... }
 
 pub(crate) struct Attester { ... }
 
-pub(crate) fn sign(&self,
+pub(crate) fn sign(
+    &self,
     public_inputs_hash: AttestablePublicInputsHash,
 ) -> Result<Bytes, SignerError> {
-    self.signer.sign_prehash(
-        public_inputs_hash.into_inner())
+    // #[cfg(test)] signing-call counter elided
+    self.signer.sign_prehash(public_inputs_hash.into_inner())
 }
 
 pub struct Deriver<L2>
-    where L2: BlockReader { ... }
+where
+    L2: BlockReader,
+{ ... }
 ```
 
 ## How L1 stays the source of truth
 
-Learn why the L2 block is added immediately and rolled back if L1 never confirms it.
+Learn why the L2 block is added immediately, and what happens to it if L1 never confirms it.
 
 - Page: https://eez-demos.vercel.app/protocol-researchers/pr2-commit-first-repair-if-needed.html
 - Source: `crates/eez-composer/src/optimistic.rs`
-- Pinned at commit: `a4b9b2f`
-- Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-composer/src/optimistic.rs
+- Pinned at commit: `2c19e36`
+- Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-composer/src/optimistic.rs
 
 ### Step 1 — THE LEDGER
 
-The committer commits the Sync block; begin() records it in the ledger at its sync_height as Pending. Two adjacent acts.
+The composer builds the attested Sync block; begin() registers the attempt with every user AwaitingEvidence, and the block is committed to L2 before L1 confirms anything.
 
 ```rust
-// optimistic.rs:67 — private; variant docs omitted
-enum Resolution {
-    Pending,
-    Settled,
-    Failed,
+// optimistic.rs:86 — variant docs omitted
+pub enum UserLocation {
+    Queued,
+    Composing,
+    AwaitingEvidence,
+    Terminal {
+        reason: TerminalReason,
+        canonical: Option<L1BlockRef>,
+    },
 }
 
-// optimistic.rs:101
+// optimistic.rs:167
 pub struct OptimisticallyIncluded {
-    by_sync_height: Mutex<BTreeMap<u64, InFlight>>,
+    state: Mutex<AttemptState>,
 }
 
-// optimistic.rs:117
+// optimistic.rs:199
 pub fn begin(
     // params omitted — signature verified, body not
-) {
+) -> Result<AttemptId, String> {
 ```
 
-### Step 2 — TWO ORACLES, THREE STATES
+### Step 2 — OBSERVATION ≠ EVIDENCE
 
-Two oracles resolve an entry: the observer's log scan, and the Deriver's L1-derived cursor. The cursor is the stronger one — it overrides a Failed verdict.
+The observer only records what happened to the submission. Users move only when resolve() applies canonical source outcomes; if the bundle never applied, the composer swaps its own Sync block for an empty one.
 
 ```rust
-// optimistic.rs:177 — observer verdict
-pub fn mark_settled(&self, sync_height: u64) {
-    // observer verdict: the bundle settled on L1
+// optimistic.rs:435 — observer callback
+pub fn observe(
+    &self,
+    id: AttemptId,
+    observation: SubmissionObservation,
+) -> Result<bool, String> {
+    // records the submission's fate on the attempt;
+    // never moves a user out of AwaitingEvidence
 }
 
-// optimistic.rs:191 — observer verdict
-pub fn mark_failed(&self, sync_height: u64,
-    slot_skipped: bool) {
-    // observer verdict: the bundle didn't land
-}
-
-// optimistic.rs:160 — the Deriver's cursor wins
-pub fn resolve_below_cursor(&self, cursor: u64)
-    -> Vec<HeldTx> {
-    // flips Pending AND Failed ≤ cursor to Settled
+// optimistic.rs:467 — canonical evidence
+pub fn resolve(
+    &self,
+    id: AttemptId,
+    as_of: L1BlockRef,
+    outcomes: &[SourceOutcome],
+    charge: AttemptCharge,
+    attempt_limit: u32,
+) -> Result<Vec<NonceGap>, String> {
+    // Terminal outcome -> Terminal; Retryable -> Queued
 }
 ```
 
-### Step 3 — SETTLED IS NOT PERMANENT
+### Step 3 — TERMINAL IS NOT PERMANENT
 
-Settled is not permanent. An L1 reorg takes rolled-out Settled entries back out; entries leave clean only at finality, and only after their postBatch receipt is re-checked on L1.
+Terminal is not permanent. An L1 reorg reopens every canonical outcome above the common ancestor; attempts leave clean only at finality, after their L1 block is re-checked.
 
 ```rust
-// optimistic.rs:247
-pub fn take_rolled_out(&self, new_l2_cursor: u64)
-    -> Vec<HeldTx> {
-    // L1 reorg: removes Settled entries ABOVE
-    // the retreated cursor and returns their
-    // txs. Pending entries stay.
+// optimistic.rs:563 — wrapped; one line in source
+pub fn invalidate_after_l1(&self, ancestor: u64)
+    -> Result<(), String> {
+    // Terminal users with canonical evidence above
+    // `ancestor` go back to AwaitingEvidence
 }
 
-// optimistic.rs:270 — wrapped; one line in source
-pub fn take_finalized(&self, finalized_l2: u64)
-    -> Vec<(u64, TxHash, Vec<HeldTx>)> {
-    // the only clean exit — and the caller
-    // still checks each postBatch receipt
-    // exists on L1 before discarding
+// optimistic.rs:600 — wrapped; one line in source
+pub fn finalization_candidates(&self, finalized_l1: u64)
+    -> Vec<(AttemptId, L1BlockRef)> {
+
+// optimistic.rs:625
+pub fn forget_finalized(
+    &self,
+    id: AttemptId,
+    audited: L1BlockRef,
+) -> Result<Vec<FinalizedUser>, String> {
+    // the caller re-checks the L1 block hash first
 }
 ```
 
@@ -2202,35 +2296,38 @@ Learn what is actually checked before a batch is accepted, and by whom.
 
 - Page: https://eez-demos.vercel.app/protocol-researchers/pr4-how-the-composer-proves-a-batch.html
 - Source: `crates/eez-control-rpc/proto/prove.proto · prove.v1.Prover`
-- Pinned at commit: `a4b9b2f`
-- Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-control-rpc/proto/prove.proto
+- Pinned at commit: `2c19e36`
+- Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-control-rpc/proto/prove.proto
 
 ### Step 1 — ONE STREAM, ONE JOB
 
-The composer opens one gRPC stream to the proof-signer and sends a ProveHeader first — blocks always follow in order.
+The composer opens one gRPC stream to the proof-signer and sends a ProveHeader first — blocks always follow in order. The request carries calldata, blobs and provenance, but no claimed hash.
 
 ```protobuf
 service Prover {
+  // Capabilities, PrepareOrdinary, RetainOrdinaryRanges omitted
   // Header MUST be first; blocks follow in order.
-  rpc Prove(stream ProveChunk)
-      returns (ProveResponse);
+  rpc Prove(stream ProveChunk) returns (ProveResponse);
 }
 message ProveHeader {
   uint64 rollup_id  = 1;
   uint64 from_block = 2;  // posted + 1
   uint64 to_block   = 3;  // sync_height
   PostBatch post_batch = 4;
+  bytes expected_validation_identity = 5;
+  ParentProvenance parent_provenance = 6;
 }
 message PostBatch {
   bytes abi_calldata = 1;
-  bytes public_inputs_hash = 2;
-  bytes l1_block_hash = 3;
+  reserved 2, 3; // claimed hash removed
+  repeated bytes blobs = 4;
+  L1PostingContext posting_context = 5;
 }
 ```
 
 ### Step 2 — THE PROVER RE-EXECUTES
 
-For each BlockWitness, the prover — the proof-signer, from step 1 — decodes PostBatch's calldata and replays the block to independently recompute the hash.
+The prover — the proof-signer, from step 1 — decodes PostBatch's calldata, derives KZG hashes from its blobs, replays every BlockWitness and runs its settlement gates to recompute the hash itself.
 
 ```protobuf
 message BlockWitness {
@@ -2251,7 +2348,7 @@ message ExecutionWitness {
 
 ### Step 3 — SIGN & RETURN
 
-The prover signs the recomputed hash and returns it — the composer only trusts it once the signature recovers to the registered attester.
+The prover signs the recomputed hash and returns it — the composer only trusts it once the signature recovers to the registered attester and the hash matches the one it computes from its own request.
 
 ```protobuf
 message ProveResponse {
@@ -2259,15 +2356,13 @@ message ProveResponse {
   bytes signature          = 2;  // 65B
 }
 
-// eez-control-rpc/src/lib.rs:19
+// eez-control-rpc/src/lib.rs:22
 // — Rust, not the proto
-pub const MAX_MESSAGE_BYTES: usize =
-    1024 * 1024 * 1024;
+pub const MAX_MESSAGE_BYTES: usize = 1024 * 1024 * 1024;
 
-// eez-proof-signer/src/service.rs:26, :29
+// eez-proof-signer/src/service.rs:29, :32
 // — the server
-const MAX_DECODING_MESSAGE_BYTES: usize =
-    256 * 1024 * 1024;
+const MAX_DECODING_MESSAGE_BYTES: usize = 256 * 1024 * 1024;
 const MAX_ENCODING_MESSAGE_BYTES: usize = 1024;
 ```
 
@@ -2277,67 +2372,70 @@ Learn how the whole chain is reconstructed from L1 data alone.
 
 - Page: https://eez-demos.vercel.app/protocol-researchers/pr3-the-deriver.html
 - Source: `crates/eez-deriver/src/deriver.rs · Deriver<L2>`
-- Pinned at commit: `a4b9b2f`
-- Verify: https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-deriver/src/deriver.rs
+- Pinned at commit: `2c19e36`
+- Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-deriver/src/deriver.rs
 
 ### Step 1 — WATCH L1
 
-The deriver watches L1 for BatchPosted events instead of trusting any node's live output. The log is the trigger; the payload is the posting transaction's calldata.
+The deriver watches L1 for BatchPosted events naming its rollup, instead of trusting any node's live output. The log is the trigger; the payload is the posting transaction's blobs.
 
 ```rust
-// crates/eez-protocol/src/abi.rs:105
-event BatchPosted(uint256 indexed rollupCount);
-// ^ the count of rollups settled in THIS batch,
-//   not a batch ordinal (EEZ.sol:442 emits
-//   batch.rollupIdsWithProofSystems.length)
+// crates/eez-protocol/src/abi.rs:121 — wrapped
+event BatchPosted(bytes32 sharedPublicInput,
+    uint64[] rollupIds);
+// ^ nothing indexed: rollupIds ride in the log
+//   data (EEZ.sol:475 emits it); the scanner
+//   skips logs without our rollup id
 
-// deriver.rs:45
+// deriver.rs:55
 pub struct Deriver<L2>
 ```
 
-### Step 2 — DECODE THE CALLDATA
+### Step 2 — DECODE THE BLOBS
 
-handle_event routes the event to on_batch_posted, which decodes that calldata and replays the blocks through execute_block.
+The blobs are fetched and checked against their KZG versioned hashes; handle_event routes to on_batch_posted, which decodes that payload and replays the blocks through execute_block.
 
 ```rust
-// deriver.rs:786
+// deriver.rs:1406 — wrapped
 async fn handle_event(&self, event: L1Event)
     -> DeriverResult<()> {
 
-// deriver.rs:836
+// deriver.rs:1471
 async fn on_batch_posted(
     // params omitted — signature verified, body not
 ) -> DeriverResult<()> {
 
-// deriver.rs:849 — the log is the trigger,
-// this is the data
-let decoded =
-    eez_payload_codec::decode(call_data.as_ref())?;
+// deriver.rs:1487 — the log is the trigger,
+// the blob-carried payload is the data
+let payload = Payload::decode(operations_payload.as_ref())?;
 
-// deriver.rs:516
-pub fn execute_block(
+// deriver.rs:1142 — reached via replay_block
+fn execute_block(
 ```
 
 ### Step 3 — REVALIDATE, THEN SCAN FORWARD
 
-catch_up() first re-checks the batches it already indexed and drops any whose L1 block is no longer canonical, then scans forward from that anchor — or from the deployment block on a cold start.
+catch_up() first re-checks the batches it already indexed and drops any whose L1 block is no longer canonical, then scans forward from that anchor — or from the deployment block on a cold start with no persisted seed.
 
 ```rust
-// deriver.rs:169
+// deriver.rs:449
 pub async fn catch_up(&self) -> DeriverResult<()> {
-// deriver.rs:257 — phase 1: walk the index tail
+// deriver.rs:666 — phase 1: walk the index tail
 // BACKWARD, drop batches whose recorded L1 hash
 // is stale; return the highest canonical anchor
 async fn revalidate_index_tail(&self)
     -> DeriverResult<Option<u64>> {
-// deriver.rs:246-249 — phase 2, arms wrapped
+// deriver.rs:648-654 — phase 2, arms wrapped
 match anchor {
     Some(anchor_l1_block) =>
-        self.sync_batches_inner(
-            anchor_l1_block, cursor).await,
-    // cold start: deploy_block, NOT L1 genesis
-    None => self.sync_batches_inner(
-        self.inner.deploy_block, 0).await,
+        self.sync_batches_inner(anchor_l1_block, cursor).await,
+    None => match self.correlation_seed().await? {
+        Some((l1_block, l2_cursor)) =>
+            self.sync_batches_inner(l1_block, l2_cursor).await,
+        // cold start: deploy_block, NOT L1 genesis
+        None => self.sync_batches_inner(
+            self.inner.deploy_block, 0).await,
+    },
 }
 ```
 
@@ -2346,9 +2444,9 @@ match anchor {
 Learn how two values become a salt and a CREATE2 address.
 
 - Page: https://eez-demos.vercel.app/protocol-researchers/pr5-how-the-address-is-derived.html
-- Source: `eez-core-protocol/src/base/EEZBase.sol:176`
-- Pinned at commit: `9735f53`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L176
+- Source: `eez-core-protocol/src/base/EEZBase.sol:250 · computeCrossChainProxyAddress`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L250
 
 ### Step 1 — TWO INPUTS
 
@@ -2380,19 +2478,19 @@ function computeCrossChainProxyAddress(
 
 ### Step 3 — CREATE2 → ONE ADDRESS
 
-CREATE2 turns (manager, salt, bytecodeHash) into an address — before deployment.
+CREATE2 turns (manager, salt, PROXY_INIT_CODE_HASH) into an address — before deployment.
 
 ```solidity
-    bytes32 bytecodeHash = keccak256(
-        abi.encodePacked(
-            type(CrossChainProxy).creationCode,
-            abi.encode(address(this))
-        )
+// constructor: hashed once, cached
+    PROXY_INIT_CODE_HASH = keccak256(
+        type(CrossChainProxy).creationCode
     );
+
+// computeCrossChainProxyAddress, continued
     return address(uint160(uint256(keccak256(
         abi.encodePacked(
             bytes1(0xff), address(this),
-            salt, bytecodeHash
+            salt, PROXY_INIT_CODE_HASH
         )
     ))));
 }
@@ -2405,23 +2503,33 @@ CREATE2 turns (manager, salt, bytecodeHash) into an address — before deploymen
 pragma solidity ^0.8.28;
 
 // Panel source for: protocol-researchers/pr5-how-the-address-is-derived.html
-// Mirrors eez-core-protocol/src/base/EEZBase.sol:176
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// Mirrors eez-core-protocol/src/base/EEZBase.sol:250 and :188
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // The address is a pure function of two values. No nonce, no deployment
 // order, no registry lookup — so you can compute it before anything is
 // deployed, on any chain running the manager.
 
 /// @dev Stand-in for the real proxy. Only `type(...).creationCode` matters here.
+///      Like upstream, it takes no constructor argument and records its deployer,
+///      so the creation code alone is hashed.
 contract CrossChainProxy {
     address public immutable manager;
 
-    constructor(address manager_) {
-        manager = manager_;
+    constructor() {
+        manager = msg.sender;
     }
 }
 
 contract ComputeAddressSnippet {
+bytes32 public immutable PROXY_INIT_CODE_HASH;
+
+constructor() {
+    PROXY_INIT_CODE_HASH = keccak256(
+        type(CrossChainProxy).creationCode
+    );
+}
+
 function computeCrossChainProxyAddress(
     address originalAddress,
     uint64 originalRollupId
@@ -2432,16 +2540,10 @@ function computeCrossChainProxyAddress(
             originalRollupId, originalAddress
         )
     );
-    bytes32 bytecodeHash = keccak256(
-        abi.encodePacked(
-            type(CrossChainProxy).creationCode,
-            abi.encode(address(this))
-        )
-    );
     return address(uint160(uint256(keccak256(
         abi.encodePacked(
             bytes1(0xff), address(this),
-            salt, bytecodeHash
+            salt, PROXY_INIT_CODE_HASH
         )
     ))));
 }
@@ -2453,9 +2555,9 @@ function computeCrossChainProxyAddress(
 Learn how one bytes32 commits to a whole execution tree — and why no call index is folded in.
 
 - Page: https://eez-demos.vercel.app/protocol-researchers/pr6-the-rolling-hash.html
-- Source: `eez-core-protocol/src/base/EEZBase.sol:290 · _rollingHashEntryBegin`
-- Pinned at commit: `9735f53`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L290
+- Source: `eez-core-protocol/src/base/EEZBase.sol:391 · _rollingHashEntryBegin`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L391
 
 ### Step 1 — ONE VALUE, WHOLE TREE
 
@@ -2465,7 +2567,7 @@ An entry states what should happen; the rolling hash commits to what did. Six di
 require(_rollingHash == entry.rollingHash);
 // reverts RollingHashMismatch
 
-// EEZBase.sol:107 declares the error;
+// EEZBase.sol:129 declares the error;
 // the check runs after every call and
 // every nesting in the entry completes.
 ```
@@ -2475,39 +2577,41 @@ require(_rollingHash == entry.rollingHash);
 It is seeded, not zeroed: the entry's starting state context closed with its own identity, so the hash binds what the world looked like as well as what happened. It must be clear beforehand, or _rollingHashEntryBegin reverts RollingHashNotCleared.
 
 ```solidity
-// EEZBase.sol:290  _rollingHashEntryBegin
+// EEZBase.sol:391  _rollingHashEntryBegin
 if (_rollingHash != bytes32(0))
     revert RollingHashNotCleared();
 
-bytes32 statesHash;
-for (i in deltas)
-    statesHash = keccak256(abi.encodePacked(
-        statesHash,
-        deltas[i].rollupId,
-        deltas[i].currentState));
+bytes32 _rollupRootsHash;
+for (i in rollupUpdates)
+    _rollupRootsHash = keccak256(
+        abi.encodePacked(
+            _rollupRootsHash,
+            rollupUpdates[i].rollupId,
+            rollupUpdates[i].currentRoot));
 
 _rollingHash = keccak256(abi.encodePacked(
-    statesHash, proxyEntryHash));
+    _rollupRootsHash, proxyEntryHash));
 ```
 
-### Step 3 — FIVE TAGGED EVENTS
+### Step 3 — SIX TAGGED EVENTS
 
-Five events, each folded with its own domain byte, so one set of inputs cannot mean two things. CALL_BEGIN folds the call's full identity hash — a substituted call with an identical return value still diverges.
+Six events, each folded with its own domain byte, so one set of inputs cannot mean two things. CALL_BEGIN folds the call's full identity hash — a substituted call with an identical return value still diverges.
 
 ```solidity
-// EEZBase.sol:39-43 — the domain bytes
-CALL_BEGIN     = 1;
-CALL_END       = 2;
-NESTED_BEGIN   = 3;
-NESTED_END     = 4;
-CALL_NOT_FOUND = 5;
+// EEZBase.sol:40-45 — the domain bytes
+CALL_BEGIN            = 1;
+CALL_END              = 2;
+NESTED_BEGIN          = 3;
+NESTED_END            = 4;
+CALL_NOT_FOUND        = 5;
+CALL_INSUFFICIENT_GAS = 6;
 
-// :303
+// :438
 keccak256(abi.encodePacked(
     _rollingHash, CALL_BEGIN,
     crossChainCallHash));
 
-// :309
+// :446
 keccak256(abi.encodePacked(
     _rollingHash, CALL_END,
     success, retData));
@@ -2538,12 +2642,12 @@ _rollingHash = keccak256(abi.encodePacked(
 A reentrant call that finds no matching row folds CALL_NOT_FOUND, not CALL_END(true, ""). Sharing a tag would let a silent no-match be presented as a successful empty return; the separate domain byte makes those two histories hash differently.
 
 ```solidity
-// a normal empty return (:309)
+// a normal empty return (:446)
 keccak256(abi.encodePacked(
     _rollingHash, CALL_END,
     true, ""));
 
-// a no-match (:331) — different tag
+// a no-match (:467) — different tag
 keccak256(abi.encodePacked(
     _rollingHash, CALL_NOT_FOUND,
     crossChainCallHash));
@@ -2557,7 +2661,7 @@ keccak256(abi.encodePacked(
 The reentrant table's position key was (hash, rollingHash, isStatic) and is now keccak256(crossChainCallHash, rollingHash). isStatic did not stop mattering — it is already the first of the eight fields inside crossChainCallHash, so carrying it again committed to the same bit twice.
 
 ```solidity
-// EEZBase.sol:246
+// EEZBase.sol:338
 function _computeExpectedL1toL2Hash(
     bytes32 crossChainCallHash,
     bytes32 rollingHash
@@ -2576,12 +2680,12 @@ function _computeExpectedL1toL2Hash(
 Static sub-hashes drop the tags entirely, into a separate accumulator. That is safe because the surrounding key already pins what the tags disambiguate — an asymmetry with a stated reason, not an oversight.
 
 ```solidity
-// EEZBase.sol:339  _rollingHashStaticResult
+// EEZBase.sol:488  _rollingHashStaticResult
 // pure: never touches _rollingHash
 return keccak256(abi.encodePacked(
     prev, success, retData));
 
-// EEZL2.sol:674  _processNStaticCalls
+// EEZL2.sol:754  _processStaticIncomingCalls
 computedHash = bytes32(0);
 for (cc in calls) {
     (success, retData) =

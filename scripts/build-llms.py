@@ -40,7 +40,7 @@ TRACKS = [
     ("rollup-operators", "Rollup operators",
      "Standing the stack up and driving it."),
     ("protocol-researchers", "Protocol researchers",
-     "How Rollup0 actually settles and proves."),
+     "How RollupX actually settles and proves."),
 ]
 
 # Panel language per citation target, so fenced blocks are tagged usefully.
@@ -317,7 +317,7 @@ HEAD_TMPL = """# EEZ Quickstarts
 
 > %s interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
-> contracts that call across rollups, running the stack, and how Rollup0 settles and proves.
+> contracts that call across rollups, running the stack, and how RollupX settles and proves.
 
 Every code panel on this site is rendered from JavaScript at runtime, so fetching a page
 gives you the shell and not the content. These files hand over the content directly: each
@@ -373,7 +373,7 @@ def build_index(pages):
     out.append("- [Repository](https://github.com/0xarmagan/eez-demos): source of this site")
     out.append("- [eez-core-protocol](https://github.com/eez-association/eez-core-protocol): "
                "the contracts every Solidity walkthrough cites")
-    out.append("- [eez-rollup0](https://github.com/eez-association/eez-rollup0): "
+    out.append("- [eez-rollupX](https://github.com/eez-association/eez-rollupX): "
                "the node, composer, deriver and proof-signer")
     out.append("- [CONTRIBUTING](https://github.com/0xarmagan/eez-demos/blob/main/CONTRIBUTING.md): "
                "how a walkthrough gets added and audited")

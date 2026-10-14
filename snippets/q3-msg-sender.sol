@@ -4,8 +4,8 @@ pragma solidity ^0.8.28;
 import {IEEZ} from "./lib/IEEZ.sol";
 
 // Panel source for: dapp-developers/q3-fix-the-msg-sender-gotcha.html
-// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:39
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:67
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // Cross-chain, the destination never sees your EOA. It sees the proxy the
 // manager forwards through. So an owner check that passes on the same chain

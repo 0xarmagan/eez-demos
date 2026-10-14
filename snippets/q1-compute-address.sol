@@ -2,23 +2,33 @@
 pragma solidity ^0.8.28;
 
 // Panel source for: protocol-researchers/pr5-how-the-address-is-derived.html
-// Mirrors eez-core-protocol/src/base/EEZBase.sol:176
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// Mirrors eez-core-protocol/src/base/EEZBase.sol:250 and :188
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // The address is a pure function of two values. No nonce, no deployment
 // order, no registry lookup — so you can compute it before anything is
 // deployed, on any chain running the manager.
 
 /// @dev Stand-in for the real proxy. Only `type(...).creationCode` matters here.
+///      Like upstream, it takes no constructor argument and records its deployer,
+///      so the creation code alone is hashed.
 contract CrossChainProxy {
     address public immutable manager;
 
-    constructor(address manager_) {
-        manager = manager_;
+    constructor() {
+        manager = msg.sender;
     }
 }
 
 contract ComputeAddressSnippet {
+bytes32 public immutable PROXY_INIT_CODE_HASH;
+
+constructor() {
+    PROXY_INIT_CODE_HASH = keccak256(
+        type(CrossChainProxy).creationCode
+    );
+}
+
 function computeCrossChainProxyAddress(
     address originalAddress,
     uint64 originalRollupId
@@ -29,16 +39,10 @@ function computeCrossChainProxyAddress(
             originalRollupId, originalAddress
         )
     );
-    bytes32 bytecodeHash = keccak256(
-        abi.encodePacked(
-            type(CrossChainProxy).creationCode,
-            abi.encode(address(this))
-        )
-    );
     return address(uint160(uint256(keccak256(
         abi.encodePacked(
             bytes1(0xff), address(this),
-            salt, bytecodeHash
+            salt, PROXY_INIT_CODE_HASH
         )
     ))));
 }

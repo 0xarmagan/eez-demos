@@ -2,7 +2,7 @@
 
 > Seventeen interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
-> contracts that call across rollups, running the stack, and how Rollup0 settles and proves.
+> contracts that call across rollups, running the stack, and how RollupX settles and proves.
 
 Every code panel on this site is rendered from JavaScript at runtime, so fetching a page
 gives you the shell and not the content. These files hand over the content directly: each
@@ -37,10 +37,10 @@ Standing the stack up and driving it.
 
 ## Protocol researchers
 
-How Rollup0 actually settles and proves.
+How RollupX actually settles and proves.
 
 - [How the four components divide the work](https://eez-demos.vercel.app/protocol-researchers/pr1-the-four-components-of-rollup0.html): Learn how sequencer, composer, proof-signer and deriver each fit.
-- [How L1 stays the source of truth](https://eez-demos.vercel.app/protocol-researchers/pr2-commit-first-repair-if-needed.html): Learn why the L2 block is added immediately and rolled back if L1 never confirms it.
+- [How L1 stays the source of truth](https://eez-demos.vercel.app/protocol-researchers/pr2-commit-first-repair-if-needed.html): Learn why the L2 block is added immediately, and what happens to it if L1 never confirms it.
 - [How the composer attests a batch](https://eez-demos.vercel.app/protocol-researchers/pr4-how-the-composer-proves-a-batch.html): Learn what is actually checked before a batch is accepted, and by whom.
 - [How the deriver rebuilds L2 from L1](https://eez-demos.vercel.app/protocol-researchers/pr3-the-deriver.html): Learn how the whole chain is reconstructed from L1 data alone.
 - [How the address is derived](https://eez-demos.vercel.app/protocol-researchers/pr5-how-the-address-is-derived.html): Learn how two values become a salt and a CREATE2 address.
@@ -77,5 +77,5 @@ Foundry tests with no forge-std and no submodules, so they drop into an existing
 
 - [Repository](https://github.com/0xarmagan/eez-demos): source of this site
 - [eez-core-protocol](https://github.com/eez-association/eez-core-protocol): the contracts every Solidity walkthrough cites
-- [eez-rollup0](https://github.com/eez-association/eez-rollup0): the node, composer, deriver and proof-signer
+- [eez-rollupX](https://github.com/eez-association/eez-rollupX): the node, composer, deriver and proof-signer
 - [CONTRIBUTING](https://github.com/0xarmagan/eez-demos/blob/main/CONTRIBUTING.md): how a walkthrough gets added and audited

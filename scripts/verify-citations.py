@@ -50,6 +50,13 @@ LINK_RE = re.compile(
     r'href="https://github\.com/' + ORG + r'/(?P<repo>[^/]+)/blob/(?P<sha>[^/]+)/'
     r'(?P<path>[^"#]+)(?P<frag>#L[\dL\-]+)?"[^>]*>(?P<text>[^<]*)</a>'
 )
+# The same link HTML-escaped inside a data-demo-cite="..." attribute, which is
+# what the cite resets to after toggling FULL/TEST. LINK_RE cannot see it, so a
+# repin used to leave it on the old SHA with nothing checking it.
+ESC_LINK_RE = re.compile(
+    r'href=&quot;https://github\.com/' + ORG + r'/(?P<repo>[^/]+)/blob/(?P<sha>[^/]+)/'
+    r'(?P<path>[^&#]+)(?P<frag>#L[\dL\-]+)?&quot;[^>]*>(?P<text>[^<]*)</a>'
+)
 # pr1-style plain citation objects: { label: "Composer", loc: "crates/x.rs:515", ... }
 LOC_RE = re.compile(r'loc:\s*"(?P<loc>[^"]+)"')
 # pr1 builds its <a href> at runtime from a url: field, so LINK_RE cannot see it.
@@ -118,6 +125,14 @@ def collect():
                     "symbol": symbol_from_text(m.group("text")),
                     "text": html.unescape(m.group("text")).strip(),
                 })
+            for m in ESC_LINK_RE.finditer(src):
+                out.append({
+                    "page": rel, "kind": "link", "repo": m.group("repo"),
+                    "sha": m.group("sha"), "path": m.group("path"),
+                    "lines": parse_lines(m.group("frag")),
+                    "symbol": symbol_from_text(m.group("text")),
+                    "text": html.unescape(m.group("text")).strip(),
+                })
             for m in URL_RE.finditer(src):
                 out.append({
                     "page": rel, "kind": "link", "repo": m.group("repo"),
@@ -129,7 +144,7 @@ def collect():
             for m in LOC_RE.finditer(src):
                 loc = m.group("loc")
                 fpath = loc.split(":")[0]
-                repo = "eez-rollup0" if fpath.startswith(("crates/", "testing/")) else "eez-core-protocol"
+                repo = "eez-rollupX" if fpath.startswith(("crates/", "testing/")) else "eez-core-protocol"
                 out.append({
                     "page": rel, "kind": "loc", "repo": repo, "sha": None,
                     "path": fpath, "lines": parse_lines(loc[len(fpath):]),
@@ -154,6 +169,7 @@ def repin(pins):
                 return m.group(0).replace(f"/blob/{m.group('sha')}/", f"/blob/{want}/", 1)
 
             src = LINK_RE.sub(sub, src)
+            src = ESC_LINK_RE.sub(sub, src)
             src = URL_RE.sub(sub, src)
             if src != orig:
                 open(path, "w", encoding="utf-8").write(src)

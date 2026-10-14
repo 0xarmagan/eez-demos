@@ -83,7 +83,7 @@ def check_header(text, problems):
     # The two pins must be the ones the repo actually cites, or the manifest is
     # describing a different tree than the one being built.
     pins = json.load(open(os.path.join(ROOT, "scripts", "citation-pins.json")))
-    for key, repo in (("contracts_pin", "eez-core-protocol"), ("node_pin", "eez-rollup0")):
+    for key, repo in (("contracts_pin", "eez-core-protocol"), ("node_pin", "eez-rollupX")):
         want = pins["repos"][repo]["sha"]
         got = re.search(key + r":\s*(\S+)", block)
         if not got:

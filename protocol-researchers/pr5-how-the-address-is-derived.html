@@ -255,7 +255,7 @@
         <div style="font-size:18px;color:var(--muted);">+</div>
         <div style="font-family:var(--mono);font-size:14px;color:#7ee08c;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 13px;">salt</div>
         <div style="font-size:18px;color:var(--muted);">+</div>
-        <div style="font-family:var(--mono);font-size:14px;color:#c89cf5;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 13px;">bytecodeHash</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#c89cf5;background:#10151c;border:1px solid #232b36;border-radius:7px;padding:8px 13px;">PROXY_INIT_CODE_HASH</div>
         <div style="font-size:26px;color:var(--eez-green);margin:0 4px;">→</div>
         <div style="font-family:var(--mono);font-size:17px;font-weight:600;color:#7ee08c;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:8px;padding:8px 15px;">keccak256</div>
       </div>
@@ -279,7 +279,7 @@
         <div style="width:6px;height:6px;border-radius:50%;background:#e8b15e;animation:pulse 1.8s ease-in-out infinite;"></div>
         <div style="font-family:var(--mono);font-size:13px;color:#e8b15e;">not deployed yet</div>
       </div>
-      <div style="font-size:15px;line-height:1.5;color:#8f98a8;max-width:900px;">And not always deployable: <span style="font-family:var(--mono);color:#c9d1dc;">computeCrossChainProxyAddress</span> has no same-network guard, so entering your own rollup id still returns an address. Creating one there reverts — <span style="font-family:var(--mono);color:#c9d1dc;">SameNetworkProxy</span>, eez-core-protocol/src/base/EEZBase.sol:166.</div>
+      <div style="font-size:15px;line-height:1.5;color:#8f98a8;max-width:900px;">And not always deployable: <span style="font-family:var(--mono);color:#c9d1dc;">computeCrossChainProxyAddress</span> has no same-network guard, so entering your own rollup id still returns an address. Creating one there reverts — <span style="font-family:var(--mono);color:#c9d1dc;">SameNetworkProxy</span>, eez-core-protocol/src/base/EEZBase.sol:239.</div>
     </div>
 
   
@@ -298,7 +298,7 @@
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L176&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/EEZBase.sol:176 ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L176" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:176 ↗</a></div>
+      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L250&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/EEZBase.sol:250 · computeCrossChainProxyAddress ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L250" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:250 · computeCrossChainProxyAddress ↗</a></div>
       <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
@@ -320,9 +320,9 @@
       <ul class="intro-learn">
         <li><b>01 · TWO INPUTS</b>Two values, packed as bytes — that’s the whole identity.</li>
         <li><b>02 · PACKED &amp; HASHED → SALT</b>keccak256 turns them into a 32-byte salt.</li>
-        <li><b>03 · CREATE2 → ONE ADDRESS</b>CREATE2 turns (manager, salt, bytecodeHash) into an address — before deployment.</li>
+        <li><b>03 · CREATE2 → ONE ADDRESS</b>CREATE2 turns (manager, salt, PROXY_INIT_CODE_HASH) into an address — before deployment.</li>
       </ul>
-      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9735f53 &mdash; pre-mainnet; interfaces may move.</p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
       </div>
@@ -354,7 +354,7 @@
   var captions = [
     "Two values, packed as bytes — that's the whole identity.",
     "keccak256 turns them into a 32-byte salt.",
-    "CREATE2 turns (manager, salt, bytecodeHash) into an address — before deployment."
+    "CREATE2 turns (manager, salt, PROXY_INIT_CODE_HASH) into an address — before deployment."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
@@ -379,16 +379,16 @@
       "    );"
     ],
     [
-      "    bytes32 bytecodeHash = keccak256(",
-      "        abi.encodePacked(",
-      "            type(CrossChainProxy).creationCode,",
-      "            abi.encode(address(this))",
-      "        )",
+      "// constructor: hashed once, cached",
+      "    PROXY_INIT_CODE_HASH = keccak256(",
+      "        type(CrossChainProxy).creationCode",
       "    );",
+      "",
+      "// computeCrossChainProxyAddress, continued",
       "    return address(uint160(uint256(keccak256(",
       "        abi.encodePacked(",
       "            bytes1(0xff), address(this),",
-      "            salt, bytecodeHash",
+      "            salt, PROXY_INIT_CODE_HASH",
       "        )",
       "    ))));",
       "}"
@@ -400,7 +400,7 @@
     [6,7,8,9,10,11]
   ];
 
-  // Verbatim copy of snippets/q1-compute-address.sol (the whole file, 45 lines).
+  // Verbatim copy of snippets/q1-compute-address.sol (the whole file, 49 lines).
   // scripts/check-panel-drift.py asserts this array still equals that file
   // line for line, so an embedded copy cannot rot unnoticed.
   var fullSnippet = [
@@ -408,23 +408,33 @@
       "pragma solidity ^0.8.28;",
       "",
       "// Panel source for: protocol-researchers/pr5-how-the-address-is-derived.html",
-      "// Mirrors eez-core-protocol/src/base/EEZBase.sol:176",
-      "// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda",
+      "// Mirrors eez-core-protocol/src/base/EEZBase.sol:250 and :188",
+      "// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f",
       "//",
       "// The address is a pure function of two values. No nonce, no deployment",
       "// order, no registry lookup \u2014 so you can compute it before anything is",
       "// deployed, on any chain running the manager.",
       "",
       "/// @dev Stand-in for the real proxy. Only `type(...).creationCode` matters here.",
+      "///      Like upstream, it takes no constructor argument and records its deployer,",
+      "///      so the creation code alone is hashed.",
       "contract CrossChainProxy {",
       "    address public immutable manager;",
       "",
-      "    constructor(address manager_) {",
-      "        manager = manager_;",
+      "    constructor() {",
+      "        manager = msg.sender;",
       "    }",
       "}",
       "",
       "contract ComputeAddressSnippet {",
+      "bytes32 public immutable PROXY_INIT_CODE_HASH;",
+      "",
+      "constructor() {",
+      "    PROXY_INIT_CODE_HASH = keccak256(",
+      "        type(CrossChainProxy).creationCode",
+      "    );",
+      "}",
+      "",
       "function computeCrossChainProxyAddress(",
       "    address originalAddress,",
       "    uint64 originalRollupId",
@@ -435,16 +445,10 @@
       "            originalRollupId, originalAddress",
       "        )",
       "    );",
-      "    bytes32 bytecodeHash = keccak256(",
-      "        abi.encodePacked(",
-      "            type(CrossChainProxy).creationCode,",
-      "            abi.encode(address(this))",
-      "        )",
-      "    );",
       "    return address(uint160(uint256(keccak256(",
       "        abi.encodePacked(",
       "            bytes1(0xff), address(this),",
-      "            salt, bytecodeHash",
+      "            salt, PROXY_INIT_CODE_HASH",
       "        )",
       "    ))));",
       "}",

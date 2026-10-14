@@ -26,9 +26,9 @@ import {Caller, IRemote, CrossChainCallFailed} from "../q2-cross-chain-call.sol"
 // It models one property the whole design rests on: the outcome was written
 // BEFORE this transaction ran, it is addressed by the content of the call, and
 // a miss reverts. Deliberately not modelled, because a local table cannot: the
-// composer, the rolling hash, state roots, the entry queues, the block gate,
-// and the side-specific rule for when a static entry is still valid (L1 matches
-// on state roots, EEZ.sol:1308-1319; L2 gates on the block, EEZL2.sol:634).
+// composer, the rolling hash, state roots, the entry queues, the block gate
+// both sides apply (EEZ.sol:1580, EEZL2.sol:791), and L1's extra rule that a
+// static entry's state-root pins must still match (EEZ.sol:1352).
 //
 // The key below is a REDUCED stand-in for `computeCrossChainCallHash` — the
 // real preimage is eight fields in a fixed order (q5). What is under test is
@@ -40,12 +40,13 @@ interface Vm {
     function label(address, string calldata) external;
 }
 
-/// @dev Named as upstream names them, so a reader who hits one in production can
-///      search for the same string. The read path reverts `ExecutionNotFound` on
-///      either side (EEZ.sol:1327, EEZL2.sol:644); the L2 execution path reverts
-///      `EntryNotFound` and carries the observed `callGas` in the payload so the
-///      entry-builder can reproduce the key (EEZL2.sol:98, :441).
-error ExecutionNotFound();
+/// @dev Named as upstream names it, so a reader who hits one in production can
+///      search for the same string. This table models the L2 side, where BOTH
+///      paths miss with `EntryNotFound` and carry the call's hash and observed
+///      `callGas` in the payload (EEZL2.sol:173; read path :714, execution path
+///      :501). L1 misses with a bare `ExecutionNotFound` on both paths
+///      (EEZ.sol:1289, :1448). So the error NAME never tells you which path ran;
+///      on L2 the hash in the payload does, because it folds `isStatic`.
 error EntryNotFound(bytes32 crossChainCallHash, uint64 callGas);
 
 /// @dev The destination's own error, for the case where an entry exists and
@@ -74,7 +75,7 @@ contract EntryTable {
     }
 
     /// @dev Reduced stand-in for computeCrossChainCallHash. `isStatic` is folded
-    ///      in because upstream folds it in (EEZBase.sol:197) — it is what makes
+    ///      in because upstream folds it in (EEZBase.sol:300) — it is what makes
     ///      a read hash distinctly from an otherwise-identical write.
     function keyFor(bool isStatic, address sourceAddress, bytes memory callData) public view returns (bytes32) {
         return keccak256(abi.encode(isStatic, sourceAddress, destAddress, destRollupId, callData));
@@ -93,7 +94,7 @@ contract EntryTable {
         returns (bytes memory)
     {
         Entry storage entry = staticEntries[keyFor(true, sourceAddress, callData)];
-        if (!entry.present) revert ExecutionNotFound();
+        if (!entry.present) revert EntryNotFound(keyFor(true, sourceAddress, callData), 0);
         if (!entry.success) {
             bytes memory reason = entry.data;
             assembly {
@@ -106,7 +107,7 @@ contract EntryTable {
     /// @dev Same name and signature as the manager's execution entry point. The
     ///      execution pool is left empty on purpose: no composer writes an
     ///      ExecutionEntry for a read, which is exactly why a plain `call` for a
-    ///      read fails, and fails with the OTHER error name.
+    ///      read fails — under the same error name, with the non-static key.
     function executeCrossChainCall(address sourceAddress, bytes calldata callData)
         external
         payable
@@ -121,25 +122,27 @@ contract EntryTable {
 
 // @stand-in a model of CrossChainProxy's routing decision, and the only part of
 //           the protocol this test reproduces for real: the self-probe. The
-//           `tstore` and the gas cap are upstream's (CrossChainProxy.sol:23,
-//           :71, :89). Unlike the page snippet this declares a NAMED transient
-//           variable rather than writing raw slot 0 — which is what upstream
-//           does and what the snippet's STAND-IN note tells you to do.
+//           `tstore`, the selector-keyed self-probe and the 1_000 gas cap are
+//           upstream's (CrossChainProxy.sol:87-91, :119-120; EEZBase.sol:65).
+//           Upstream reads the cap from the manager on every call; this table
+//           has no such getter, so it is inlined here.
 contract ProbeProxy {
     address internal immutable manager;
 
     uint256 transient _staticDetector;
 
+    bytes4 private constant STATIC_CHECK_SELECTOR = bytes4(keccak256("staticCheck()"));
+
     constructor(address manager_) {
         manager = manager_;
     }
 
-    function staticCheck() external {
-        _staticDetector = 1;
-    }
-
     fallback() external payable {
-        (bool probeOk,) = address(this).call{gas: 1_000}(abi.encodeCall(this.staticCheck, ()));
+        if (msg.sender == address(this) && msg.sig == STATIC_CHECK_SELECTOR) {
+            _staticDetector = 0;
+            return;
+        }
+        (bool probeOk,) = address(this).call{gas: 1_000}(abi.encodeWithSelector(STATIC_CHECK_SELECTOR));
 
         bool ok;
         bytes memory result;
@@ -221,21 +224,24 @@ contract Q2CrossChainCallTest {
 
     /// @dev A plain CALL with the very same calldata does NOT reach the read
     ///      path. It reaches `executeCrossChainCall` and misses, because no
-    ///      composer writes an ExecutionEntry for a read — and it misses under
-    ///      the other error name. This is the failure a `.call(data)` read
-    ///      produces in production.
+    ///      composer writes an ExecutionEntry for a read. The error name is the
+    ///      same one a read miss uses; the key in the payload is what shows the
+    ///      path: it was hashed with `isStatic = false`. This is the failure a
+    ///      `.call(data)` read produces in production.
     function test_plainCallTakesTheExecutionPathAndMisses() public {
         _commitBalance(100);
         (bool ok, bytes memory ret) = address(proxy).call(readData);
         require(!ok, "a plain call must not resolve the static entry");
-        require(bytes4(ret) == EntryNotFound.selector, "expected EntryNotFound, not ExecutionNotFound");
+        require(keccak256(ret) == keccak256(abi.encodeWithSelector(
+            EntryNotFound.selector, table.keyFor(false, address(this), readData), uint64(0)
+        )), "expected EntryNotFound keyed isStatic = false");
     }
 
     /// @dev And the staticcall reaches the read path even though the committed
     ///      static entry is the ONLY entry that exists. Committed for THIS
     ///      contract, because the entry is keyed by the source address —
     ///      `sourceAddress` is the second field of the real preimage too
-    ///      (EEZBase.sol:197), so the same call from a different caller is a
+    ///      (EEZBase.sol:300), so the same call from a different caller is a
     ///      different entry.
     function test_staticcallTakesTheReadPath() public {
         table.commitStatic(address(this), readData, true, abi.encode(uint256(100)));
@@ -250,7 +256,7 @@ contract Q2CrossChainCallTest {
         _commitBalance(100);
         (bool ok, bytes memory ret) = address(proxy).staticcall(readData);
         require(!ok, "another caller's entry must not resolve");
-        require(bytes4(ret) == ExecutionNotFound.selector, "expected ExecutionNotFound");
+        require(bytes4(ret) == EntryNotFound.selector, "expected EntryNotFound");
     }
 
     // ── Both failure modes, and why they are the same failure to a caller ──
@@ -262,7 +268,7 @@ contract Q2CrossChainCallTest {
 
     /// @dev An entry exists and records that the destination reverted. The
     ///      caller sees the identical outcome as the miss above — this is
-    ///      docs/CAVEATS.md "Indistinguishable revert reasons", executable.
+    ///      docs/CAVEATS.md "Missing entries and destination reverts", executable.
     function test_destinationRevertIsIndistinguishableFromAMiss() public {
         table.commitStatic(
             address(caller), readData, false, abi.encodeWithSelector(RemoteBalanceUnavailable.selector)

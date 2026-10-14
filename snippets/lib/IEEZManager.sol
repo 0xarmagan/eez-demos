@@ -8,9 +8,9 @@ import {IEEZ} from "./IEEZ.sol";
 ///         them means holding a manager reference rather than an IEEZ one.
 ///         Worth knowing before you copy a snippet into your own contract.
 ///
-///   authorizedProxies       -> eez-core-protocol/src/base/EEZBase.sol:60
-///   computeCrossChainCallHash -> eez-core-protocol/src/base/EEZBase.sol:198
-///   both @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+///   authorizedProxies       -> eez-core-protocol/src/base/EEZBase.sol:85
+///   computeCrossChainCallHash -> eez-core-protocol/src/base/EEZBase.sol:285
+///   both @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 interface IEEZManager is IEEZ {
     /// @notice Auto-generated getter for `mapping(address => ProxyInfo) public authorizedProxies`.
     ///         A public mapping to a struct returns the struct's members, flattened.

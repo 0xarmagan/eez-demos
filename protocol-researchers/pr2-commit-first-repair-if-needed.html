@@ -144,101 +144,97 @@
   <!-- ===== DIAGRAM — real state machine: optimistic → settled | failed ===== -->
   <div id="stageCol" style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
 
-    <!-- STEP 1: the ledger — one entry per sync_height, each carrying a Resolution -->
+    <!-- STEP 1: the ledger — one attempt per Sync block, one UserLocation per user -->
     <div id="s1" style="display:flex;flex-direction:column;gap:24px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">SYNC BLOCK COMMITTED · SYNC_HEIGHT 8,241</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">SYNC BLOCK BUILT · ATTEMPT REGISTERED · SYNC_HEIGHT 8,241</div>
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-        <div class="pill" style="color:#d8d8d8;background:#10151c;border:1px solid #232b36;">committer commits the Sync block</div>
+        <div class="pill" style="color:#d8d8d8;background:#10151c;border:1px solid #232b36;">composer builds the attested Sync block</div>
         <div style="font-size:22px;color:var(--muted);">→</div>
         <div class="pill" style="color:#7ee08c;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;font-weight:600;">optimistic.begin(…)</div>
         <div style="font-size:22px;color:var(--muted);">→</div>
-        <div style="font-family:var(--mono);font-size:13px;color:#8f98a8;">optimistic.rs:117 · returns ()</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#8f98a8;">optimistic.rs:199 · returns AttemptId</div>
       </div>
       <div style="background:#10151c;border:1px solid #232b36;border-radius:10px;padding:18px 22px;display:flex;flex-direction:column;gap:13px;max-width:900px;animation:riseIn .4s ease both;">
         <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;">
           <div style="font-size:19px;font-weight:600;color:#eef3f8;">OptimisticallyIncluded</div>
-          <div style="font-family:var(--mono);font-size:12px;color:#8f98a8;">BTreeMap&lt;u64, InFlight&gt; — one ledger per cross-chain rollup</div>
+          <div style="font-family:var(--mono);font-size:12px;color:#8f98a8;">Mutex&lt;AttemptState&gt; — one ledger per cross-chain rollup</div>
         </div>
         <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:72px;text-align:right;font-family:var(--mono);font-size:14px;color:#8f98a8;">8,239</div>
+          <div style="width:150px;text-align:right;font-family:var(--mono);font-size:14px;color:#8f98a8;">gen 40 · 8,235</div>
           <div style="font-size:16px;color:#8f98a8;">→</div>
-          <div style="font-family:var(--mono);font-size:14px;color:#d8d8d8;">InFlight</div>
-          <div class="pill" style="font-size:12px;padding:4px 10px;color:#7ee08c;background:rgba(63,185,80,0.10);border:1px solid #2f6b3a;">Settled</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#d8d8d8;">2 users</div>
+          <div class="pill" style="font-size:12px;padding:4px 10px;color:#7ee08c;background:rgba(63,185,80,0.10);border:1px solid #2f6b3a;">Terminal</div>
+          <div style="font-family:var(--mono);font-size:12px;color:#8f98a8;">reconciled · kept until finality</div>
         </div>
         <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:72px;text-align:right;font-family:var(--mono);font-size:14px;color:#8f98a8;">8,240</div>
+          <div style="width:150px;text-align:right;font-family:var(--mono);font-size:14px;font-weight:600;color:#eef3f8;">gen 41 · 8,241</div>
           <div style="font-size:16px;color:#8f98a8;">→</div>
-          <div style="font-family:var(--mono);font-size:14px;color:#d8d8d8;">InFlight</div>
-          <div class="pill" style="font-size:12px;padding:4px 10px;color:#e8b15e;background:rgba(232,177,94,0.10);border:1px solid #8a6a2e;">Pending</div>
+          <div style="font-family:var(--mono);font-size:14px;color:#eef3f8;font-weight:600;">3 users</div>
+          <div class="pill" style="font-size:12px;padding:4px 10px;color:#e8b15e;background:rgba(232,177,94,0.16);border:1px solid #8a6a2e;font-weight:600;animation:pulse 1.8s ease-in-out infinite;">AwaitingEvidence</div>
+          <div style="font-family:var(--mono);font-size:12px;color:#8f98a8;">← just registered</div>
         </div>
-        <div style="display:flex;align-items:center;gap:14px;">
-          <div style="width:72px;text-align:right;font-family:var(--mono);font-size:14px;font-weight:600;color:#eef3f8;">8,241</div>
-          <div style="font-size:16px;color:#8f98a8;">→</div>
-          <div style="font-family:var(--mono);font-size:14px;color:#eef3f8;font-weight:600;">InFlight</div>
-          <div class="pill" style="font-size:12px;padding:4px 10px;color:#e8b15e;background:rgba(232,177,94,0.16);border:1px solid #8a6a2e;font-weight:600;animation:pulse 1.8s ease-in-out infinite;">Pending</div>
-          <div style="font-family:var(--mono);font-size:12px;color:#8f98a8;">← just recorded</div>
-        </div>
+        <div style="font-size:14px;color:#8f98a8;">begin() refuses while another attempt still owns unresolved users (optimistic.rs:227) — one unresolved attempt at a time.</div>
       </div>
-      <div style="font-size:16px;color:#8f98a8;max-width:900px;">The container is the ledger; the state machine is the per-entry <span style="font-family:var(--mono);color:#d8d8d8;">Resolution</span> — Pending, Settled, Failed (optimistic.rs:67).</div>
+      <div style="font-size:16px;color:#8f98a8;max-width:900px;">The ledger holds attempts; the state machine is per user — <span style="font-family:var(--mono);color:#d8d8d8;">UserLocation</span>: Queued, Composing, AwaitingEvidence, Terminal (optimistic.rs:86). The block is committed to L2 right after (composer.rs:5354).</div>
     </div>
 
-    <!-- STEP 2: two oracles resolve one entry; the cursor overrides Failed -->
+    <!-- STEP 2: observation records, canonical evidence resolves -->
     <div id="s2" style="display:none;flex-direction:column;gap:22px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">RESOLVING ENTRY 8,241 · TWO ORACLES</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">RESOLVING ATTEMPT 41 · OBSERVATION ≠ EVIDENCE</div>
       <div style="display:flex;align-items:stretch;gap:20px;">
         <div style="flex:1;background:rgba(232,177,94,0.06);border:1.5px solid #8a6a2e;border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;">
-          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;">ORACLE 1 · OBSERVER LOG SCAN</div>
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;">OBSERVER · SUBMISSION ONLY</div>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-            <div class="pill" style="font-size:13px;color:#7ee08c;background:rgba(63,185,80,0.10);border:1px solid #2f6b3a;">mark_settled(h)</div>
-            <div style="font-size:16px;color:#8f98a8;">→</div>
-            <div style="font-family:var(--mono);font-size:14px;color:#7ee08c;">Settled</div>
+            <div class="pill" style="font-size:13px;color:#e8b15e;background:rgba(232,177,94,0.10);border:1px solid #8a6a2e;">observe(id, Included { … })</div>
           </div>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-            <div class="pill" style="font-size:13px;color:#e8b15e;background:rgba(232,177,94,0.10);border:1px solid #8a6a2e;">mark_failed(h, slot_skipped)</div>
-            <div style="font-size:16px;color:#8f98a8;">→</div>
-            <div style="font-family:var(--mono);font-size:14px;color:#e8b15e;">Failed</div>
+            <div class="pill" style="font-size:13px;color:#e8b15e;background:rgba(232,177,94,0.10);border:1px solid #8a6a2e;">observe(id, Excluded { … })</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <div style="font-family:var(--mono);font-size:14px;color:#e8b15e;">users stay AwaitingEvidence</div>
           </div>
         </div>
         <div style="flex:1;background:rgba(63,185,80,0.06);border:1.5px solid #2f6b3a;border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;animation:riseIn .4s .1s ease both;">
-          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:var(--eez-green);">ORACLE 2 · DERIVER CURSOR</div>
-          <div class="pill" style="font-size:13px;align-self:flex-start;color:#7ee08c;background:rgba(63,185,80,0.10);border:1px solid #2f6b3a;">resolve_below_cursor(cursor)</div>
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:var(--eez-green);">CANONICAL DERIVATION · SOURCE OUTCOMES</div>
+          <div class="pill" style="font-size:13px;align-self:flex-start;color:#7ee08c;background:rgba(63,185,80,0.10);border:1px solid #2f6b3a;">resolve(id, as_of, outcomes, …)</div>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-            <div style="font-family:var(--mono);font-size:14px;color:#e8b15e;">Pending</div>
+            <div style="font-family:var(--mono);font-size:14px;color:#e8b15e;">Terminal(reason)</div>
             <div style="font-size:16px;color:#8f98a8;">→</div>
-            <div style="font-family:var(--mono);font-size:14px;color:#7ee08c;">Settled</div>
+            <div style="font-family:var(--mono);font-size:14px;color:#7ee08c;">Terminal</div>
           </div>
           <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-            <div style="font-family:var(--mono);font-size:14px;color:#e8b15e;">Failed</div>
+            <div style="font-family:var(--mono);font-size:14px;color:#e8b15e;">Retryable</div>
             <div style="font-size:16px;color:#8f98a8;">→</div>
-            <div style="font-family:var(--mono);font-size:14px;color:#7ee08c;">Settled</div>
-            <div style="font-family:var(--mono);font-size:12px;color:#7ee08c;">OVERRIDE</div>
+            <div style="font-family:var(--mono);font-size:14px;color:#7ee08c;">Queued</div>
+            <div style="font-family:var(--mono);font-size:12px;color:#8f98a8;">or AttemptsExhausted</div>
           </div>
         </div>
       </div>
       <div style="background:#10151c;border-left:2px solid #2f6b3a;border-radius:0 8px 8px 0;padding:14px 20px;max-width:1000px;">
-        <div style="font-size:15px;line-height:1.5;color:#c9d1dc;">“the cursor only advances past a batch after <span style="font-family:var(--mono);">check_claimed_state</span> accepted it, which is a stronger settlement proof than the observer's log scan. A Failed verdict is overridden here: a false-negative observation must not undo a batch the Deriver confirmed.”</div>
-        <div style="font-family:var(--mono);font-size:12px;color:#8f98a8;margin-top:8px;">optimistic.rs:153-159</div>
+        <div style="font-size:15px;line-height:1.5;color:#c9d1dc;">“A height or an observer verdict is never proof of completion; only canonical derivation plus source outcomes can resolve an attempt.”</div>
+        <div style="font-family:var(--mono);font-size:12px;color:#8f98a8;margin-top:8px;">optimistic.rs:1-3</div>
       </div>
+      <div style="font-size:16px;color:#8f98a8;max-width:1000px;">Bundle never applied? The composer switches its own optimistic Sync block for an empty one (composer.rs:2437).</div>
     </div>
 
-    <!-- STEP 3: the two ways an entry actually leaves the ledger -->
+    <!-- STEP 3: the two ways an attempt actually leaves the ledger -->
     <div id="s3" style="display:none;flex-direction:column;gap:22px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">LEAVING THE LEDGER · SETTLED ≠ PERMANENT</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">LEAVING THE LEDGER · TERMINAL ≠ PERMANENT</div>
       <div style="display:flex;align-items:stretch;gap:20px;">
         <div style="flex:1;background:rgba(232,177,94,0.06);border:1.5px solid #8a6a2e;border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:11px;animation:riseIn .4s ease both;">
-          <div class="pill" style="font-size:13px;align-self:flex-start;color:#f2dfb3;background:rgba(232,177,94,0.12);border:1px solid #8a6a2e;font-weight:600;">take_rolled_out(new_l2_cursor)</div>
-          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;">L1 REORG · optimistic.rs:247</div>
-          <div style="font-size:15px;line-height:1.5;color:#c9b894;">Every <span style="font-family:var(--mono);color:#f2dfb3;">Settled</span> entry above the retreated cursor is removed and its txs re-queued. <span style="font-family:var(--mono);color:#f2dfb3;">Pending</span> entries stay — a reorg does not invalidate a bundle still in flight.</div>
+          <div class="pill" style="font-size:13px;align-self:flex-start;color:#f2dfb3;background:rgba(232,177,94,0.12);border:1px solid #8a6a2e;font-weight:600;">invalidate_after_l1(ancestor)</div>
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;">L1 REORG · optimistic.rs:563</div>
+          <div style="font-size:15px;line-height:1.5;color:#c9b894;">Every <span style="font-family:var(--mono);color:#f2dfb3;">Terminal</span> user whose canonical evidence sits above the common ancestor goes back to <span style="font-family:var(--mono);color:#f2dfb3;">AwaitingEvidence</span>, and its attempt is reopened.</div>
         </div>
         <div style="flex:1;background:rgba(63,185,80,0.06);border:1.5px solid #2f6b3a;border-radius:10px;padding:18px 20px;display:flex;flex-direction:column;gap:11px;animation:riseIn .4s .1s ease both;">
-          <div class="pill" style="font-size:13px;align-self:flex-start;color:#7ee08c;background:rgba(63,185,80,0.12);border:1px solid #2f6b3a;font-weight:600;">take_finalized(finalized_l2)</div>
-          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:var(--eez-green);">L1 FINALITY · optimistic.rs:270</div>
-          <div style="font-size:15px;line-height:1.5;color:#a8c2ae;">The only clean exit — and not a blind one: the caller re-checks that each entry's <span style="font-family:var(--mono);color:#cfe9d4;">postBatch</span> receipt still exists on L1 before discarding it.</div>
+          <div class="pill" style="font-size:13px;align-self:flex-start;color:#7ee08c;background:rgba(63,185,80,0.12);border:1px solid #2f6b3a;font-weight:600;">forget_finalized(id, audited)</div>
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:var(--eez-green);">L1 FINALITY · optimistic.rs:625</div>
+          <div style="font-size:15px;line-height:1.5;color:#a8c2ae;">The only clean exit — and not a blind one: the caller first re-checks that the attempt's L1 block is still canonical (composer.rs:1633), and only fully terminal attempts are pruned.</div>
         </div>
       </div>
       <div id="settledNote" style="background:rgba(63,185,80,0.06);border:1.5px dashed #2f6b3a;border-radius:9px;padding:16px 22px;display:inline-flex;align-items:center;gap:16px;align-self:flex-start;">
         <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:#7ee08c;">READ IT AS</div>
-        <div style="font-size:21px;font-weight:600;color:#eef8ee;">Settled = “L1 said yes for now”</div>
+        <div style="font-size:21px;font-weight:600;color:#eef8ee;">Terminal = “canonical L1 said so, for now”</div>
         <div style="width:6px;height:6px;border-radius:50%;background:var(--eez-green);"></div>
         <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">permanent only past finality</div>
       </div>
@@ -260,7 +256,7 @@
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-rollup0/blob/a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2/crates/eez-composer/src/optimistic.rs" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">crates/eez-composer/src/optimistic.rs ↗</a></div>
+      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-composer/src/optimistic.rs" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">crates/eez-composer/src/optimistic.rs ↗</a></div>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
@@ -275,15 +271,15 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">PROTOCOL RESEARCHERS</div>
       <h1 class="intro-title" id="introTitle">How L1 stays the source of truth</h1>
-      <p class="intro-lede">An L2 commits first: the Sync block is committed, and begin() records it in a ledger as Pending — before L1 has confirmed anything.</p>
-      <p class="intro-lede">L1 then settles that entry, or repairs it — and until finality it can still take it back.</p>
+      <p class="intro-lede">An L2 commits first: the attested Sync block is committed, and begin() registers its attempt in a ledger — every user AwaitingEvidence — before L1 has confirmed anything.</p>
+      <p class="intro-lede">Only canonical derivation from L1 resolves those users, or repairs the block — and until finality a reorg can still reopen them.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
-        <li><b>01 · THE LEDGER</b>begin() records the committed Sync block at its sync_height as Pending. One ledger per cross-chain rollup.</li>
-        <li><b>02 · TWO ORACLES, THREE STATES</b>The observer’s log scan marks Settled or Failed. The Deriver’s cursor overrides a Failed verdict — it is the stronger proof.</li>
-        <li><b>03 · SETTLED IS NOT PERMANENT</b>An L1 reorg removes rolled-out Settled entries. Entries leave clean only at finality, after their postBatch receipt is re-checked.</li>
+        <li><b>01 · THE LEDGER</b>begin() registers one attempt per Sync block; its users wait as AwaitingEvidence. One unresolved attempt at a time, one ledger per cross-chain rollup.</li>
+        <li><b>02 · OBSERVATION ≠ EVIDENCE</b>The observer only records what happened to the submission. resolve() moves users on canonical source outcomes — Terminal, or back to the queue.</li>
+        <li><b>03 · TERMINAL IS NOT PERMANENT</b>An L1 reorg reopens canonical outcomes above the common ancestor. Attempts leave clean only at finality, after their L1 block is re-checked.</li>
       </ul>
-      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-rollup0 @ a4b9b2f &mdash; pre-mainnet; interfaces may move.</p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-rollupX @ 2c19e36 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
       </div>
@@ -310,78 +306,92 @@
   var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["THE LEDGER", "TWO ORACLES, THREE STATES", "SETTLED IS NOT PERMANENT"];
+  var kickers = ["THE LEDGER", "OBSERVATION ≠ EVIDENCE", "TERMINAL IS NOT PERMANENT"];
   var captions = [
-    "The committer commits the Sync block; begin() records it in the ledger at its sync_height as Pending. Two adjacent acts.",
-    "Two oracles resolve an entry: the observer's log scan, and the Deriver's L1-derived cursor. The cursor is the stronger one — it overrides a Failed verdict.",
-    "Settled is not permanent. An L1 reorg takes rolled-out Settled entries back out; entries leave clean only at finality, and only after their postBatch receipt is re-checked on L1."
+    "The composer builds the attested Sync block; begin() registers the attempt with every user AwaitingEvidence, and the block is committed to L2 before L1 confirms anything.",
+    "The observer only records what happened to the submission. Users move only when resolve() applies canonical source outcomes; if the bundle never applied, the composer swaps its own Sync block for an empty one.",
+    "Terminal is not permanent. An L1 reorg reopens every canonical outcome above the common ancestor; attempts leave clean only at finality, after their L1 block is re-checked."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
   // so the panel never dumps the full file ungrouped. Every declaration line
   // below is a verbatim quote from optimistic.rs at the pin, de-indented out
-  // of its `impl` block; bodies, field lists and doc comments are elided with
-  // an explicit annotation — never an invented body, and never an invented
-  // return type. begin() returns unit (optimistic.rs:117-123).
+  // of its `impl` block; bodies, parameter lists and doc comments are elided
+  // with an explicit annotation — never an invented body, and never an
+  // invented return type. begin() returns Result<AttemptId, String>
+  // (optimistic.rs:199-207).
   var codeByStep = [
     [
-      "// optimistic.rs:67 — private; variant docs omitted",
-      "enum Resolution {",
-      "    Pending,",
-      "    Settled,",
-      "    Failed,",
+      "// optimistic.rs:86 — variant docs omitted",
+      "pub enum UserLocation {",
+      "    Queued,",
+      "    Composing,",
+      "    AwaitingEvidence,",
+      "    Terminal {",
+      "        reason: TerminalReason,",
+      "        canonical: Option<L1BlockRef>,",
+      "    },",
       "}",
       "",
-      "// optimistic.rs:101",
+      "// optimistic.rs:167",
       "pub struct OptimisticallyIncluded {",
-      "    by_sync_height: Mutex<BTreeMap<u64, InFlight>>,",
+      "    state: Mutex<AttemptState>,",
       "}",
       "",
-      "// optimistic.rs:117",
+      "// optimistic.rs:199",
       "pub fn begin(",
       "    // params omitted — signature verified, body not",
-      ") {"
+      ") -> Result<AttemptId, String> {"
     ],
     [
-      "// optimistic.rs:177 — observer verdict",
-      "pub fn mark_settled(&self, sync_height: u64) {",
-      "    // observer verdict: the bundle settled on L1",
+      "// optimistic.rs:435 — observer callback",
+      "pub fn observe(",
+      "    &self,",
+      "    id: AttemptId,",
+      "    observation: SubmissionObservation,",
+      ") -> Result<bool, String> {",
+      "    // records the submission's fate on the attempt;",
+      "    // never moves a user out of AwaitingEvidence",
       "}",
       "",
-      "// optimistic.rs:191 — observer verdict",
-      "pub fn mark_failed(&self, sync_height: u64,",
-      "    slot_skipped: bool) {",
-      "    // observer verdict: the bundle didn't land",
-      "}",
-      "",
-      "// optimistic.rs:160 — the Deriver's cursor wins",
-      "pub fn resolve_below_cursor(&self, cursor: u64)",
-      "    -> Vec<HeldTx> {",
-      "    // flips Pending AND Failed \u2264 cursor to Settled",
+      "// optimistic.rs:467 — canonical evidence",
+      "pub fn resolve(",
+      "    &self,",
+      "    id: AttemptId,",
+      "    as_of: L1BlockRef,",
+      "    outcomes: &[SourceOutcome],",
+      "    charge: AttemptCharge,",
+      "    attempt_limit: u32,",
+      ") -> Result<Vec<NonceGap>, String> {",
+      "    // Terminal outcome -> Terminal; Retryable -> Queued",
       "}"
     ],
     [
-      "// optimistic.rs:247",
-      "pub fn take_rolled_out(&self, new_l2_cursor: u64)",
-      "    -> Vec<HeldTx> {",
-      "    // L1 reorg: removes Settled entries ABOVE",
-      "    // the retreated cursor and returns their",
-      "    // txs. Pending entries stay.",
+      "// optimistic.rs:563 \u2014 wrapped; one line in source",
+      "pub fn invalidate_after_l1(&self, ancestor: u64)",
+      "    -> Result<(), String> {",
+      "    // Terminal users with canonical evidence above",
+      "    // `ancestor` go back to AwaitingEvidence",
       "}",
       "",
-      "// optimistic.rs:270 \u2014 wrapped; one line in source",
-      "pub fn take_finalized(&self, finalized_l2: u64)",
-      "    -> Vec<(u64, TxHash, Vec<HeldTx>)> {",
-      "    // the only clean exit — and the caller",
-      "    // still checks each postBatch receipt",
-      "    // exists on L1 before discarding",
+      "// optimistic.rs:600 \u2014 wrapped; one line in source",
+      "pub fn finalization_candidates(&self, finalized_l1: u64)",
+      "    -> Vec<(AttemptId, L1BlockRef)> {",
+      "",
+      "// optimistic.rs:625",
+      "pub fn forget_finalized(",
+      "    &self,",
+      "    id: AttemptId,",
+      "    audited: L1BlockRef,",
+      ") -> Result<Vec<FinalizedUser>, String> {",
+      "    // the caller re-checks the L1 block hash first",
       "}"
     ]
   ];
   var hlByStep = [
-    [8,9,13,15],
-    [1,6,7,12,13],
-    [1,2,9,10]
+    [4,12,13,17,19],
+    [1,4,11,14,15,18],
+    [1,2,8,9,12,15,16]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

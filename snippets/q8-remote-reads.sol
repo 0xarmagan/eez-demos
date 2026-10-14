@@ -4,10 +4,10 @@ pragma solidity ^0.8.28;
 import {IEEZ} from "./lib/IEEZ.sol";
 
 // Panel source for: dapp-developers/q8-read-a-remote-contracts-state.html
-// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:89
+// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:113
 // and eez-core-protocol/docs/CAVEATS.md, "Opcodes that differ on cross-chain
-// proxies" and "Indistinguishable revert reasons when calling a proxy"
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// proxies" and "Missing entries and destination reverts"
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // This is the caveat with no compiler help. q3's mistake reverts, so you find
 // it the first time a call arrives through a proxy. The reads below SUCCEED and
@@ -16,7 +16,7 @@ import {IEEZ} from "./lib/IEEZ.sol";
 // WHY: a CrossChainProxy is an ordinary contract, deployed on THIS chain, with
 // its own code and its own balance. An opcode that asks the EVM about an
 // address answers about that local contract. Only a CALL is routed: the proxy's
-// fallback (CrossChainProxy.sol:89, `_fallback`) forwards to the manager, which
+// fallback (CrossChainProxy.sol:113, `_fallback`) forwards to the manager, which
 // resolves an outcome that was written down before your transaction ran. So
 // inspection is local, invocation is resolved.
 //
@@ -29,34 +29,35 @@ import {IEEZ} from "./lib/IEEZ.sol";
 // `delegatecall` deserves its own line: delegatecalling a proxy runs the
 // PROXY's code in your storage context. It does not reach the remote contract.
 //
-// WHEN A ROUTED READ RESOLVES — the rule is side-specific, so do not learn one
-// half of it and carry it to the other chain:
+// WHEN A ROUTED READ RESOLVES — both sides gate on the block, but what else
+// must match differs, so do not learn one half and carry it to the other chain:
 //
-//   L1 has NO block gate on the read path. `staticCrossChainCall`
-//   (EEZ.sol:1266-1328) falls through to
-//   `verificationByRollup[destRid].staticEntryQueue` (:1309-1310) and matches on
-//   `proxyEntryHash`, `destinationRollupId` and `_stateRootsMatch(...)`
-//   (:1317-1319). Upstream's own comment at :1308: "Note that static calls do
-//   not obsolete after a block passes. As long as the state roots matches it can
-//   be execute".
+//   L1: `staticCrossChainCall` (EEZ.sol:1379-1449) opens with
+//   `_validateProxyAndGetDestinationInfo()` (:1380), which reverts
+//   `ExecutionNotInCurrentBlock(destRid)` unless that rollup was verified in
+//   this block (:1578-1580). It then scans `staticEntryQueue` (:1420), or the
+//   batch's transient pool while one is mid-flight, and matches on
+//   `proxyEntryHash`, `destinationRollupId` and `_rootsMatch(...)` (:1437-1438).
+//   Upstream's own comment: "Static entries require both current-block
+//   verification (checked above) and matching root pins."
 //
-//   L2 DOES gate it. `EEZL2.sol:634` is
+//   L2: `staticCrossChainCall` (EEZL2.sol:660) opens with the same-named helper,
+//   whose gate at EEZL2.sol:791 is
 //   `if (lastLoadBlock != block.number) revert ExecutionNotInCurrentBlock();`,
-//   and the docstring at :588-589 gives the reason: "no pins on L2 — the block
-//   gate bounds staleness".
+//   and matches on the call hash and the live entry cursor (:705).
 //
-//   Mutating calls are block-gated on both sides. On L1 that is EEZ.sol:794-797,
-//   `revert ExecutionNotInCurrentBlock(destRid)`.
+//   Mutating calls go through the same helper on both sides, so they are
+//   block-gated too (EEZ.sol:863, EEZL2.sol:272).
 //
-// A read with nothing to resolve against reverts `ExecutionNotFound()` —
-// EEZ.sol:1327 and EEZL2.sol:644. That is the string to search for.
+// A read with nothing to resolve against reverts — `ExecutionNotFound()` on L1
+// (EEZ.sol:1410, :1448), `EntryNotFound(bytes32 crossChainCallHash, uint64
+// callGas)` on L2 (EEZL2.sol:699, :714). Those are the strings to search for.
 //
-// AND YOU CANNOT TELL WHY IT FAILED. CAVEATS.md, "Indistinguishable revert
-// reasons when calling a proxy": a caller cannot differentiate a call reverting
-// because no matching entry existed from the destination call actually
-// reverting. Both bubble up as a revert from the proxy, because
-// CrossChainProxy.sol:109-113 forwards the raw revert data unmodified. Do not
-// write a `try/catch` that claims to know which one happened.
+// AND REVERT DATA WON'T TELL YOU WHY IT FAILED. CAVEATS.md, "Missing entries
+// and destination reverts": a static lookup miss reverts at the proxy, as does a
+// matched reverting destination, and revert data alone is not a reliable way to
+// distinguish them — CrossChainProxy.sol:138-139 forwards the raw revert data
+// unmodified. Do not write a `try/catch` that claims to know which one happened.
 
 interface IRemote {
     function balanceOf(address account) external view returns (uint256);
@@ -99,11 +100,13 @@ bool sameChain =
     ///      against an entry the composer already wrote — so what comes back is
     ///      the remote contract's state, not the proxy's.
     ///
-    ///      When it resolves is side-specific: on L1 a static entry stays valid
-    ///      as long as the state roots still match (EEZ.sol:1308-1319), on L2 it
-    ///      is gated on the current block (EEZL2.sol:634). With no matching
-    ///      entry on either side, this reverts `ExecutionNotFound()` — and that
-    ///      revert is indistinguishable from the destination reverting.
+    ///      Both sides resolve it only in the block the entries were loaded: on
+    ///      L1 the rollup must be verified this block and the entry's root pins
+    ///      must match (EEZ.sol:1578-1580, :1437-1438), on L2 the table must be
+    ///      loaded this block (EEZL2.sol:791). With no matching entry this
+    ///      reverts — `ExecutionNotFound()` on L1, `EntryNotFound(...)` on L2 —
+    ///      and revert data alone cannot reliably tell that from the
+    ///      destination reverting.
     function readRemoteBalance(address user) external view returns (uint256) {
 address proxy = eez.computeCrossChainProxyAddress(
     remote, remoteRollupId

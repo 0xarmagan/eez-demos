@@ -159,29 +159,30 @@
     <div id="s2" style="display:none;flex-direction:column;gap:20px;">
       <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">SEED — STARTING STATE AND IDENTITY, BEFORE ANY RESULT</div>
       <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">The accumulator does not start at zero. It starts from the state context the entry was written against, closed with the entry's own identity — so the hash commits to <em>what the world looked like</em> as well as what happened.</div>
-      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">// L1 — ordered (rollupId, currentState) deltas, then identity
-seed         = keccak256(&hellip;keccak256(0 &#8214; rollupId&#8321; &#8214; currentState&#8321;)&hellip;)
+      <div style="font-family:var(--mono);font-size:17px;line-height:1.7;color:#e8e0f5;background:#141b2b;border:1px solid #2a3550;border-radius:8px;padding:14px 18px;overflow-x:auto;white-space:pre;">// L1 — ordered (rollupId, currentRoot) updates, then identity
+seed         = keccak256(&hellip;keccak256(0 &#8214; rollupId&#8321; &#8214; currentRoot&#8321;)&hellip;)
 _rollingHash = keccak256(seed &#8214; proxyEntryHash)
 
-// L2 — the same formula with an empty delta prefix
+// L2 — the same formula with an empty update prefix
 _rollingHash = keccak256(bytes32(0) &#8214; proxyEntryHash)</div>
       <div style="max-width:960px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
         <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">IT MUST BE CLEAR FIRST</div>
         <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;"><span style="font-family:var(--mono);">_rollingHashEntryBegin</span> reverts <span style="font-family:var(--mono);">RollingHashNotCleared</span> if <span style="font-family:var(--mono);">_rollingHash</span> is non-zero on entry. A prior entry that left residue cannot bleed into this one, and the check is cheap because the accumulator is transient — it is zero again by the next transaction whether or not anything cleaned up.</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">Deltas are strictly increasing by <span style="font-family:var(--mono);">rollupId</span>, so the fold over them is deterministic and needs no sort at verification time.</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">Rollup updates are strictly increasing by <span style="font-family:var(--mono);">rollupId</span>, so the fold over them is deterministic and needs no sort at verification time.</div>
       </div>
     </div>
 
     <!-- STEP 3 -->
     <div id="s3" style="display:none;flex-direction:column;gap:20px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">FIVE TAGGED EVENTS</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">SIX TAGGED EVENTS</div>
       <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;">Each fold carries a domain byte. The tag is not decoration: it is what stops one set of inputs from meaning two different things.</div>
       <div style="display:flex;flex-direction:column;gap:9px;background:#10151c;border:1px solid #232b36;border-radius:9px;padding:16px 18px;">
-        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:150px;flex:none;">CALL_BEGIN</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">1</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 1 &#8214; crossChainCallHash)</div></div>
-        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:150px;flex:none;">CALL_END</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">2</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 2 &#8214; success &#8214; retData)</div></div>
-        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:150px;flex:none;">NESTED_BEGIN</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">3</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 3 &#8214; crossChainCallHash)</div></div>
-        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:150px;flex:none;">NESTED_END</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">4</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 4)</div></div>
-        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:150px;flex:none;">CALL_NOT_FOUND</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">5</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 5 &#8214; crossChainCallHash)</div></div>
+        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:220px;flex:none;">CALL_BEGIN</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">1</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 1 &#8214; crossChainCallHash)</div></div>
+        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:220px;flex:none;">CALL_END</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">2</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 2 &#8214; success &#8214; retData)</div></div>
+        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:220px;flex:none;">NESTED_BEGIN</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">3</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 3 &#8214; crossChainCallHash)</div></div>
+        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:220px;flex:none;">NESTED_END</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">4</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 4)</div></div>
+        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:220px;flex:none;">CALL_NOT_FOUND</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">5</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 5 &#8214; crossChainCallHash)</div></div>
+        <div style="display:flex;align-items:baseline;gap:14px;"><div style="font-family:var(--mono);font-size:15px;color:#A8F3CE;width:220px;flex:none;">CALL_INSUFFICIENT_GAS</div><div style="font-family:var(--mono);font-size:15px;color:var(--muted);width:34px;flex:none;">6</div><div style="font-family:var(--mono);font-size:15px;color:#d8d8d8;">keccak(prev &#8214; 6)</div></div>
       </div>
       <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:960px;"><span style="font-family:var(--mono);">CALL_BEGIN</span> folds the call's full identity hash, not just its position — so the chain commits to <em>which</em> call ran, and a substituted call with an identical return value still diverges.</div>
       <div style="max-width:960px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
@@ -216,8 +217,8 @@ keccak(prev &#8214; CALL_NOT_FOUND(5) &#8214; crossChainCallHash)</div>
       <div style="max-width:960px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
         <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">WHY THE SEPARATE TAG IS LOAD-BEARING</div>
         <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">With one tag for both, a prover could present a call that silently found nothing as a call that succeeded and returned empty bytes. The distinct domain byte makes those two histories hash differently, so the substitution is caught at the entry's rolling-hash check.</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">It survives the awkward paths too: the divergence rides the accumulator across an intermediate try/catch and across a revert-span boundary in the <span style="font-family:var(--mono);">ContextResult</span> payload, so no side flag is needed to carry "a no-match happened" back out.</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">And it is not a trap for honest provers: one that deliberately pre-hashes <span style="font-family:var(--mono);">CALL_NOT_FOUND</span> is committing to a not-found at that exact position. That is a faithful outcome, not an attack.</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">It survives a deliberate revert span: the <span style="font-family:var(--mono);">ContextResult</span> payload carries the accumulator across the span boundary, so no side flag is needed to carry "a no-match happened" back out. An ordinary enclosing revert erases it along with the rest of that frame.</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">And it is never a legitimate outcome to prove: valid proofs must exclude <span style="font-family:var(--mono);">CALL_NOT_FOUND</span>, as they must <span style="font-family:var(--mono);">CALL_INSUFFICIENT_GAS</span>. Hash equality alone cannot enforce that exclusion, so it is a proof-policy requirement rather than a contract check.</div>
       </div>
     </div>
 
@@ -254,9 +255,9 @@ require(hash == expected);   // RollingHashMismatch</div>
       <div style="max-width:960px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
         <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">AN ASYMMETRY WITH A STATED REASON</div>
         <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">No domain bytes, no call-identity folds, and no nesting at all. Read as a diff against the tagged scheme that looks like a weaker version of it.</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">It is safe because <b>the surrounding key already pins everything the tags disambiguate.</b> A nested static row is addressed by <span style="font-family:var(--mono);">keccak256(crossChainCallHash, rollingHash-at-fire-point)</span> inside its entry; a top-level static entry by <span style="font-family:var(--mono);">proxyEntryHash</span> plus queue routing plus, on L1, the expected-state-root pins. All that is left for the static hash to commit to is the outcome of the read-only sub-calls in order — which is exactly what the untagged chain captures.</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">It is safe because <b>the surrounding key already pins everything the tags disambiguate.</b> A nested static row is addressed by <span style="font-family:var(--mono);">keccak256(crossChainCallHash, rollingHash-at-fire-point)</span> inside its entry; a top-level static entry by <span style="font-family:var(--mono);">proxyEntryHash</span> plus queue routing plus, on L1, the expected-root pins. All that is left for the static hash to commit to is the outcome of the read-only sub-calls in order — which is exactly what the untagged chain captures.</div>
         <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">Nesting is absent for a structural reason rather than a chosen one: STATICCALL forbids state writes, so a proxy's <span style="font-family:var(--mono);">executeOnBehalf</span> cannot reenter the mutating entrypoints. A reentrant read re-enters <span style="font-family:var(--mono);">staticCrossChainCall</span> and resolves independently.</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">There is also no cross-contamination: <span style="font-family:var(--mono);">_processNStaticCalls</span> returns a local hash and never reads or writes <span style="font-family:var(--mono);">_rollingHash</span>.</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">There is also no cross-contamination: <span style="font-family:var(--mono);">_processStaticIncomingCalls</span> (L2) and <span style="font-family:var(--mono);">_processStaticL2ToL1Calls</span> (L1) return a local hash and never read or write <span style="font-family:var(--mono);">_rollingHash</span>.</div>
       </div>
     </div>
 
@@ -276,7 +277,7 @@ require(hash == expected);   // RollingHashMismatch</div>
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L290&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/EEZBase.sol:290 · _rollingHashEntryBegin ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L290" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:290 · _rollingHashEntryBegin ↗</a></div>
+      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L391&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/EEZBase.sol:391 · _rollingHashEntryBegin ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L391" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:391 · _rollingHashEntryBegin ↗</a></div>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
@@ -297,13 +298,13 @@ require(hash == expected);   // RollingHashMismatch</div>
       <ul class="intro-learn">
         <li><b>01 · ONE VALUE, WHOLE TREE</b>Six distinct classes of divergence, caught by a single equality check.</li>
         <li><b>02 · SEEDED WITH STATE</b>It starts from the entry's starting state and identity, not from its first result.</li>
-        <li><b>03 · FIVE TAGGED EVENTS</b>A domain byte per event type, so one input set cannot collide across two of them.</li>
+        <li><b>03 · SIX TAGGED EVENTS</b>A domain byte per event type, so one input set cannot collide across two of them.</li>
         <li><b>04 · NO INDEX IS FOLDED IN</b>The chain already binds order, count and nesting — and omitting the index is what makes a revert span reprocessable.</li>
         <li><b>05 · A NO-MATCH CANNOT BE FORGED</b>Why CALL_NOT_FOUND is its own tag and not CALL_END(true, "").</li>
         <li><b>06 · A TRIPLE COLLAPSED TO ONE</b>The reentrant table's position key, and why isStatic did not need to be in it.</li>
         <li><b>07 · THE UNTAGGED EXCEPTION</b>Static sub-hashes drop the tags entirely — with a stated reason, not an oversight.</li>
       </ul>
-      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9735f53 &mdash; pre-mainnet; interfaces may move.</p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the guide →</button>
       </div>
@@ -331,19 +332,19 @@ require(hash == expected);   // RollingHashMismatch</div>
   var step = 0, playing = false, timer = null;
 
   var citeByStep = [
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L107" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:107 &#183; RollingHashMismatch &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L290" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:290 &#183; _rollingHashEntryBegin &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L303" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:303 &#183; _rollingHashCallBegin &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L67" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:67 &#183; _rollingHash &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L331" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:331 &#183; _rollingHashCallNotFound &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L246" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:246 &#183; _computeExpectedL1toL2Hash &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/EEZBase.sol#L339" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:339 &#183; _rollingHashStaticResult &#8599;</a>'
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L129" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:129 &#183; RollingHashMismatch &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L391" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:391 &#183; _rollingHashEntryBegin &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L438" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:438 &#183; _rollingHashCallBegin &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L92" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:92 &#183; _rollingHash &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L467" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:467 &#183; _rollingHashCallNotFound &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L338" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:338 &#183; _computeExpectedL1toL2Hash &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L488" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:488 &#183; _rollingHashStaticResult &#8599;</a>'
   ];
 
   var kickers = [
     "ONE VALUE, WHOLE TREE",
     "SEEDED WITH STATE",
-    "FIVE TAGGED EVENTS",
+    "SIX TAGGED EVENTS",
     "NO INDEX IS FOLDED IN",
     "A NO-MATCH CANNOT BE FORGED",
     "A TRIPLE COLLAPSED TO ONE",
@@ -352,7 +353,7 @@ require(hash == expected);   // RollingHashMismatch</div>
   var captions = [
     "An entry states what should happen; the rolling hash commits to what did. Six distinct classes of divergence — wrong return data, wrong success flag, missing or extra calls, a skipped or extra reentrant frame, reordering, an unexpected reentrant call — all collapse into one equality check.",
     "It is seeded, not zeroed: the entry's starting state context closed with its own identity, so the hash binds what the world looked like as well as what happened. It must be clear beforehand, or _rollingHashEntryBegin reverts RollingHashNotCleared.",
-    "Five events, each folded with its own domain byte, so one set of inputs cannot mean two things. CALL_BEGIN folds the call's full identity hash — a substituted call with an identical return value still diverges.",
+    "Six events, each folded with its own domain byte, so one set of inputs cannot mean two things. CALL_BEGIN folds the call's full identity hash — a substituted call with an identical return value still diverges.",
     "No call index is folded in. Because each fold consumes the prior hash, order, count and nesting are already bound by the chain, and an explicit counter would add nothing. Dropping it is what lets a revert span be reprocessed as a 0-based sub-slice and still hash like a continuous run.",
     "A reentrant call that finds no matching row folds CALL_NOT_FOUND, not CALL_END(true, \"\"). Sharing a tag would let a silent no-match be presented as a successful empty return; the separate domain byte makes those two histories hash differently.",
     "The reentrant table's position key was (hash, rollingHash, isStatic) and is now keccak256(crossChainCallHash, rollingHash). isStatic did not stop mattering — it is already the first of the eight fields inside crossChainCallHash, so carrying it again committed to the same bit twice.",
@@ -364,39 +365,41 @@ require(hash == expected);   // RollingHashMismatch</div>
       "require(_rollingHash == entry.rollingHash);",
       "// reverts RollingHashMismatch",
       "",
-      "// EEZBase.sol:107 declares the error;",
+      "// EEZBase.sol:129 declares the error;",
       "// the check runs after every call and",
       "// every nesting in the entry completes."
     ],
     [
-      "// EEZBase.sol:290  _rollingHashEntryBegin",
+      "// EEZBase.sol:391  _rollingHashEntryBegin",
       "if (_rollingHash != bytes32(0))",
       "    revert RollingHashNotCleared();",
       "",
-      "bytes32 statesHash;",
-      "for (i in deltas)",
-      "    statesHash = keccak256(abi.encodePacked(",
-      "        statesHash,",
-      "        deltas[i].rollupId,",
-      "        deltas[i].currentState));",
+      "bytes32 _rollupRootsHash;",
+      "for (i in rollupUpdates)",
+      "    _rollupRootsHash = keccak256(",
+      "        abi.encodePacked(",
+      "            _rollupRootsHash,",
+      "            rollupUpdates[i].rollupId,",
+      "            rollupUpdates[i].currentRoot));",
       "",
       "_rollingHash = keccak256(abi.encodePacked(",
-      "    statesHash, proxyEntryHash));"
+      "    _rollupRootsHash, proxyEntryHash));"
     ],
     [
-      "// EEZBase.sol:39-43 — the domain bytes",
-      "CALL_BEGIN     = 1;",
-      "CALL_END       = 2;",
-      "NESTED_BEGIN   = 3;",
-      "NESTED_END     = 4;",
-      "CALL_NOT_FOUND = 5;",
+      "// EEZBase.sol:40-45 — the domain bytes",
+      "CALL_BEGIN            = 1;",
+      "CALL_END              = 2;",
+      "NESTED_BEGIN          = 3;",
+      "NESTED_END            = 4;",
+      "CALL_NOT_FOUND        = 5;",
+      "CALL_INSUFFICIENT_GAS = 6;",
       "",
-      "// :303",
+      "// :438",
       "keccak256(abi.encodePacked(",
       "    _rollingHash, CALL_BEGIN,",
       "    crossChainCallHash));",
       "",
-      "// :309",
+      "// :446",
       "keccak256(abi.encodePacked(",
       "    _rollingHash, CALL_END,",
       "    success, retData));"
@@ -417,12 +420,12 @@ require(hash == expected);   // RollingHashMismatch</div>
       "// from a continuous run."
     ],
     [
-      "// a normal empty return (:309)",
+      "// a normal empty return (:446)",
       "keccak256(abi.encodePacked(",
       "    _rollingHash, CALL_END,",
       "    true, \"\"));",
       "",
-      "// a no-match (:331) — different tag",
+      "// a no-match (:467) — different tag",
       "keccak256(abi.encodePacked(",
       "    _rollingHash, CALL_NOT_FOUND,",
       "    crossChainCallHash));",
@@ -431,7 +434,7 @@ require(hash == expected);   // RollingHashMismatch</div>
       "// stand in for the second."
     ],
     [
-      "// EEZBase.sol:246",
+      "// EEZBase.sol:338",
       "function _computeExpectedL1toL2Hash(",
       "    bytes32 crossChainCallHash,",
       "    bytes32 rollingHash",
@@ -445,12 +448,12 @@ require(hash == expected);   // RollingHashMismatch</div>
       "// eight inside crossChainCallHash."
     ],
     [
-      "// EEZBase.sol:339  _rollingHashStaticResult",
+      "// EEZBase.sol:488  _rollingHashStaticResult",
       "// pure: never touches _rollingHash",
       "return keccak256(abi.encodePacked(",
       "    prev, success, retData));",
       "",
-      "// EEZL2.sol:674  _processNStaticCalls",
+      "// EEZL2.sol:754  _processStaticIncomingCalls",
       "computedHash = bytes32(0);",
       "for (cc in calls) {",
       "    (success, retData) =",
@@ -468,15 +471,16 @@ require(hash == expected);   // RollingHashMismatch</div>
     [
       1,
       2,
-      11,
-      12
+      12,
+      13
     ],
     [
       1,
       2,
       3,
       4,
-      5
+      5,
+      6
     ],
     [
       1,

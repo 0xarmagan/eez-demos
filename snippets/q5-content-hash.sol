@@ -2,8 +2,8 @@
 pragma solidity ^0.8.28;
 
 // Panel source for: dapp-developers/q5-encode-a-calls-content-hash.html
-// Mirrors eez-core-protocol/src/base/EEZBase.sol:198
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// Mirrors eez-core-protocol/src/base/EEZBase.sol:285
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // Field order is load-bearing. abi.encode (not encodePacked) 32-byte pads
 // every static field and length-prefixes `data`, so reordering two fields

@@ -16,8 +16,8 @@ for judgment and is not restated here.
 ## Header block — RESOLVED (0.0 closed 2026-08-26)
 
 ```
-contracts_pin:  9735f53abbb6b9f5e863f405ad4555b4701b7fda   # = upstream HEAD; 32/34 assertions pass
-node_pin:       a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2   # HOLD — see below
+contracts_pin:  9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f   # = the eez-core-protocol submodule pin in eez-rollupX
+node_pin:       2c19e36bed2720c00f89841ccfca47ec7c921e06   # eez-rollupX main, 2026-10-14
 error_name:     path-specific, three sites, none stale     # see below
 format:         Option A (Walkthroughs + Guides)
 skill_version:  eez-protocol-dev v2 (bytecodeHash correction applied)

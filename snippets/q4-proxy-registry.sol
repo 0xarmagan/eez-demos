@@ -4,8 +4,8 @@ pragma solidity ^0.8.28;
 import {IEEZManager} from "./lib/IEEZManager.sol";
 
 // Panel source for: dapp-developers/q4-check-if-an-address-is-a-proxy.html
-// Mirrors eez-core-protocol/src/base/EEZBase.sol:60
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// Mirrors eez-core-protocol/src/base/EEZBase.sol:85
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // The registry is a public mapping, so anyone can read it directly — no
 // events to replay, no indexer required. Because it maps to a struct, the
