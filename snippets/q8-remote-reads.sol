@@ -9,9 +9,9 @@ import {IEEZ} from "./lib/IEEZ.sol";
 // proxies" and "Missing entries and destination reverts"
 // @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
-// This is the caveat with no compiler help. q3's mistake reverts, so you find
-// it the first time a call arrives through a proxy. The reads below SUCCEED and
-// return a real number about the wrong contract, so they ship.
+// This is the caveat with no compiler help. The msg.sender mistake reverts, so
+// you find it the first time a call arrives through a proxy. The reads below
+// SUCCEED and return a real number about the wrong contract, so they ship.
 //
 // WHY: once created, a CrossChainProxy is an ordinary contract on THIS chain,
 // with its own code and its own balance. An opcode that asks the EVM about an
@@ -59,11 +59,12 @@ import {IEEZ} from "./lib/IEEZ.sol";
 // (EEZ.sol:1410, :1448), `EntryNotFound(bytes32 crossChainCallHash, uint64
 // callGas)` on L2 (EEZL2.sol:699, :714). Those are the strings to search for.
 //
-// AND REVERT DATA WON'T TELL YOU WHY IT FAILED. CAVEATS.md, "Missing entries
-// and destination reverts": a static lookup miss reverts at the proxy, as does a
-// matched reverting destination, and revert data alone is not a reliable way to
-// distinguish them — CrossChainProxy.sol:138-139 forwards the raw revert data
-// unmodified. Do not write a `try/catch` that claims to know which one happened.
+// THE REVERT DATA USUALLY TELLS A MISS FROM A DESTINATION REVERT, BUT DON'T BRANCH
+// ON IT. CAVEATS.md, "Missing entries and destination reverts": a static lookup
+// miss reverts at the proxy, as does a matched reverting destination, and a
+// destination can emit the same selector — CrossChainProxy.sol:138-139 forwards
+// the raw revert data unmodified. Do not write a `try/catch` that claims to know
+// which one happened.
 
 interface IRemote {
     function balanceOf(address account) external view returns (uint256);
@@ -111,8 +112,8 @@ bool sameChain =
     ///      the entry's root pins must match (EEZ.sol:1578-1580, :1437-1438); on
     ///      L2 the table must be loaded this block (EEZL2.sol:791). With no matching entry this
     ///      reverts — `ExecutionNotFound()` on L1, `EntryNotFound(...)` on L2 —
-    ///      and revert data alone cannot reliably tell that from the
-    ///      destination reverting.
+    ///      and the forwarded revert data usually tells that from the
+    ///      destination reverting, but don't branch on it.
     function readRemoteBalance(address user) external view returns (uint256) {
 address proxy = eez.computeCrossChainProxyAddress(
     remote, remoteRollupId

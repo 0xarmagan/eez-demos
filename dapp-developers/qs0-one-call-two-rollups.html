@@ -267,7 +267,7 @@
         <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no second transaction from you</div>
         <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no waiting after your call</div>
       </div>
-      <div class="qs0-note">Each entry, <code>returnData</code> included, is hashed into the public input that every proof system in the batch must verify, up to each rollup&rsquo;s own threshold. So the composer can&rsquo;t post an answer those proof systems didn&rsquo;t attest. On today&rsquo;s testnet that is one ECDSA signer; card 01&rsquo;s local run accepts any proof. Counter@L2 runs the same call on L2, keyed by the same call hash.</div>
+      <div class="qs0-note">Each entry, <code>returnData</code> included, is hashed into the public input that every proof system listed in the batch must verify; each rollup requires at least its own threshold of them, which can be 0. So the composer can&rsquo;t post an answer those proof systems didn&rsquo;t attest. On today&rsquo;s testnet that is one ECDSA signer; card 01&rsquo;s local run accepts any proof. Counter@L2 runs the same call on L2, keyed by the same call hash.</div>
       <div class="qs0-note">Further reading: <a class="qs0-link" href="q2-send-a-cross-chain-call.html#skip-intro">How to call a contract on another rollup &rarr;</a></div>
     </div>
 
@@ -303,7 +303,7 @@
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">One Call, Two Rollups, One Transaction</h1>
       <p class="intro-lede">Your contract on L1 calls a contract on L2 and gets its return value back in the same transaction. No bridge message, no callback, no second transaction from you.</p>
-      <p class="intro-lede">It works because you send your transaction to the composer&rsquo;s RPC. The composer simulates it, then lands postAndVerifyBatch and your transaction as one bundle in the same block, with the batch first, so the answer is posted and verified before your call looks it up. Sent through a plain L1 RPC instead, your call reverts <code>ExecutionNotInCurrentBlock</code>. This card is one picture and no install; card 01 runs it.</p>
+      <p class="intro-lede">It works because you send your transaction to the composer&rsquo;s RPC. The composer simulates it, then lands postAndVerifyBatch and your transaction as one bundle in the same block, with the batch first, so the answer is posted and verified before your call looks it up. Sent through a plain L1 RPC instead, your call reverts, usually with <code>ExecutionNotInCurrentBlock</code>. This card is one picture and no install; card 01 runs it.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 · YOUR CONTRACT CALLS A PROXY</b>A proxy on L1 stands in for the L2 contract. Calling it is an ordinary call.</li>

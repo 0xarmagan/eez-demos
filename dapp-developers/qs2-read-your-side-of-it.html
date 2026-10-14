@@ -171,7 +171,7 @@
         <div style="width:6px;height:6px;border-radius:50%;background:var(--eez-green);animation:pulse 1.8s ease-in-out infinite;"></div>
         <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">targetCounter = 1 · counter = 1</div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">Across chains, that <span style="font-family:var(--mono);">1</span> comes from the execution entry posted before your transaction ran. Locally, the scenario script plays composer. qs3 shows who answered.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">Across chains, that <span style="font-family:var(--mono);">1</span> comes from the execution entry posted before your transaction ran. Locally, the scenario script plays composer. Card 03 shows who answered.</div>
     </div>
 
     <!-- STEP 3: same call site, two targets -->
@@ -224,7 +224,7 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">Read Your Side of It</h1>
-      <p class="intro-lede">qs1 ran one call from L1 into L2 and back. These are the two contracts it ran, copied verbatim from the protocol repo.</p>
+      <p class="intro-lede">Card 01 ran one call from L1 into L2 and back. These are the two contracts it ran, copied verbatim from the protocol repo.</p>
       <p class="intro-lede">Neither one imports anything from EEZ. Your side is an ordinary Solidity call that uses its return value.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
@@ -261,7 +261,7 @@
 
   var kickers = ["THE CONTRACT ON L2.", "YOUR CONTRACT ON L1.", "POINT IT ANYWHERE."];
   var captions = [
-    "Counter is plain Solidity. In the qs1 run it lives on L2, and increment() returns the new count.",
+    "Counter is plain Solidity. In the card 01 run it lives on L2, and increment() returns the new count.",
     "incrementProxy() calls target.increment() like any other contract and uses the return value on the next line. The fixed gas amount is the one extra; Three Gotchas explains when it matters.",
     "The only cross-chain part is which address target holds. The scenario passes Counter's proxy on L1. The TEST tab passes a local Counter, and the same code passes."
   ];
@@ -329,7 +329,7 @@
       "// Mirrors eez-core-protocol/test/mocks/CounterContracts.sol:4-23 and :53-66",
       "// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f",
       "//",
-      "// These are the contracts the qs1 round trip runs. Copied verbatim: Counter",
+      "// These are the contracts the card 01 round trip runs. Copied verbatim: Counter",
       "// lives on L2, CounterAndProxy on L1. Nothing in CounterAndProxy knows it is",
       "// calling across chains. `target` just holds an address, and on the scenario",
       "// that address is Counter's cross-chain proxy on L1.",

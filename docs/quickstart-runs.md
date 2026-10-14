@@ -88,4 +88,4 @@ Ran 1 test suite in 4.88ms (2.19ms CPU time): 1 tests passed, 0 failed, 0 skippe
 
 Note: `bridge` is `one_way/L1_to_L2/bridge`, `bridgeL2` is `one_way/L2_to_L1/bridgeL2`.
 
-Prerequisite found by audit: the local runner needs `jq` (`script/e2e/lib/E2EBase.sh:215`, `:321`, `:601-607`). This machine has `/usr/bin/jq` (macOS 15+ ships it); Linux and older macOS need `brew install jq` / `apt install jq`.
+Prerequisite found by audit: the local runner needs `jq` (`script/e2e/lib/E2EBase.sh:215`, `:321`, `:601-607`). This machine has `/usr/bin/jq` (recent macOS ships it; it was present on the macOS 26 machine these runs used); Linux and older macOS need `brew install jq` / `apt install jq`.

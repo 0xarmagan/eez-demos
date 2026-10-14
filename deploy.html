@@ -156,7 +156,9 @@ td.n{white-space:nowrap}
         <p class="step-why">The demos and this page are pinned to <a href="https://book.getfoundry.sh/getting-started/installation">Foundry v1.7.1</a>; the command below installs that version. Step 2 also needs a browser wallet.</p>
         <div class="term">
           <div class="term-head"><span class="term-label">SHELL</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
-<pre><span class="p">$ </span>curl -L https://foundry.paradigm.xyz | bash &amp;&amp; foundryup --install v1.7.1</pre>
+<pre><span class="p">$ </span>curl -L https://foundry.paradigm.xyz | bash
+<span class="p">$ </span>export PATH="$HOME/.foundry/bin:$PATH"
+<span class="p">$ </span>foundryup --install v1.7.1</pre>
         </div>
       </div>
     </section>
@@ -181,7 +183,7 @@ td.n{white-space:nowrap}
       <div class="step-num" aria-hidden="true">3</div>
       <div class="step-body">
         <h2 class="step-title">Point your shell at the network</h2>
-        <p class="step-why">Send transactions to the chain&rsquo;s <b>front</b> URL. It forwards ordinary transactions, like this deploy, unchanged and composes cross-chain ones; a cross-chain call sent to the direct RPC would bypass the composer. The front also answers the reads used below; the direct RPC is for reads and protocol tooling. The L2 manager is a genesis predeploy, read from the deployment&rsquo;s genesis profile (eez-rollupX @ 2c19e36 puts it at <a href="https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/scripts/update-eezl2-genesis.sh#L15"><code>0x4B27&hellip;402C</code></a>); the L1 manager is the testnet&rsquo;s EEZ contract on Chiado. Every value in the table comes from the dashboard&rsquo;s own config.</p>
+        <p class="step-why">Send transactions to the chain&rsquo;s <b>front</b> URL. It forwards ordinary transactions, like this deploy, unchanged and composes cross-chain ones; a cross-chain call sent to the direct RPC would bypass the composer. The front also answers the reads used below; the direct RPC is for reads and protocol tooling. The L2 manager is a genesis predeploy, read from the deployment&rsquo;s genesis profile (eez-rollupX @ 2c19e36 puts it at <a href="https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/scripts/update-eezl2-genesis.sh#L15"><code>0x4B27&hellip;402C</code></a>); the L1 manager is the testnet&rsquo;s EEZ contract on Chiado. Every URL, manager address and explorer in the table comes from the dashboard&rsquo;s own config; the chain ids are what <code>eth_chainId</code> returns on each RPC.</p>
         <div class="netwrap">
         <table class="net">
           <tr><th>CHAIN</th><th>RPC URLS</th><th>CHAIN ID</th><th>EEZ MANAGER</th><th>EXPLORER</th></tr>

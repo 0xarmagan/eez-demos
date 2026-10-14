@@ -202,7 +202,7 @@
         <div style="font-family:var(--mono);font-size:13px;color:var(--label);">delegatecall</div>
         <div style="font-size:16px;color:var(--muted);">into the proxy reverts instead (UnauthorizedProxy).</div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">q3's mistake reverts the first time a call arrives through a proxy. These reads return a real number about the wrong contract, or the wrong chain, so they ship.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">The msg.sender mistake reverts the first time a call arrives through a proxy. These reads return a real number about the wrong contract, or the wrong chain, so they ship.</div>
     </div>
 
     <!-- STEP 3: the routed read, and the two ways it fails -->
@@ -226,7 +226,7 @@
         <div style="font-size:20px;color:#8B7B55;">&#8594;</div>
         <div style="font-family:var(--mono);font-size:15px;color:#8B7B55;flex:none;">its own error, raw</div>
       </div>
-      <div style="font-size:16px;color:#d8d8d8;max-width:1010px;">Both arrive as a revert from the proxy, carrying only the bytes below it. Revert data alone cannot reliably tell them apart &#8212; do not write a try/catch that claims to.</div>
+      <div style="font-size:16px;color:#d8d8d8;max-width:1010px;">Both arrive as a revert from the proxy, carrying only the bytes below it. The forwarded revert data usually tells a miss from a destination revert, but a destination can emit the same selector, so don't branch on it.</div>
       <div style="display:flex;gap:18px;width:1010px;max-width:100%;">
         <div style="flex:1;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:14px 18px;">
           <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">ON L1 &#183; THIS BLOCK, ROOTS PINNED</div>
@@ -281,7 +281,7 @@
       <ul class="intro-learn">
         <li><b>01 &#183; A CONTRACT ON THIS CHAIN</b>Once created, the proxy is a contract here, so opcodes answer about it, not about the contract it stands for.</li>
         <li><b>02 &#183; THREE READS, NO REVERT</b>balance, extcodesize and extcodecopy describe the proxy; block-state opcodes describe this chain. A delegatecall into the proxy reverts instead.</li>
-        <li><b>03 &#183; ASK IT, DON'T INSPECT IT</b>A routed read resolves against a pre-computed entry, or reverts (ExecutionNotFound() on L1, EntryNotFound on L2) &#8212; and revert data alone can't reliably tell that from the destination reverting.</li>
+        <li><b>03 &#183; ASK IT, DON'T INSPECT IT</b>A routed read resolves against a pre-computed entry, or reverts (ExecutionNotFound() on L1, EntryNotFound on L2) &#8212; and the forwarded revert data usually tells that from the destination reverting, but don't branch on it.</li>
       </ul>
       <p style="margin:18px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#8a8a8a;letter-spacing:0.02em;">RUN IT YOURSELF &middot; <span style="color:#cfcfcf">forge test --match-test test_routedReadReturnsThePreCommittedEntry -vv</span> &mdash; from <a href="https://github.com/0xarmagan/eez-demos/tree/main/snippets" target="_blank" style="color:#8a8a8a;border-bottom:1px dotted #444;text-decoration:none;">eez-demos/snippets</a>, Foundry only.</p>
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
@@ -314,7 +314,7 @@
   var kickers = ["A CONTRACT ON THIS CHAIN", "THREE READS, NO REVERT", "ASK IT, DON'T INSPECT IT"];
   var captions = [
     "Once created, the proxy is an ordinary contract on this chain. Every opcode that asks the EVM about an address answers about it \u2014 not about the contract it stands for.",
-    "balance, extcodesize and extcodecopy describe the proxy, and block-state opcodes describe the chain you are executing on; each succeeds and returns a real number about the wrong contract. A delegatecall into a proxy runs the proxy's code in your context and reverts (UnauthorizedProxy) \u2014 it never reaches the remote contract.",
+    "balance, extcodesize and extcodecopy describe the proxy, so each succeeds and returns a real number about the wrong contract; block-state opcodes describe the chain you are executing on, so they return a real number about the wrong chain. A delegatecall into a proxy runs the proxy's code in your context and reverts (UnauthorizedProxy) \u2014 it never reaches the remote contract.",
     "Call through the proxy instead \u2014 the read is routed, and resolves against an entry written before your transaction ran."
   ];
 
@@ -394,9 +394,9 @@
       "// proxies\" and \"Missing entries and destination reverts\"",
       "// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f",
       "//",
-      "// This is the caveat with no compiler help. q3's mistake reverts, so you find",
-      "// it the first time a call arrives through a proxy. The reads below SUCCEED and",
-      "// return a real number about the wrong contract, so they ship.",
+      "// This is the caveat with no compiler help. The msg.sender mistake reverts, so",
+      "// you find it the first time a call arrives through a proxy. The reads below",
+      "// SUCCEED and return a real number about the wrong contract, so they ship.",
       "//",
       "// WHY: once created, a CrossChainProxy is an ordinary contract on THIS chain,",
       "// with its own code and its own balance. An opcode that asks the EVM about an",
@@ -444,11 +444,12 @@
       "// (EEZ.sol:1410, :1448), `EntryNotFound(bytes32 crossChainCallHash, uint64",
       "// callGas)` on L2 (EEZL2.sol:699, :714). Those are the strings to search for.",
       "//",
-      "// AND REVERT DATA WON'T TELL YOU WHY IT FAILED. CAVEATS.md, \"Missing entries",
-      "// and destination reverts\": a static lookup miss reverts at the proxy, as does a",
-      "// matched reverting destination, and revert data alone is not a reliable way to",
-      "// distinguish them \u2014 CrossChainProxy.sol:138-139 forwards the raw revert data",
-      "// unmodified. Do not write a `try/catch` that claims to know which one happened.",
+      "// THE REVERT DATA USUALLY TELLS A MISS FROM A DESTINATION REVERT, BUT DON'T BRANCH",
+      "// ON IT. CAVEATS.md, \"Missing entries and destination reverts\": a static lookup",
+      "// miss reverts at the proxy, as does a matched reverting destination, and a",
+      "// destination can emit the same selector \u2014 CrossChainProxy.sol:138-139 forwards",
+      "// the raw revert data unmodified. Do not write a `try/catch` that claims to know",
+      "// which one happened.",
       "",
       "interface IRemote {",
       "    function balanceOf(address account) external view returns (uint256);",
@@ -496,8 +497,8 @@
       "    ///      the entry's root pins must match (EEZ.sol:1578-1580, :1437-1438); on",
       "    ///      L2 the table must be loaded this block (EEZL2.sol:791). With no matching entry this",
       "    ///      reverts \u2014 `ExecutionNotFound()` on L1, `EntryNotFound(...)` on L2 \u2014",
-      "    ///      and revert data alone cannot reliably tell that from the",
-      "    ///      destination reverting.",
+      "    ///      and the forwarded revert data usually tells that from the",
+      "    ///      destination reverting, but don't branch on it.",
       "    function readRemoteBalance(address user) external view returns (uint256) {",
       "address proxy = eez.computeCrossChainProxyAddress(",
       "    remote, remoteRollupId",

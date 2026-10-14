@@ -5,7 +5,7 @@ pragma solidity ^0.8.28;
 // Mirrors eez-core-protocol/test/mocks/CounterContracts.sol:4-23 and :53-66
 // @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
-// These are the contracts the qs1 round trip runs. Copied verbatim: Counter
+// These are the contracts the card 01 round trip runs. Copied verbatim: Counter
 // lives on L2, CounterAndProxy on L1. Nothing in CounterAndProxy knows it is
 // calling across chains. `target` just holds an address, and on the scenario
 // that address is Counter's cross-chain proxy on L1.

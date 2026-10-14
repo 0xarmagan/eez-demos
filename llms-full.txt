@@ -96,7 +96,7 @@ return returnData;
 
 ## Run Your First Round Trip
 
-Two scenarios pass on local anvil chains: a call that starts on L1 gets its answer from L2, then the same call runs the other way round.
+Two scenarios pass on local anvil chains: a call that starts on L1 gets back the value L2's execution produces (locally, precomputed in the entry), then the same call runs the other way round.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/qs1-run-your-first-round-trip.html
 - Source: `eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh`
@@ -105,7 +105,7 @@ Two scenarios pass on local anvil chains: a call that starts on L1 gets its answ
 
 ### Step 1 — CLONE AT THE PIN.
 
-Clone at a fixed commit so your output matches these cards. You need Foundry 1.7.1 with forge, cast and anvil on PATH, Git, jq (built into macOS 15+), and bash 4 or newer (macOS ships 3.2; brew install bash puts bash 5 first on PATH). No Docker.
+Clone at a fixed commit so your output matches these cards. You need Foundry 1.7.1 with forge, cast and anvil on PATH, Git, jq (recent macOS ships it), and bash 4 or newer (macOS ships 3.2; brew install bash puts bash 5 first on PATH). No Docker.
 
 ```text
 # needs Foundry 1.7.1 (forge, cast, anvil on PATH),
@@ -113,7 +113,7 @@ Clone at a fixed commit so your output matches these cards. You need Foundry 1.7
 # Foundry: https://book.getfoundry.sh/getting-started/installation
 # macOS ships bash 3.2; this puts bash 5 first on PATH:
 #   brew install bash
-# jq: built into macOS 15+, or brew/apt install jq
+# jq: recent macOS ships it, or brew/apt install jq
 
 $ git clone https://github.com/eez-association/eez-core-protocol.git
 $ cd eez-core-protocol
@@ -163,7 +163,7 @@ Neither contract imports anything from EEZ: your side is an ordinary Solidity ca
 
 ### Step 1 — THE CONTRACT ON L2.
 
-Counter is plain Solidity. In the qs1 run it lives on L2, and increment() returns the new count.
+Counter is plain Solidity. In the card 01 run it lives on L2, and increment() returns the new count.
 
 ```solidity
 contract Counter is ICounterView {
@@ -224,7 +224,7 @@ pragma solidity ^0.8.28;
 // Mirrors eez-core-protocol/test/mocks/CounterContracts.sol:4-23 and :53-66
 // @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
-// These are the contracts the qs1 round trip runs. Copied verbatim: Counter
+// These are the contracts the card 01 round trip runs. Copied verbatim: Counter
 // lives on L2, CounterAndProxy on L1. Nothing in CounterAndProxy knows it is
 // calling across chains. `target` just holds an address, and on the scenario
 // that address is Counter's cross-chain proxy on L1.
@@ -445,7 +445,7 @@ One L1 transaction borrows 10,000 tokens, sends them to L2 and back, and repays 
 ```text
 # needs Git, jq, Foundry 1.7.1 (forge, cast, anvil on PATH)
 # and bash 4+; macOS ships 3.2, so: brew install bash
-# jq: built into macOS 15+, or brew/apt install jq
+# jq: recent macOS ships it, or brew/apt install jq
 # fresh clone at the pinned commit
 $ git clone https://github.com/eez-association/eez-core-protocol.git
 $ cd eez-core-protocol
@@ -513,7 +513,7 @@ The scenarios move ETH across: bridge from L1 to L2, bridgeL2 from L2 to L1, wit
 ```text
 # needs Git, jq, Foundry 1.7.1 (forge, cast, anvil on PATH)
 # and bash 4+; macOS ships 3.2, so: brew install bash
-# jq: built into macOS 15+, or brew/apt install jq
+# jq: recent macOS ships it, or brew/apt install jq
 # fresh clone at the pinned commit, then build
 $ git clone https://github.com/eez-association/eez-core-protocol.git
 $ cd eez-core-protocol
@@ -1955,7 +1955,7 @@ address proxy = eez.computeCrossChainProxyAddress(
 
 ### Step 2 — THREE READS, NO REVERT
 
-balance, extcodesize and extcodecopy describe the proxy, and block-state opcodes describe the chain you are executing on; each succeeds and returns a real number about the wrong contract. A delegatecall into a proxy runs the proxy's code in your context and reverts (UnauthorizedProxy) — it never reaches the remote contract.
+balance, extcodesize and extcodecopy describe the proxy, so each succeeds and returns a real number about the wrong contract; block-state opcodes describe the chain you are executing on, so they return a real number about the wrong chain. A delegatecall into a proxy runs the proxy's code in your context and reverts (UnauthorizedProxy) — it never reaches the remote contract.
 
 ```diff
  address proxy = eez.computeCrossChainProxyAddress(
@@ -2000,9 +2000,9 @@ import {IEEZ} from "./lib/IEEZ.sol";
 // proxies" and "Missing entries and destination reverts"
 // @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
-// This is the caveat with no compiler help. q3's mistake reverts, so you find
-// it the first time a call arrives through a proxy. The reads below SUCCEED and
-// return a real number about the wrong contract, so they ship.
+// This is the caveat with no compiler help. The msg.sender mistake reverts, so
+// you find it the first time a call arrives through a proxy. The reads below
+// SUCCEED and return a real number about the wrong contract, so they ship.
 //
 // WHY: once created, a CrossChainProxy is an ordinary contract on THIS chain,
 // with its own code and its own balance. An opcode that asks the EVM about an
@@ -2050,11 +2050,12 @@ import {IEEZ} from "./lib/IEEZ.sol";
 // (EEZ.sol:1410, :1448), `EntryNotFound(bytes32 crossChainCallHash, uint64
 // callGas)` on L2 (EEZL2.sol:699, :714). Those are the strings to search for.
 //
-// AND REVERT DATA WON'T TELL YOU WHY IT FAILED. CAVEATS.md, "Missing entries
-// and destination reverts": a static lookup miss reverts at the proxy, as does a
-// matched reverting destination, and revert data alone is not a reliable way to
-// distinguish them — CrossChainProxy.sol:138-139 forwards the raw revert data
-// unmodified. Do not write a `try/catch` that claims to know which one happened.
+// THE REVERT DATA USUALLY TELLS A MISS FROM A DESTINATION REVERT, BUT DON'T BRANCH
+// ON IT. CAVEATS.md, "Missing entries and destination reverts": a static lookup
+// miss reverts at the proxy, as does a matched reverting destination, and a
+// destination can emit the same selector — CrossChainProxy.sol:138-139 forwards
+// the raw revert data unmodified. Do not write a `try/catch` that claims to know
+// which one happened.
 
 interface IRemote {
     function balanceOf(address account) external view returns (uint256);
@@ -2102,8 +2103,8 @@ bool sameChain =
     ///      the entry's root pins must match (EEZ.sol:1578-1580, :1437-1438); on
     ///      L2 the table must be loaded this block (EEZL2.sol:791). With no matching entry this
     ///      reverts — `ExecutionNotFound()` on L1, `EntryNotFound(...)` on L2 —
-    ///      and revert data alone cannot reliably tell that from the
-    ///      destination reverting.
+    ///      and the forwarded revert data usually tells that from the
+    ///      destination reverting, but don't branch on it.
     function readRemoteBalance(address user) external view returns (uint256) {
 address proxy = eez.computeCrossChainProxyAddress(
     remote, remoteRollupId
