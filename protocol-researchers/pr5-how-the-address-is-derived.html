@@ -834,7 +834,18 @@
   var btnCopy = document.getElementById("btnCopy");
   if (btnCopy) {
     btnCopy.addEventListener("click", function(){
+      // Run panels mix "$ " commands with comments and sample output; copy
+      // only the commands (with their "\" continuation lines), prompt
+      // stripped, so a paste into a terminal runs.
       var lines = currentLines();
+      var cmds = [], cont = false;
+      lines.forEach(function(l){
+        if (l.indexOf("$ ") === 0) { cmds.push(l.slice(2)); }
+        else if (cont) { cmds.push(l); }
+        else { return; }
+        cont = /\\$/.test(l);
+      });
+      if (cmds.length) { lines = cmds; }
       var text = lines.join("\n").replace(/[ \t]+$/gm, "").replace(/\n+$/, "") + "\n";
       var done = function(ok){
         btnCopy.textContent = ok ? "COPIED" : "COPY FAILED";
@@ -854,18 +865,44 @@
       }
     });
   }
+  // Keep "file.sol:LINE" visible when the citation is too wide: the
+  // directory prefix ellipsizes, the file name and line number never do.
+  function fitCite(el){
+    var a = el && el.querySelector("a");
+    if (!a || a.getAttribute("data-fit")) { return; }
+    var txt = a.textContent, cut = txt.lastIndexOf("/", txt.search(/:\d/));
+    if (cut < 0) { return; }
+    a.setAttribute("data-fit", "1");
+    a.title = txt.replace(/\s*↗$/, "") + " (view source on GitHub)";
+    a.style.display = "inline-flex"; a.style.maxWidth = "100%"; a.style.minWidth = "0";
+    a.textContent = "";
+    var dir = document.createElement("span");
+    dir.textContent = txt.slice(0, cut + 1);
+    dir.style.cssText = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;";
+    var file = document.createElement("span");
+    file.textContent = txt.slice(cut + 1);
+    file.style.cssText = "flex:none;white-space:nowrap;";
+    a.appendChild(dir); a.appendChild(file);
+  }
+  var citeNode = document.getElementById("srcCite");
+  if (citeNode && window.MutationObserver) {
+    new MutationObserver(function(){ fitCite(citeNode); }).observe(citeNode, { childList: true });
+    fitCite(citeNode);
+  }
   window.addEventListener("keydown", function(e){
     // The lead-in owns the keyboard while it is showing: no stepping and
     // no autoplay, and Space has to reach the Start button rather than
     // being swallowed by Play below.
-    if (introShowing()) {
-      if (e.key === "Escape") { window.location.href = "../index.html"; }
-      return;
-    }
+    if (introShowing()) { return; }
+    // Leave typing, modified keys, and Space/Enter on a focused control to
+    // the browser, so a focused button still activates natively.
+    var t = e.target, tag = t && t.tagName;
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (t && t.isContentEditable)) { return; }
+    if (e.key === " " && (tag === "BUTTON" || tag === "A")) { return; }
     if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
     else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
     else if(e.key===" "){ e.preventDefault(); togglePlay(); }
-    else if(e.key==="Escape"){ window.location.href = "../index.html"; }
     else if(e.key==="r"||e.key==="R"){ clearTimeout(timer); step = 0; playing = true; render(); schedule(); }
     else if(e.key==="?"){ var hb = document.getElementById("btnHelp"); if (hb) hb.click(); }
   });
