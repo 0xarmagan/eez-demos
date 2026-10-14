@@ -224,9 +224,9 @@
         </div>
       </div>
       <div class="qs0-box" style="width:960px;background:#141414;border:1px solid var(--eez-edge);display:flex;gap:28px;flex-wrap:wrap;">
-        <div><div class="qs0-tag" style="color:var(--muted);">ENTRY · proxyEntryHash</div><div class="qs0-main" style="color:#eef3f8;font-size:15px;">= hash of your call</div></div>
+        <div><div class="qs0-tag" style="color:var(--muted);">ENTRY · lookup key</div><div class="qs0-main" style="color:#eef3f8;font-size:15px;">= hash of your call</div></div>
         <div><div class="qs0-tag" style="color:var(--muted);">returnData</div><div class="qs0-main" style="color:#8fe7b4;font-size:15px;">abi.encode(1)</div></div>
-        <div><div class="qs0-tag" style="color:var(--muted);">rollupUpdates</div><div class="qs0-main" style="color:#eef3f8;font-size:15px;">L2 root: old &rarr; new</div></div>
+        <div><div class="qs0-tag" style="color:var(--muted);">L2 state change</div><div class="qs0-main" style="color:#eef3f8;font-size:15px;">L2 root: old &rarr; new</div></div>
       </div>
       <div class="qs0-warn">
         <b>ONLY IN THAT BLOCK</b>
@@ -241,7 +241,7 @@
         <div class="qs0-box" style="width:280px;background:#151515;border:1.5px solid #3a3a3a;">
           <div class="qs0-tag" style="color:var(--muted);">EEZ MANAGER</div>
           <div class="qs0-main" style="color:#eef3f8;">return returnData</div>
-          <div class="qs0-sub">after the rolling-hash check</div>
+          <div class="qs0-sub">after the entry check</div>
         </div>
         <div class="qs0-arrow">
           <svg width="130" height="20" viewBox="0 0 130 20"><defs><marker id="qa4" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#3BE57E"></path></marker></defs><line x1="2" y1="10" x2="120" y2="10" stroke="#3BE57E" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#qa4)" style="animation:dashMove 1s linear infinite;"></line></svg>
@@ -340,7 +340,7 @@
   var captions = [
     "Your contract calls the proxy for Counter@L2 like any other contract. The proxy has no functions of its own, so its fallback hands your calldata and your contract's address to the EEZ manager.",
     "Earlier in this block the composer's postAndVerifyBatch verified a batch and queued its entries. executeCrossChainCall works only in that block: it hashes your call and takes the queued entry carrying that hash.",
-    "The manager applies the entry, checks its rolling hash and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, and no second transaction from you."
+    "The manager applies the entry, checks it matches what was proven, and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, and no second transaction from you."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,

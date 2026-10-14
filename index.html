@@ -161,7 +161,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
 
     <a class="card qs-entry" href="./dapp-developers/qs0-one-call-two-rollups.html">
       <div class="card-head"><h3 class="card-title">Build cross-rollup apps</h3></div>
-      <p class="card-hook">Write cross-chain logic — flash loans, bridging — as naturally as a same-chain call. Run a cross-rollup round trip locally in about 5 minutes (measured on an Apple M4).</p>
+      <p class="card-hook">Write cross-chain logic — flash loans, bridging — as naturally as a same-chain call. Run a cross-rollup round trip locally in about 5 minutes (Apple M4, first solc download not included).</p>
       <div class="cta">START WITH CARD 00 <span class="circ">→</span></div>
     </a>
 
@@ -202,7 +202,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
         </a>
         <a class="card" href="./dapp-developers/qs5-three-gotchas-before-you-build.html">
           <div class="card-head"><h3 class="card-title"><span class="card-num">05</span>Three Gotchas Before You Build</h3></div>
-          <p class="card-hook">Three things behave differently from a same-chain call, and each one fails quietly in a test that never leaves one chain.</p>
+          <p class="card-hook">Three things behave differently from a same-chain call: a test that never leaves one chain hides all three, and cross-chain each one reverts.</p>
         </a>
         <a class="card" href="./dapp-developers/qs6-deploy-your-own-contract.html">
           <div class="card-head"><h3 class="card-title"><span class="card-num">06</span>Deploy Your Own Contract</h3><span class="badge">COMING SOON</span></div>
@@ -220,7 +220,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
         </a>
         <a class="card" href="./dapp-developers/qs8-bridge-tokens-both-ways.html">
           <div class="card-head"><h3 class="card-title"><span class="card-num">08</span>Bridge Tokens Both Ways</h3></div>
-          <p class="card-hook">ETH goes from L1 to L2 and back, and an ERC-20 locks and mints going out, then burns and releases coming back through the Bridge.sol test fixture.</p>
+          <p class="card-hook">Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair of chains, then run the test that sends an ERC-20 through the Bridge.sol test fixture and back.</p>
         </a>
       </div>
     </div>

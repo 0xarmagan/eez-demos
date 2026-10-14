@@ -149,6 +149,7 @@
     <!-- STEP 1: the whole scenario is one L1 transaction -->
     <div id="s1" style="display:flex;flex-direction:column;gap:22px;">
       <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">ONE L1 TRANSACTION · executorL1.execute()</div>
+      <div style="font-size:15px;line-height:1.5;color:var(--muted);max-width:1010px;margin-top:-12px;">The L2 rows run in L2&rsquo;s own transactions; the L1 transaction consumes their precomputed results.</div>
       <div style="display:flex;flex-direction:column;gap:10px;max-width:1010px;">
         <div style="display:flex;align-items:center;gap:16px;"><div style="font-family:var(--mono);font-size:13px;color:var(--label);width:56px;">L1</div><div style="flex:1;border:1px solid var(--eez-edge);background:#141414;border-radius:8px;padding:12px 16px;font-size:19px;color:#d8d8d8;">pool lends <b style="color:#fff;">10,000</b> tokens to executorL1</div></div>
         <div style="display:flex;align-items:center;gap:16px;"><div style="font-family:var(--mono);font-size:13px;color:var(--label);width:56px;">L1→L2</div><div style="flex:1;border:1px solid #3a4173;background:rgba(124,131,255,0.10);border-radius:8px;padding:12px 16px;font-size:19px;color:#d8d8d8;">bridge locks them on L1, mints wrapped tokens to executorL2</div></div>

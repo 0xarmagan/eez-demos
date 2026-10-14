@@ -195,7 +195,7 @@
       <a class="back" href="q8-read-a-remote-contracts-state.html" style="font-size:14px;color:var(--eez-green);">DEEP DIVE: How to read a remote contract's state &rarr;</a>
     </div>
 
-    <!-- Step 3: on L2, the forwarded gas is in the hash. -->
+    <!-- Step 3: on L2, with USE_GAS_LEFT on, the manager's sampled gasleft() is in the hash. -->
     <div id="s3" style="display:none;flex-direction:column;gap:26px;">
       <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">GOTCHA 3 OF 3 &#183; WHAT GETS HASHED</div>
       <div class="pair-row" style="display:flex;align-items:stretch;gap:18px;">
@@ -207,12 +207,12 @@
         <div style="flex:1;background:rgba(124,131,255,0.07);border:1.5px solid #7c83ff;border-radius:10px;padding:18px 22px;">
           <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--label);">CALL LEAVING L2</div>
           <div style="font-family:var(--mono);font-size:17px;color:#eef1ff;margin-top:12px;">callGas = gasleft()</div>
-          <div style="font-size:15px;color:#a9b0d6;margin-top:10px;">With <span style="font-family:var(--mono);">USE_GAS_LEFT</span> on, the intended production mode. Otherwise 0.</div>
+          <div style="font-size:15px;color:#a9b0d6;margin-top:10px;">With <span style="font-family:var(--mono);">USE_GAS_LEFT</span> on (the intended production mode, off in every current deployment): the <span style="font-family:var(--mono);">gasleft()</span> the L2 manager samples after its proxy checks. Otherwise 0.</div>
         </div>
       </div>
       <div style="background:rgba(63,185,80,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:18px 24px;max-width:960px;">
         <div style="font-family:var(--mono);font-size:18px;color:#7ee08c;">target.increment{gas: PROXY_CALL_GAS}();</div>
-        <div style="font-size:16px;color:#a9b6ac;margin-top:12px;">Attach a fixed amount at the call site, so whoever builds the entry can reproduce the hash.</div>
+        <div style="font-size:16px;color:#a9b6ac;margin-top:12px;">Attach a fixed amount at the call site, so whoever builds the entry can reproduce the gas the manager samples.</div>
       </div>
       <a class="back" href="q5-encode-a-calls-content-hash.html" style="font-size:14px;color:var(--eez-green);">DEEP DIVE: How to encode a call's content hash &rarr;</a>
     </div>
@@ -248,13 +248,13 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">Three Gotchas Before You Build</h1>
-      <p class="intro-lede">You have watched a call cross and come back. Before you write your own contract, three things behave differently from a same-chain call, and each one fails quietly in a test that never leaves one chain.</p>
+      <p class="intro-lede">You have watched a call cross and come back. Before you write your own contract, three things behave differently from a same-chain call. A test that never leaves one chain hides all three; cross-chain, each one reverts.</p>
       <p class="intro-lede">One gotcha per step, the upstream lines behind it, and a link to the page that covers it in depth.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 &#183; MSG.SENDER IS THE PROXY.</b>Your contract is called by the source's proxy, so an owner check against the source reverts.</li>
         <li><b>02 &#183; AN ENTRY COUNTS ONLY IN ITS BLOCK.</b>A proxy call reverts unless its rollup was verified in the current block.</li>
-        <li><b>03 &#183; ON L2, GAS IS PART OF THE CALL.</b>The gas a call leaving L2 carries goes into its hash, so the call site attaches a fixed amount.</li>
+        <li><b>03 &#183; ON L2, GAS CAN BE PART OF THE CALL.</b>With <span style="font-family:var(--mono);">USE_GAS_LEFT</span> on (off in every current deployment), a call leaving L2 hashes the <span style="font-family:var(--mono);">gasleft()</span> the L2 manager samples after its proxy checks, so call sites attach a fixed amount.</li>
       </ul>
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
@@ -283,11 +283,11 @@
   var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["MSG.SENDER IS THE PROXY.", "AN ENTRY COUNTS ONLY IN ITS BLOCK.", "ON L2, GAS IS PART OF THE CALL."];
+  var kickers = ["MSG.SENDER IS THE PROXY.", "AN ENTRY COUNTS ONLY IN ITS BLOCK.", "ON L2, GAS CAN BE PART OF THE CALL."];
   var captions = [
     "Cross-chain, your contract is called by the source's proxy, not the source. Check msg.sender against the proxy address, or an owner check reverts every time.",
     "Every proxy call checks that its rollup was verified in the current block. An entry posted in block N is dead in block N+1, and the call reverts with ExecutionNotInCurrentBlock.",
-    "On L2 the gas you forward is folded into the call's hash, so a cross-chain call site attaches a fixed amount."
+    "If an L2 deploys its manager with USE_GAS_LEFT on (the intended production mode, off in every current deployment), the gas left when the manager hashes the call goes into the hash. That is why call sites attach a fixed amount."
   ];
 
   // Each step is a verbatim upstream excerpt at the pin (check-excerpts.py).
@@ -334,9 +334,11 @@
       "  // target.increment{gas: PROXY_CALL_GAS}();",
       "  \u22ef",
       "",
-      "// Only with EEZL2's USE_GAS_LEFT on (the",
-      "// intended production mode). L1 hashes use",
-      "// ZERO_CALL_GAS and never depend on gas."
+      "// With EEZL2's USE_GAS_LEFT on (intended for",
+      "// production, off in every current deployment),",
+      "// callGas is the gasleft() the L2 manager",
+      "// samples after its proxy checks (EEZL2.sol:282),",
+      "// not the gas you forward. L1 uses ZERO_CALL_GAS."
     ]
   ];
   var hlByStep = [

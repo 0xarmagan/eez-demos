@@ -21,7 +21,8 @@
 - Keep the walkthrough format unchanged: 1920×1080 stage, diagram left, code right, caption under the diagram, Prev/Play/Next, PRE-MAINNET label, `scaleStage()` mobile floor, `NEXT:` link.
 - Next-card chain: qs0 → qs1 → qs2 → qs3 → qs5 → qs7 → qs8 → back to `../index.html#dapp-developers`. The stubs qs4 and qs6 are linked only from the index phase strip.
 - Do not change existing q/ro/pr pages. Do not change `EXPECTED_CARDS` in `check-manifest.py` (it counts manifest task cards, not site pages; this corrects the spec).
-- Gotcha #3 wording (corrects the spec): "On L2 the gas you forward is folded into the call's hash, so a cross-chain call site attaches a fixed amount." Ground it in `test/mocks/CounterContracts.sol:3-7` (the `PROXY_CALL_GAS` doc comment) and link q5.
+- Gotcha #3 wording (corrects the spec): kicker "ON L2, GAS CAN BE PART OF THE CALL."; caption "If an L2 deploys its manager with USE_GAS_LEFT on (the intended production mode, off in every current deployment), the gas left when the manager hashes the call goes into the hash. That is why call sites attach a fixed amount." The hashed value is the `gasleft()` the L2 manager samples after its proxy checks (`src/L2/EEZL2.sol:280-282`), not the gas you forward. Ground it in `test/mocks/CounterContracts.sol:3-7` (the `PROXY_CALL_GAS` doc comment) and link q5.
+  - Note (2026-10-14, pre-merge prose audit): the earlier wording here ("On L2 the gas you forward is folded into the call's hash") was wrong on two counts. Every fixture and current deployment uses `useGasLeft = false` (`script/e2e/scenarios/shared/DeployInfra.s.sol:60`), so callGas is 0; and even with the flag on, the hashed value is the manager's sampled `gasleft()`, not the forwarded gas.
 - Copy is short, plain and consequence-first (CONTRIBUTING "Format"). Each hook states a consequence.
 - Card agents never commit. The lead commits per task after review.
 
@@ -492,7 +493,7 @@ Check: `python3 scripts/check-excerpts.py`, `python3 scripts/verify-citations.py
 One gotcha per step, each linking the page that covers it in depth:
 1. **"MSG.SENDER IS THE PROXY."** Excerpt: the proxy forwarding the call, from `CrossChainProxy.sol` / `EEZ.sol`. Link q3.
 2. **"AN ENTRY COUNTS ONLY IN ITS BLOCK."** Excerpt: `_requireVerifiedThisBlock` and the `ExecutionNotInCurrentBlock` revert in `src/EEZ.sol`. Link q8.
-3. **"ON L2, GAS IS PART OF THE CALL."** Excerpt: the `PROXY_CALL_GAS` doc comment and constant, `test/mocks/CounterContracts.sol:3-7`. Use the Gotcha #3 wording from the Global Constraints. Link q5.
+3. **"ON L2, GAS CAN BE PART OF THE CALL."** Excerpt: the `PROXY_CALL_GAS` doc comment and constant, `test/mocks/CounterContracts.sol:3-7`. Use the Gotcha #3 wording from the Global Constraints. Link q5.
 
 Check: `python3 scripts/check-excerpts.py`, `python3 scripts/verify-citations.py`.
 
