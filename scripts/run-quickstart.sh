@@ -28,6 +28,12 @@ for page in "$@"; do
   fi
   if [[ $EXTRACT == 1 ]]; then printf '%s\n' "$cmds"; continue; fi
   work="$(mktemp -d)"; t0=$(date +%s)
-  ( cd "$work"; set -e; while IFS= read -r c; do echo "RAN: $c"; eval "$c" </dev/null; done <<<"$cmds" )
+  log="$work/.run.log"
+  ( cd "$work"; set -e; while IFS= read -r c; do echo "RAN: $c"; eval "$c" </dev/null; done <<<"$cmds" ) 2>&1 | tee "$log"
+  # parallel.sh exits 0 even when it skipped or failed a scenario, so read its RESULT line.
+  bad="$(grep -v '^RAN: ' "$log" | grep 'RESULT:' | awk '{p=f=s=-1; for(i=2;i<=NF;i++){if($i=="passed,")p=$(i-1); if($i=="failed,")f=$(i-1); if($i=="skipped")s=$(i-1)} if(p+0==0||f+0!=0||s+0!=0)print}' || true)"
+  if [[ -n "$bad" ]]; then
+    echo "$page: scenario run passed nothing / failed / skipped: $(printf '%s' "$bad" | head -1)" >&2; exit 1
+  fi
   echo "ELAPSED $page $(( $(date +%s) - t0 ))"
 done

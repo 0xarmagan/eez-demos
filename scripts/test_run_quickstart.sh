@@ -50,4 +50,14 @@ out="$(QS_ROOT="$TMP" bash "$ROOT/scripts/run-quickstart.sh" qsT-pass.html 2>&1)
 printf '<script>\n  var codeByStep = [\n    ["no dollar line"]\n  ];\n</script>\n' > "$TMP/dapp-developers/qsT-empty.html"
 err="$(QS_ROOT="$TMP" bash "$ROOT/scripts/run-quickstart.sh" qsT-empty.html 2>&1)"; rc=$?
 [[ $rc -ne 0 && "$err" == *"qsT-empty.html: no commands found"* && "$err" != *ELAPSED* ]] || { echo "FAIL empty page: rc=$rc [$err]"; exit 1; }
+
+fixture qsT-skip.html "echo '===== RESULT: 0 passed, 0 failed, 1 skipped ====='"
+out="$(QS_ROOT="$TMP" bash "$ROOT/scripts/run-quickstart.sh" qsT-skip.html 2>&1)"; rc=$?
+[[ $rc -ne 0 && "$out" == *"qsT-skip.html: scenario run passed nothing / failed / skipped: ===== RESULT: 0 passed, 0 failed, 1 skipped ====="* && "$out" != *ELAPSED* ]] \
+  || { echo "FAIL skipped scenario accepted: rc=$rc [$out]"; exit 1; }
+
+fixture qsT-ok.html "echo '===== RESULT: 2 passed, 0 failed, 0 skipped ====='"
+out="$(QS_ROOT="$TMP" bash "$ROOT/scripts/run-quickstart.sh" qsT-ok.html 2>&1)"; rc=$?
+[[ $rc -eq 0 && "$out" == *"ELAPSED qsT-ok.html "* ]] || { echo "FAIL passing scenario: rc=$rc [$out]"; exit 1; }
+
 echo "ok   run-quickstart self-test"
