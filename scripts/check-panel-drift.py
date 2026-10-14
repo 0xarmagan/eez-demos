@@ -204,8 +204,6 @@ def main():
 
     for page, snippet_name in sorted(SNIPPET_MAP.items()):
         page_path = find_page_path(page)
-        if page_path is None and page.startswith("qs"):
-            continue  # registered ahead of its card; check-excerpts.py catches a missing card
         if page_path is None:
             failures.append(f"{page}: registered in SNIPPET_MAP but the page is missing")
             continue
@@ -262,8 +260,6 @@ def main():
     # asserts equality line for line, including blanks and line count.
     for page, rel in sorted(FULL_SNIPPET_MAP.items()):
         page_path = find_page_path(page)
-        if page_path is None and page.startswith("qs"):
-            continue  # registered ahead of its card
         snippet_path = os.path.join(SNIPPETS, rel)
         if page_path is None:
             failures.append(f"{page}: registered in FULL_SNIPPET_MAP but the page is missing")

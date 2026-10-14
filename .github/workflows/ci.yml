@@ -56,6 +56,15 @@ jobs:
       - name: Excerpt checker still catches drift
         run: python3 scripts/test_check_excerpts.py
 
+      # Network-free: the self-test uses local fixtures, and --extract-only
+      # prints the $-lines and enforces the eez-core-protocol pin from
+      # citation-pins.json without running anything.
+      - name: Quickstart runner still refuses bad pages
+        run: bash scripts/test_run_quickstart.sh
+
+      - name: Quickstart commands extract and are pinned
+        run: bash scripts/run-quickstart.sh --extract-only qs1-run-your-first-round-trip.html qs7-cross-chain-flash-loan.html qs8-bridge-tokens-both-ways.html
+
       # The export gate: every walkthrough reaches llms-full.txt, with a code
       # block for every step it narrates. "At least one block" was the old
       # floor and a page could lose two steps of three under it.

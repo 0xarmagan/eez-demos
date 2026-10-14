@@ -248,7 +248,7 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">Three Gotchas Before You Build</h1>
-      <p class="intro-lede">You have watched a call cross and come back. Before you write your own contract, three things behave differently from a same-chain call. A test that never leaves one chain hides all three; cross-chain, each one reverts.</p>
+      <p class="intro-lede">You have watched a call cross and come back. Before you write your own contract, three things behave differently from a same-chain call. A test that never leaves one chain hides all three. Cross-chain, two of them revert, and the third matters once an L2 turns on USE_GAS_LEFT.</p>
       <p class="intro-lede">One gotcha per step, the upstream lines behind it, and a link to the page that covers it in depth.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
@@ -316,22 +316,24 @@
       "// equal block.number, or",
       "revert ExecutionNotInCurrentBlock(rollupId);",
       "",
-      "// postAndVerifyBatch sets lastVerifiedBlock",
-      "// to this block (:806). Next block, the",
-      "// same entry is out of reach.",
+      "// postAndVerifyBatch reaches",
+      "// _markVerifiedBlockAndResetQueues (:804),",
+      "// which sets lastVerifiedBlock to this block",
+      "// (:806). Next block, the same entry is out",
+      "// of reach.",
       "// L2: lastLoadBlock != block.number reverts",
       "// too (EEZL2.sol:791)."
     ],
     [
-      "// CounterContracts.sol:4-6, the doc comment:",
+      "// paraphrasing CounterContracts.sol:4-6:",
       "/// L2 folds the gas left after its pre-hash",
       "/// checks into the outgoing call hash, so these",
       "/// sites attach a fixed amount",
       "uint256 constant PROXY_CALL_GAS = 5_000_000;",
       "",
       "function incrementProxy() external {",
-      "  // :63 attaches it at the call site:",
-      "  // target.increment{gas: PROXY_CALL_GAS}();",
+      "  // :63 attaches it: targetCounter =",
+      "  //   target.increment{gas: PROXY_CALL_GAS}();",
       "  \u22ef",
       "",
       "// With EEZL2's USE_GAS_LEFT on (intended for",

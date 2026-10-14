@@ -4,7 +4,9 @@
 verify-citations.py checks that a cited line holds the named symbol. That does not
 catch a panel line edited after it was copied, or copied from the wrong file. This
 does: each non-comment panel line of a registered step must appear (whitespace-
-trimmed) as a line of one of that step's registered upstream files.
+trimmed) as a line of one of that step's registered upstream files. A registered
+step with zero checked lines fails, and EXCERPTS must name the same pages as
+EXCERPT_CHECKED in check-panel-drift.py (which skips those pages on our word).
 
 Usage: python3 scripts/check-excerpts.py [--offline]
 """
@@ -45,23 +47,36 @@ EXCERPTS = {
 }
 SKIP_PREFIXES = ("//", "/*", "*", "⋯", "...")
 
+def checked_lines(panel_lines):
+    """The panel lines this check compares: trimmed, minus blanks, comments and elisions."""
+    return [t for t in (line.strip() for line in panel_lines) if t and not t.startswith(SKIP_PREFIXES)]
+
 def missing_lines(panel_lines, source_lines):
     have = {s.strip() for s in source_lines}
-    out = []
-    for line in panel_lines:
-        t = line.strip()
-        if not t or t.startswith(SKIP_PREFIXES):
-            continue
-        if t not in have:
-            out.append(t)
-    return out
+    return [t for t in checked_lines(panel_lines) if t not in have]
+
+def step_problems(label, panel_lines, source_lines, where):
+    """Problems for one registered step. A step whose every line is skipped checks
+    nothing, so "every line is verbatim" would hold vacuously: that is a failure."""
+    if not checked_lines(panel_lines):
+        return [f"{label}: registered as an excerpt step but has no checked lines "
+                f"(only comments, elisions or blanks)"]
+    return [f"{label}: not verbatim in {where}: {bad!r}" for bad in missing_lines(panel_lines, source_lines)]
+
+def registry_mismatch(excerpts, excerpt_checked):
+    """EXCERPTS here and EXCERPT_CHECKED in check-panel-drift.py must name the same pages:
+    panel-drift skips an EXCERPT_CHECKED page on the promise that this script checks it."""
+    a, b = set(excerpts), set(excerpt_checked)
+    return ([f"{p}: in check-excerpts.py EXCERPTS but not in check-panel-drift.py EXCERPT_CHECKED" for p in sorted(a - b)]
+            + [f"{p}: in check-panel-drift.py EXCERPT_CHECKED but not in check-excerpts.py EXCERPTS" for p in sorted(b - a)])
 
 def main():
     offline = "--offline" in sys.argv
     llms = _load("build_llms", "build-llms.py")
     vc = _load("verify_citations", "verify-citations.py")
+    drift = _load("check_panel_drift", "check-panel-drift.py")
     sha = vc.load_pins()[CORE]["sha"]
-    problems, checked = [], 0
+    problems, checked = registry_mismatch(EXCERPTS, drift.EXCERPT_CHECKED), 0
     for page, steps in sorted(EXCERPTS.items()):
         path = os.path.join(ROOT, "dapp-developers", page)
         if not os.path.exists(path):
@@ -73,8 +88,7 @@ def main():
             source = []
             for f in files:
                 source += vc.fetch(CORE, sha, f, offline)
-            for bad in missing_lines(panels[idx], source):
-                problems.append(f"{page} step {idx + 1}: not verbatim in {', '.join(files)} @ {sha[:7]}: {bad!r}")
+            problems += step_problems(f"{page} step {idx + 1}", panels[idx], source, f"{', '.join(files)} @ {sha[:7]}")
             checked += 1
     print(f"excerpt steps checked: {checked}")
     if problems:

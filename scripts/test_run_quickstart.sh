@@ -31,11 +31,17 @@ fixture() {  # name, then the page's $-lines (one JSON-quoted step line per arg)
   for a in "$@"; do body="$body    [\"\$ $a\"],"$'\n'; done
   printf '<script>\n  var codeByStep = [\n%s    ["end"]\n  ];\n</script>\n' "$body" > "$TMP/dapp-developers/$name"
 }
-PIN=9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
+PIN="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["repos"]["eez-core-protocol"]["sha"])' "$ROOT/scripts/citation-pins.json")"
+[[ "$PIN" =~ ^[0-9a-f]{40}$ ]] || { echo "FAIL no eez-core-protocol sha in citation-pins.json"; exit 1; }
 fixture qsT-pinned.html "git clone https://github.com/eez-association/eez-core-protocol.git" "git checkout -q $PIN"
 out="$(QS_ROOT="$TMP" bash "$ROOT/scripts/run-quickstart.sh" --extract-only qsT-pinned.html)"; rc=$?
 [[ $rc -eq 0 && "$out" == $'git clone https://github.com/eez-association/eez-core-protocol.git\ngit checkout -q '"$PIN" ]] \
   || { echo "FAIL pinned clone: rc=$rc got [$out]"; exit 1; }
+
+OTHER=0000000000000000000000000000000000000000
+fixture qsT-otherpin.html "git clone https://github.com/eez-association/eez-core-protocol.git" "git checkout -q $OTHER"
+err="$(QS_ROOT="$TMP" bash "$ROOT/scripts/run-quickstart.sh" --extract-only qsT-otherpin.html 2>&1 >/dev/null)"; rc=$?
+[[ $rc -ne 0 && "$err" == *"without checking out the pin $PIN"* ]] || { echo "FAIL different-SHA checkout accepted: rc=$rc [$err]"; exit 1; }
 
 fixture qsT-fail.html "echo hi" "false"
 out="$(QS_ROOT="$TMP" bash "$ROOT/scripts/run-quickstart.sh" qsT-fail.html 2>&1)"; rc=$?
@@ -59,5 +65,14 @@ out="$(QS_ROOT="$TMP" bash "$ROOT/scripts/run-quickstart.sh" qsT-skip.html 2>&1)
 fixture qsT-ok.html "echo '===== RESULT: 2 passed, 0 failed, 0 skipped ====='"
 out="$(QS_ROOT="$TMP" bash "$ROOT/scripts/run-quickstart.sh" qsT-ok.html 2>&1)"; rc=$?
 [[ $rc -eq 0 && "$out" == *"ELAPSED qsT-ok.html "* ]] || { echo "FAIL passing scenario: rc=$rc [$out]"; exit 1; }
+
+fixture qsT-noresult.html "true script/e2e/run/local/parallel.sh counter"
+out="$(QS_ROOT="$TMP" bash "$ROOT/scripts/run-quickstart.sh" qsT-noresult.html 2>&1)"; rc=$?
+[[ $rc -ne 0 && "$out" == *"qsT-noresult.html: parallel.sh printed no RESULT line"* && "$out" != *ELAPSED* ]] \
+  || { echo "FAIL parallel.sh without RESULT accepted: rc=$rc [$out]"; exit 1; }
+
+fixture qsT-result.html "true script/e2e/run/local/parallel.sh counter" "echo '===== RESULT: 1 passed, 0 failed, 0 skipped ====='"
+out="$(QS_ROOT="$TMP" bash "$ROOT/scripts/run-quickstart.sh" qsT-result.html 2>&1)"; rc=$?
+[[ $rc -eq 0 && "$out" == *"ELAPSED qsT-result.html "* ]] || { echo "FAIL parallel.sh with RESULT: rc=$rc [$out]"; exit 1; }
 
 echo "ok   run-quickstart self-test"

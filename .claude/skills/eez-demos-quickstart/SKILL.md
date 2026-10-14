@@ -16,12 +16,8 @@ This skill covers what [CONTRIBUTING.md](../../../CONTRIBUTING.md) doesn't. Read
    `git clone https://github.com/eez-association/eez-core-protocol.git && cd eez-core-protocol && git checkout -q 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f`. Clone outside this repo (e.g. under `/tmp`), never into it. This clone is for reading source and checking excerpts. `run-quickstart.sh` makes its own temp dir and clone.
 4. Check `index.html` for a reference-track card (q1–q8) on your topic. Link to it instead of re-teaching it (for example, static reads already have q8).
    Pick a live scenario. Run `grep -n E2E_EXCLUDE_FROM_ALL <scenario>.s.sol` and read the "NOT LIVE YET" list in eez-core-protocol `script/e2e/README.md`. If the scenario is on that list, don't build a card on it. If it only carries the marker, call it "local run only" and claim no devnet path.
-5. Scaffold: `scripts/new-demo.sh dapp-developers <slug> "<Title>"`. **The scaffold leaves pr5 content in place.** Only kickers, captions and the diagram comment become TODOs, so `audit.sh` won't flag the rest. Replace each of these by hand:
-   - `<title>`, `rel=canonical`, the header title div, and the lead-in `#intro` (eyebrow `PROTOCOL RESEARCHERS` → `DAPP DEVELOPERS`, title, ledes, the "WHAT YOU'LL LEARN" list);
-   - `codeByStep`, `hlByStep` (0-based line indices per step), `srcCite` **and** its `data-demo-cite` attribute;
-   - the `NEXT:` link (it still points to `pr6`), and the diagram `s1`/`s2`/`s3`;
-   - `fullSnippet` and the `FULL` button: q1's snippet sits behind them. Keep them only for a `SNIPPET_MAP` page (then run `python3 scripts/sync-embedded-snippets.py`). Otherwise delete the `#btnFull` element and set `var fullSnippet = [];`. The JS guards a missing button.
-   - pr5's `TRY IT` calculator: delete `#btnTry` and `#calcPanel`.
+5. Scaffold: `scripts/new-demo.sh dapp-developers <slug> "<Title>"`. It sets the `<title>`, canonical, header, eyebrow and intro title from its arguments, turns the ledes, learn list, "Verified against" line, `NEXT:` link, diagram `s1`/`s2`/`s3`, `srcCite`/`data-demo-cite`, kickers, captions, `codeByStep`/`hlByStep` and `fullSnippet` into `TODO`s, and removes pr5's `TRY IT` calculator. Fill every `TODO` (`grep -n TODO <page>`). `hlByStep` holds 0-based line indices per step.
+   The one thing left for you: the `FULL` button. Keep `#btnFull` and a real `fullSnippet` only for a `SNIPPET_MAP` page (then run `python3 scripts/sync-embedded-snippets.py`). Otherwise delete the `#btnFull` element and set `var fullSnippet = [];`. The JS guards a missing button.
 6. Make the page visible to `audit.sh` without committing it: `git add -N dapp-developers/<page>`. `audit.sh` lists pages from `git ls-files`, so it silently skips an untracked page.
 
 ## 2. Run-it-for-real gate
@@ -37,14 +33,14 @@ Every command a card shows has been executed, and the output it shows came from 
   - commands run non-interactively (stdin is `/dev/null`) in one bash session, so `cd` carries over to the next line.
 - The local e2e runner needs bash 4+. Stock macOS bash 3.2 fails (`E2EBase.sh: line 458: declare: -A: invalid option`), so a card shows `brew install bash` only as a `# ` comment, never as a `$ ` line.
 - Each page runs in its **own fresh temp dir**. A hands-on card therefore repeats the qs1 setup lines: `git clone https://github.com/eez-association/eez-core-protocol.git`, `cd eez-core-protocol`, `git checkout -q 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f`, `git submodule update --init --recursive`, `forge build`. Run every later command from inside the clone. `parallel.sh` needs `forge build` first.
-- Scenarios: `bash script/e2e/run/local/parallel.sh <name> [<name>...]`. A name is a scenario **directory** name under `script/e2e/scenarios/<category>/<direction>/` (e.g. `staticReadWrite`), and each name is a separate argument. The direction directory names where the transaction starts: `L1_to_L2` starts on L1 and calls into L2 (`E2ECounter.s.sol:30` says "L1-starting"). Pass scenario names as separate arguments. Verified: `parallel.sh 'bridge bridgeL2'` prints `SKIP`, then `RESULT: 0 passed, 0 failed, 1 skipped`, and **exits 0**, so check that the passed count is what you expect.
+- Scenarios: `bash script/e2e/run/local/parallel.sh <name> [<name>...]`. A name is a scenario **directory** name under `script/e2e/scenarios/<category>/<direction>/` (e.g. `staticReadWrite`), and each name is a separate argument. The direction directory names where the transaction starts: `L1_to_L2` starts on L1 and calls into L2 (`E2ECounter.s.sol:30` says "L1-starting"). Pass scenario names as separate arguments. Verified: `parallel.sh 'bridge bridgeL2'` prints `SKIP`, then `RESULT: 0 passed, 0 failed, 1 skipped`, and **exits 0**. `run-quickstart.sh` therefore reads the RESULT line and fails on 0 passed, any failed or any skipped, or when a `parallel.sh` command printed no RESULT line at all. Still check the passed count is what you expect.
 - Run the gate with the bare filename (the script prepends `dapp-developers/`):
   ```bash
   bash scripts/run-quickstart.sh --extract-only <page>.html   # what will run
   bash scripts/run-quickstart.sh <page>.html                  # run it; prints RAN: lines and ELAPSED
   ```
-  A clone without `git checkout <full pin>` makes the script refuse. Paste the PASS and RESULT lines from this run. Parallel scenarios finish in any order, so the page shows the order you got.
-- A command you didn't run never appears, not even as "optional" or "for reference". Self-test: `bash scripts/test_run_quickstart.sh`.
+  A clone without `git checkout <full pin>` makes the script refuse. It reads the pin from `scripts/citation-pins.json` (eez-core-protocol `sha`), so a pin bump there is the only edit; then update the pages' checkout lines to match. Paste the PASS and RESULT lines from this run. Parallel scenarios finish in any order, so the page shows the order you got.
+- A command you didn't run never appears, not even as "optional" or "for reference". Self-test: `bash scripts/test_run_quickstart.sh` (CI runs it and `--extract-only` on qs1, qs7, qs8).
 
 ## 3. Time claims
 
@@ -68,14 +64,14 @@ Every code step is one of the following:
 
 | Kind | Must be | Registered in |
 |---|---|---|
-| Verbatim upstream (eez-core-protocol only) | each non-comment line found, whitespace-trimmed, in the listed files at the pin | `EXCERPTS` in `scripts/check-excerpts.py` (page → `{0-based step: [paths]}`), **and** `EXCERPT_CHECKED` in `scripts/check-panel-drift.py` |
+| Verbatim upstream (eez-core-protocol only) | each non-comment line found, whitespace-trimmed, in the listed files at the pin; a step with no such line fails | `EXCERPTS` in `scripts/check-excerpts.py` (page → `{0-based step: [paths]}`), **and** `EXCERPT_CHECKED` in `scripts/check-panel-drift.py` (check-excerpts fails if the two key sets differ) |
 | From a compilable snippet | verbatim from `snippets/<file>.sol`, which mirrors upstream | `SNIPPET_MAP` in `check-panel-drift.py`; the test slice goes in `TEST_SNIPPET_MAP` |
 | Shell | §2 | `NON_SOLIDITY` (shell-only page) or `EXCERPT_CHECKED` (shell step plus excerpt steps) |
 
 - Choose an excerpt when the upstream lines teach the point as they are. Choose a snippet only when the reader needs code that compiles on its own, such as a contract they'd adapt (qs2), and then add a `snippets/test/*.t.sol` in the snippets' no-forge-std style.
 - `check-panel-drift.py` scans `qs[0-9]|q[1-9]|pr[1-9]` pages. A page with `codeByStep` that's in none of these maps **fails**.
 - The plan's Tasks 4–10 pages are already registered, so don't edit those dicts. A new card adds its own entries. If several card agents work in parallel, each one sends its entries to the lead instead of editing these shared files.
-- Skipped by the excerpt check: lines starting with `//`, `/*`, `*`, `⋯`, `...`. Use them for your notes and elisions. Everything else must match an upstream line exactly. You can't shorten or reflow a long line. If it overflows the 662 px panel, choose different lines or elide with `⋯`.
+- Skipped by the excerpt check: lines starting with `//`, `/*`, `*`, `⋯`, `...`. Use them for your notes and elisions. Everything else must match an upstream line exactly. You can't shorten or reflow a long line. If it overflows the 662 px panel, choose different lines or elide with `⋯`. Skipped lines are unchecked, so a comment that reflows or trims upstream text (NatSpec, say) is labelled a paraphrase (`// paraphrasing CounterContracts.sol:4-6:`), never presented as a quote.
 - Cite `eez-core-protocol/<path>:<line> · <symbol>` as a link to `https://github.com/eez-association/eez-core-protocol/blob/<full pin>/<path>#L<line>`. `verify-citations.py` checks that the symbol appears within 4 lines.
 - When steps cite different files or functions, use `var citeByStep = [...]` with one literal `<a href=…>` per step, single-quoted JS strings. q7 (`dapp-developers/q7-your-cross-chain-address.html`) and q6 show the pattern. Keep `data-demo-cite` equal to step 1's link.
 - A shell step cites the script it runs, e.g. `script/e2e/run/local/parallel.sh:17 · parallel.sh` (its "subset" usage line).
@@ -83,11 +79,11 @@ Every code step is one of the following:
 ## 6. Track wiring
 
 - **`NEXT:` chain**, from the Global Constraints: qs0 → qs1 → qs2 → qs3 → qs5 → qs7 → qs8 → `../index.html#dapp-developers`. Links have the form `<a class="back" href="qs3-who-answered.html#skip-intro" …>NEXT: Who Answered? &rarr;</a>`. `#skip-intro` skips the lead-in. A new card goes into the chain where its phase puts it. A new Build-patterns card goes after qs8: qs8's `NEXT:` moves to it, and it takes over `../index.html#dapp-developers`. Change both neighbours, and only the `NEXT:` link on existing pages.
-- The qs pages, the `#quickstart` section and its phase strip are planned by the quickstart plan's Tasks 4–11 and may not exist yet. Check that a target exists (`ls dapp-developers/`, `grep -n 'id="quickstart"' index.html`) before linking to it. `audit.sh` fails on a broken link.
+- The qs pages (`dapp-developers/qs0`–`qs8`) and `index.html`'s `#quickstart` section exist. Check that a link target exists before adding it. `audit.sh` fails on a broken link.
 - **Phase:** a card whose main point is a runnable pattern a developer would copy goes under Build patterns. A card that explains what happened goes under See it work.
-- **Index phase strip** (planned): `index.html` `<section class="sec" id="quickstart">` has four rows: Understand, See it work, Make it real, Build patterns. Each card is an `<a class="card" href="dapp-developers/<page>">` with a `card-title` and a `card-hook`. `build-llms.py` takes titles, hooks and page order from these anchors. The hook states a consequence (CONTRIBUTING "Format").
+- **Index phase strip**: `index.html` `<section class="sec" id="quickstart">` has four rows: Understand, See it work, Make it real, Build patterns. Each card is an `<a class="card" href="dapp-developers/<page>">` with a `card-title` and a `card-hook`. `build-llms.py` takes titles, hooks and page order from these anchors. The hook states a consequence (CONTRIBUTING "Format").
 - **Stubs** (qs4, qs6): model them on `dapp-developers/q1-compute-your-cross-chain-address.html` without its meta refresh. Include the title, "Coming soon", one sentence on what the card will show, "Needs: a Linux host and at least 16 GB for Docker (the devnet does not run on macOS yet)", links to `../rollup-operators/ro1-run-the-devnet-with-kurtosis.html` and `../index.html#quickstart`, and `PRE-MAINNET`. Leave out `codeByStep` and captions, so `build-llms.py` and panel-drift skip the stub.
-- Adding or removing a walkthrough means bumping `EXPECTED_WALKTHROUGHS` in `scripts/build-llms.py:446` (17 before this track) in the same change, or `build-llms.py --check` fails. Stubs without captions don't count.
+- Adding or removing a walkthrough means bumping the `EXPECTED_WALKTHROUGHS` constant in `scripts/build-llms.py` (24 now) in the same change, or `build-llms.py --check` fails. Stubs without captions don't count. `start-here.html` names the count in words; keep it in step.
 - Leave `EXPECTED_CARDS` in `scripts/check-manifest.py` alone. It counts manifest task cards, not pages.
 - Kickers are short ALL-CAPS phrases, one per step (`"RUN IT."`, `"BORROW ON L1, USE IT ON L2."`). A hands-on card's step 1 is `RUN IT.` Steps 2–3 are a short imperative or claim that says what the reader learns there (`"REPAID BEFORE THE TRANSACTION ENDS."`, `"ASK IT, DON'T INSPECT IT"`).
 - Regenerate: `python3 scripts/build-llms.py`.
@@ -95,7 +91,12 @@ Every code step is one of the following:
 ## 7. Done check
 
 ```bash
-bash scripts/audit.sh && python3 scripts/verify-citations.py && python3 scripts/check-panel-drift.py && python3 scripts/check-excerpts.py && python3 scripts/check-snippet-fidelity.py && python3 scripts/build-llms.py --check && (cd snippets && forge test)
+bash scripts/audit.sh && python3 scripts/verify-citations.py && python3 scripts/check-panel-drift.py \
+  && python3 scripts/check-excerpts.py && python3 scripts/test_check_excerpts.py \
+  && python3 scripts/check-snippet-fidelity.py && python3 scripts/test_snippet_fidelity.py \
+  && python3 scripts/build-llms.py --check && python3 scripts/test_build_llms.py \
+  && python3 scripts/check-manifest.py && bash scripts/test_run_quickstart.sh \
+  && (cd snippets && forge test)
 ```
 
 Also run: `bash scripts/run-quickstart.sh <page>.html` for a hands-on card, `python3 scripts/sync-embedded-snippets.py --check` for a snippet card, and `node --check` on the extracted inline script.

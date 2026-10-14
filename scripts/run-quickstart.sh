@@ -5,7 +5,12 @@
 set -euo pipefail
 ROOT="${QS_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
 SCRIPTS="$(cd "$(dirname "$0")" && pwd)"
-PIN=9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
+# One pin source: the eez-core-protocol SHA in citation-pins.json. Prefer the
+# copy under $ROOT; fall back to the one beside this script (self-test fixtures
+# set QS_ROOT to a temp dir that has no scripts/).
+PINS="$ROOT/scripts/citation-pins.json"; [[ -f "$PINS" ]] || PINS="$SCRIPTS/citation-pins.json"
+PIN="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["repos"]["eez-core-protocol"]["sha"])' "$PINS")"
+[[ "$PIN" =~ ^[0-9a-f]{40}$ ]] || { echo "no eez-core-protocol sha in $PINS" >&2; exit 2; }
 EXTRACT=0; [[ "${1:-}" == "--extract-only" ]] && { EXTRACT=1; shift; }
 [[ $# -ge 1 ]] || { echo "usage: $0 [--extract-only] PAGE..." >&2; exit 2; }
 
@@ -34,6 +39,9 @@ for page in "$@"; do
   bad="$(grep -v '^RAN: ' "$log" | grep 'RESULT:' | awk '{p=f=s=-1; for(i=2;i<=NF;i++){if($i=="passed,")p=$(i-1); if($i=="failed,")f=$(i-1); if($i=="skipped")s=$(i-1)} if(p+0==0||f+0!=0||s+0!=0)print}' || true)"
   if [[ -n "$bad" ]]; then
     echo "$page: scenario run passed nothing / failed / skipped: $(printf '%s' "$bad" | head -1)" >&2; exit 1
+  fi
+  if grep -q 'parallel\.sh' <<<"$cmds" && ! grep -v '^RAN: ' "$log" | grep -q 'RESULT:'; then
+    echo "$page: parallel.sh printed no RESULT line" >&2; exit 1
   fi
   echo "ELAPSED $page $(( $(date +%s) - t0 ))"
 done

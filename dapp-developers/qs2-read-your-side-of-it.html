@@ -154,7 +154,7 @@
         <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:9px;width:250px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">increment()</div><div style="font-size:28px;line-height:1;color:var(--eez-green);">→</div></div>
         <div style="flex:0 0 366px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:20px 22px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">RETURNS</div><div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">counter + 1</div><div style="font-family:var(--mono);font-size:16px;color:var(--muted);margin-top:6px;">uint256</div></div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">No EEZ import, no base contract to inherit, no special hook. The scenario deploys this same <span style="font-family:var(--mono);">Counter</span> on L2 (<span style="font-family:var(--mono);">E2ECounter.s.sol:157</span>).</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">No EEZ import, no EEZ base contract, no special hook. The scenario deploys this same <span style="font-family:var(--mono);">Counter</span> on L2 (<span style="font-family:var(--mono);">E2ECounter.s.sol:157</span>).</div>
     </div>
 
     <!-- STEP 2: CounterAndProxy on L1, an ordinary call -->
@@ -262,7 +262,7 @@
   var kickers = ["THE CONTRACT ON L2.", "YOUR CONTRACT ON L1.", "POINT IT ANYWHERE."];
   var captions = [
     "Counter is plain Solidity. In the qs1 run it lives on L2, and increment() returns the new count.",
-    "incrementProxy() calls target.increment() like any other contract and uses the return value on the next line. The fixed gas amount is the one extra; Three Gotchas explains why.",
+    "incrementProxy() calls target.increment() like any other contract and uses the return value on the next line. The fixed gas amount is the one extra; Three Gotchas explains when it matters.",
     "The only cross-chain part is which address target holds. The scenario passes Counter's proxy on L1. The TEST tab passes a local Counter, and the same code passes."
   ];
 

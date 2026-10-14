@@ -177,7 +177,7 @@ contract Counter is ICounterView {
 
 ### Step 2 — YOUR CONTRACT ON L1.
 
-incrementProxy() calls target.increment() like any other contract and uses the return value on the next line. The fixed gas amount is the one extra; Three Gotchas explains why.
+incrementProxy() calls target.increment() like any other contract and uses the return value on the next line. The fixed gas amount is the one extra; Three Gotchas explains when it matters.
 
 ```solidity
 uint256 constant PROXY_CALL_GAS = 5_000_000;
@@ -357,7 +357,7 @@ entries[0] = L2ExecutionEntry({
 
 ## Three Gotchas Before You Build
 
-Three things behave differently from a same-chain call: a test that never leaves one chain hides all three, and cross-chain each one reverts.
+Three things behave differently from a same-chain call: a test that never leaves one chain hides all three. Cross-chain, two of them revert, and the third matters once an L2 turns on USE_GAS_LEFT.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/qs5-three-gotchas-before-you-build.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:67 · fallback`
@@ -396,9 +396,11 @@ _requireVerifiedThisBlock(destRid);
 // equal block.number, or
 revert ExecutionNotInCurrentBlock(rollupId);
 
-// postAndVerifyBatch sets lastVerifiedBlock
-// to this block (:806). Next block, the
-// same entry is out of reach.
+// postAndVerifyBatch reaches
+// _markVerifiedBlockAndResetQueues (:804),
+// which sets lastVerifiedBlock to this block
+// (:806). Next block, the same entry is out
+// of reach.
 // L2: lastLoadBlock != block.number reverts
 // too (EEZL2.sol:791).
 ```
@@ -408,15 +410,15 @@ revert ExecutionNotInCurrentBlock(rollupId);
 If an L2 deploys its manager with USE_GAS_LEFT on (the intended production mode, off in every current deployment), the gas left when the manager hashes the call goes into the hash. That is why call sites attach a fixed amount.
 
 ```solidity
-// CounterContracts.sol:4-6, the doc comment:
+// paraphrasing CounterContracts.sol:4-6:
 /// L2 folds the gas left after its pre-hash
 /// checks into the outgoing call hash, so these
 /// sites attach a fixed amount
 uint256 constant PROXY_CALL_GAS = 5_000_000;
 
 function incrementProxy() external {
-  // :63 attaches it at the call site:
-  // target.increment{gas: PROXY_CALL_GAS}();
+  // :63 attaches it: targetCounter =
+  //   target.increment{gas: PROXY_CALL_GAS}();
   ⋯
 
 // With EEZL2's USE_GAS_LEFT on (intended for
