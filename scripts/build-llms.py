@@ -194,7 +194,11 @@ def index_cards():
     src = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
     out = {}
     fuller = {}
-    for href, body in re.findall(r'<a class="card"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', src, re.S):
+    for cls, href, body in re.findall(r'<a class="(card(?: [^"]*)?)"[^>]*href="([^"]+)"[^>]*>(.*?)</a>', src, re.S):
+        # The quickstart entry card links qs0 under a track-level title and
+        # hook; letting it in would make it qs0's entry in llms.txt.
+        if "qs-entry" in cls.split():
+            continue
         rel = href.lstrip("./")
         # The title is an <h3> that opens with a card-number span, so stopping
         # at the first "</" captures the number instead of the title.
