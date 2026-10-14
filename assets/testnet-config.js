@@ -15,8 +15,9 @@ window.EEZ_TESTNET = {
     name: "EEZ L2 (testnet)",
     rpcUrl: "",      // e.g. https://rpc.eez-testnet.gnosis.io
     chainId: "",     // decimal string
-    // EEZL2 is a predeploy at a fixed address — known before the network is.
-    managerAddress: "0x4200000000000000000000000000000000000007",
+    // EEZL2 proxy predeploy — from the deployment's genesis profile
+    // (eezL2Address; eez-rollupX scripts/deploy.sh:160).
+    managerAddress: "",
     explorer: "",
   },
   l1: {

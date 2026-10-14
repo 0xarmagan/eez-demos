@@ -3,13 +3,13 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Deploy on the EEZ testnet — EEZ Quickstarts</title>
 <link rel="canonical" href="https://eez-demos.vercel.app/deploy.html">
-<meta name="description" content="One contract, live on the EEZ L2, in about fifteen minutes — prerequisites, endpoints, the deploy command, and what to do when it fails.">
+<meta name="description" content="One contract, live on the EEZ L2 — prerequisites, endpoints, the deploy command, and what to do when it fails.">
 <meta property="og:title" content="Deploy on the EEZ testnet — EEZ Quickstarts">
-<meta property="og:description" content="One contract, live on the EEZ L2, in about fifteen minutes.">
+<meta property="og:description" content="One contract, live on the EEZ L2.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Deploy on the EEZ testnet — EEZ Quickstarts">
-<meta name="twitter:description" content="One contract, live on the EEZ L2, in about fifteen minutes.">
+<meta name="twitter:description" content="One contract, live on the EEZ L2.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="alternate" type="text/markdown" href="llms.txt" title="llms.txt — agent-readable index">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -135,10 +135,10 @@ table.net .val{font-size:12.5px}
   </div>
 
   <h1>Deploy on the EEZ testnet</h1>
-  <p class="lede">Five steps, about fifteen minutes, one contract live on the EEZ L2. Everything you need is on this page &mdash; the walkthroughs explain <em>why</em> it works, and none of them are prerequisites.</p>
+  <p class="lede">Five steps, one contract live on the EEZ L2. Everything you need is on this page &mdash; the walkthroughs explain <em>why</em> it works, and none of them are prerequisites.</p>
 
   <div class="banner" id="pendingBanner">
-    <b>Public endpoints are not live yet.</b> Every command on this page is final; the amber values fill in the day they are. Meanwhile the same protocol runs on your own machine &mdash; <a href="./start-here.html" style="color:#e6dcc0">run the three dapp steps locally</a>.
+    <b>Public endpoints are not live yet.</b> Every command on this page is final; the amber values fill in the day they are. Meanwhile the same protocol runs on your own machine &mdash; <a href="./dapp-developers/qs1-run-your-first-round-trip.html" style="color:#e6dcc0">run the Quickstart locally</a>.
   </div>
 
   <div class="steps">
@@ -175,7 +175,7 @@ table.net .val{font-size:12.5px}
       <div class="step-num" aria-hidden="true">3</div>
       <div class="step-body">
         <h2 class="step-title">Point your shell at the network</h2>
-        <p class="step-why">Everything below comes from this table &mdash; the L2 manager is a predeploy, the same <code>0x4200&hellip;0007</code> on every EEZ L2; the L1 manager comes from the canonical deploy.</p>
+        <p class="step-why">Everything below comes from this table &mdash; the L2 manager is a genesis predeploy, read from the deployment&rsquo;s genesis profile (eez-rollupX @ 2c19e36 puts it at <a href="https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/scripts/update-eezl2-genesis.sh#L15"><code>0x4B27&hellip;402C</code></a>); the L1 manager comes from the canonical deploy.</p>
         <div class="netwrap">
         <table class="net">
           <tr><th>CHAIN</th><th>RPC URL</th><th>CHAIN ID</th><th>EEZ MANAGER</th><th>EXPLORER</th></tr>
@@ -183,7 +183,7 @@ table.net .val{font-size:12.5px}
             <td class="k">EEZ L2 (testnet)</td>
             <td><span class="val pending" data-val="l2.rpcUrl">COMING SOON</span><button class="copy" data-copy="l2.rpcUrl" disabled>COPY</button></td>
             <td><span class="val pending" data-val="l2.chainId">COMING SOON</span></td>
-            <td><span class="val" data-val="l2.managerAddress">0x4200&hellip;0007</span><button class="copy" data-copy="l2.managerAddress">COPY</button></td>
+            <td><span class="val pending" data-val="l2.managerAddress">COMING SOON</span><button class="copy" data-copy="l2.managerAddress" disabled>COPY</button></td>
             <td><span class="val pending" data-val="l2.explorer" data-link>COMING SOON</span></td>
           </tr>
           <tr>
@@ -245,6 +245,11 @@ Transaction hash: 0x&hellip;</pre>
   <h2 class="step-title" style="margin-top:64px">Deployed. Now make it cross-chain</h2>
   <p class="step-why">In this order.</p>
   <div class="grid">
+    <a class="card" href="./index.html#quickstart">
+      <h3 class="card-title">Start with the Quickstart</h3>
+      <p class="card-hook">One call across two rollups, run locally, then patterns you can copy.</p>
+      <div class="cta">START WITH CARD 00 <span class="circ">&rarr;</span></div>
+    </a>
     <a class="card" href="./dapp-developers/q7-your-cross-chain-address.html">
       <h3 class="card-title">Give it a cross-chain address</h3>
       <p class="card-hook">Your contract's stand-in on every other rollup &mdash; readable before anything is deployed.</p>
