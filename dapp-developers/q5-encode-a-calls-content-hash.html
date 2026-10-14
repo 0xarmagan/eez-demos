@@ -149,28 +149,15 @@
       style="position:absolute;top:-34px;right:0;z-index:4;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TRY IT</button>
 
     <div id="calcPanel" style="display:none;position:absolute;inset:0;z-index:3;background:#000;flex-direction:column;justify-content:center;gap:18px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.16em;color:var(--muted);">YOUR CALL &#183; EIGHT FIELDS, THIS ORDER</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.16em;color:var(--muted);">YOUR CALL &#183; EIGHT FIELDS, IN HASH ORDER</div>
 
       <div style="display:flex;gap:18px;">
-        <label style="flex:0 0 150px;display:flex;flex-direction:column;gap:6px;">
+        <label style="flex:0 0 150px;min-width:0;display:flex;flex-direction:column;gap:6px;">
           <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">isStatic &#183; bool</span>
           <select id="cIsStatic" style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
             <option value="false">false</option><option value="true">true</option>
           </select>
         </label>
-        <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
-          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">value &#183; uint256</span>
-          <input id="cValue" value="0" spellcheck="false" autocomplete="off"
-            style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
-        </label>
-        <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
-          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">callGas &#183; uint64</span>
-          <input id="cCallGas" value="0" spellcheck="false" autocomplete="off"
-            style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
-        </label>
-      </div>
-
-      <div style="display:flex;gap:18px;">
         <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
           <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">sourceAddress</span>
           <input id="cSrc" value="0x1111111111111111111111111111111111111111" spellcheck="false" autocomplete="off"
@@ -198,6 +185,19 @@
 
       <div style="display:flex;gap:18px;">
         <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">value &#183; uint256</span>
+          <input id="cValue" value="0" spellcheck="false" autocomplete="off"
+            style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
+        </label>
+        <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">callGas &#183; uint64</span>
+          <input id="cCallGas" value="0" spellcheck="false" autocomplete="off"
+            style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
+        </label>
+      </div>
+
+      <div style="display:flex;gap:18px;">
+        <label style="flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:6px;">
           <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.07em;color:var(--muted);">data &#183; bytes</span>
           <input id="cData" value="0xa9059cbb" spellcheck="false" autocomplete="off"
             style="background:var(--eez-screen);border:1px solid #2e2e2e;border-radius:6px;color:#eef3f8;font-family:var(--mono);font-size:16px;padding:9px 11px;outline:none;width:100%;box-sizing:border-box;">
@@ -210,8 +210,8 @@
         <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#c9b183;">TWO OF THE EIGHT ARE NOT YOURS TO CHOOSE</div>
         <div style="font-size:14px;line-height:1.55;color:#b9a985;">All eight fields are editable here so you can watch the hash move. On-chain, two of them are written by whichever manager the call leaves, not by you — put your own values in either and the hash you compute will never match an entry.</div>
         <div style="font-size:14px;line-height:1.55;color:#b9a985;"><b style="font-family:var(--mono);color:#d8c69b;">sourceRollupId</b> is forced by the side you are leaving — L1 hardcodes rollup id <span style="font-family:var(--mono);">0</span>, an L2 passes its own <span style="font-family:var(--mono);">ROLLUP_ID</span>. Neither reads an argument.</div>
-        <div style="font-size:14px;line-height:1.55;color:#b9a985;"><b style="font-family:var(--mono);color:#d8c69b;">callGas</b> is <span style="font-family:var(--mono);">0</span> everywhere except a call leaving an L2 deployed with <span style="font-family:var(--mono);">USE_GAS_LEFT = true</span> — there it is the <span style="font-family:var(--mono);">gasleft()</span> the L2 manager samples after its proxy checks and any value transfer, just before hashing.</div>
-        <details style="font-size:14px;line-height:1.55;color:#b9a985;"><summary style="cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#c9b183;">FOR ENTRY BUILDERS</summary><div style="margin-top:8px;">Under <span style="font-family:var(--mono);">USE_GAS_LEFT</span> the hash is gas-dependent — a value you cannot predict off-chain is in the preimage. That is why the L2 miss carries a payload: <span style="font-family:var(--mono);">EntryNotFound(bytes32 crossChainCallHash, uint64 callGas)</span> hands back the observed gas so whoever builds the entry can reproduce the key. That applies to static reads leaving such an L2 too. Everywhere else the constant <span style="font-family:var(--mono);">ZERO_CALL_GAS</span> is folded in.</div></details>
+        <div style="font-size:14px;line-height:1.55;color:#b9a985;"><b style="font-family:var(--mono);color:#d8c69b;">callGas</b> is <span style="font-family:var(--mono);">0</span> for every call a manager hashes on the way out, except a call leaving an L2 deployed with <span style="font-family:var(--mono);">USE_GAS_LEFT = true</span> (off in every current deployment) — there it is the <span style="font-family:var(--mono);">gasleft()</span> the L2 manager samples after its proxy checks and any value transfer, just before hashing. One more exception: when L2's <span style="font-family:var(--mono);">executeIncomingCrossChainCall</span> checks an entry, it hashes that inbound call's own <span style="font-family:var(--mono);">gas</span> field.</div>
+        <details style="font-size:14px;line-height:1.55;color:#b9a985;"><summary style="cursor:pointer;font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#c9b183;">FOR ENTRY BUILDERS</summary><div style="margin-top:8px;">Under <span style="font-family:var(--mono);">USE_GAS_LEFT</span> the hash is gas-dependent — a value you cannot predict off-chain is in the preimage. That is why a top-level or static miss on L2 carries a payload: <span style="font-family:var(--mono);">EntryNotFound(bytes32 crossChainCallHash, uint64 callGas)</span> hands back the observed gas so whoever builds the entry can reproduce the key. A nested mutable miss does not revert there: it records <span style="font-family:var(--mono);">CALL_NOT_FOUND</span>, and the entry fails later with <span style="font-family:var(--mono);">RollingHashMismatch</span>. Outside the two exceptions above, the constant <span style="font-family:var(--mono);">ZERO_CALL_GAS</span> is folded in.</div></details>
         <div id="cCond" style="font-family:var(--mono);font-size:13px;line-height:1.5;color:#8B7B55;"></div>
       </div>
 
@@ -286,7 +286,8 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">How to encode a call's content hash</h1>
-      <p class="intro-lede">In the Quickstart, <a href="qs3-who-answered.html" style="color:#d8d8d8;">qs3</a> showed one call hash tying the L1 and L2 entries together, and gotcha 3 in <a href="qs5-three-gotchas-before-you-build.html" style="color:#d8d8d8;">qs5</a> showed gas can be part of it; this card is the full 8-field hash.</p>
+      <p class="intro-lede">In the Quickstart, <a href="qs3-who-answered.html" style="color:#d8d8d8;">card 03</a> showed one call hash tying the L1 and L2 entries together, and gotcha 3 in <a href="qs5-three-gotchas-before-you-build.html" style="color:#d8d8d8;">card 04</a> showed gas can be part of it; this card is the full 8-field hash.</p>
+      <p class="intro-lede">One value, several names: card 03's <span style="font-family:var(--mono);">proxyEntryHash</span>, the content hash here, and the <span style="font-family:var(--mono);">crossChainCallHash</span> the managers compute with <span style="font-family:var(--mono);">computeCrossChainCallHash</span> are the same call hash.</p>
       <p class="intro-lede">Eight fields describe a cross-chain call, in this exact order. Hash them together and one bytes32 identifies the call.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
@@ -742,10 +743,10 @@
       // between a hash that is well-formed and a hash that can match.
       var notes = [];
       if (base.callGas !== "0") {
-        notes.push("callGas \u2260 0 \u2014 reachable only leaving an L2 whose manager has USE_GAS_LEFT = true.");
+        notes.push("callGas \u2260 0 \u2014 reachable only leaving an L2 whose manager has USE_GAS_LEFT = true (off in every current deployment), or as an inbound call's own gas in L2's executeIncomingCrossChainCall.");
       }
       if (base.isStatic && base.value !== "0") {
-        notes.push("value is always 0 in a static context (EEZL2.sol:675): this pair cannot occur.");
+        notes.push("value is always 0 in a static context (EEZL2.sol:672): this pair cannot occur.");
       }
       if (base.sourceRollupId === "0") {
         notes.push("sourceRollupId = 0 is MAINNET_ROLLUP_ID \u2014 this is a call leaving L1.");

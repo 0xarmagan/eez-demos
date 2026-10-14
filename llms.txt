@@ -26,10 +26,10 @@ Writing contracts that call across rollups.
 - [Cross-Chain Flash Loan](https://eez-demos.vercel.app/dapp-developers/qs7-cross-chain-flash-loan.html): Borrowed tokens go to an L2 and back before the repayment check runs, all inside one L1 transaction.
 - [Bridge Tokens Both Ways](https://eez-demos.vercel.app/dapp-developers/qs8-bridge-tokens-both-ways.html): Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair of chains, then run the test that sends an ERC-20 through the Bridge.sol test fixture and back.
 - [How to get your contract's address on another rollup](https://eez-demos.vercel.app/dapp-developers/q7-your-cross-chain-address.html): Learn how to read it, or deploy it.
-- [How to call a contract on another rollup](https://eez-demos.vercel.app/dapp-developers/q2-send-a-cross-chain-call.html): Learn how to encode it like any normal call and send it to the proxy.
+- [How to call a contract on another rollup](https://eez-demos.vercel.app/dapp-developers/q2-send-a-cross-chain-call.html): Learn how to encode a read like any normal call, send it to the proxy as a staticcall so it stays read-only, then decode the answer and branch on it.
 - [How to handle msg.sender across chains](https://eez-demos.vercel.app/dapp-developers/q3-fix-the-msg-sender-gotcha.html): Learn how to whitelist the proxy instead of the address you expected.
 - [How to check an address is a real proxy](https://eez-demos.vercel.app/dapp-developers/q4-check-if-an-address-is-a-proxy.html): Learn how to read the on-chain registry instead of guessing.
-- [How the guard makes sure only proxy calls reach execution](https://eez-demos.vercel.app/dapp-developers/q6-why-you-cant-call-the-manager-directly.html): Learn how UnauthorizedProxy() stops any call that isn't proxy-routed.
+- [How the guard makes sure only proxy calls reach execution](https://eez-demos.vercel.app/dapp-developers/q6-why-you-cant-call-the-manager-directly.html): Learn how UnauthorizedProxy() rejects any caller of the cross-chain entry points that isn't a registered proxy.
 - [How to encode a call's content hash](https://eez-demos.vercel.app/dapp-developers/q5-encode-a-calls-content-hash.html): Learn how to hash eight fields in the one order that works.
 - [How to read a remote contract's state](https://eez-demos.vercel.app/dapp-developers/q8-read-a-remote-contracts-state.html): Learn why balance and code size answer about the proxy — a real number about the wrong contract, with no revert.
 

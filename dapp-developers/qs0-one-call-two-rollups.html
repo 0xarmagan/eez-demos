@@ -205,22 +205,23 @@
 
     <!-- STEP 2: the answer is already there -->
     <div id="s2" style="display:none;flex-direction:column;gap:22px;">
-      <div class="qs0-lane">L1 · ONE BLOCK, TWO TRANSACTIONS</div>
+      <div class="qs0-lane">L1 · ONE BLOCK, ONE BUNDLE FROM THE COMPOSER</div>
       <div style="display:flex;align-items:stretch;gap:14px;">
         <div class="qs0-box" style="width:470px;background:rgba(59,229,126,0.05);border:1.5px solid rgba(59,229,126,0.45);">
-          <div class="qs0-tag" style="color:#8fe7b4;">TX 1 · THE COMPOSER, EARLIER</div>
+          <div class="qs0-tag" style="color:#8fe7b4;">FIRST · THE COMPOSER&rsquo;S BATCH</div>
           <div class="qs0-main" style="color:#eafff2;">postAndVerifyBatch(batch)</div>
           <div class="qs0-sub">proofs verified &rarr; lastVerifiedBlock = this block</div>
           <div class="qs0-sub">entries queued per rollup</div>
         </div>
         <div class="qs0-arrow" style="justify-content:center;">
           <svg width="60" height="20" viewBox="0 0 60 20"><defs><marker id="qa3" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#6e7681"></path></marker></defs><line x1="2" y1="10" x2="50" y2="10" stroke="#6e7681" stroke-width="2" marker-end="url(#qa3)"></line></svg>
-          <span>later</span>
+          <span>then</span>
         </div>
         <div class="qs0-box" style="width:470px;background:#141b2b;border:1.5px solid #7c83ff;">
-          <div class="qs0-tag" style="color:var(--label);">TX 2 · YOU</div>
+          <div class="qs0-tag" style="color:var(--label);">THEN · YOUR TRANSACTION</div>
           <div class="qs0-main" style="color:#eef1ff;">proxy &rarr; executeCrossChainCall</div>
-          <div class="qs0-sub">hash your call &rarr; find the queued entry with that hash</div>
+          <div class="qs0-sub">hash your call &rarr; next queued entry that matches</div>
+          <div class="qs0-sub">hash &middot; destination rollup &middot; starting roots</div>
         </div>
       </div>
       <div class="qs0-box" style="width:960px;background:#141414;border:1px solid var(--eez-edge);display:flex;gap:28px;flex-wrap:wrap;">
@@ -230,7 +231,7 @@
       </div>
       <div class="qs0-warn">
         <b>ONLY IN THAT BLOCK</b>
-        <div>In a block where the rollup wasn&rsquo;t verified, your call reverts <code>ExecutionNotInCurrentBlock</code>. With no matching entry it reverts <code>ExecutionNotFound</code>. Either way the revert comes back through the proxy to your contract. In qs1 the scenario script plays composer.</div>
+        <div>Send your transaction to the composer&rsquo;s RPC, not a plain L1 RPC. In a block where the rollup wasn&rsquo;t verified, your call reverts <code>ExecutionNotInCurrentBlock</code>. With no matching entry it reverts <code>ExecutionNotFound</code>. Either way the revert comes back through the proxy to your contract. In card 01 the scenario script plays composer.</div>
       </div>
     </div>
 
@@ -266,8 +267,8 @@
         <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no second transaction from you</div>
         <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no waiting after your call</div>
       </div>
-      <div class="qs0-note">The batch's proof covers each entry's <code>returnData</code>, so the value can't be swapped after the composer posts it. Counter@L2 runs the same call on L2, keyed by the same call hash.</div>
-      <div class="qs0-note">Further reading: <a class="qs0-link" href="q2-send-a-cross-chain-call.html#skip-intro">q2 &middot; use the answer in your contract &rarr;</a></div>
+      <div class="qs0-note">Each entry, <code>returnData</code> included, is hashed into the public input that every proof system in the batch must verify, up to each rollup&rsquo;s own threshold. So the composer can&rsquo;t post an answer those proof systems didn&rsquo;t attest. On today&rsquo;s testnet that is one ECDSA signer; card 01&rsquo;s local run accepts any proof. Counter@L2 runs the same call on L2, keyed by the same call hash.</div>
+      <div class="qs0-note">Further reading: <a class="qs0-link" href="q2-send-a-cross-chain-call.html#skip-intro">How to call a contract on another rollup &rarr;</a></div>
     </div>
 
   
@@ -302,11 +303,11 @@
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">One Call, Two Rollups, One Transaction</h1>
       <p class="intro-lede">Your contract on L1 calls a contract on L2 and gets its return value back in the same transaction. No bridge message, no callback, no second transaction from you.</p>
-      <p class="intro-lede">It works because the composer computed the answer before your transaction ran and posted it, verified, earlier in the same block. Your call looks it up. This card is one picture and no install; qs1 runs it.</p>
+      <p class="intro-lede">It works because you send your transaction to the composer&rsquo;s RPC. The composer simulates it, then lands postAndVerifyBatch and your transaction as one bundle in the same block, with the batch first, so the answer is posted and verified before your call looks it up. Sent through a plain L1 RPC instead, your call reverts <code>ExecutionNotInCurrentBlock</code>. This card is one picture and no install; card 01 runs it.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 · YOUR CONTRACT CALLS A PROXY</b>A proxy on L1 stands in for the L2 contract. Calling it is an ordinary call.</li>
-        <li><b>02 · THE ANSWER IS ALREADY THERE</b>The manager finds the entry the composer posted earlier in the block, matched by your call&rsquo;s hash.</li>
+        <li><b>02 · THE ANSWER IS ALREADY THERE</b>The composer posts the entry just before your transaction, in the same bundle. The manager finds it by your call&rsquo;s hash.</li>
         <li><b>03 · SAME TRANSACTION</b>The entry&rsquo;s return data comes straight back to your contract.</li>
       </ul>
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
@@ -339,8 +340,8 @@
   var kickers = ["YOUR CONTRACT CALLS A PROXY.", "THE ANSWER IS ALREADY THERE.", "SAME TRANSACTION."];
   var captions = [
     "Your contract calls the proxy for Counter@L2 like any other contract. The proxy has no functions of its own, so its fallback hands your calldata and your contract's address to the EEZ manager.",
-    "Earlier in this block the composer's postAndVerifyBatch verified a batch and queued its entries. executeCrossChainCall works only in that block: it hashes your call and takes the queued entry carrying that hash.",
-    "The manager applies the entry, checks it matches what was proven, and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, and no second transaction from you."
+    "The composer lands its postAndVerifyBatch and your transaction as one bundle, batch first, so the batch is verified and its entries queued before your call runs. executeCrossChainCall works only in that block: it hashes your call and takes the first queued entry, from the cursor on, whose hash, destination rollup and expected starting roots all match.",
+    "The manager applies the entry, checks its roots and rolling hash against what the batch committed to, and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, and no second transaction from you."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,

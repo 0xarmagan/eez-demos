@@ -246,9 +246,9 @@
     "isProxy true means the other two fields are real."
   ];
   var notes = [
-    "someAddress sits alongside every other address the manager has ever seen.",
+    "Only addresses this manager created as proxies have an entry; every other address reads as all zeros.",
     "One call: authorizedProxies(someAddress).",
-    "true means a real proxy for that (address, rollup) pair — false means it's not."
+    "true means a real proxy for that (address, rollup) pair. false means this manager has no proxy there: it isn't one, or isn't created yet."
   ];
 
   var codeByStep = [
@@ -272,7 +272,7 @@
       "}"
     ]
   ];
-  var hlByStep = [ [0,1], [0,1], [0,1,2,3,5] ];
+  var hlByStep = [ [0,1], [0,1], [0,1,2,3,6] ];
 
   // Verbatim copy of snippets/q4-proxy-registry.sol (the whole file, 45 lines).
   // scripts/check-panel-drift.py asserts this array still equals that file

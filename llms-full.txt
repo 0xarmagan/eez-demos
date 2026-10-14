@@ -53,7 +53,7 @@ function _fallback() internal {
 
 ### Step 2 — THE ANSWER IS ALREADY THERE.
 
-Earlier in this block the composer's postAndVerifyBatch verified a batch and queued its entries. executeCrossChainCall works only in that block: it hashes your call and takes the queued entry carrying that hash.
+The composer lands its postAndVerifyBatch and your transaction as one bundle, batch first, so the batch is verified and its entries queued before your call runs. executeCrossChainCall works only in that block: it hashes your call and takes the first queued entry, from the cursor on, whose hash, destination rollup and expected starting roots all match.
 
 ```solidity
 // tx 1, composer: postAndVerifyBatch
@@ -76,7 +76,7 @@ function executeCrossChainCall(
 
 ### Step 3 — SAME TRANSACTION.
 
-The manager applies the entry, checks it matches what was proven, and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, and no second transaction from you.
+The manager applies the entry, checks its roots and rolling hash against what the batch committed to, and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, and no second transaction from you.
 
 ```solidity
 // _consumeAndExecuteEntry, entry found
@@ -105,14 +105,15 @@ Two scenarios pass on local anvil chains: a call that starts on L1 gets its answ
 
 ### Step 1 — CLONE AT THE PIN.
 
-Clone at a fixed commit so your output matches these cards. You need Foundry 1.7.1 with forge, cast and anvil on PATH, Git, and bash 4 or newer (macOS ships 3.2; brew install bash puts bash 5 first on PATH). No Docker.
+Clone at a fixed commit so your output matches these cards. You need Foundry 1.7.1 with forge, cast and anvil on PATH, Git, jq (built into macOS 15+), and bash 4 or newer (macOS ships 3.2; brew install bash puts bash 5 first on PATH). No Docker.
 
 ```text
 # needs Foundry 1.7.1 (forge, cast, anvil on PATH),
-# Git, and bash 4+. No Docker.
+# Git, jq, and bash 4+. No Docker.
 # Foundry: https://book.getfoundry.sh/getting-started/installation
 # macOS ships bash 3.2; this puts bash 5 first on PATH:
 #   brew install bash
+# jq: built into macOS 15+, or brew/apt install jq
 
 $ git clone https://github.com/eez-association/eez-core-protocol.git
 $ cd eez-core-protocol
@@ -129,10 +130,10 @@ One build, then both scenarios at once. About 5 minutes on an Apple M4 laptop wi
 $ forge build
 
 $ bash script/e2e/run/local/parallel.sh counter counterL2
-  [counter] starting (L1=18545 chain=41337, L2=18546 chain=41338)
   [counterL2] starting (L1=18547 chain=41339, L2=18548 chain=41340)
-  [counter] PASS
+  [counter] starting (L1=18545 chain=41337, L2=18546 chain=41338)
   [counterL2] PASS
+  [counter] PASS
 
 ===== RESULT: 2 passed, 0 failed, 0 skipped =====
 ```
@@ -145,8 +146,8 @@ Locally, the scenario script played composer. You'll see what it did in two card
 # counter:   L1 called L2, got 1 back
 # counterL2: L2 called L1, got 1 back
 
-  [counter] PASS
   [counterL2] PASS
+  [counter] PASS
 
 ===== RESULT: 2 passed, 0 failed, 0 skipped =====
 ```
@@ -334,9 +335,9 @@ entries[0] = L2ExecutionEntry({
 });
 ```
 
-### Step 3 — ONE HASH TIES THEM.
+### Step 3 — ONE HASH, ONE CALL.
 
-Both entries carry the same proxyEntryHash, built by one helper, _callHash. That shared hash ties L1's cached answer to the run on L2. Deep dives: q5 for the call hash, pr6 for the rolling hash.
+Both entries carry the same proxyEntryHash, built by one helper, _callHash. That shared hash says both entries are the same call, and L2 checks it against the call it actually runs. It does not tie the answers: that they agree is what each rollup's proof systems attest. Locally, the script simply writes 1 on both sides.
 
 ```solidity
 // Both entries set the same field
@@ -392,8 +393,8 @@ Every proxy call checks that its rollup was verified in the current block. An en
 // through _validateProxyAndGetDestinationInfo:
 _requireVerifiedThisBlock(destRid);
 
-// :1578, the gate: lastVerifiedBlock must
-// equal block.number, or
+// _requireVerifiedThisBlock (:1578): unless
+// lastVerifiedBlock == block.number, :1580
 revert ExecutionNotInCurrentBlock(rollupId);
 
 // postAndVerifyBatch reaches
@@ -423,8 +424,8 @@ function incrementProxy() external {
 
 // With EEZL2's USE_GAS_LEFT on (intended for
 // production, off in every current deployment),
-// callGas is the gasleft() the L2 manager
-// samples after its proxy checks (EEZL2.sol:282),
+// callGas = the L2 manager's gasleft() after its
+// proxy checks and value transfer (EEZL2.sol:282),
 // not the gas you forward. L1 uses ZERO_CALL_GAS.
 ```
 
@@ -442,8 +443,9 @@ Borrowed tokens go to an L2 and back before the repayment check runs, all inside
 One L1 transaction borrows 10,000 tokens, sends them to L2 and back, and repays the pool. Locally, the scenario script plays composer and posts the entries in a separate transaction first.
 
 ```text
-# needs Git, Foundry 1.7.1 (forge, cast, anvil on PATH)
+# needs Git, jq, Foundry 1.7.1 (forge, cast, anvil on PATH)
 # and bash 4+; macOS ships 3.2, so: brew install bash
+# jq: built into macOS 15+, or brew/apt install jq
 # fresh clone at the pinned commit
 $ git clone https://github.com/eez-association/eez-core-protocol.git
 $ cd eez-core-protocol
@@ -461,7 +463,7 @@ $ bash script/e2e/run/local/parallel.sh flash-loan
 
 ### Step 2 — BORROW ON L1, USE IT ON L2.
 
-onFlashLoan bridges the loan to executorL2, then calls it through its proxy. On L2 it claims the NFT, and its return leg releases the escrow on L1 inside that same call.
+onFlashLoan sends the loan to executorL2 through Bridge.sol, then calls executorL2 through its proxy. On L2 it claims the NFT, and its return leg releases the escrow on L1 inside that same call.
 
 ```text
 // L1 · FlashLoanBridgeExecutor.onFlashLoan
@@ -509,8 +511,9 @@ Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair 
 The scenarios move ETH across: bridge from L1 to L2, bridgeL2 from L2 to L1, with the script playing composer. The test then runs Bridge.sol's token round trip: lock and mint, burn and release.
 
 ```text
-# needs Git, Foundry 1.7.1 (forge, cast, anvil on PATH)
+# needs Git, jq, Foundry 1.7.1 (forge, cast, anvil on PATH)
 # and bash 4+; macOS ships 3.2, so: brew install bash
+# jq: built into macOS 15+, or brew/apt install jq
 # fresh clone at the pinned commit, then build
 $ git clone https://github.com/eez-association/eez-core-protocol.git
 $ cd eez-core-protocol
@@ -520,8 +523,8 @@ $ forge build
 
 # one scenario per direction, run side by side
 $ bash script/e2e/run/local/parallel.sh bridge bridgeL2
-  [bridgeL2] starting (L1=18547 chain=41339, L2=18548 chain=41340)
   [bridge] starting (L1=18545 chain=41337, L2=18546 chain=41338)
+  [bridgeL2] starting (L1=18547 chain=41339, L2=18548 chain=41340)
   [bridge] PASS
   [bridgeL2] PASS
 
@@ -750,7 +753,7 @@ function computeCrossChainProxyAddress(
 
 ## How to call a contract on another rollup
 
-Learn how to encode it like any normal call and send it to the proxy.
+Learn how to encode a read like any normal call, send it to the proxy as a staticcall so it stays read-only, then decode the answer and branch on it.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q2-send-a-cross-chain-call.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:113 · _fallback`
@@ -767,7 +770,7 @@ bytes memory data = abi.encodeCall(
 );
 ```
 
-### Step 2 — STATICCALL, NOT CALL
+### Step 2 — STATICCALL FOR READS
 
 Send it to the proxy as a staticcall. The proxy keys off your frame, not the callee's view — that is what routes a read to its pre-computed static entry.
 
@@ -776,7 +779,7 @@ bytes memory data = abi.encodeCall(
     IRemote.balanceOf, (user)
 );
 
-// STATICCALL, not CALL: the proxy keys off this
+// STATICCALL for a read: the proxy keys off this
 // frame, not off `view`.
 (bool ok, bytes memory ret) =
     proxyAddress.staticcall(data);
@@ -839,11 +842,12 @@ interface IRemote {
 }
 
 /// @dev A cross-chain call fails for reasons an ordinary same-chain call
-///      cannot, and the proxy forwards raw revert data either way
-///      (CrossChainProxy.sol:137-141). So `ok == false` tells you the call
-///      did not happen — never why. No matching entry in this block and a
-///      genuine revert in the destination contract are indistinguishable
-///      here; see docs/CAVEATS.md "Missing entries and destination reverts".
+///      cannot. `ok == false` alone does not say why. The proxy forwards the
+///      raw revert data (CrossChainProxy.sol:137-141), which usually does
+///      (ExecutionNotFound / EntryNotFound vs the destination's own error), but
+///      a destination can emit the same selector, so don't branch on it. This
+///      Caller discards it; see docs/CAVEATS.md "Missing entries and
+///      destination reverts".
 error CrossChainCallFailed();
 
 /// @dev Raised on a value that came back from another rollup. The point of the
@@ -878,17 +882,17 @@ if (!ok) revert CrossChainCallFailed();
     ///      The one thing to get right: the proxy picks static-vs-mutable from
     ///      the CALLER'S frame, not from `view`. Its probe does a `tstore`, and
     ///      a `tstore` only halts under STATICCALL (CrossChainProxy.sol:89). A
-    ///      plain `.call(data)` here would therefore take the mutable path and
-    ///      demand an ExecutionEntry no composer wrote for a read — on L2 that
-    ///      is `EntryNotFound(hash, callGas)` (EEZL2.sol:501), with a hash that
-    ///      folds `isStatic = false`. STATICCALL is what routes it to
-    ///      `staticCrossChainCall` (EEZL2.sol:660) and a static entry.
+    ///      plain `.call(data)` here would take the mutable path; the composer
+    ///      would then build an ExecutionEntry for it, hashed with
+    ///      `isStatic = false`, instead of a static one. STATICCALL routes it to
+    ///      `staticCrossChainCall` (EEZL2.sol:660) and a static entry, which is
+    ///      read-only: it cannot change state on either side.
     function settleIfFunded(address user, uint256 need) external returns (bool) {
 bytes memory data = abi.encodeCall(
     IRemote.balanceOf, (user)
 );
 
-// STATICCALL, not CALL: the proxy keys off this
+// STATICCALL for a read: the proxy keys off this
 // frame, not off `view`.
 (bool ok, bytes memory ret) =
     proxyAddress.staticcall(data);
@@ -1002,7 +1006,10 @@ import {Caller, IRemote, CrossChainCallFailed} from "../q2-cross-chain-call.sol"
 // a STATICCALL (EIP-1153), and that halt is the entire signal. `view` on the
 // callee has nothing to do with it. So `staticcall` reaches the read path and a
 // pre-committed static entry; a plain `call` reaches the execution path and
-// demands an entry no composer wrote for a read.
+// needs an ExecutionEntry instead. In production the composer reads the same
+// frame and builds whichever entry the frame asks for, so a plain-call read
+// still works; staticcall is what makes it a read-only static entry. This
+// table commits only static entries, so here a plain call misses.
 //
 // That halt is real here, not simulated: `ProbeProxy` does the actual `tstore`
 // and solc/revm enforce the static-context rule. This is the one part of the
@@ -1092,9 +1099,10 @@ contract EntryTable {
     }
 
     /// @dev Same name and signature as the manager's execution entry point. The
-    ///      execution pool is left empty on purpose: no composer writes an
-    ///      ExecutionEntry for a read, which is exactly why a plain `call` for a
-    ///      read fails — under the same error name, with the non-static key.
+    ///      execution pool is left empty on purpose, so the test can show that a
+    ///      plain `call` lands here and not on the static entry: it misses
+    ///      under the same error name, with the non-static key. (In production
+    ///      the composer would have built an ExecutionEntry for that call.)
     function executeCrossChainCall(address sourceAddress, bytes calldata callData)
         external
         payable
@@ -1210,11 +1218,12 @@ contract Q2CrossChainCallTest {
     // ── The rule: the frame picks the path ──
 
     /// @dev A plain CALL with the very same calldata does NOT reach the read
-    ///      path. It reaches `executeCrossChainCall` and misses, because no
-    ///      composer writes an ExecutionEntry for a read. The error name is the
-    ///      same one a read miss uses; the key in the payload is what shows the
-    ///      path: it was hashed with `isStatic = false`. This is the failure a
-    ///      `.call(data)` read produces in production.
+    ///      path. It reaches `executeCrossChainCall`, which looks for an
+    ///      ExecutionEntry keyed `isStatic = false`, so the committed static
+    ///      entry can never satisfy it. Only a static entry exists here, so it
+    ///      misses. The error name is the same one a read miss uses; the key in
+    ///      the payload is what shows the path. (In production the composer
+    ///      sees the plain CALL and builds that ExecutionEntry instead.)
     function test_plainCallTakesTheExecutionPathAndMisses() public {
         _commitBalance(100);
         (bool ok, bytes memory ret) = address(proxy).call(readData);
@@ -1254,8 +1263,9 @@ contract Q2CrossChainCallTest {
     }
 
     /// @dev An entry exists and records that the destination reverted. The
-    ///      caller sees the identical outcome as the miss above — this is
-    ///      docs/CAVEATS.md "Missing entries and destination reverts", executable.
+    ///      caller sees the identical outcome as the miss above, because Caller
+    ///      replaces the forwarded revert data with CrossChainCallFailed — this
+    ///      is docs/CAVEATS.md "Missing entries and destination reverts", executable.
     function test_destinationRevertIsIndistinguishableFromAMiss() public {
         table.commitStatic(
             address(caller), readData, false, abi.encodeWithSelector(RemoteBalanceUnavailable.selector)
@@ -1566,7 +1576,7 @@ if (isProxy) {
 
 ## How the guard makes sure only proxy calls reach execution
 
-Learn how UnauthorizedProxy() stops any call that isn't proxy-routed.
+Learn how UnauthorizedProxy() rejects any caller of the cross-chain entry points that isn't a registered proxy.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q6-why-you-cant-call-the-manager-directly.html
 - Source: `eez-core-protocol/src/EEZ.sol:855 · executeCrossChainCall`
@@ -1599,9 +1609,9 @@ if (!proxyInfo.isProxy)
     revert UnauthorizedProxy();
 ```
 
-### Step 3 — NO WAY PAST IT
+### Step 3 — ON BOTH PROXY ENTRY POINTS
 
-Both proxy entry points open with this check, so no proxy-routed call reaches execution without it.
+Both proxy entry points open with this check. It checks who is calling, not where the call goes: at 9a1f815 a second check, EEZDestinationForbidden (EEZBase.sol:404), also stops a cross-chain call from targeting the manager itself. The eez.dev testnet (855fe06) predates that check.
 
 ```solidity
 function _validateProxyAndGetDestinationInfo()
@@ -1932,28 +1942,28 @@ Learn why balance and code size answer about the proxy — a real number about t
 
 ### Step 1 — A CONTRACT ON THIS CHAIN
 
-The proxy is an ordinary contract, deployed on this chain. Every opcode that asks the EVM about an address answers about it — not about the contract it stands for.
+Once created, the proxy is an ordinary contract on this chain. Every opcode that asks the EVM about an address answers about it — not about the contract it stands for.
 
 ```solidity
 address proxy = eez.computeCrossChainProxyAddress(
     remote, remoteRollupId
 );
 
-// a contract deployed on THIS chain, with its
-// own code and its own balance
+// once created, a contract on THIS chain with
+// its own code and its own balance
 ```
 
-### Step 2 — FOUR READS, NO REVERT
+### Step 2 — THREE READS, NO REVERT
 
-balance, extcodesize, extcodecopy and delegatecall describe the proxy; block-state opcodes describe the chain you are executing on. Each read succeeds and returns a real number about the wrong contract.
+balance, extcodesize and extcodecopy describe the proxy, and block-state opcodes describe the chain you are executing on; each succeeds and returns a real number about the wrong contract. A delegatecall into a proxy runs the proxy's code in your context and reverts (UnauthorizedProxy) — it never reaches the remote contract.
 
 ```diff
  address proxy = eez.computeCrossChainProxyAddress(
      remote, remoteRollupId
  );
 
- // a contract deployed on THIS chain, with its
- // own code and its own balance
+ // once created, a contract on THIS chain with
+ // its own code and its own balance
 
 -uint256 bal  = proxy.balance;       // PROXY's ether
 -uint256 size = proxy.code.length;   // PROXY's code
@@ -1994,21 +2004,24 @@ import {IEEZ} from "./lib/IEEZ.sol";
 // it the first time a call arrives through a proxy. The reads below SUCCEED and
 // return a real number about the wrong contract, so they ship.
 //
-// WHY: a CrossChainProxy is an ordinary contract, deployed on THIS chain, with
-// its own code and its own balance. An opcode that asks the EVM about an
+// WHY: once created, a CrossChainProxy is an ordinary contract on THIS chain,
+// with its own code and its own balance. An opcode that asks the EVM about an
 // address answers about that local contract. Only a CALL is routed: the proxy's
 // fallback (CrossChainProxy.sol:113, `_fallback`) forwards to the manager, which
 // resolves an outcome that was written down before your transaction ran. So
 // inspection is local, invocation is resolved.
 //
-// The four that answer about the proxy, per CAVEATS.md: `balance`,
-// `extcodesize`, `extcodecopy`, `delegatecall`. Plus every block-state opcode
-// (`number`, `blockhash`, `chainid`, `coinbase`, `gaslimit`), which describes
-// the chain currently executing, not the source chain — so the same logical
-// action reads differently on L1 and on L2.
+// CAVEATS.md lists four opcodes that answer about the proxy: `balance`,
+// `extcodesize`, `extcodecopy`, `delegatecall`. The first three succeed and
+// return a number about the proxy. Plus every block-state opcode (`number`,
+// `blockhash`, `chainid`, `coinbase`, `gaslimit`), which describes the chain
+// currently executing, not the source chain — so the same logical action reads
+// differently on L1 and on L2.
 //
-// `delegatecall` deserves its own line: delegatecalling a proxy runs the
-// PROXY's code in your storage context. It does not reach the remote contract.
+// `delegatecall` is the exception: it does not succeed. Delegatecalling a proxy
+// runs the PROXY's code in your context, so its fallback forwards to the manager
+// with YOUR contract as msg.sender, and the manager reverts `UnauthorizedProxy()`
+// (EEZ.sol:1564, EEZL2.sol:790). It never reaches the remote contract.
 //
 // WHEN A ROUTED READ RESOLVES — both sides gate on the block, but what else
 // must match differs, so do not learn one half and carry it to the other chain:
@@ -2016,16 +2029,19 @@ import {IEEZ} from "./lib/IEEZ.sol";
 //   L1: `staticCrossChainCall` (EEZ.sol:1379-1449) opens with
 //   `_validateProxyAndGetDestinationInfo()` (:1380), which reverts
 //   `ExecutionNotInCurrentBlock(destRid)` unless that rollup was verified in
-//   this block (:1578-1580). It then scans `staticEntryQueue` (:1420), or the
-//   batch's transient pool while one is mid-flight, and matches on
-//   `proxyEntryHash`, `destinationRollupId` and `_rootsMatch(...)` (:1437-1438).
+//   this block (:1578-1580). A top-level read then scans `staticEntryQueue`
+//   (:1420), or the batch's transient pool while one is mid-flight, and matches
+//   on `proxyEntryHash`, `destinationRollupId` and `_rootsMatch(...)`
+//   (:1437-1438). A nested read (inside an execution) is matched by the rolling
+//   hash instead (:1390-1410).
 //   Upstream's own comment: "Static entries require both current-block
 //   verification (checked above) and matching root pins."
 //
 //   L2: `staticCrossChainCall` (EEZL2.sol:660) opens with the same-named helper,
 //   whose gate at EEZL2.sol:791 is
-//   `if (lastLoadBlock != block.number) revert ExecutionNotInCurrentBlock();`,
-//   and matches on the call hash and the live entry cursor (:705).
+//   `if (lastLoadBlock != block.number) revert ExecutionNotInCurrentBlock();`.
+//   A top-level read matches on the call hash and the live entry cursor (:705);
+//   a nested read is matched by the rolling hash (:681-699).
 //
 //   Mutating calls go through the same helper on both sides, so they are
 //   block-gated too (EEZ.sol:863, EEZL2.sol:272).
@@ -2067,8 +2083,8 @@ contract RemoteReader {
 address proxy = eez.computeCrossChainProxyAddress(
     remote, remoteRollupId
 );
-// a contract deployed on THIS chain, with its
-// own code and its own balance
+// once created, a contract on THIS chain with
+// its own code and its own balance
 
 uint256 bal  = proxy.balance;       // PROXY's ether
 uint256 size = proxy.code.length;   // PROXY's code
@@ -2082,9 +2098,9 @@ bool sameChain =
     ///      the remote contract's state, not the proxy's.
     ///
     ///      Both sides resolve it only in the block the entries were loaded: on
-    ///      L1 the rollup must be verified this block and the entry's root pins
-    ///      must match (EEZ.sol:1578-1580, :1437-1438), on L2 the table must be
-    ///      loaded this block (EEZL2.sol:791). With no matching entry this
+    ///      L1 the rollup must be verified this block and, for a top-level read,
+    ///      the entry's root pins must match (EEZ.sol:1578-1580, :1437-1438); on
+    ///      L2 the table must be loaded this block (EEZL2.sol:791). With no matching entry this
     ///      reverts — `ExecutionNotFound()` on L1, `EntryNotFound(...)` on L2 —
     ///      and revert data alone cannot reliably tell that from the
     ///      destination reverting.
@@ -2126,7 +2142,9 @@ import {RemoteReader, IRemote} from "../q8-remote-reads.sol";
 //
 // The first three cases are the whole hazard: NOTHING REVERTS. Each is a
 // successful read returning a real number about the wrong contract. Unlike the
-// q3 owner check, there is no failure to notice.
+// q3 owner check, there is no failure to notice. The fourth opcode CAVEATS.md
+// lists, `delegatecall`, is the opposite case: it reverts, and
+// test_delegatecallIntoTheProxyReverts shows why.
 //
 // WHAT IS FAKED HERE, AND WHAT IS NOT. Q6ManagerDirect.t.sol refuses to fake
 // protocol state and says so in its header; the same line is held here.
@@ -2169,6 +2187,10 @@ error ExecutionNotFound();
 ///      records that the destination call reverted.
 error RemoteBalanceUnavailable();
 
+/// @dev Named as upstream names it (EEZ.sol:1564, EEZL2.sol:790): the manager
+///      only serves callers registered as proxies.
+error UnauthorizedProxy();
+
 // @stand-in a local table, not a manager: it holds outcomes keyed by a reduced
 //           call hash so the test can exercise hit, miss and destination-revert
 //           without faking EEZ storage. See the header.
@@ -2180,6 +2202,10 @@ contract EntryTable {
     }
 
     mapping(bytes32 => Entry) private entries;
+
+    /// @dev The one caller allowed in, standing in for upstream's
+    ///      `authorizedProxies[msg.sender].isProxy` check.
+    address public authorizedProxy;
 
     address private immutable destAddress;
     uint64 private immutable destRollupId;
@@ -2202,6 +2228,11 @@ contract EntryTable {
         entries[keyFor(sourceAddress, callData)] = Entry(true, success, data);
     }
 
+    /// @dev Upstream registers a proxy when the manager creates it.
+    function authorize(address proxy_) external {
+        authorizedProxy = proxy_;
+    }
+
     /// @dev Same name and signature as the manager's read entry point, so the
     ///      shape of the call the proxy makes is the real one.
     function staticCrossChainCall(address sourceAddress, bytes calldata callData)
@@ -2209,6 +2240,7 @@ contract EntryTable {
         view
         returns (bytes memory)
     {
+        if (msg.sender != authorizedProxy) revert UnauthorizedProxy();
         Entry storage entry = entries[keyFor(sourceAddress, callData)];
         if (!entry.present) revert ExecutionNotFound();
         if (!entry.success) {
@@ -2305,6 +2337,7 @@ contract Q8RemoteReadsTest {
 
         table = new EntryTable(address(counterpart), REMOTE_ROLLUP_ID);
         proxy = new StubProxy(address(table));
+        table.authorize(address(proxy));
         vm.deal(address(proxy), PROXY_BALANCE);
 
         reader = new RemoteReader(
@@ -2350,6 +2383,22 @@ contract Q8RemoteReadsTest {
     function test_blockContextIsLocal() public view {
         (,, bool sameChain) = reader.inspectionLies(block.chainid + 1);
         require(!sameChain, "block.chainid is this chain's, never the remote one");
+    }
+
+    /// @dev Not a fourth silent read. A delegatecall runs the proxy's fallback
+    ///      in THIS contract's context, so the forward reaches the manager with
+    ///      this contract, not the proxy, as msg.sender, and the manager's proxy
+    ///      check reverts `UnauthorizedProxy()`. The real proxy's self-probe
+    ///      (not modelled here) does not change that: both of its paths call
+    ///      the manager from the delegating contract.
+    function test_delegatecallIntoTheProxyReverts() public {
+        (bool ok, bytes memory ret) = address(proxy).delegatecall(abi.encodeCall(IRemote.balanceOf, (USER)));
+        require(!ok, "a delegatecall into the proxy must revert");
+        require(
+            keccak256(ret) == keccak256(abi.encodeWithSelector(UnauthorizedProxy.selector)),
+            "expected UnauthorizedProxy()"
+        );
+        require(counterpart.calls() == 0, "it never reaches the counterpart");
     }
 
     /// @dev The fix. Calling THROUGH the proxy returns the remote contract's

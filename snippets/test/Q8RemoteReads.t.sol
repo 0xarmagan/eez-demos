@@ -12,7 +12,9 @@ import {RemoteReader, IRemote} from "../q8-remote-reads.sol";
 //
 // The first three cases are the whole hazard: NOTHING REVERTS. Each is a
 // successful read returning a real number about the wrong contract. Unlike the
-// q3 owner check, there is no failure to notice.
+// q3 owner check, there is no failure to notice. The fourth opcode CAVEATS.md
+// lists, `delegatecall`, is the opposite case: it reverts, and
+// test_delegatecallIntoTheProxyReverts shows why.
 //
 // WHAT IS FAKED HERE, AND WHAT IS NOT. Q6ManagerDirect.t.sol refuses to fake
 // protocol state and says so in its header; the same line is held here.
@@ -55,6 +57,10 @@ error ExecutionNotFound();
 ///      records that the destination call reverted.
 error RemoteBalanceUnavailable();
 
+/// @dev Named as upstream names it (EEZ.sol:1564, EEZL2.sol:790): the manager
+///      only serves callers registered as proxies.
+error UnauthorizedProxy();
+
 // @stand-in a local table, not a manager: it holds outcomes keyed by a reduced
 //           call hash so the test can exercise hit, miss and destination-revert
 //           without faking EEZ storage. See the header.
@@ -66,6 +72,10 @@ contract EntryTable {
     }
 
     mapping(bytes32 => Entry) private entries;
+
+    /// @dev The one caller allowed in, standing in for upstream's
+    ///      `authorizedProxies[msg.sender].isProxy` check.
+    address public authorizedProxy;
 
     address private immutable destAddress;
     uint64 private immutable destRollupId;
@@ -88,6 +98,11 @@ contract EntryTable {
         entries[keyFor(sourceAddress, callData)] = Entry(true, success, data);
     }
 
+    /// @dev Upstream registers a proxy when the manager creates it.
+    function authorize(address proxy_) external {
+        authorizedProxy = proxy_;
+    }
+
     /// @dev Same name and signature as the manager's read entry point, so the
     ///      shape of the call the proxy makes is the real one.
     function staticCrossChainCall(address sourceAddress, bytes calldata callData)
@@ -95,6 +110,7 @@ contract EntryTable {
         view
         returns (bytes memory)
     {
+        if (msg.sender != authorizedProxy) revert UnauthorizedProxy();
         Entry storage entry = entries[keyFor(sourceAddress, callData)];
         if (!entry.present) revert ExecutionNotFound();
         if (!entry.success) {
@@ -191,6 +207,7 @@ contract Q8RemoteReadsTest {
 
         table = new EntryTable(address(counterpart), REMOTE_ROLLUP_ID);
         proxy = new StubProxy(address(table));
+        table.authorize(address(proxy));
         vm.deal(address(proxy), PROXY_BALANCE);
 
         reader = new RemoteReader(
@@ -236,6 +253,22 @@ contract Q8RemoteReadsTest {
     function test_blockContextIsLocal() public view {
         (,, bool sameChain) = reader.inspectionLies(block.chainid + 1);
         require(!sameChain, "block.chainid is this chain's, never the remote one");
+    }
+
+    /// @dev Not a fourth silent read. A delegatecall runs the proxy's fallback
+    ///      in THIS contract's context, so the forward reaches the manager with
+    ///      this contract, not the proxy, as msg.sender, and the manager's proxy
+    ///      check reverts `UnauthorizedProxy()`. The real proxy's self-probe
+    ///      (not modelled here) does not change that: both of its paths call
+    ///      the manager from the delegating contract.
+    function test_delegatecallIntoTheProxyReverts() public {
+        (bool ok, bytes memory ret) = address(proxy).delegatecall(abi.encodeCall(IRemote.balanceOf, (USER)));
+        require(!ok, "a delegatecall into the proxy must revert");
+        require(
+            keccak256(ret) == keccak256(abi.encodeWithSelector(UnauthorizedProxy.selector)),
+            "expected UnauthorizedProxy()"
+        );
+        require(counterpart.calls() == 0, "it never reaches the counterpart");
     }
 
     /// @dev The fix. Calling THROUGH the proxy returns the remote contract's

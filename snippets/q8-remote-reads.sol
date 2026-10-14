@@ -13,21 +13,24 @@ import {IEEZ} from "./lib/IEEZ.sol";
 // it the first time a call arrives through a proxy. The reads below SUCCEED and
 // return a real number about the wrong contract, so they ship.
 //
-// WHY: a CrossChainProxy is an ordinary contract, deployed on THIS chain, with
-// its own code and its own balance. An opcode that asks the EVM about an
+// WHY: once created, a CrossChainProxy is an ordinary contract on THIS chain,
+// with its own code and its own balance. An opcode that asks the EVM about an
 // address answers about that local contract. Only a CALL is routed: the proxy's
 // fallback (CrossChainProxy.sol:113, `_fallback`) forwards to the manager, which
 // resolves an outcome that was written down before your transaction ran. So
 // inspection is local, invocation is resolved.
 //
-// The four that answer about the proxy, per CAVEATS.md: `balance`,
-// `extcodesize`, `extcodecopy`, `delegatecall`. Plus every block-state opcode
-// (`number`, `blockhash`, `chainid`, `coinbase`, `gaslimit`), which describes
-// the chain currently executing, not the source chain — so the same logical
-// action reads differently on L1 and on L2.
+// CAVEATS.md lists four opcodes that answer about the proxy: `balance`,
+// `extcodesize`, `extcodecopy`, `delegatecall`. The first three succeed and
+// return a number about the proxy. Plus every block-state opcode (`number`,
+// `blockhash`, `chainid`, `coinbase`, `gaslimit`), which describes the chain
+// currently executing, not the source chain — so the same logical action reads
+// differently on L1 and on L2.
 //
-// `delegatecall` deserves its own line: delegatecalling a proxy runs the
-// PROXY's code in your storage context. It does not reach the remote contract.
+// `delegatecall` is the exception: it does not succeed. Delegatecalling a proxy
+// runs the PROXY's code in your context, so its fallback forwards to the manager
+// with YOUR contract as msg.sender, and the manager reverts `UnauthorizedProxy()`
+// (EEZ.sol:1564, EEZL2.sol:790). It never reaches the remote contract.
 //
 // WHEN A ROUTED READ RESOLVES — both sides gate on the block, but what else
 // must match differs, so do not learn one half and carry it to the other chain:
@@ -35,16 +38,19 @@ import {IEEZ} from "./lib/IEEZ.sol";
 //   L1: `staticCrossChainCall` (EEZ.sol:1379-1449) opens with
 //   `_validateProxyAndGetDestinationInfo()` (:1380), which reverts
 //   `ExecutionNotInCurrentBlock(destRid)` unless that rollup was verified in
-//   this block (:1578-1580). It then scans `staticEntryQueue` (:1420), or the
-//   batch's transient pool while one is mid-flight, and matches on
-//   `proxyEntryHash`, `destinationRollupId` and `_rootsMatch(...)` (:1437-1438).
+//   this block (:1578-1580). A top-level read then scans `staticEntryQueue`
+//   (:1420), or the batch's transient pool while one is mid-flight, and matches
+//   on `proxyEntryHash`, `destinationRollupId` and `_rootsMatch(...)`
+//   (:1437-1438). A nested read (inside an execution) is matched by the rolling
+//   hash instead (:1390-1410).
 //   Upstream's own comment: "Static entries require both current-block
 //   verification (checked above) and matching root pins."
 //
 //   L2: `staticCrossChainCall` (EEZL2.sol:660) opens with the same-named helper,
 //   whose gate at EEZL2.sol:791 is
-//   `if (lastLoadBlock != block.number) revert ExecutionNotInCurrentBlock();`,
-//   and matches on the call hash and the live entry cursor (:705).
+//   `if (lastLoadBlock != block.number) revert ExecutionNotInCurrentBlock();`.
+//   A top-level read matches on the call hash and the live entry cursor (:705);
+//   a nested read is matched by the rolling hash (:681-699).
 //
 //   Mutating calls go through the same helper on both sides, so they are
 //   block-gated too (EEZ.sol:863, EEZL2.sol:272).
@@ -86,8 +92,8 @@ contract RemoteReader {
 address proxy = eez.computeCrossChainProxyAddress(
     remote, remoteRollupId
 );
-// a contract deployed on THIS chain, with its
-// own code and its own balance
+// once created, a contract on THIS chain with
+// its own code and its own balance
 
 uint256 bal  = proxy.balance;       // PROXY's ether
 uint256 size = proxy.code.length;   // PROXY's code
@@ -101,9 +107,9 @@ bool sameChain =
     ///      the remote contract's state, not the proxy's.
     ///
     ///      Both sides resolve it only in the block the entries were loaded: on
-    ///      L1 the rollup must be verified this block and the entry's root pins
-    ///      must match (EEZ.sol:1578-1580, :1437-1438), on L2 the table must be
-    ///      loaded this block (EEZL2.sol:791). With no matching entry this
+    ///      L1 the rollup must be verified this block and, for a top-level read,
+    ///      the entry's root pins must match (EEZ.sol:1578-1580, :1437-1438); on
+    ///      L2 the table must be loaded this block (EEZL2.sol:791). With no matching entry this
     ///      reverts — `ExecutionNotFound()` on L1, `EntryNotFound(...)` on L2 —
     ///      and revert data alone cannot reliably tell that from the
     ///      destination reverting.

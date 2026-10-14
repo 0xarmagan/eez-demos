@@ -127,7 +127,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
   </div>
 
   <h1><span class="w">Learn</span> <span class="l">how EEZ</span><br><span class="w">actually</span> <span class="l">works</span></h1>
-  <p class="hero-sub">EEZ lets a contract call another rollup and use the answer in the same transaction &mdash; no callback, no timeout, no retry.</p>
+  <p class="hero-sub">EEZ lets a contract call another rollup and use the answer in the same transaction, with no callback and no second transaction from you.</p>
 
   <div class="search-filter-wrap">
     <div class="search-box-row">
@@ -136,8 +136,8 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <span class="search-shortcut">/</span>
     </div>
     <div class="filter-tabs">
-      <button class="filter-btn active" data-filter="all">ALL (24)</button>
-      <button class="filter-btn" data-filter="dapp-developers">DAPP DEVS (14)</button>
+      <button class="filter-btn active" data-filter="all" title="24 walkthroughs, plus card 05, coming soon">ALL (24 + 1 SOON)</button>
+      <button class="filter-btn" data-filter="dapp-developers" title="14 walkthroughs, plus card 05, coming soon">DAPP DEVS (14 + 1 SOON)</button>
       <button class="filter-btn" data-filter="rollup-operators">ROLLUP OPS (4)</button>
       <button class="filter-btn" data-filter="protocol-researchers">PROTOCOL RESEARCHERS (6)</button>
     </div>
@@ -243,7 +243,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
 
       <a class="card" href="./dapp-developers/q2-send-a-cross-chain-call.html">
         <div class="card-head"><h3 class="card-title"><span class="card-num">02</span>How to call a contract on another rollup</h3></div>
-        <p class="card-hook">Learn how to encode it like any normal call and send it to the proxy.</p>
+        <p class="card-hook">Learn how to encode a read like any normal call, send it to the proxy as a staticcall so it stays read-only, then decode the answer and branch on it.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
@@ -261,7 +261,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
 
       <a class="card" href="./dapp-developers/q6-why-you-cant-call-the-manager-directly.html">
         <div class="card-head"><h3 class="card-title"><span class="card-num">05</span>How the guard makes sure only proxy calls reach execution</h3></div>
-        <p class="card-hook">Learn how UnauthorizedProxy() stops any call that isn't proxy-routed.</p>
+        <p class="card-hook">Learn how UnauthorizedProxy() rejects any caller of the cross-chain entry points that isn't a registered proxy.</p>
         <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
@@ -392,6 +392,9 @@ h1 .l{font-weight:300;color:#dcdcdc}
       var text = card.textContent.toLowerCase();
 
       var matchesFilter = (activeFilter === "all") || trackId === activeFilter;
+      // The entry banner repeats card 00, so it only shows on the unfiltered page;
+      // a filtered or searched list then matches the counts on the filter pills.
+      if (card.classList.contains("qs-entry") && (activeFilter !== "all" || query)) { matchesFilter = false; }
       var matchesSearch = !query || text.indexOf(query) !== -1;
 
       if (matchesFilter && matchesSearch) {

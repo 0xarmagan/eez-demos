@@ -149,15 +149,15 @@
     <!-- STEP 1: the whole scenario is one L1 transaction -->
     <div id="s1" style="display:flex;flex-direction:column;gap:22px;">
       <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">ONE L1 TRANSACTION · executorL1.execute()</div>
-      <div style="font-size:15px;line-height:1.5;color:var(--muted);max-width:1010px;margin-top:-12px;">The L2 rows run in L2&rsquo;s own transactions; the L1 transaction consumes their precomputed results.</div>
+      <div style="font-size:15px;line-height:1.5;color:var(--muted);max-width:1010px;margin-top:-12px;">The L2 rows run on L2 from their own execution entries; the L1 transaction consumes their precomputed results.</div>
       <div style="display:flex;flex-direction:column;gap:10px;max-width:1010px;">
         <div style="display:flex;align-items:center;gap:16px;"><div style="font-family:var(--mono);font-size:13px;color:var(--label);width:56px;">L1</div><div style="flex:1;border:1px solid var(--eez-edge);background:#141414;border-radius:8px;padding:12px 16px;font-size:19px;color:#d8d8d8;">pool lends <b style="color:#fff;">10,000</b> tokens to executorL1</div></div>
-        <div style="display:flex;align-items:center;gap:16px;"><div style="font-family:var(--mono);font-size:13px;color:var(--label);width:56px;">L1→L2</div><div style="flex:1;border:1px solid #3a4173;background:rgba(124,131,255,0.10);border-radius:8px;padding:12px 16px;font-size:19px;color:#d8d8d8;">bridge locks them on L1, mints wrapped tokens to executorL2</div></div>
+        <div style="display:flex;align-items:center;gap:16px;"><div style="font-family:var(--mono);font-size:13px;color:var(--label);width:56px;">L1→L2</div><div style="flex:1;border:1px solid #3a4173;background:rgba(124,131,255,0.10);border-radius:8px;padding:12px 16px;font-size:19px;color:#d8d8d8;">bridgeL1 locks them; a proxy call has bridgeL2 mint wrapped tokens to executorL2</div></div>
         <div style="display:flex;align-items:center;gap:16px;"><div style="font-family:var(--mono);font-size:13px;color:var(--label);width:56px;">L2</div><div style="flex:1;border:1px solid #3a4173;background:rgba(124,131,255,0.10);border-radius:8px;padding:12px 16px;font-size:19px;color:#d8d8d8;">executorL2 claims an NFT that needs a 10,000 balance</div></div>
         <div style="display:flex;align-items:center;gap:16px;"><div style="font-family:var(--mono);font-size:13px;color:var(--label);width:56px;">L2→L1</div><div style="flex:1;border:1px solid #3a4173;background:rgba(124,131,255,0.10);border-radius:8px;padding:12px 16px;font-size:19px;color:#d8d8d8;">wrapped tokens burned on L2, escrow released to executorL1</div></div>
         <div style="display:flex;align-items:center;gap:16px;"><div style="font-family:var(--mono);font-size:13px;color:var(--label);width:56px;">L1</div><div style="flex:1;border:1px solid #2c6b3c;background:rgba(63,185,80,0.08);border-radius:8px;padding:12px 16px;font-size:19px;color:#d8d8d8;">executorL1 repays the pool · <span style="color:var(--eez-green);font-family:var(--mono);font-size:16px;">[flash-loan] PASS</span></div></div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:1010px;">Pool, executor and NFT are test-only mocks from <span style="font-family:var(--mono);">src/periphery/defiMock</span>. Locally, the scenario script plays composer.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:1010px;">Pool, executor and NFT are test-only mocks from <span style="font-family:var(--mono);">src/periphery/defiMock</span>; bridgeL1 and bridgeL2 are <span style="font-family:var(--mono);">Bridge.sol</span>, a test-fixture app built on cross-chain proxies (card 07). Locally, the scenario script plays composer.</div>
     </div>
 
     <!-- STEP 2: the nesting, as E2EFlashLoan.s.sol lays it out -->
@@ -209,7 +209,7 @@
         <div>NFT #1 owned by <span style="font-family:var(--mono);color:#fff;">executorL2</span></div>
         <div>executorL1: <span style="font-family:var(--mono);color:#fff;">0</span></div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:1010px;">If any leg fails, a <span style="font-family:var(--mono);">require</span> reverts the whole L1 transaction, the loan included.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:1010px;">If any call on L1 fails, the L1 transaction reverts, the loan included. What a revert means for the L2 side is outside this card.</div>
     </div>
 
   
@@ -244,10 +244,10 @@
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">Cross-Chain Flash Loan</h1>
       <p class="intro-lede">A flash loan must be repaid in the transaction that takes it. Here that transaction is on L1, and the borrowed tokens go to an L2 and back before the repayment check runs.</p>
-      <p class="intro-lede">The pool, the executor and the NFT are test-only mocks from <code style="font-family:var(--mono);font-size:0.86em;">src/periphery/defiMock</code>, not a lending protocol. What carries over to your dApp is the shape: L1 calls L2, L2 calls back to L1, all inside one L1 transaction.</p>
+      <p class="intro-lede">The pool, the executor and the NFT are test-only mocks from <code style="font-family:var(--mono);font-size:0.86em;">src/periphery/defiMock</code>, not a lending protocol, and the bridge is <code style="font-family:var(--mono);font-size:0.86em;">Bridge.sol</code>, a test-fixture app built on cross-chain proxies. What carries over to your dApp is the shape: L1 calls L2, L2 calls back to L1, all inside one L1 transaction.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
-        <li><b>01 · RUN IT</b>Run the flash-loan scenario on a local L1 and L2 and see it pass. You need Git, Foundry 1.7.1 and bash 4 or newer. Same setup as Run Your First Round Trip, then one scenario.</li>
+        <li><b>01 · RUN IT</b>Run the flash-loan scenario on a local L1 and L2 and see it pass. You need Git, jq, Foundry 1.7.1 and bash 4 or newer. Same setup as Run Your First Round Trip, then one scenario.</li>
         <li><b>02 · BORROW ON L1, USE IT ON L2</b>How the executor sends the loan to L2 and calls its L2 twin, which calls back to L1.</li>
         <li><b>03 · REPAID BEFORE THE TRANSACTION ENDS</b>Why the pool's balance check passes only because the return leg landed on L1 first.</li>
       </ul>
@@ -281,7 +281,7 @@
   var kickers = ["RUN IT.", "BORROW ON L1, USE IT ON L2.", "REPAID BEFORE THE TRANSACTION ENDS."];
   var captions = [
     "One L1 transaction borrows 10,000 tokens, sends them to L2 and back, and repays the pool. Locally, the scenario script plays composer and posts the entries in a separate transaction first.",
-    "onFlashLoan bridges the loan to executorL2, then calls it through its proxy. On L2 it claims the NFT, and its return leg releases the escrow on L1 inside that same call.",
+    "onFlashLoan sends the loan to executorL2 through Bridge.sol, then calls executorL2 through its proxy. On L2 it claims the NFT, and its return leg releases the escrow on L1 inside that same call.",
     "The pool checks its balance after onFlashLoan returns. It is whole only because the return leg already released the escrow on L1; otherwise the transaction reverts."
   ];
 
@@ -289,8 +289,9 @@
   // so the panel never dumps the full function ungrouped.
   var codeByStep = [
     [
-      "# needs Git, Foundry 1.7.1 (forge, cast, anvil on PATH)",
+      "# needs Git, jq, Foundry 1.7.1 (forge, cast, anvil on PATH)",
       "# and bash 4+; macOS ships 3.2, so: brew install bash",
+      "# jq: built into macOS 15+, or brew/apt install jq",
       "# fresh clone at the pinned commit",
       "$ git clone https://github.com/eez-association/eez-core-protocol.git",
       "$ cd eez-core-protocol",
@@ -343,7 +344,7 @@
     '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/periphery/defiMock/FlashLoan.sol#L16" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/periphery/defiMock/FlashLoan.sol:16 · flashLoan ↗</a>'
   ];
   var hlByStep = [
-    [10, 12, 14],
+    [11, 13, 15],
     [2, 3, 9],
     [4, 5, 9]
   ];

@@ -167,7 +167,7 @@
         <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;margin-left:auto;">PASS</div>
       </div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">Going out, the L1 manager keeps the ETH and credits the rollup. Coming back, the rollup's credit drops and the L1 escrow pays the receiver. Locally, the scenario script plays composer: it posts the entries a composer would. The forge test then runs Bridge.sol's ERC-20 round trip.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">Going out, the L1 manager keeps the ETH and credits the rollup: the entry's <span style="font-family:var(--mono);">etherDelta</span> is positive. Coming back, a negative <span style="font-family:var(--mono);">etherDelta</span> lowers that credit and the L1 escrow pays the receiver. bridgeL2 runs on its own chains, so its script first seeds that escrow with an anvil cheat. Locally, the scenario script plays composer: it posts the entries a composer would. The forge test then runs Bridge.sol's ERC-20 round trip.</div>
     </div>
 
     <!-- STEP 2: lock on the origin chain, mint a wrapped copy on the other -->
@@ -190,7 +190,7 @@
           <div style="font-family:var(--mono);font-size:15px;color:var(--eez-green);margin-top:6px;">mint(to, amount)</div>
         </div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">The call arrives through the proxy that stands for the origin chain's bridge. <span style="font-family:var(--mono);">receiveTokens</span> reverts for any other caller, so only that bridge can mint.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">The call arrives through the proxy that stands for the origin chain's bridge. <span style="font-family:var(--mono);">receiveTokens</span> reverts unless the caller is the proxy for the bridge's address on the source rollup the call names, so in this fixture only the counterpart bridge can mint.</div>
     </div>
 
     <!-- STEP 3: burn the wrapped copy, release the locked original -->
@@ -249,11 +249,11 @@
       <h1 class="intro-title" id="introTitle">Bridge Tokens Both Ways</h1>
       <p class="intro-lede">Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair of chains, then run the test that sends an ERC-20 through Bridge.sol and back.</p>
       <p class="intro-lede">Then read how Bridge.sol does the same for ERC-20s: lock and mint going out, burn and release coming back. Bridge.sol is a test fixture, not a production bridge.</p>
-      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Bridge for real: the Bridge &amp; Calls tab on <a href="https://eez.dev/dashboard/" target="_blank" rel="noopener" style="color:#d8d8d8;">eez.dev ↗</a></p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Try it on testnet: the Bridge &amp; Calls tab on <a href="https://eez.dev/dashboard/" target="_blank" rel="noopener" style="color:#d8d8d8;">eez.dev ↗</a> drives a Bridge.sol deployment (protocol 855fe06)</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 · RUN IT.</b>Both ETH directions and the token round trip pass from a fresh pinned clone.</li>
-        <li><b>02 · LOCK AND MINT.</b>Only the other bridge's proxy can mint the wrapped copy.</li>
+        <li><b>02 · LOCK AND MINT.</b>The wrapped copy is minted only through the proxy for the counterpart bridge.</li>
         <li><b>03 · BURN AND RELEASE.</b>Burning the copy releases the original it stands for.</li>
       </ul>
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
@@ -294,8 +294,9 @@
   // so the panel never dumps the full function ungrouped.
   var codeByStep = [
     [
-      "# needs Git, Foundry 1.7.1 (forge, cast, anvil on PATH)",
+      "# needs Git, jq, Foundry 1.7.1 (forge, cast, anvil on PATH)",
       "# and bash 4+; macOS ships 3.2, so: brew install bash",
+      "# jq: built into macOS 15+, or brew/apt install jq",
       "# fresh clone at the pinned commit, then build",
       "$ git clone https://github.com/eez-association/eez-core-protocol.git",
       "$ cd eez-core-protocol",
@@ -305,8 +306,8 @@
       "",
       "# one scenario per direction, run side by side",
       "$ bash script/e2e/run/local/parallel.sh bridge bridgeL2",
-      "  [bridgeL2] starting (L1=18547 chain=41339, L2=18548 chain=41340)",
       "  [bridge] starting (L1=18545 chain=41337, L2=18546 chain=41338)",
+      "  [bridgeL2] starting (L1=18547 chain=41339, L2=18548 chain=41340)",
       "  [bridge] PASS",
       "  [bridgeL2] PASS",
       "",
@@ -351,7 +352,7 @@
     ]
   ];
   var hlByStep = [
-    [10, 16, 19, 21],
+    [11, 17, 20, 22],
     [2, 4, 8, 11],
     [4, 7, 12]
   ];
