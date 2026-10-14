@@ -274,6 +274,7 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">How to read a remote contract's state</h1>
+      <p class="intro-lede">The Quickstart flagged in gotcha 2 of <a href="qs5-three-gotchas-before-you-build.html" style="color:#d8d8d8;">qs5</a> that an entry counts only in its block; this card is static reads in full: what a read of the proxy really answers, and how a routed read resolves.</p>
       <p class="intro-lede">The contract you want to read lives on another rollup. Here it has a stand-in &#8212; a proxy &#8212; and that proxy is a real contract on this chain, with its own code and its own balance.</p>
       <p class="intro-lede">So inspecting it answers about it. This is the caveat with no compiler help: the read succeeds and hands back a real number about the wrong contract. The fix is to call through the proxy instead of inspecting it.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
