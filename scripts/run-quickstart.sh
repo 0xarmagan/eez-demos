@@ -22,6 +22,7 @@ PY
 
 for page in "$@"; do
   cmds="$(extract "$page")"
+  [[ -n "$cmds" ]] || { echo "$page: no commands found" >&2; exit 1; }
   if grep -q "git clone .*eez-core-protocol" <<<"$cmds" && ! grep -q "git checkout -q $PIN\|git checkout $PIN" <<<"$cmds"; then
     echo "$page: clones eez-core-protocol without checking out the pin $PIN" >&2; exit 1
   fi
