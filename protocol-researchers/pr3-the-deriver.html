@@ -205,7 +205,7 @@
     <div id="s3" style="display:none;flex-direction:column;gap:24px;">
       <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">CATCH_UP() · REVALIDATE THE TAIL, THEN SCAN FORWARD</div>
       <div style="display:flex;flex-direction:column;gap:9px;">
-        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;">PHASE 1 · WALK THE INDEXED TAIL BACKWARD — deriver.rs:662</div>
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;">PHASE 1 · WALK THE INDEXED TAIL BACKWARD — deriver.rs:666</div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <div style="font-size:20px;color:#8f98a8;">←</div>
           <div class="byte" style="background:rgba(232,177,94,0.16);color:#f2dfb3;border:1px dashed #8a6a2e;">L1 #21,004,344 · hash ✗</div>
@@ -345,7 +345,7 @@
     [
       "// deriver.rs:449",
       "pub async fn catch_up(&self) -> DeriverResult<()> {",
-      "// deriver.rs:662 — phase 1: walk the index tail",
+      "// deriver.rs:666 — phase 1: walk the index tail",
       "// BACKWARD, drop batches whose recorded L1 hash",
       "// is stale; return the highest canonical anchor",
       "async fn revalidate_index_tail(&self)",

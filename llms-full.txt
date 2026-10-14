@@ -1289,7 +1289,7 @@ if (originalRollupId == _getRollupId())
 pragma solidity ^0.8.28;
 
 // Panel source for: dapp-developers/q7-your-cross-chain-address.html
-// Mirrors eez-core-protocol/src/base/EEZBase.sol:204, :238 and :250
+// Mirrors eez-core-protocol/src/base/EEZBase.sol:204, :239 and :250
 // @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // The two calls this page teaches. Neither is usually required: the protocol
@@ -1338,7 +1338,7 @@ contract CreateProxySnippet {
     ///         manager's own network.
     error SameNetworkProxy(uint64 rollupId);
 
-    bytes32 internal immutable PROXY_INIT_CODE_HASH;
+    bytes32 public immutable PROXY_INIT_CODE_HASH;
 
     mapping(address proxy => ProxyInfo info) public authorizedProxies;
 
@@ -2202,7 +2202,7 @@ where
 
 ## How L1 stays the source of truth
 
-Learn why the L2 block is added immediately and swapped for an empty Sync block if L1 never confirms it.
+Learn why the L2 block is added immediately, and what happens to it if L1 never confirms it.
 
 - Page: https://eez-demos.vercel.app/protocol-researchers/pr2-commit-first-repair-if-needed.html
 - Source: `crates/eez-composer/src/optimistic.rs`
@@ -2420,7 +2420,7 @@ catch_up() first re-checks the batches it already indexed and drops any whose L1
 ```rust
 // deriver.rs:449
 pub async fn catch_up(&self) -> DeriverResult<()> {
-// deriver.rs:662 — phase 1: walk the index tail
+// deriver.rs:666 — phase 1: walk the index tail
 // BACKWARD, drop batches whose recorded L1 hash
 // is stale; return the highest canonical anchor
 async fn revalidate_index_tail(&self)

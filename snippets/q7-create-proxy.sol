@@ -2,7 +2,7 @@
 pragma solidity ^0.8.28;
 
 // Panel source for: dapp-developers/q7-your-cross-chain-address.html
-// Mirrors eez-core-protocol/src/base/EEZBase.sol:204, :238 and :250
+// Mirrors eez-core-protocol/src/base/EEZBase.sol:204, :239 and :250
 // @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // The two calls this page teaches. Neither is usually required: the protocol
@@ -51,7 +51,7 @@ contract CreateProxySnippet {
     ///         manager's own network.
     error SameNetworkProxy(uint64 rollupId);
 
-    bytes32 internal immutable PROXY_INIT_CODE_HASH;
+    bytes32 public immutable PROXY_INIT_CODE_HASH;
 
     mapping(address proxy => ProxyInfo info) public authorizedProxies;
 

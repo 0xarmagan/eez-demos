@@ -166,7 +166,7 @@
         <div style="font-family:var(--mono);font-size:13px;color:#5e9e6b;width:92px;flex:none;">returns</div>
         <div style="font-family:var(--mono);font-size:19px;color:var(--eez-green);">0x7d3F…9bA1</div>
         <div style="width:6px;height:6px;border-radius:50%;background:var(--eez-green);animation:pulse 1.8s ease-in-out infinite;"></div>
-        <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">deployed · authorizedProxies[proxy] = true</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">deployed · authorizedProxies[proxy] = ProxyInfo(true, …)</div>
       </div>
       <div style="font-size:16px;color:var(--muted);max-width:900px;">One transaction. The manager on rollup 2 deploys the proxy and records it as authorized in the same call. You rarely have to: the protocol runs this same path itself, through <span style="font-family:var(--mono);">getOrCreateCrossChainProxy</span>, the first time a call arrives from that address.</div>
     </div>
@@ -340,7 +340,7 @@
   var citeByStep = [
     '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L204" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:204 · createCrossChainProxy ↗</a>',
     '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L250" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:250 · computeCrossChainProxyAddress ↗</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L238" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:238 · SameNetworkProxy ↗</a>'
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L239" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/EEZBase.sol:239 · SameNetworkProxy ↗</a>'
   ];
   var hlByStep = [
     [0,1,2,3],
@@ -357,7 +357,7 @@
       "pragma solidity ^0.8.28;",
       "",
       "// Panel source for: dapp-developers/q7-your-cross-chain-address.html",
-      "// Mirrors eez-core-protocol/src/base/EEZBase.sol:204, :238 and :250",
+      "// Mirrors eez-core-protocol/src/base/EEZBase.sol:204, :239 and :250",
       "// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f",
       "//",
       "// The two calls this page teaches. Neither is usually required: the protocol",
@@ -406,7 +406,7 @@
       "    ///         manager's own network.",
       "    error SameNetworkProxy(uint64 rollupId);",
       "",
-      "    bytes32 internal immutable PROXY_INIT_CODE_HASH;",
+      "    bytes32 public immutable PROXY_INIT_CODE_HASH;",
       "",
       "    mapping(address proxy => ProxyInfo info) public authorizedProxies;",
       "",
