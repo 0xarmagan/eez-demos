@@ -171,7 +171,7 @@
         <div style="width:6px;height:6px;border-radius:50%;background:var(--eez-green);animation:pulse 1.8s ease-in-out infinite;"></div>
         <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">the fallback forwards it to the manager</div>
       </div>
-      <div style="font-family:var(--mono);font-size:12px;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L89" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:89 &#183; _fallback &#8599;</a></div>
+      <div style="font-family:var(--mono);font-size:12px;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:113 &#183; _fallback &#8599;</a></div>
       <div style="font-size:16px;color:var(--muted);max-width:900px;">Only a call is routed — every other question the EVM answers about the local contract.</div>
     </div>
 
@@ -218,7 +218,7 @@
         <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#8B7B55;flex:none;width:104px;">REVERTS</div>
         <div style="font-family:var(--mono);font-size:16px;color:#8B7B55;flex:1;">no entry matches this call</div>
         <div style="font-size:20px;color:#8B7B55;">&#8594;</div>
-        <div style="font-family:var(--mono);font-size:15px;color:#8B7B55;flex:none;">ExecutionNotFound()</div>
+        <div style="font-family:var(--mono);font-size:15px;color:#8B7B55;flex:none;">ExecutionNotFound() &#183; L2: EntryNotFound</div>
       </div>
       <div style="display:flex;align-items:center;gap:18px;width:1010px;max-width:100%;background:rgba(139,123,85,0.08);border:1px solid #8B7B55;border-radius:10px;padding:14px 22px;">
         <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#8B7B55;flex:none;width:104px;">REVERTS</div>
@@ -226,17 +226,17 @@
         <div style="font-size:20px;color:#8B7B55;">&#8594;</div>
         <div style="font-family:var(--mono);font-size:15px;color:#8B7B55;flex:none;">its own error, raw</div>
       </div>
-      <div style="font-size:16px;color:#d8d8d8;max-width:1010px;">Both arrive as a revert from the proxy, carrying only the bytes below it. A caller cannot tell them apart &#8212; do not write a try/catch that claims to.</div>
+      <div style="font-size:16px;color:#d8d8d8;max-width:1010px;">Both arrive as a revert from the proxy, carrying only the bytes below it. Revert data alone cannot reliably tell them apart &#8212; do not write a try/catch that claims to.</div>
       <div style="display:flex;gap:18px;width:1010px;max-width:100%;">
         <div style="flex:1;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:14px 18px;">
-          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">ON L1 &#183; NO BLOCK GATE</div>
-          <div style="font-size:15px;color:var(--muted);margin-top:8px;">A static entry stays valid while the state roots still match.</div>
-          <div style="font-family:var(--mono);font-size:12px;margin-top:8px;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L1310" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:1310 &#183; staticEntryQueue &#8599;</a></div>
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">ON L1 &#183; THIS BLOCK, ROOTS PINNED</div>
+          <div style="font-size:15px;color:var(--muted);margin-top:8px;">The rollup must be verified this block, and every root the entry pins must still be live.</div>
+          <div style="font-family:var(--mono);font-size:12px;margin-top:8px;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L1578" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:1578 &#183; _requireVerifiedThisBlock &#8599;</a></div>
         </div>
         <div style="flex:1;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:14px 18px;">
           <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">ON L2 &#183; THIS BLOCK ONLY</div>
-          <div style="font-size:15px;color:var(--muted);margin-top:8px;">There are no pins on L2, so the block gate bounds staleness.</div>
-          <div style="font-family:var(--mono);font-size:12px;margin-top:8px;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/L2/EEZL2.sol#L634" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/L2/EEZL2.sol:634 &#183; ExecutionNotInCurrentBlock &#8599;</a></div>
+          <div style="font-size:15px;color:var(--muted);margin-top:8px;">The table must be loaded this block, and the entry must match the live entry cursor.</div>
+          <div style="font-family:var(--mono);font-size:12px;margin-top:8px;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/L2/EEZL2.sol#L791" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/L2/EEZL2.sol:791 &#183; ExecutionNotInCurrentBlock &#8599;</a></div>
         </div>
       </div>
     </div>
@@ -257,7 +257,7 @@
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/CrossChainProxy.sol:89 &#183; _fallback &#8599;</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L89" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:89 &#183; _fallback &#8599;</a></div>
+      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/CrossChainProxy.sol:113 &#183; _fallback &#8599;</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:113 &#183; _fallback &#8599;</a></div>
       <button id="btnTest" type="button" title="Show the runnable Foundry test behind this page" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TEST</button>
       <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:114px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
@@ -280,10 +280,10 @@
       <ul class="intro-learn">
         <li><b>01 &#183; A CONTRACT ON THIS CHAIN</b>The proxy is deployed here, so opcodes answer about it, not about the contract it stands for.</li>
         <li><b>02 &#183; FOUR READS, NO REVERT</b>balance, extcodesize, extcodecopy and delegatecall describe the proxy; block-state opcodes describe this chain.</li>
-        <li><b>03 &#183; ASK IT, DON'T INSPECT IT</b>A routed read resolves against a pre-computed entry, or reverts ExecutionNotFound() &#8212; indistinguishably from the destination reverting.</li>
+        <li><b>03 &#183; ASK IT, DON'T INSPECT IT</b>A routed read resolves against a pre-computed entry, or reverts (ExecutionNotFound() on L1, EntryNotFound on L2) &#8212; and revert data alone can't reliably tell that from the destination reverting.</li>
       </ul>
       <p style="margin:18px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#8a8a8a;letter-spacing:0.02em;">RUN IT YOURSELF &middot; <span style="color:#cfcfcf">forge test --match-test test_routedReadReturnsThePreCommittedEntry -vv</span> &mdash; from <a href="https://github.com/0xarmagan/eez-demos/tree/main/snippets" target="_blank" style="color:#8a8a8a;border-bottom:1px dotted #444;text-decoration:none;">eez-demos/snippets</a>, Foundry only.</p>
-      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9735f53 &mdash; pre-mainnet; interfaces may move.</p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough &#8594;</button>
       </div>
@@ -358,9 +358,9 @@
   // step-2 reader to code that says nothing about which opcodes lie. Written as
   // literal anchors so verify-citations.py sees and pins them.
   var citeByStep = [
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L89" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:89 &#183; _fallback &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/docs/CAVEATS.md#L12" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/docs/CAVEATS.md:12 &#183; balance &#183; extcodesize &#183; extcodecopy &#183; delegatecall &#8599;</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L1266" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:1266 &#183; staticCrossChainCall &#8599;</a>'
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:113 &#183; _fallback &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/docs/CAVEATS.md#L6" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/docs/CAVEATS.md:6 &#183; balance &#183; extcodesize &#183; extcodecopy &#183; delegatecall &#8599;</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L1379" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:1379 &#183; staticCrossChainCall &#8599;</a>'
   ];
   var hlByStep = [
     [0,1,2],
@@ -388,10 +388,10 @@
       "import {IEEZ} from \"./lib/IEEZ.sol\";",
       "",
       "// Panel source for: dapp-developers/q8-read-a-remote-contracts-state.html",
-      "// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:89",
+      "// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:113",
       "// and eez-core-protocol/docs/CAVEATS.md, \"Opcodes that differ on cross-chain",
-      "// proxies\" and \"Indistinguishable revert reasons when calling a proxy\"",
-      "// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda",
+      "// proxies\" and \"Missing entries and destination reverts\"",
+      "// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f",
       "//",
       "// This is the caveat with no compiler help. q3's mistake reverts, so you find",
       "// it the first time a call arrives through a proxy. The reads below SUCCEED and",
@@ -400,7 +400,7 @@
       "// WHY: a CrossChainProxy is an ordinary contract, deployed on THIS chain, with",
       "// its own code and its own balance. An opcode that asks the EVM about an",
       "// address answers about that local contract. Only a CALL is routed: the proxy's",
-      "// fallback (CrossChainProxy.sol:89, `_fallback`) forwards to the manager, which",
+      "// fallback (CrossChainProxy.sol:113, `_fallback`) forwards to the manager, which",
       "// resolves an outcome that was written down before your transaction ran. So",
       "// inspection is local, invocation is resolved.",
       "//",
@@ -413,34 +413,35 @@
       "// `delegatecall` deserves its own line: delegatecalling a proxy runs the",
       "// PROXY's code in your storage context. It does not reach the remote contract.",
       "//",
-      "// WHEN A ROUTED READ RESOLVES \u2014 the rule is side-specific, so do not learn one",
-      "// half of it and carry it to the other chain:",
+      "// WHEN A ROUTED READ RESOLVES \u2014 both sides gate on the block, but what else",
+      "// must match differs, so do not learn one half and carry it to the other chain:",
       "//",
-      "//   L1 has NO block gate on the read path. `staticCrossChainCall`",
-      "//   (EEZ.sol:1266-1328) falls through to",
-      "//   `verificationByRollup[destRid].staticEntryQueue` (:1309-1310) and matches on",
-      "//   `proxyEntryHash`, `destinationRollupId` and `_stateRootsMatch(...)`",
-      "//   (:1317-1319). Upstream's own comment at :1308: \"Note that static calls do",
-      "//   not obsolete after a block passes. As long as the state roots matches it can",
-      "//   be execute\".",
+      "//   L1: `staticCrossChainCall` (EEZ.sol:1379-1449) opens with",
+      "//   `_validateProxyAndGetDestinationInfo()` (:1380), which reverts",
+      "//   `ExecutionNotInCurrentBlock(destRid)` unless that rollup was verified in",
+      "//   this block (:1578-1580). It then scans `staticEntryQueue` (:1420), or the",
+      "//   batch's transient pool while one is mid-flight, and matches on",
+      "//   `proxyEntryHash`, `destinationRollupId` and `_rootsMatch(...)` (:1437-1438).",
+      "//   Upstream's own comment: \"Static entries require both current-block",
+      "//   verification (checked above) and matching root pins.\"",
       "//",
-      "//   L2 DOES gate it. `EEZL2.sol:634` is",
+      "//   L2: `staticCrossChainCall` (EEZL2.sol:660) opens with the same-named helper,",
+      "//   whose gate at EEZL2.sol:791 is",
       "//   `if (lastLoadBlock != block.number) revert ExecutionNotInCurrentBlock();`,",
-      "//   and the docstring at :588-589 gives the reason: \"no pins on L2 \u2014 the block",
-      "//   gate bounds staleness\".",
+      "//   and matches on the call hash and the live entry cursor (:705).",
       "//",
-      "//   Mutating calls are block-gated on both sides. On L1 that is EEZ.sol:794-797,",
-      "//   `revert ExecutionNotInCurrentBlock(destRid)`.",
+      "//   Mutating calls go through the same helper on both sides, so they are",
+      "//   block-gated too (EEZ.sol:863, EEZL2.sol:272).",
       "//",
-      "// A read with nothing to resolve against reverts `ExecutionNotFound()` \u2014",
-      "// EEZ.sol:1327 and EEZL2.sol:644. That is the string to search for.",
+      "// A read with nothing to resolve against reverts \u2014 `ExecutionNotFound()` on L1",
+      "// (EEZ.sol:1410, :1448), `EntryNotFound(bytes32 crossChainCallHash, uint64",
+      "// callGas)` on L2 (EEZL2.sol:699, :714). Those are the strings to search for.",
       "//",
-      "// AND YOU CANNOT TELL WHY IT FAILED. CAVEATS.md, \"Indistinguishable revert",
-      "// reasons when calling a proxy\": a caller cannot differentiate a call reverting",
-      "// because no matching entry existed from the destination call actually",
-      "// reverting. Both bubble up as a revert from the proxy, because",
-      "// CrossChainProxy.sol:109-113 forwards the raw revert data unmodified. Do not",
-      "// write a `try/catch` that claims to know which one happened.",
+      "// AND REVERT DATA WON'T TELL YOU WHY IT FAILED. CAVEATS.md, \"Missing entries",
+      "// and destination reverts\": a static lookup miss reverts at the proxy, as does a",
+      "// matched reverting destination, and revert data alone is not a reliable way to",
+      "// distinguish them \u2014 CrossChainProxy.sol:138-139 forwards the raw revert data",
+      "// unmodified. Do not write a `try/catch` that claims to know which one happened.",
       "",
       "interface IRemote {",
       "    function balanceOf(address account) external view returns (uint256);",
@@ -483,11 +484,13 @@
       "    ///      against an entry the composer already wrote \u2014 so what comes back is",
       "    ///      the remote contract's state, not the proxy's.",
       "    ///",
-      "    ///      When it resolves is side-specific: on L1 a static entry stays valid",
-      "    ///      as long as the state roots still match (EEZ.sol:1308-1319), on L2 it",
-      "    ///      is gated on the current block (EEZL2.sol:634). With no matching",
-      "    ///      entry on either side, this reverts `ExecutionNotFound()` \u2014 and that",
-      "    ///      revert is indistinguishable from the destination reverting.",
+      "    ///      Both sides resolve it only in the block the entries were loaded: on",
+      "    ///      L1 the rollup must be verified this block and the entry's root pins",
+      "    ///      must match (EEZ.sol:1578-1580, :1437-1438), on L2 the table must be",
+      "    ///      loaded this block (EEZL2.sol:791). With no matching entry this",
+      "    ///      reverts \u2014 `ExecutionNotFound()` on L1, `EntryNotFound(...)` on L2 \u2014",
+      "    ///      and revert data alone cannot reliably tell that from the",
+      "    ///      destination reverting.",
       "    function readRemoteBalance(address user) external view returns (uint256) {",
       "address proxy = eez.computeCrossChainProxyAddress(",
       "    remote, remoteRollupId",

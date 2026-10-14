@@ -30,9 +30,10 @@ import {RemoteReader, IRemote} from "../q8-remote-reads.sol";
 // that, and nothing in a local table could stand in for it.
 //
 // Deliberately not modelled, because a local table cannot: the composer, the
-// rolling hash, state roots, the entry queues, and the side-specific rule for
-// when a static entry is still valid (L1 matches on state roots with no block
-// gate, EEZ.sol:1308-1319; L2 gates on the block, EEZL2.sol:634). The key below
+// rolling hash, state roots, the entry queues, and the rule for when a static
+// entry is still valid (both sides gate on the block, EEZ.sol:1578-1580 and
+// EEZL2.sol:791; L1 also requires the entry's root pins to match the live
+// roots, EEZ.sol:1437-1438). The key below
 // is a REDUCED stand-in for `computeCrossChainCallHash` — q5 has the real
 // eight-field preimage. What is under test is lookup-then-revert, not the
 // field list.
@@ -44,8 +45,10 @@ interface Vm {
     function expectRevert(bytes4) external;
 }
 
-/// @dev Named exactly as upstream names it (EEZ.sol:1327, EEZL2.sol:644), so a
-///      reader who hits it in production can search for the same string.
+/// @dev Named exactly as L1 names it (EEZ.sol:1410, :1448), so a reader who
+///      hits it in production can search for the same string. L2 reports its
+///      miss as `EntryNotFound(bytes32 crossChainCallHash, uint64 callGas)`
+///      instead (EEZL2.sol:173), which this local model does not reproduce.
 error ExecutionNotFound();
 
 /// @dev The destination's own error, for the case where an entry exists and
@@ -107,7 +110,7 @@ contract EntryTable {
 // @stand-in a two-line model of CrossChainProxy's read path: a real local
 //           contract with its own code and balance, whose fallback forwards to
 //           the manager's view entry point and hands back exactly what comes
-//           out — including raw revert data (CrossChainProxy.sol:104-113).
+//           out — including raw revert data (CrossChainProxy.sol:113-142).
 contract StubProxy {
     address internal immutable manager;
 
@@ -247,15 +250,19 @@ contract Q8RemoteReadsTest {
 
     /// @dev The honest limit. With no matching entry the routed read reverts
     ///      `ExecutionNotFound()` rather than returning zero. In production that
-    ///      is a read whose static entry is not in scope: on L2 because the block
-    ///      moved on (EEZL2.sol:634), on L1 because no entry in the queue matches
-    ///      the call and the live state roots (EEZ.sol:1308-1319).
+    ///      is an L1 read whose static entry is not in scope: no entry in the
+    ///      queue matches the call and the live root pins (EEZ.sol:1437-1438).
+    ///      A read after the block moved on fails earlier, with
+    ///      `ExecutionNotInCurrentBlock` (EEZ.sol:1580, EEZL2.sol:791), and an L2
+    ///      miss reverts `EntryNotFound(...)` instead (EEZL2.sol:699, :714).
     function test_unresolvedReadRevertsExecutionNotFound() public {
         vm.expectRevert(ExecutionNotFound.selector);
         reader.readRemoteBalance(STRANGER);
     }
 
-    /// @dev CAVEATS.md, "Indistinguishable revert reasons when calling a proxy".
+    /// @dev CAVEATS.md, "Missing entries and destination reverts": revert data
+    ///      alone is not a reliable way to tell a lookup miss from a matched
+    ///      reverting destination.
     ///      The proxy forwards raw revert data and adds nothing of its own, so
     ///      the caller has no field saying which layer failed — only the bytes it
     ///      was handed. Both cases below hand back the same bytes.

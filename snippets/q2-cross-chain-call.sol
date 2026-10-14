@@ -4,12 +4,13 @@ pragma solidity ^0.8.28;
 import {IEEZ} from "./lib/IEEZ.sol";
 
 // Panel source for: dapp-developers/q2-send-a-cross-chain-call.html
-// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:39 and :89
-// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda
+// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:67 and :113
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
 // Caller side is ordinary: encode a call, send it to the proxy address like
 // any other contract. The proxy has no matching function, so everything
-// lands in fallback() and gets forwarded to the manager.
+// lands in fallback() and, unless the caller is the manager or the proxy
+// itself, gets forwarded to the manager.
 //
 // A read is the same code with one difference that matters: STATICCALL
 // instead of CALL. That is what the proxy's probe detects, and it is what
@@ -23,10 +24,10 @@ interface IRemote {
 
 /// @dev A cross-chain call fails for reasons an ordinary same-chain call
 ///      cannot, and the proxy forwards raw revert data either way
-///      (CrossChainProxy.sol:109-113). So `ok == false` tells you the call
+///      (CrossChainProxy.sol:137-141). So `ok == false` tells you the call
 ///      did not happen — never why. No matching entry in this block and a
 ///      genuine revert in the destination contract are indistinguishable
-///      here; see docs/CAVEATS.md "Indistinguishable revert reasons".
+///      here; see docs/CAVEATS.md "Missing entries and destination reverts".
 error CrossChainCallFailed();
 
 /// @dev Raised on a value that came back from another rollup. The point of the
@@ -60,12 +61,12 @@ if (!ok) revert CrossChainCallFailed();
     ///
     ///      The one thing to get right: the proxy picks static-vs-mutable from
     ///      the CALLER'S frame, not from `view`. Its probe does a `tstore`, and
-    ///      a `tstore` only halts under STATICCALL (CrossChainProxy.sol:71). A
+    ///      a `tstore` only halts under STATICCALL (CrossChainProxy.sol:89). A
     ///      plain `.call(data)` here would therefore take the mutable path and
     ///      demand an ExecutionEntry no composer wrote for a read — on L2 that
-    ///      is `EntryNotFound(hash, callGas)` (EEZL2.sol:441). STATICCALL is
-    ///      what routes it to `staticCrossChainCall` (EEZL2.sol:594) and a
-    ///      `StaticExecutionEntry`.
+    ///      is `EntryNotFound(hash, callGas)` (EEZL2.sol:501), with a hash that
+    ///      folds `isStatic = false`. STATICCALL is what routes it to
+    ///      `staticCrossChainCall` (EEZL2.sol:660) and a static entry.
     function settleIfFunded(address user, uint256 need) external returns (bool) {
 bytes memory data = abi.encodeCall(
     IRemote.balanceOf, (user)
@@ -90,42 +91,58 @@ return true;
     }
 }
 
-/// @dev Proxy side — how the forward actually happens.
+/// @dev The manager-only forwarding ABI the proxy dispatches by selector.
+///      Copied from eez-core-protocol/src/interfaces/ICrossChainProxy.sol:13.
+interface ICrossChainProxy {
+    function executeOnBehalf(address destination, uint64 callGas, bytes calldata data) external payable;
+}
+
+/// @dev Proxy side — how the forward actually happens. Upstream has no
+///      `staticCheck()` function and no hardcoded gas cap any more: both the
+///      manager's `executeOnBehalf` and the self-probe are served by selector
+///      inside fallback(), and the probe's cap is read from the manager
+///      (EEZBase.sol:65) so an upgraded manager can retune it without
+///      redeploying a single proxy.
 contract CrossChainProxySnippet {
     address internal immutable EEZ;
 
-    /// @dev Upstream value, from CrossChainProxy.sol:23. The cap IS the cost: in a
-    ///      static context the tstore is an exceptional halt, which consumes every
-    ///      unit forwarded to it, so the probe must be given only what you are
-    ///      willing to burn on every call. The mutable path spends ~300 of it.
-    uint256 internal constant STATIC_CHECK_GAS = 1_000;
+    /// @dev Upstream's detector variable (CrossChainProxy.sol:30). Writing it
+    ///      is a TSTORE, which halts in a static context.
+    uint256 transient _staticDetector;
 
-    constructor(address eez_) {
-        EEZ = eez_;
-    }
+    bytes4 private constant STATIC_CHECK_SELECTOR = bytes4(keccak256("staticCheck()"));
 
-    /// @dev tstore reverts in a STATICCALL context, tload does not. A self-call
-    ///      isolates the tstore so the revert can be caught instead of bubbling.
-    ///
-    ///      STAND-IN: upstream declares a named `uint256 transient _staticDetector`
-    ///      (CrossChainProxy.sol:18) and writes it in staticCheck() (:71). Raw slot 0
-    ///      is used here only to keep the probe to one readable line. Do not copy it:
-    ///      raw slot 0 is not reserved for you, so in a real contract that also uses
-    ///      transient storage this probe is a collision risk. Declare a named
-    ///      `transient` variable, as upstream does, and let the compiler place it.
-    function staticCheck() external {
-        assembly { tstore(0, 1) }
+    /// @dev The deploying manager is the only caller that can forward through
+    ///      this proxy. Upstream takes no constructor argument for it.
+    constructor() {
+        EEZ = msg.sender;
     }
 
 // CrossChainProxy.sol
 fallback() external payable {
+    if (msg.sender == EEZ && msg.sig == ICrossChainProxy.executeOnBehalf.selector) {
+        (address destination, uint64 callGas, bytes memory data) =
+            abi.decode(msg.data[4:], (address, uint64, bytes));
+        (bool ok, bytes memory ret) = callGas == 0
+            ? destination.call{value: msg.value}(data)
+            : destination.call{value: msg.value, gas: callGas}(data);
+        assembly {
+            switch ok
+            case 0 { revert(add(ret, 0x20), mload(ret)) }
+            default { return(add(ret, 0x20), mload(ret)) }
+        }
+    }
+    if (msg.sender == address(this) && msg.sig == STATIC_CHECK_SELECTOR) {
+        _staticDetector = 0;
+        return;
+    }
     _fallback();
 }
 
 function _fallback() internal {
-    (bool success,) = address(this).call{
-        gas: STATIC_CHECK_GAS
-    }(abi.encodeCall(this.staticCheck, ()));
+    uint256 staticCheckGas = IEEZ(EEZ).STATIC_CHECK_GAS();
+    (bool success,) = address(this).call{gas: staticCheckGas}(
+        abi.encodeWithSelector(STATIC_CHECK_SELECTOR));
     bytes memory result;
     if (!success) {
         (success, result) = EEZ.staticcall(

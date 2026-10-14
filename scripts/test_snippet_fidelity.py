@@ -26,8 +26,13 @@ import sys
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHECKER = os.path.join("scripts", "check-snippet-fidelity.py")
 SNIPPET = os.path.join(REPO_ROOT, "snippets", "q2-cross-chain-call.sol")
-GOOD = "STATIC_CHECK_GAS = 1_000"
-BAD = "STATIC_CHECK_GAS = 5000"
+# STATIC_CHECK_GAS (the original 5000-vs-1_000 regression) moved upstream from the
+# proxy to the manager at eez-core-protocol 9a1f815, so the snippet now reads it
+# through IEEZ instead of declaring it. The probe uses the proxy constant the
+# snippet still declares verbatim (CrossChainProxy.sol:36).
+NAME = "STATIC_CHECK_SELECTOR"
+GOOD = 'STATIC_CHECK_SELECTOR = bytes4(keccak256("staticCheck()"))'
+BAD = 'STATIC_CHECK_SELECTOR = bytes4(keccak256("staticProbe()"))'
 
 
 def run_checker():
@@ -55,13 +60,13 @@ def test_detects_a_drifted_constant(tmp_path=None):
         assert r.returncode != 0, (
             "checker exited 0 with a known-drifted constant in the tree\n"
             f"stdout:\n{r.stdout}\nstderr:\n{r.stderr}")
-        assert "STATIC_CHECK_GAS" in r.stdout, (
+        assert NAME in r.stdout, (
             f"checker failed but never named the constant\nstdout:\n{r.stdout}")
-        named = [ln for ln in drift_lines(r.stdout) if "STATIC_CHECK_GAS" in ln]
+        named = [ln for ln in drift_lines(r.stdout) if NAME in ln]
         assert named, (
-            "STATIC_CHECK_GAS appears in the output but not on a DRIFT line - "
+            f"{NAME} appears in the output but not on a DRIFT line - "
             f"the checker failed for some other reason\nstdout:\n{r.stdout}")
-        assert "5000" in named[0] and "1_000" in named[0], (
+        assert "staticProbe" in named[0] and "staticCheck" in named[0], (
             f"drift line names neither the got nor the want value: {named[0]!r}")
     finally:
         with open(SNIPPET, "w", encoding="utf-8") as fh:
@@ -73,14 +78,14 @@ def test_detects_a_drifted_constant(tmp_path=None):
 def test_clean_tree_reports_no_drift_on_that_constant(tmp_path=None):
     """A checker that flags everything would pass the test above and be useless.
 
-    Asserts only that STATIC_CHECK_GAS is clean on the untouched tree - not that the
+    Asserts only that the probed constant is clean on the untouched tree - not that the
     whole run exits 0, so an unrelated genuine finding elsewhere cannot silently
     invert this test's meaning.
     """
     r = run_checker()
-    named = [ln for ln in drift_lines(r.stdout) if "STATIC_CHECK_GAS" in ln]
+    named = [ln for ln in drift_lines(r.stdout) if NAME in ln]
     assert not named, (
-        "checker reports drift on STATIC_CHECK_GAS with the tree untouched:\n"
+        f"checker reports drift on {NAME} with the tree untouched:\n"
         + "\n".join(named))
     assert re.search(r"compared", r.stdout), (
         "checker printed no account of what it compared - the exact failure mode "
@@ -96,19 +101,19 @@ def test_stand_in_marker_silences_a_declaration(tmp_path=None):
     with open(SNIPPET, encoding="utf-8") as fh:
         good = fh.read()
     marked = good.replace(
-        f"    uint256 internal constant {GOOD};",
+        f"    bytes4 private constant {GOOD};",
         "    /// @stand-in test probe, not a real divergence\n"
-        f"    uint256 internal constant {BAD};")
+        f"    bytes4 private constant {BAD};")
     assert marked != good, "fixture drifted: could not place the @stand-in marker"
     try:
         with open(SNIPPET, "w", encoding="utf-8") as fh:
             fh.write(marked)
         r = run_checker()
-        named = [ln for ln in drift_lines(r.stdout) if "STATIC_CHECK_GAS" in ln]
+        named = [ln for ln in drift_lines(r.stdout) if NAME in ln]
         assert not named, (
             "a marked stand-in was still reported as drift:\n" + "\n".join(named))
         skipped = [ln for ln in r.stdout.splitlines()
-                   if "STATIC_CHECK_GAS" in ln and "@stand-in" in ln]
+                   if NAME in ln and "@stand-in" in ln]
         assert skipped, (
             "the marked declaration vanished from the report instead of being "
             f"listed as skipped\nstdout:\n{r.stdout}")

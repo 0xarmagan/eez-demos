@@ -179,10 +179,12 @@
         <div class="frow"><div class="flabel">from_block</div><div class="fval">812,401</div><div class="fnote">posted + 1</div></div>
         <div class="frow"><div class="flabel">to_block</div><div class="fval">812,450</div><div class="fnote">sync_height</div></div>
         <div class="frow"><div class="flabel">post_batch.abi_calldata</div><div class="fval">1,412 bytes</div></div>
-        <div class="frow"><div class="flabel">post_batch.public_inputs_hash</div><div class="fval" style="color:#7ee08c;">0x9c1f7a…e0d2</div><div class="fnote">32B, composer's claim</div></div>
-        <div class="frow"><div class="flabel">post_batch.l1_block_hash</div><div class="fval" style="color:var(--muted);">0x0000…0000</div><div class="fnote">empty — timeless batch</div></div>
+        <div class="frow"><div class="flabel">post_batch.blobs</div><div class="fval">2 blobs</div><div class="fnote">prover derives the KZG hashes itself</div></div>
+        <div class="frow"><div class="flabel">post_batch.posting_context</div><div class="fval">chain_id · target_timestamp · L1 parent</div></div>
+        <div class="frow"><div class="flabel">expected_validation_identity</div><div class="fval">0x51d0…a7e3</div><div class="fnote">32B, agreed via Capabilities</div></div>
+        <div class="frow"><div class="flabel">parent_provenance</div><div class="fval">parent header RLP + accepted L1 height</div><div class="fnote">re-checked on L1</div></div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:920px;">One stream, one job: header first, then every block in the window, in order.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:920px;">One stream, one job: header first, then every block in the window, in order. There is no claimed hash in the request — that field is gone.</div>
     </div>
 
     <!-- STEP 2: a BlockWitness arrives; prover decodes + replays to recompute the hash -->
@@ -203,17 +205,17 @@
         <div class="pill" style="color:#c3ccd6;background:#10151c;border:1px solid #232b36;">decode abi_calldata</div>
         <div style="font-size:20px;color:var(--muted);">+</div>
         <div class="pill" style="color:#c3ccd6;background:#10151c;border:1px solid #232b36;">replay against ExecutionWitness</div>
+        <div style="font-size:20px;color:var(--muted);">+</div>
+        <div class="pill" style="color:#c3ccd6;background:#10151c;border:1px solid #232b36;">KZG hashes from blobs</div>
         <div style="font-size:24px;color:var(--eez-green);margin:0 2px;">→</div>
         <div class="pill" style="color:#7ee08c;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;font-weight:600;">recomputed public_inputs_hash</div>
       </div>
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div style="font-family:var(--mono);font-size:14px;color:#5e9e6b;">recomputed =</div>
-        <div style="font-family:var(--mono);font-size:16px;font-weight:600;color:#7ee08c;">0x9c1f7a…e0d2</div>
-        <div style="font-size:15px;color:var(--muted);">vs claimed</div>
-        <div style="font-family:var(--mono);font-size:16px;color:#7ee08c;">0x9c1f7a…e0d2</div>
-        <div class="pill" style="color:#0b2e14;background:var(--eez-green);font-weight:700;padding:6px 12px;">MATCH</div>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+        <div style="font-family:var(--mono);font-size:14px;color:#5e9e6b;">settlement gates</div>
+        <div style="font-size:15px;color:var(--muted);">entries match executed effects · blobs match the blocks</div>
+        <div class="pill" style="color:#0b2e14;background:var(--eez-green);font-weight:700;padding:6px 12px;">PASS</div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:920px;">The prover independently recomputes the hash from the witness — it never just trusts the composer's claim.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:920px;">The prover independently recomputes the hash from calldata, blobs and witnesses — the composer sends no claim to trust (SPEC.md §3.5).</div>
     </div>
 
     <!-- STEP 3: ProveResponse comes back; composer verifies the signature before trusting it -->
@@ -229,7 +231,7 @@
       </div>
       <div style="background:rgba(180,120,240,0.07);border:1.5px dashed #6a3f8a;border-radius:10px;padding:18px 22px;display:flex;align-items:center;gap:16px;max-width:920px;animation:riseIn .4s .1s ease both;">
         <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.08em;color:#c89cf5;">COMPOSER VERIFIES</div>
-        <div style="font-family:var(--mono);font-size:15px;color:#e8e0f5;">ecrecover(signature, hash) == registered attester</div>
+        <div style="display:flex;flex-direction:column;gap:6px;"><div style="font-family:var(--mono);font-size:15px;color:#e8e0f5;">ecrecover(signature, hash) == registered attester</div><div style="font-family:var(--mono);font-size:15px;color:#e8e0f5;">hash == its own recomputation from the request</div><div style="font-family:var(--mono);font-size:12px;color:#8f98a8;">eez-prover-client/src/lib.rs:721, :735</div></div>
         <div class="pill" style="color:#1c0b2e;background:#b478f0;font-weight:700;padding:6px 12px;">TRUSTED</div>
         <div style="width:6px;height:6px;border-radius:50%;background:var(--eez-green);animation:pulse 1.8s ease-in-out infinite;"></div>
       </div>
@@ -238,9 +240,9 @@
           <div class="pill" style="color:#e8b15e;background:rgba(232,177,94,0.08);border:1px dashed #8a6a2e;font-size:13px;">MAX_MESSAGE_BYTES = 1,073,741,824 (1 GiB) — the CLIENT's limit</div>
           <div class="pill" style="color:#c9d1dc;background:rgba(232,177,94,0.05);border:1px dashed #8a6a2e;font-size:13px;">server: decode ≤ 256 MiB · encode = 1,024 B</div>
         </div>
-        <div style="font-size:14px;line-height:1.5;color:#8f98a8;">Rust constants, not prove.proto: lib.rs:19 is the client's limit, service.rs:26/:29 the server's (clamped at :184-186). lib.rs's comment claiming 1 GiB for both sides is wrong.</div>
+        <div style="font-size:14px;line-height:1.5;color:#8f98a8;">Rust constants, not prove.proto: lib.rs:22 is the client's limit, service.rs:29/:32 the server's (decode clamped to the request-byte limit at :115-119). lib.rs's comment claiming 1 GiB for both sides is wrong.</div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:920px;">The signature only counts once it recovers to the registered attester — that check is the real gate, not the response arriving.</div>
+      <div style="font-size:16px;color:var(--muted);max-width:920px;">The signature only counts once it recovers to the registered attester over the hash the composer computes itself — those checks are the real gate, not the response arriving.</div>
     </div>
 
   
@@ -275,18 +277,18 @@
       <div class="intro-eyebrow">PROTOCOL RESEARCHERS</div>
       <h1 class="intro-title" id="introTitle">How the composer attests a batch</h1>
       <p class="intro-lede">"Attests", not "proves", and the distinction is the page. Three mechanisms sit behind that word, and only the first is what the name "prover" suggests.</p>
-      <p class="intro-lede"><b>Stateless re-execution.</b> The prover is handed a <span style="font-family:var(--mono);">BlockWitness</span> and replays the block from it to recompute the hash itself, rather than trusting the composer's claim or reading a state database. That part is real, and step 2 is it.</p>
-      <p class="intro-lede"><b>ECDSA standing in for succinctness.</b> What comes back is not a succinct proof. <span style="font-family:var(--mono);">ECDSAProofSystem</span> is described upstream as a "temporary proof system that uses ECDSA signature recovery instead of a ZK proof", and its <span style="font-family:var(--mono);">verify</span> is one line: <span style="font-family:var(--mono);">ECDSA.recover(publicInputsHash, proof) == signer</span>. So the guarantee today is that a named signer re-executed and agreed — an attestation. It is not yet a proof anyone can check without trusting that signer.</p>
+      <p class="intro-lede"><b>Stateless re-execution.</b> The prover is handed a <span style="font-family:var(--mono);">BlockWitness</span> per block, replays each one, validates the batch's settlement effects, and recomputes the hash itself, rather than reading a state database — the request carries no claimed hash at all. That part is real, and step 2 is it.</p>
+      <p class="intro-lede"><b>ECDSA standing in for succinctness.</b> What comes back is not a succinct proof. <span style="font-family:var(--mono);">ECDSAProofSystem</span> is described upstream as a "temporary proof system that uses ECDSA signature recovery instead of a ZK proof", and its <span style="font-family:var(--mono);">verify</span> is one line: <span style="font-family:var(--mono);">ECDSA.recover(publicInputsHash, proof) == signer</span>. So the guarantee today is that a named signer re-executed and agreed — an attestation bound to that batch's hash, not an unbound mock signature. It is not yet a proof anyone can check without trusting that signer.</p>
       <p class="intro-lede"><b>A per-rollup prover swap.</b> Which contract does the checking is a per-rollup choice, not a network-wide one. <span style="font-family:var(--mono);">IProofSystem</span> is any contract that can check <span style="font-family:var(--mono);">(proof, publicInputsHash)</span> — ZK, ECDSA, or otherwise — referenced from that rollup's own vkey map. There is no central registry, and upstream is explicit that each rollup owner vets which proof-system addresses their rollup allows. Swapping ECDSA for a real verifier is therefore a per-rollup upgrade, and until a rollup makes it, "attests" is the honest verb for that rollup.</p>
       <p class="intro-lede">The mechanics below are the first mechanism. The composer opens one gRPC stream to the proof-signer and sends a ProveHeader first — blocks always follow in order.</p>
       <p class="intro-lede">That one stream carries the header, the blocks and a signature back.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 · ONE STREAM, ONE JOB</b>One gRPC stream to the proof-signer: ProveHeader first, blocks in order.</li>
-        <li><b>02 · THE PROVER RE-EXECUTES</b>For each BlockWitness, the prover decodes PostBatch’s calldata and replays the block to recompute the hash.</li>
-        <li><b>03 · SIGN &amp; RETURN</b>The prover signs the recomputed hash; the composer only trusts it once the signature recovers to the registered attester — an attestation, not a succinct proof.</li>
+        <li><b>02 · THE PROVER RE-EXECUTES</b>The prover decodes PostBatch’s calldata, derives KZG hashes from its blobs, replays every BlockWitness and runs its settlement gates to recompute the hash.</li>
+        <li><b>03 · SIGN &amp; RETURN</b>The prover signs the recomputed hash; the composer only trusts it once the signature recovers to the registered attester and the hash matches its own — an attestation, not a succinct proof.</li>
       </ul>
-      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-rollup0 @ a4b9b2f &mdash; pre-mainnet; interfaces may move.</p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-rollupX @ 2c19e36 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
       </div>
@@ -315,9 +317,9 @@
 
   var kickers = ["ONE STREAM, ONE JOB", "THE PROVER RE-EXECUTES", "SIGN & RETURN"];
   var captions = [
-    "The composer opens one gRPC stream to the proof-signer and sends a ProveHeader first — blocks always follow in order.",
-    "For each BlockWitness, the prover — the proof-signer, from step 1 — decodes PostBatch's calldata and replays the block to independently recompute the hash.",
-    "The prover signs the recomputed hash and returns it — the composer only trusts it once the signature recovers to the registered attester."
+    "The composer opens one gRPC stream to the proof-signer and sends a ProveHeader first — blocks always follow in order. The request carries calldata, blobs and provenance, but no claimed hash.",
+    "The prover — the proof-signer, from step 1 — decodes PostBatch's calldata, derives KZG hashes from its blobs, replays every BlockWitness and runs its settlement gates to recompute the hash itself.",
+    "The prover signs the recomputed hash and returns it — the composer only trusts it once the signature recovers to the registered attester and the hash matches the one it computes from its own request."
   ];
 
   // Progressive code reveal: each step shows only the message defs relevant so
@@ -325,26 +327,31 @@
   // line is verbatim from the file named in the comment above it — prove.v1's
   // Prover service / message definitions in steps 1-2, and two Rust files in
   // step 3, because the message-size limits are Rust constants and are not in
-  // the .proto at all. Two inline // comments are abridged to fit the column:
-  // "Header MUST be first" and "// posted + 1" (upstream: "Header MUST be the
-  // first chunk; blocks follow in ascending block order." / "OD-5 anchor + 1").
+  // the .proto at all. Trailing // comments are abridged to fit the column
+  // (e.g. upstream "Header MUST be the first chunk; blocks follow in ascending
+  // block order.", "OD-5 anchor + 1", "Removed claimed hash and
+  // timeless/specific-block context."), and the three other Prover rpcs
+  // (Capabilities, PrepareOrdinary, RetainOrdinaryRanges) are elided.
   var codeByStep = [
     [
       "service Prover {",
+      "  // Capabilities, PrepareOrdinary, RetainOrdinaryRanges omitted",
       "  // Header MUST be first; blocks follow in order.",
-      "  rpc Prove(stream ProveChunk)",
-      "      returns (ProveResponse);",
+      "  rpc Prove(stream ProveChunk) returns (ProveResponse);",
       "}",
       "message ProveHeader {",
       "  uint64 rollup_id  = 1;",
       "  uint64 from_block = 2;  // posted + 1",
       "  uint64 to_block   = 3;  // sync_height",
       "  PostBatch post_batch = 4;",
+      "  bytes expected_validation_identity = 5;",
+      "  ParentProvenance parent_provenance = 6;",
       "}",
       "message PostBatch {",
       "  bytes abi_calldata = 1;",
-      "  bytes public_inputs_hash = 2;",
-      "  bytes l1_block_hash = 3;",
+      "  reserved 2, 3; // claimed hash removed",
+      "  repeated bytes blobs = 4;",
+      "  L1PostingContext posting_context = 5;",
       "}"
     ],
     [
@@ -369,22 +376,20 @@
       "  bytes signature          = 2;  // 65B",
       "}",
       "",
-      "// eez-control-rpc/src/lib.rs:19",
+      "// eez-control-rpc/src/lib.rs:22",
       "// — Rust, not the proto",
-      "pub const MAX_MESSAGE_BYTES: usize =",
-      "    1024 * 1024 * 1024;",
+      "pub const MAX_MESSAGE_BYTES: usize = 1024 * 1024 * 1024;",
       "",
-      "// eez-proof-signer/src/service.rs:26, :29",
+      "// eez-proof-signer/src/service.rs:29, :32",
       "// — the server",
-      "const MAX_DECODING_MESSAGE_BYTES: usize =",
-      "    256 * 1024 * 1024;",
+      "const MAX_DECODING_MESSAGE_BYTES: usize = 256 * 1024 * 1024;",
       "const MAX_ENCODING_MESSAGE_BYTES: usize = 1024;"
     ]
   ];
   var hlByStep = [
-    [1,5,6,7,8,9,10],
+    [2,3,5,6,7,8,9,10,11,15,16,17],
     [0,1,2,3,4,5,6],
-    [0,1,2,12,13,14]
+    [0,1,2,11,12]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

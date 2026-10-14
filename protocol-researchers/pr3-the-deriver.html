@@ -146,7 +146,7 @@
     <!-- STEP 1: real L1 event log entry being watched -->
     <div id="s1" style="display:flex;flex-direction:column;gap:22px;">
       <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">L1 EVENT LOG · WATCHED, NOT TRUSTED</div>
-      <div style="font-family:var(--mono);font-size:16px;color:#9aa4f0;background:rgba(124,131,255,0.08);border:1px solid #2c3566;border-radius:8px;padding:12px 18px;">event BatchPosted(uint256 indexed rollupCount);</div>
+      <div style="font-family:var(--mono);font-size:16px;color:#9aa4f0;background:rgba(124,131,255,0.08);border:1px solid #2c3566;border-radius:8px;padding:12px 18px;">event BatchPosted(bytes32 sharedPublicInput, uint64[] rollupIds);</div>
       <div style="background:#10151c;border:1px solid #232b36;border-radius:9px;padding:18px 22px;display:flex;flex-direction:column;gap:10px;max-width:900px;">
         <div style="display:flex;gap:14px;align-items:baseline;">
           <div style="width:110px;font-family:var(--mono);font-size:13px;color:var(--muted);">address</div>
@@ -154,23 +154,19 @@
         </div>
         <div style="display:flex;gap:14px;align-items:baseline;">
           <div style="width:110px;font-family:var(--mono);font-size:13px;color:var(--muted);">topics[0]</div>
-          <div style="font-family:var(--mono);font-size:14px;color:#7ee08c;">keccak256("BatchPosted(uint256)")</div>
-        </div>
-        <div style="display:flex;gap:14px;align-items:baseline;">
-          <div style="width:110px;font-family:var(--mono);font-size:13px;color:var(--muted);">topics[1]</div>
-          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-            <span style="font-family:var(--mono);font-size:13px;color:var(--muted);">rollupCount (indexed) =</span>
-            <span class="byte" style="background:rgba(63,185,80,0.16);color:#cfe9d4;border:1px solid #2f6b3a;font-weight:600;">3</span>
-            <span style="font-size:13px;color:var(--muted);">— rollups settled in this batch, not a batch ordinal</span>
-          </div>
+          <div style="font-family:var(--mono);font-size:14px;color:#7ee08c;">keccak256("BatchPosted(bytes32,uint64[])")</div>
         </div>
         <div style="display:flex;gap:14px;align-items:baseline;">
           <div style="width:110px;font-family:var(--mono);font-size:13px;color:var(--muted);">data</div>
-          <div style="font-family:var(--mono);font-size:14px;color:var(--muted);">(empty — nothing but the indexed topic)</div>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <span style="font-family:var(--mono);font-size:13px;color:var(--muted);">sharedPublicInput = 0x3e7a…91c4 · rollupIds =</span>
+            <span class="byte" style="background:rgba(63,185,80,0.16);color:#cfe9d4;border:1px solid #2f6b3a;font-weight:600;">[7]</span>
+            <span style="font-size:13px;color:var(--muted);">— kept only if it contains our rollup id</span>
+          </div>
         </div>
         <div style="display:flex;gap:14px;align-items:baseline;">
-          <div style="width:110px;font-family:var(--mono);font-size:13px;color:#8f98a8;">tx calldata</div>
-          <div style="font-size:14px;color:#c9d1dc;">the batch payload — this is what the deriver decodes</div>
+          <div style="width:110px;font-family:var(--mono);font-size:13px;color:#8f98a8;">tx blobs</div>
+          <div style="font-size:14px;color:#c9d1dc;">EIP-4844 blobs carry the batch payload (batch.callData is empty) — this is what the deriver decodes</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:12px;">
@@ -181,17 +177,17 @@
 
     <!-- STEP 2: handle_event fires, feeds execute_block -->
     <div id="s2" style="display:none;flex-direction:column;gap:26px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">LOG = TRIGGER · CALLDATA = DATA</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">LOG = TRIGGER · BLOBS = DATA</div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-        <div style="font-family:var(--mono);font-size:14px;color:#cfe9d4;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:7px;padding:9px 14px;">BatchPosted(rollupCount: 3)</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#cfe9d4;background:rgba(63,185,80,0.1);border:1px solid #2f6b3a;border-radius:7px;padding:9px 14px;">BatchPosted(…, rollupIds: [7])</div>
         <div style="font-size:22px;color:var(--muted);">→</div>
         <div style="font-family:var(--mono);font-size:15px;font-weight:600;color:#eef1ff;background:rgba(124,131,255,0.14);border:1px solid #3a4173;border-radius:8px;padding:10px 16px;">handle_event(&amp;self, event: L1Event)</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <div style="font-family:var(--mono);font-size:13px;color:#8f98a8;padding-left:2px;">↳</div>
-        <div style="font-family:var(--mono);font-size:15px;font-weight:600;color:#eef1ff;background:rgba(124,131,255,0.14);border:1px solid #3a4173;border-radius:8px;padding:10px 16px;">on_batch_posted(… call_data …)</div>
+        <div style="font-family:var(--mono);font-size:15px;font-weight:600;color:#eef1ff;background:rgba(124,131,255,0.14);border:1px solid #3a4173;border-radius:8px;padding:10px 16px;">on_batch_posted(… operations_payload …)</div>
         <div style="font-size:22px;color:var(--muted);">→</div>
-        <div style="font-family:var(--mono);font-size:14px;color:#cfe9d4;background:rgba(63,185,80,0.08);border:1px dashed #2f6b3a;border-radius:7px;padding:9px 14px;">eez_payload_codec::decode(call_data)</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#cfe9d4;background:rgba(63,185,80,0.08);border:1px dashed #2f6b3a;border-radius:7px;padding:9px 14px;">Payload::decode(operations_payload)</div>
       </div>
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <div style="font-family:var(--mono);font-size:13px;color:#8f98a8;padding-left:2px;">↳</div>
@@ -202,14 +198,14 @@
           <div style="font-family:var(--mono);font-size:14px;color:#f1e8ff;">number: 48,120 · txs: 213 · state_root: 0x9a2c…f1d0</div>
         </div>
       </div>
-      <div style="font-size:16px;color:#8f98a8;max-width:900px;">The log carries no payload. The blocks come out of the posting transaction's calldata — nothing is fetched from a node's API.</div>
+      <div style="font-size:16px;color:#8f98a8;max-width:900px;">The log carries no payload. eez-l1 fetches the posting transaction's blobs from the beacon API, recomputes each KZG versioned hash before accepting it, and only then hands the decoded payload over (blob_source.rs:1-6) — no L2 node is consulted.</div>
     </div>
 
     <!-- STEP 3: catch_up loop, zoomed out over a range of L1 history -->
     <div id="s3" style="display:none;flex-direction:column;gap:24px;">
       <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">CATCH_UP() · REVALIDATE THE TAIL, THEN SCAN FORWARD</div>
       <div style="display:flex;flex-direction:column;gap:9px;">
-        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;">PHASE 1 · WALK THE INDEXED TAIL BACKWARD — deriver.rs:257</div>
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:#e8b15e;">PHASE 1 · WALK THE INDEXED TAIL BACKWARD — deriver.rs:662</div>
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           <div style="font-size:20px;color:#8f98a8;">←</div>
           <div class="byte" style="background:rgba(232,177,94,0.16);color:#f2dfb3;border:1px dashed #8a6a2e;">L1 #21,004,344 · hash ✗</div>
@@ -219,7 +215,7 @@
         <div style="font-size:15px;color:#c9b894;max-width:960px;">Non-canonical batches drop and the safe cursor retreats — the highest still-canonical batch is the anchor.</div>
       </div>
       <div style="display:flex;flex-direction:column;gap:9px;">
-        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:var(--eez-green);">PHASE 2 · SCAN FORWARD FROM THE ANCHOR — deriver.rs:246-249</div>
+        <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.08em;color:var(--eez-green);">PHASE 2 · SCAN FORWARD FROM THE ANCHOR — deriver.rs:648-654</div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
           <div class="byte" style="background:rgba(63,185,80,0.20);color:#eef8ee;border:1.5px solid var(--eez-green);font-weight:600;">anchor</div>
           <div style="font-family:var(--mono);font-size:14px;color:#8f98a8;">─────────────►</div>
@@ -227,7 +223,7 @@
           <div style="font-family:var(--mono);font-size:13px;color:#8f98a8;">each BatchPosted → handle_event → on_batch_posted → execute_block</div>
         </div>
         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <div style="font-family:var(--mono);font-size:13px;color:#8f98a8;">index empty (cold start) →</div>
+          <div style="font-family:var(--mono);font-size:13px;color:#8f98a8;">index empty, no persisted seed (cold start) →</div>
           <div class="byte" style="background:rgba(124,131,255,0.14);color:#eef1ff;border:1px solid #3a4173;">deploy_block</div>
           <div style="font-size:14px;color:#c9d1dc;">— the contract's deployment block, not L1 genesis.</div>
         </div>
@@ -271,15 +267,15 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">PROTOCOL RESEARCHERS</div>
       <h1 class="intro-title" id="introTitle">How the deriver rebuilds L2 from L1</h1>
-      <p class="intro-lede">The deriver watches L1 for BatchPosted events instead of trusting any node’s live output — the log is the trigger, the posting transaction’s calldata is the data.</p>
+      <p class="intro-lede">The deriver watches L1 for BatchPosted events instead of trusting any node’s live output — the log is the trigger, the posting transaction’s blobs are the data.</p>
       <p class="intro-lede">Replaying those batches forward, after re-checking that the ones it already indexed are still canonical, reconstructs the chain from L1 alone.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
-        <li><b>01 · WATCH L1</b>The deriver watches L1 for BatchPosted events instead of trusting any node’s live output. The log carries no payload.</li>
-        <li><b>02 · DECODE THE CALLDATA</b>handle_event routes to on_batch_posted, which decodes the posting transaction’s calldata and replays the blocks through execute_block.</li>
-        <li><b>03 · REVALIDATE, THEN SCAN FORWARD</b>catch_up() drops indexed batches whose L1 block is no longer canonical, then scans forward from that anchor — or from deploy_block on a cold start.</li>
+        <li><b>01 · WATCH L1</b>The deriver watches L1 for BatchPosted events naming its rollup, instead of trusting any node’s live output. The log carries no payload.</li>
+        <li><b>02 · DECODE THE BLOBS</b>The posting transaction’s blobs are fetched and checked against their KZG hashes; on_batch_posted decodes that payload and replays the blocks through execute_block.</li>
+        <li><b>03 · REVALIDATE, THEN SCAN FORWARD</b>catch_up() drops indexed batches whose L1 block is no longer canonical, then scans forward from that anchor — or from deploy_block on a cold start with no persisted seed.</li>
       </ul>
-      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-rollup0 @ a4b9b2f &mdash; pre-mainnet; interfaces may move.</p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-rollupX @ 2c19e36 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
       </div>
@@ -306,68 +302,72 @@
   var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["WATCH L1", "DECODE THE CALLDATA", "REVALIDATE, THEN SCAN FORWARD"];
+  var kickers = ["WATCH L1", "DECODE THE BLOBS", "REVALIDATE, THEN SCAN FORWARD"];
   var captions = [
-    "The deriver watches L1 for BatchPosted events instead of trusting any node's live output. The log is the trigger; the payload is the posting transaction's calldata.",
-    "handle_event routes the event to on_batch_posted, which decodes that calldata and replays the blocks through execute_block.",
-    "catch_up() first re-checks the batches it already indexed and drops any whose L1 block is no longer canonical, then scans forward from that anchor — or from the deployment block on a cold start."
+    "The deriver watches L1 for BatchPosted events naming its rollup, instead of trusting any node's live output. The log is the trigger; the payload is the posting transaction's blobs.",
+    "The blobs are fetched and checked against their KZG versioned hashes; handle_event routes to on_batch_posted, which decodes that payload and replays the blocks through execute_block.",
+    "catch_up() first re-checks the batches it already indexed and drops any whose L1 block is no longer canonical, then scans forward from that anchor — or from the deployment block on a cold start with no persisted seed."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
   // so the panel never dumps the whole file ungrouped. Each line is verbatim
-  // from the cited file at the pin, de-indented out of its enclosing block.
+  // from the cited file at the pin, de-indented out of its enclosing block;
+  // lines marked "wrapped" are one line in source.
   var codeByStep = [
     [
-      "// crates/eez-protocol/src/abi.rs:105",
-      "event BatchPosted(uint256 indexed rollupCount);",
-      "// ^ the count of rollups settled in THIS batch,",
-      "//   not a batch ordinal (EEZ.sol:442 emits",
-      "//   batch.rollupIdsWithProofSystems.length)",
+      "// crates/eez-protocol/src/abi.rs:121 \u2014 wrapped",
+      "event BatchPosted(bytes32 sharedPublicInput,",
+      "    uint64[] rollupIds);",
+      "// ^ nothing indexed: rollupIds ride in the log",
+      "//   data (EEZ.sol:475 emits it); the scanner",
+      "//   skips logs without our rollup id",
       "",
-      "// deriver.rs:45",
+      "// deriver.rs:55",
       "pub struct Deriver<L2>"
     ],
     [
-      "// deriver.rs:786",
+      "// deriver.rs:1406 \u2014 wrapped",
       "async fn handle_event(&self, event: L1Event)",
       "    -> DeriverResult<()> {",
       "",
-      "// deriver.rs:836",
+      "// deriver.rs:1471",
       "async fn on_batch_posted(",
       "    // params omitted — signature verified, body not",
       ") -> DeriverResult<()> {",
       "",
-      "// deriver.rs:849 — the log is the trigger,",
-      "// this is the data",
-      "let decoded =",
-      "    eez_payload_codec::decode(call_data.as_ref())?;",
+      "// deriver.rs:1487 — the log is the trigger,",
+      "// the blob-carried payload is the data",
+      "let payload = Payload::decode(operations_payload.as_ref())?;",
       "",
-      "// deriver.rs:516",
-      "pub fn execute_block("
+      "// deriver.rs:1142 — reached via replay_block",
+      "fn execute_block("
     ],
     [
-      "// deriver.rs:169",
+      "// deriver.rs:449",
       "pub async fn catch_up(&self) -> DeriverResult<()> {",
-      "// deriver.rs:257 — phase 1: walk the index tail",
+      "// deriver.rs:662 — phase 1: walk the index tail",
       "// BACKWARD, drop batches whose recorded L1 hash",
       "// is stale; return the highest canonical anchor",
       "async fn revalidate_index_tail(&self)",
       "    -> DeriverResult<Option<u64>> {",
-      "// deriver.rs:246-249 — phase 2, arms wrapped",
+      "// deriver.rs:648-654 — phase 2, arms wrapped",
       "match anchor {",
       "    Some(anchor_l1_block) =>",
-      "        self.sync_batches_inner(",
-      "            anchor_l1_block, cursor).await,",
-      "    // cold start: deploy_block, NOT L1 genesis",
-      "    None => self.sync_batches_inner(",
-      "        self.inner.deploy_block, 0).await,",
+      "        self.sync_batches_inner(anchor_l1_block, cursor).await,",
+      "    None => match self.correlation_seed().await? {",
+      "        Some((l1_block, l2_cursor)) =>",
+      "            self.sync_batches_inner(l1_block, l2_cursor).await,",
+      "        // cold start: deploy_block, NOT L1 genesis",
+      "        None => self.sync_batches_inner(",
+      "            self.inner.deploy_block, 0).await,",
+      "    },",
       "}"
     ]
   ];
   var hlByStep = [
-    [0,1],
-    [11,12,15],
-    [5,6,9,10,11,13,14]
+    [0,1,2],
+    [9,10,11,14],
+    [5,6,8,9,10,11,12,13,15,16]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };

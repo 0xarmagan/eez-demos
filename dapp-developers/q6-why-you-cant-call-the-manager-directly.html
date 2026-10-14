@@ -193,7 +193,7 @@
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/EEZ.sol#L780&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/EEZ.sol:780 · executeCrossChainCall ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L780" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:780 · executeCrossChainCall ↗</a></div>
+      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L855&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/EEZ.sol:855 · executeCrossChainCall ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L855" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:855 · executeCrossChainCall ↗</a></div>
       <button id="btnTest" type="button" title="Show the runnable Foundry test that direct calls revert" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TEST</button>
       <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:114px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
@@ -219,7 +219,7 @@
         <li><b>03 · NO WAY PAST IT</b>Both proxy entry points open with this check, so no proxy-routed call reaches execution without it.</li>
       </ul>
       <p style="margin:18px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#8a8a8a;letter-spacing:0.02em;">RUN IT YOURSELF &middot; <span style="color:#cfcfcf">forge test --match-test test_directCallFromEoaReverts -vv</span> &mdash; from <a href="https://github.com/0xarmagan/eez-demos/tree/main/snippets" target="_blank" style="color:#8a8a8a;border-bottom:1px dotted #444;text-decoration:none;">eez-demos/snippets</a>, Foundry only.</p>
-      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9735f53 &mdash; pre-mainnet; interfaces may move.</p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
       </div>
@@ -263,27 +263,39 @@
       "function executeCrossChainCall(",
       "    address sourceAddress,",
       "    bytes calldata callData",
-      ") external payable returns (bytes memory) {"
+      ") external payable returns (bytes memory result) {",
+      "(address destAddress, uint64 destRid) =",
+      "    _validateProxyAndGetDestinationInfo();"
     ],
     [
+      "function _validateProxyAndGetDestinationInfo()",
+      "    internal view returns (address, uint64) {",
       "ProxyInfo storage proxyInfo =",
       "    authorizedProxies[msg.sender];",
-      "",
       "if (!proxyInfo.isProxy)",
       "    revert UnauthorizedProxy();"
     ],
     [
+      "function _validateProxyAndGetDestinationInfo()",
+      "    internal view returns (address, uint64) {",
       "ProxyInfo storage proxyInfo =",
       "    authorizedProxies[msg.sender];",
-      "",
       "if (!proxyInfo.isProxy)",
       "    revert UnauthorizedProxy();",
-      "",
-      "// msg.sender must be a real proxy —",
+      "// msg.sender must be a real proxy \u2014",
       "// never the caller's own address"
     ]
   ];
-  var hlByStep = [ [0,1,2,3], [0,1,3,4], [6,7] ];
+  // The panel's citation follows the step: step 1 is the entry point, steps 2
+  // and 3 are the guard, which now lives in _validateProxyAndGetDestinationInfo,
+  // a helper at a different line that staticCrossChainCall also opens with.
+  // Written as literal anchors so verify-citations.py sees and pins them.
+  var citeByStep = [
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L855" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:855 · executeCrossChainCall ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L1561" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:1561 · _validateProxyAndGetDestinationInfo ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L1561" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:1561 · _validateProxyAndGetDestinationInfo ↗</a>'
+  ];
+  var hlByStep = [ [0,1,2,3,4,5], [2,3,4,5], [6,7] ];
 
   // Verbatim copy of snippets/q6-manager-direct.sol (the whole file, 38 lines).
   // scripts/check-panel-drift.py asserts this array still equals that file
@@ -293,12 +305,17 @@
       "pragma solidity ^0.8.28;",
       "",
       "// Panel source for: dapp-developers/q6-why-you-cant-call-the-manager-directly.html",
-      "// Mirrors eez-core-protocol/src/EEZ.sol:780",
-      "// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda",
+      "// Mirrors eez-core-protocol/src/EEZ.sol:855 and :1561",
+      "// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f",
       "//",
-      "// The registry check is the first thing the entry point does. There is no",
-      "// path into execution that skips it, which is why calling the manager",
-      "// yourself cannot work no matter how the calldata is shaped.",
+      "// The registry check is the first thing the entry point does: its first line",
+      "// calls _validateProxyAndGetDestinationInfo, whose first check is the registry",
+      "// lookup. staticCrossChainCall opens with the same helper (EEZ.sol:1380).",
+      "// There is no path into execution that skips it, which is why calling the",
+      "// manager yourself cannot work no matter how the calldata is shaped.",
+      "//",
+      "// Omitted here: the helper's second check, _requireVerifiedThisBlock(destRid)",
+      "// (EEZ.sol:1571), which only runs once the caller is already a proxy.",
       "",
       "struct ProxyInfo {",
       "    bool isProxy;",
@@ -314,17 +331,27 @@
       "function executeCrossChainCall(",
       "    address sourceAddress,",
       "    bytes calldata callData",
-      ") external payable returns (bytes memory) {",
+      ") external payable returns (bytes memory result) {",
+      "(address destAddress, uint64 destRid) =",
+      "    _validateProxyAndGetDestinationInfo();",
+      "    sourceAddress;",
+      "    callData;",
+      "    destAddress;",
+      "    destRid;",
+      "    return \"\";",
+      "}",
+      "",
+      "function _validateProxyAndGetDestinationInfo()",
+      "    internal view returns (address, uint64) {",
       "ProxyInfo storage proxyInfo =",
       "    authorizedProxies[msg.sender];",
-      "",
       "if (!proxyInfo.isProxy)",
       "    revert UnauthorizedProxy();",
       "// msg.sender must be a real proxy \u2014",
       "// never the caller's own address",
-      "    sourceAddress;",
-      "    callData;",
-      "    return \"\";",
+      "    address destAddress = proxyInfo.originalAddress;",
+      "    uint64 destRid = proxyInfo.originalRollupId;",
+      "    return (destAddress, destRid);",
       "}",
       "}"
   ];
@@ -454,6 +481,8 @@
     document.getElementById("caption").textContent = captions[step];
     document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
     els.note.textContent = notes[step];
+    var cite = document.getElementById("srcCite");
+    if (cite && !showFull && !showTest) { cite.innerHTML = citeByStep[step] || cite.getAttribute("data-demo-cite"); }
 
     els.lBad.style.opacity = step >= 0 ? "1" : "0";
     els.badTo.style.opacity = step >= 1 ? "1" : ".35";
@@ -686,7 +715,7 @@
       citeEl.innerHTML = showFull
         ? 'snippets/q6-manager-direct.sol \u00b7 solc 0.8.28'
         : (showTest ? 'snippets/test/Q6ManagerDirect.t.sol \u00b7 forge test'
-                    : citeEl.getAttribute("data-demo-cite"));
+                    : (citeByStep[step] || citeEl.getAttribute("data-demo-cite")));
     }
     // The whole file is longer and wider than the column, so full-context mode
     // trades type size for reach and turns the vertical axis into a scroller

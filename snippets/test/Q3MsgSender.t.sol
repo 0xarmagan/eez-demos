@@ -24,8 +24,11 @@ interface Vm {
     function label(address, string calldata) external;
 }
 
-/// @dev Stands in for the manager. Uses the real derivation so the proxy
-///      address in the test is the one the protocol would actually produce.
+/// @dev Stands in for the manager. Uses the real derivation shape
+///      (eez-core-protocol EEZBase.sol:250 @ 9a1f815): CREATE2 over the manager's
+///      own address, the (rollupId, address) salt, and the hash of the
+///      argument-free proxy creation code. `Dummy` replaces the real proxy, so
+///      the address differs from production; the shape does not.
 contract MockEEZ {
     function computeCrossChainProxyAddress(address originalAddress, uint64 originalRollupId)
         external
@@ -33,18 +36,20 @@ contract MockEEZ {
         returns (address)
     {
         bytes32 salt = keccak256(abi.encodePacked(originalRollupId, originalAddress));
-        bytes32 bytecodeHash = keccak256(abi.encodePacked(type(Dummy).creationCode, abi.encode(address(this))));
+        bytes32 initCodeHash = keccak256(type(Dummy).creationCode);
         return address(
-            uint160(uint256(keccak256(abi.encodePacked(bytes1(0xff), address(this), salt, bytecodeHash))))
+            uint160(uint256(keccak256(abi.encodePacked(bytes1(0xff), address(this), salt, initCodeHash))))
         );
     }
 }
 
+/// @dev Like upstream's proxy, takes no constructor argument: the deploying
+///      manager is captured from msg.sender.
 contract Dummy {
     address public immutable manager;
 
-    constructor(address manager_) {
-        manager = manager_;
+    constructor() {
+        manager = msg.sender;
     }
 }
 

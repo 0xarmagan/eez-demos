@@ -18,7 +18,7 @@ What EEZ mechanic does this demo teach? One sentence.
 
 ## Source of truth
 
-Real file(s)/crate(s) the code panel will cite, inside `eez-rollup0` — either directly (infra) or under `eez-core-protocol/` (contracts, a submodule pinned to a specific commit — see `CONTRIBUTING.md`).
+Real file(s)/crate(s) the code panel will cite, inside `eez-rollupX` — either directly (infra) or under `eez-core-protocol/` (contracts, a submodule pinned to a specific commit — see `CONTRIBUTING.md`).
 
 ## Why it matters
 

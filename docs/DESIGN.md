@@ -35,12 +35,14 @@ Deeper topics (proof-signer internals, the deploy-protocol flow, the `xchain-tes
 
 Same interactive animated-demo format as the existing 8 — not written runnable guides — even for hands-on topics like the Kurtosis devnet. Consistency of format was weighted over format-fits-topic for this batch; if a future topic genuinely needs a runnable guide instead (not just an explainer), that's a new decision to raise, not an extension of this one.
 
-## Source of truth: eez-rollup0, one repository
+## Source of truth: eez-rollupX, one repository
 
-This repo is strictly scoped to `eez-rollup0`. Every example — dapp-dev included — has to trace back to something physically inside that one repository:
+*Updated 2026-10-14: the source of truth moved from `eez-rollup0` to `eez-association/eez-rollupX`, which derives from it. The history sections below still name `eez-rollup0` as it was at the time.*
 
-- Infra layer → `eez-association/eez-rollup0` @ `main` directly.
-- Contract layer → `eez-core-protocol`, a **git submodule of `eez-rollup0`** (pinned by a gitlink commit, not tracking `main`). Cited as `eez-core-protocol/<path>:<line>` and verified against the exact pinned commit — not `eez-core-protocol`'s own independently-moving `main`, which drifts ahead of what's actually vendored.
+This repo is strictly scoped to `eez-rollupX`. Every example — dapp-dev included — has to trace back to something physically inside that one repository:
+
+- Infra layer → `eez-association/eez-rollupX` directly, at the commit pinned in `scripts/citation-pins.json`.
+- Contract layer → `eez-core-protocol`, a **git submodule of `eez-rollupX`** (pinned by a gitlink commit, not tracking `main`). Cited as `eez-core-protocol/<path>:<line>` and verified against the exact pinned commit — not `eez-core-protocol`'s own independently-moving `main`, which drifts ahead of what's actually vendored.
 
 Both move fast. Every code panel cites a real `file:line`; nothing is paraphrased or invented. See `CONTRIBUTING.md` for the full rule and the pre-PR checklist.
 

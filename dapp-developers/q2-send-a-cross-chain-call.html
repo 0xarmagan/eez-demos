@@ -221,7 +221,7 @@
       <div style="font-size:16px;color:var(--muted);max-width:900px;">Runs with the proxy as msg.sender; the return data comes back unwrapped. Decode it like any same-chain read, then branch.</div>
       <div style="max-width:900px;background:rgba(232,177,94,0.10);border:1px solid rgba(232,177,94,0.34);border-left:3px solid #e8b15e;border-radius:8px;padding:13px 17px;">
         <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.09em;color:#f0cf9e;">AND ONLY WHERE AN ENTRY ALREADY EXISTS</div>
-        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">The composer wrote the entry before your transaction ran, and it resolves only in the block that proved it (<span style="font-family:var(--mono);">ExecutionNotInCurrentBlock</span>); only L1 static entries outlive that block, while their state roots still match. A miss — <span style="font-family:var(--mono);">EntryNotFound</span> on L2, <span style="font-family:var(--mono);">ExecutionNotFound</span> on L1 — is indistinguishable from the destination reverting on its own: <span style="font-family:var(--mono);">ok == false</span> says the call did not happen, never why.</div>
+        <div style="font-size:15px;line-height:1.55;color:#d6c7a8;margin-top:7px;">The composer wrote the entry before your transaction ran, and it resolves only in the block that proved it (<span style="font-family:var(--mono);">ExecutionNotInCurrentBlock</span>), on L1 and L2 alike; an L1 static entry must also still match its state roots. A miss — <span style="font-family:var(--mono);">EntryNotFound</span> on L2, <span style="font-family:var(--mono);">ExecutionNotFound</span> on L1 — is indistinguishable from the destination reverting on its own: <span style="font-family:var(--mono);">ok == false</span> says the call did not happen, never why.</div>
       </div>
     </div>
 
@@ -241,7 +241,7 @@
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9735f53abbb6b9f5e863f405ad4555b4701b7fda/src/base/CrossChainProxy.sol#L89&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L89" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:89 · _fallback ↗</a></div>
+      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/src/base/CrossChainProxy.sol:113 · _fallback ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:113 · _fallback ↗</a></div>
       <button id="btnTest" type="button" title="Show the runnable Foundry test behind this page" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TEST</button>
       <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:114px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
@@ -267,7 +267,7 @@
         <li><b>03 · DECODE IT AND BRANCH</b>What comes back is a value, not a receipt — decode it and let it decide what the transaction does.</li>
       </ul>
       <p style="margin:18px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:#8a8a8a;letter-spacing:0.02em;">RUN IT YOURSELF &middot; <span style="color:#cfcfcf">forge test --match-test test_theBranchTracksTheValueNotTheSuccessFlag -vv</span> &mdash; from <a href="https://github.com/0xarmagan/eez-demos/tree/main/snippets" target="_blank" style="color:#8a8a8a;border-bottom:1px dotted #444;text-decoration:none;">eez-demos/snippets</a>, Foundry only.</p>
-      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9735f53 &mdash; pre-mainnet; interfaces may move.</p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
       </div>
@@ -320,6 +320,7 @@
       "",
       "// CrossChainProxy.sol",
       "fallback() external payable {",
+      "    // \u22ef manager + self-probe branches",
       "    _fallback();",
       "}"
     ],
@@ -341,9 +342,9 @@
       "    }"
     ]
   ];
-  var hlByStep = [ [0,1,2], [4,5,6,7,11,12], [0,1,5,10] ];
+  var hlByStep = [ [0,1,2], [4,5,6,7,11,13], [0,1,5,10] ];
 
-  // Verbatim copy of snippets/q2-cross-chain-call.sol (the whole file, 149 lines).
+  // Verbatim copy of snippets/q2-cross-chain-call.sol (the whole file, 166 lines).
   // scripts/check-panel-drift.py asserts this array still equals that file
   // line for line, so an embedded copy cannot rot unnoticed.
   var fullSnippet = [
@@ -353,12 +354,13 @@
       "import {IEEZ} from \"./lib/IEEZ.sol\";",
       "",
       "// Panel source for: dapp-developers/q2-send-a-cross-chain-call.html",
-      "// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:39 and :89",
-      "// @ 9735f53abbb6b9f5e863f405ad4555b4701b7fda",
+      "// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:67 and :113",
+      "// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f",
       "//",
       "// Caller side is ordinary: encode a call, send it to the proxy address like",
       "// any other contract. The proxy has no matching function, so everything",
-      "// lands in fallback() and gets forwarded to the manager.",
+      "// lands in fallback() and, unless the caller is the manager or the proxy",
+      "// itself, gets forwarded to the manager.",
       "//",
       "// A read is the same code with one difference that matters: STATICCALL",
       "// instead of CALL. That is what the proxy's probe detects, and it is what",
@@ -372,10 +374,10 @@
       "",
       "/// @dev A cross-chain call fails for reasons an ordinary same-chain call",
       "///      cannot, and the proxy forwards raw revert data either way",
-      "///      (CrossChainProxy.sol:109-113). So `ok == false` tells you the call",
+      "///      (CrossChainProxy.sol:137-141). So `ok == false` tells you the call",
       "///      did not happen \u2014 never why. No matching entry in this block and a",
       "///      genuine revert in the destination contract are indistinguishable",
-      "///      here; see docs/CAVEATS.md \"Indistinguishable revert reasons\".",
+      "///      here; see docs/CAVEATS.md \"Missing entries and destination reverts\".",
       "error CrossChainCallFailed();",
       "",
       "/// @dev Raised on a value that came back from another rollup. The point of the",
@@ -409,12 +411,12 @@
       "    ///",
       "    ///      The one thing to get right: the proxy picks static-vs-mutable from",
       "    ///      the CALLER'S frame, not from `view`. Its probe does a `tstore`, and",
-      "    ///      a `tstore` only halts under STATICCALL (CrossChainProxy.sol:71). A",
+      "    ///      a `tstore` only halts under STATICCALL (CrossChainProxy.sol:89). A",
       "    ///      plain `.call(data)` here would therefore take the mutable path and",
       "    ///      demand an ExecutionEntry no composer wrote for a read \u2014 on L2 that",
-      "    ///      is `EntryNotFound(hash, callGas)` (EEZL2.sol:441). STATICCALL is",
-      "    ///      what routes it to `staticCrossChainCall` (EEZL2.sol:594) and a",
-      "    ///      `StaticExecutionEntry`.",
+      "    ///      is `EntryNotFound(hash, callGas)` (EEZL2.sol:501), with a hash that",
+      "    ///      folds `isStatic = false`. STATICCALL is what routes it to",
+      "    ///      `staticCrossChainCall` (EEZL2.sol:660) and a static entry.",
       "    function settleIfFunded(address user, uint256 need) external returns (bool) {",
       "bytes memory data = abi.encodeCall(",
       "    IRemote.balanceOf, (user)",
@@ -439,42 +441,58 @@
       "    }",
       "}",
       "",
-      "/// @dev Proxy side \u2014 how the forward actually happens.",
+      "/// @dev The manager-only forwarding ABI the proxy dispatches by selector.",
+      "///      Copied from eez-core-protocol/src/interfaces/ICrossChainProxy.sol:13.",
+      "interface ICrossChainProxy {",
+      "    function executeOnBehalf(address destination, uint64 callGas, bytes calldata data) external payable;",
+      "}",
+      "",
+      "/// @dev Proxy side \u2014 how the forward actually happens. Upstream has no",
+      "///      `staticCheck()` function and no hardcoded gas cap any more: both the",
+      "///      manager's `executeOnBehalf` and the self-probe are served by selector",
+      "///      inside fallback(), and the probe's cap is read from the manager",
+      "///      (EEZBase.sol:65) so an upgraded manager can retune it without",
+      "///      redeploying a single proxy.",
       "contract CrossChainProxySnippet {",
       "    address internal immutable EEZ;",
       "",
-      "    /// @dev Upstream value, from CrossChainProxy.sol:23. The cap IS the cost: in a",
-      "    ///      static context the tstore is an exceptional halt, which consumes every",
-      "    ///      unit forwarded to it, so the probe must be given only what you are",
-      "    ///      willing to burn on every call. The mutable path spends ~300 of it.",
-      "    uint256 internal constant STATIC_CHECK_GAS = 1_000;",
+      "    /// @dev Upstream's detector variable (CrossChainProxy.sol:30). Writing it",
+      "    ///      is a TSTORE, which halts in a static context.",
+      "    uint256 transient _staticDetector;",
       "",
-      "    constructor(address eez_) {",
-      "        EEZ = eez_;",
-      "    }",
+      "    bytes4 private constant STATIC_CHECK_SELECTOR = bytes4(keccak256(\"staticCheck()\"));",
       "",
-      "    /// @dev tstore reverts in a STATICCALL context, tload does not. A self-call",
-      "    ///      isolates the tstore so the revert can be caught instead of bubbling.",
-      "    ///",
-      "    ///      STAND-IN: upstream declares a named `uint256 transient _staticDetector`",
-      "    ///      (CrossChainProxy.sol:18) and writes it in staticCheck() (:71). Raw slot 0",
-      "    ///      is used here only to keep the probe to one readable line. Do not copy it:",
-      "    ///      raw slot 0 is not reserved for you, so in a real contract that also uses",
-      "    ///      transient storage this probe is a collision risk. Declare a named",
-      "    ///      `transient` variable, as upstream does, and let the compiler place it.",
-      "    function staticCheck() external {",
-      "        assembly { tstore(0, 1) }",
+      "    /// @dev The deploying manager is the only caller that can forward through",
+      "    ///      this proxy. Upstream takes no constructor argument for it.",
+      "    constructor() {",
+      "        EEZ = msg.sender;",
       "    }",
       "",
       "// CrossChainProxy.sol",
       "fallback() external payable {",
+      "    if (msg.sender == EEZ && msg.sig == ICrossChainProxy.executeOnBehalf.selector) {",
+      "        (address destination, uint64 callGas, bytes memory data) =",
+      "            abi.decode(msg.data[4:], (address, uint64, bytes));",
+      "        (bool ok, bytes memory ret) = callGas == 0",
+      "            ? destination.call{value: msg.value}(data)",
+      "            : destination.call{value: msg.value, gas: callGas}(data);",
+      "        assembly {",
+      "            switch ok",
+      "            case 0 { revert(add(ret, 0x20), mload(ret)) }",
+      "            default { return(add(ret, 0x20), mload(ret)) }",
+      "        }",
+      "    }",
+      "    if (msg.sender == address(this) && msg.sig == STATIC_CHECK_SELECTOR) {",
+      "        _staticDetector = 0;",
+      "        return;",
+      "    }",
       "    _fallback();",
       "}",
       "",
       "function _fallback() internal {",
-      "    (bool success,) = address(this).call{",
-      "        gas: STATIC_CHECK_GAS",
-      "    }(abi.encodeCall(this.staticCheck, ()));",
+      "    uint256 staticCheckGas = IEEZ(EEZ).STATIC_CHECK_GAS();",
+      "    (bool success,) = address(this).call{gas: staticCheckGas}(",
+      "        abi.encodeWithSelector(STATIC_CHECK_SELECTOR));",
       "    bytes memory result;",
       "    if (!success) {",
       "        (success, result) = EEZ.staticcall(",
@@ -519,7 +537,9 @@
       "        _commitBalance(100);",
       "        (bool ok, bytes memory ret) = address(proxy).call(readData);",
       "        require(!ok, \"a plain call must not resolve the static entry\");",
-      "        require(bytes4(ret) == EntryNotFound.selector, \"expected EntryNotFound, not ExecutionNotFound\");",
+      "        require(keccak256(ret) == keccak256(abi.encodeWithSelector(",
+      "            EntryNotFound.selector, table.keyFor(false, address(this), readData), uint64(0)",
+      "        )), \"expected EntryNotFound keyed isStatic = false\");",
       "    }",
       "",
       "    function test_destinationRevertIsIndistinguishableFromAMiss() public {",

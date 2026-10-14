@@ -139,7 +139,7 @@
     <div style="display:flex;align-items:center;gap:18px;">
       <a class="back" href="../index.html">← Quickstarts</a>
       <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-      <div style="font-size:22px;font-weight:600;color:#fff;">The Four Components of Rollup0</div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">The Four Components of RollupX</div>
       <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#8a8a8a;">PRE-MAINNET</div>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
@@ -157,18 +157,18 @@
       <div class="sublabel">LIVE PATH · SEQUENCER → COMPOSER</div>
       <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
         <div class="component-box" style="border-color:#3a4173;background:rgba(124,131,255,0.10);">
-          <div class="comp-file">sequencer.rs:159</div>
+          <div class="comp-file">sequencer.rs:1068</div>
           <div class="comp-sig" style="color:#aeb6ec;">pub struct Sequencer&lt;T, ChainSpec&gt;</div>
           <div class="comp-desc">builds L2 blocks</div>
         </div>
         <div class="arrow">→</div>
         <div class="component-box" style="border-color:#2f6b3a;background:rgba(63,185,80,0.10);">
-          <div class="comp-file">composer.rs:515</div>
+          <div class="comp-file">composer.rs:1339</div>
           <div class="comp-sig" style="color:#8fe0a0;">pub struct Composer&lt;L2: BlockReader&gt;</div>
-          <div class="comp-desc">settles cross-chain calls in that block</div>
+          <div class="comp-desc">composes cross-chain calls and posts the batch to L1</div>
         </div>
       </div>
-      <div class="footnote">Ordinary blocks are the sequencer alone. A Sync block adds the composer — and it cannot be emitted until the proof-signer returns an attestation (composer.rs:2864).</div>
+      <div class="footnote">Ordinary blocks are the sequencer alone. A Sync block adds the composer — and its batch cannot be posted to L1 until the proof-signer returns an attestation (composer.rs:7112). Without one, the composer commits an empty Sync block instead (composer.rs:5239).</div>
     </div>
 
     <!-- STEP 2: Composer's output -> Attester struct + sign() -->
@@ -176,24 +176,24 @@
       <div class="sublabel">ATTESTATION · COMPOSER → PROOF-SIGNER</div>
       <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
         <div class="component-box small" style="border-color:#2f6b3a;background:rgba(63,185,80,0.10);">
-          <div class="comp-file">composer.rs:515</div>
+          <div class="comp-file">composer.rs:1339</div>
           <div class="comp-sig" style="color:#8fe0a0;">Composer&lt;L2&gt;</div>
         </div>
         <div class="arrow">→</div>
         <div class="component-box" style="border-color:#8a6f2e;background:rgba(232,177,94,0.10);">
           <div class="comp-file">attest.rs:52</div>
           <div class="comp-sig" style="color:#f0cf8f;">pub(crate) struct Attester</div>
-          <div class="comp-desc">attests to the result for the proof system</div>
+          <div class="comp-desc">signs only after the batch re-executes and validates</div>
         </div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;">
-        <div class="comp-file">attest.rs:134</div>
+        <div class="comp-file">attest.rs:136</div>
         <div style="font-family:var(--mono);font-size:16px;color:#f0cf8f;background:#10151c;border:1px solid #3a2e12;border-radius:8px;padding:14px 18px;line-height:1.6;animation:riseIn .35s ease both;">
           fn sign(&amp;self, public_inputs_hash: AttestablePublicInputsHash)<br>
           &nbsp;&nbsp;-&gt; Result&lt;Bytes, SignerError&gt;
         </div>
       </div>
-      <div class="footnote">The signed attestation is what lets everything downstream trust Composer's output without redoing the work.</div>
+      <div class="footnote">On L1, ECDSAProofSystem checks that hash-bound signature — a named signer's attestation, not yet a succinct proof.</div>
     </div>
 
     <!-- STEP 3: full pipeline, Deriver as the independent backstop -->
@@ -201,12 +201,12 @@
       <div class="sublabel">FULL PIPELINE · DERIVER TRUSTS NOTHING</div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <div class="component-box small" style="border-color:#3a4173;background:rgba(124,131,255,0.10);">
-          <div class="comp-file">sequencer.rs:159</div>
+          <div class="comp-file">sequencer.rs:1068</div>
           <div class="comp-sig" style="color:#aeb6ec;font-size:13px;">Sequencer&lt;T, ChainSpec&gt;</div>
         </div>
         <div class="arrow" style="font-size:20px;">→</div>
         <div class="component-box small" style="border-color:#2f6b3a;background:rgba(63,185,80,0.10);">
-          <div class="comp-file">composer.rs:515</div>
+          <div class="comp-file">composer.rs:1339</div>
           <div class="comp-sig" style="color:#8fe0a0;font-size:13px;">Composer&lt;L2&gt;</div>
         </div>
         <div class="arrow" style="font-size:20px;">→</div>
@@ -222,7 +222,7 @@
         </div>
         <div style="font-size:26px;color:#c89cf5;flex:none;">⇢</div>
         <div class="component-box" style="border-color:#8a5fc9;border-style:dashed;background:rgba(200,150,245,0.08);">
-          <div class="comp-file">deriver.rs:45</div>
+          <div class="comp-file">deriver.rs:55</div>
           <div class="comp-sig" style="color:#e3cdff;">pub struct Deriver&lt;L2&gt;</div>
           <div class="comp-desc" style="color:#c8adf0;">independently re-derives state — trusts none of the three above</div>
         </div>
@@ -261,15 +261,15 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">PROTOCOL RESEARCHERS</div>
       <h1 class="intro-title" id="introTitle">How the four components divide the work</h1>
-      <p class="intro-lede">Rollup0 divides its work across four components — sequencer, composer, proof-signer and deriver. Ordinary blocks are the sequencer alone; a Sync block adds the composer, and cannot be emitted until the proof-signer returns an attestation.</p>
+      <p class="intro-lede">RollupX divides its work across four components — sequencer, composer, proof-signer and deriver. Ordinary blocks are the sequencer alone; a Sync block adds the composer, and its batch cannot be posted to L1 until the proof-signer returns an attestation.</p>
       <p class="intro-lede">The deriver never trusts the other three; it independently re-derives the same state from L1 alone.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
-        <li><b>01 · THE LIVE PATH</b>Ordinary blocks are the sequencer alone. One Sync block per L1 block adds the composer — and waits on the proof-signer’s attestation.</li>
-        <li><b>02 · ATTESTATION</b>The proof-signer's Attester signs a hash of the result so the block can be trusted downstream.</li>
+        <li><b>01 · THE LIVE PATH</b>Ordinary blocks are the sequencer alone. One Sync block per L1 block adds the composer — and its L1 batch waits on the proof-signer’s attestation.</li>
+        <li><b>02 · ATTESTATION</b>The proof-signer re-executes the batch and validates its settlement effects; only then does its Attester sign the recomputed public-inputs hash.</li>
         <li><b>03 · THE INDEPENDENT BACKSTOP</b>Deriver re-derives the same state from L1 alone, trusting none of the three.</li>
       </ul>
-      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-rollup0 @ a4b9b2f &mdash; pre-mainnet; interfaces may move.</p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-rollupX @ 2c19e36 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
       </div>
@@ -298,21 +298,21 @@
 
   var kickers = ["THE LIVE PATH", "ATTESTATION", "THE INDEPENDENT BACKSTOP"];
   var captions = [
-    "Ordinary blocks are the sequencer alone. One Sync block per L1 block adds the composer — and that block cannot be emitted until the proof-signer returns an attestation.",
-    "Once Composer finishes, the Attester signs a hash of the result so the block can be trusted downstream.",
+    "Ordinary blocks are the sequencer alone. One Sync block per L1 block adds the composer — and its batch cannot be posted to L1 until the proof-signer returns an attestation.",
+    "The proof-signer re-executes the batch itself and validates its settlement effects; only then does its Attester sign the recomputed public-inputs hash.",
     "Deriver never trusts any of the three — it independently re-derives the same state from L1 alone."
   ];
 
   // All four real components, cited by exact file:line. Rotated/highlighted per step below.
   var citations = [
-    { label: "Sequencer", loc: "crates/eez-driver/src/sequencer.rs:159", color: "#7c83ff",
-      url: "https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-driver/src/sequencer.rs#L159" },
-    { label: "Composer", loc: "crates/eez-composer/src/composer.rs:515", color: "var(--eez-green)",
-      url: "https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-composer/src/composer.rs#L515" },
-    { label: "Proof-signer", loc: "crates/eez-proof-signer/src/attest.rs:52 / :134", color: "#e8b15e",
+    { label: "Sequencer", loc: "crates/eez-driver/src/sequencer.rs:1068", color: "#7c83ff",
+      url: "https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-driver/src/sequencer.rs#L1068" },
+    { label: "Composer", loc: "crates/eez-composer/src/composer.rs:1339", color: "var(--eez-green)",
+      url: "https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-composer/src/composer.rs#L1339" },
+    { label: "Proof-signer", loc: "crates/eez-proof-signer/src/attest.rs:52 / :136", color: "#e8b15e",
       url: "https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-proof-signer/src/attest.rs#L52" },
-    { label: "Deriver", loc: "crates/eez-deriver/src/deriver.rs:45", color: "#c89cf5",
-      url: "https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-deriver/src/deriver.rs#L45" }
+    { label: "Deriver", loc: "crates/eez-deriver/src/deriver.rs:55", color: "#c89cf5",
+      url: "https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-deriver/src/deriver.rs#L55" }
   ];
   var citeHlByStep = [ [0,1], [2], [3] ];
 
@@ -321,51 +321,58 @@
   var codeByStep = [
     [
       "pub struct Sequencer<T, ChainSpec>",
-      "    where T: PayloadTypes<",
-      "    PayloadAttributes = EthPayloadAttributes> { ... }",
+      "where",
+      "    T: PayloadTypes<PayloadAttributes = EthPayloadAttributes>,",
+      "{ ... }",
       "",
       "pub struct Composer<L2: BlockReader> { ... }"
     ],
     [
       "pub struct Sequencer<T, ChainSpec>",
-      "    where T: PayloadTypes<",
-      "    PayloadAttributes = EthPayloadAttributes> { ... }",
+      "where",
+      "    T: PayloadTypes<PayloadAttributes = EthPayloadAttributes>,",
+      "{ ... }",
       "",
       "pub struct Composer<L2: BlockReader> { ... }",
       "",
       "pub(crate) struct Attester { ... }",
       "",
-      "pub(crate) fn sign(&self,",
+      "pub(crate) fn sign(",
+      "    &self,",
       "    public_inputs_hash: AttestablePublicInputsHash,",
       ") -> Result<Bytes, SignerError> {",
-      "    self.signer.sign_prehash(",
-      "        public_inputs_hash.into_inner())",
+      "    // #[cfg(test)] signing-call counter elided",
+      "    self.signer.sign_prehash(public_inputs_hash.into_inner())",
       "}"
     ],
     [
       "pub struct Sequencer<T, ChainSpec>",
-      "    where T: PayloadTypes<",
-      "    PayloadAttributes = EthPayloadAttributes> { ... }",
+      "where",
+      "    T: PayloadTypes<PayloadAttributes = EthPayloadAttributes>,",
+      "{ ... }",
       "",
       "pub struct Composer<L2: BlockReader> { ... }",
       "",
       "pub(crate) struct Attester { ... }",
       "",
-      "pub(crate) fn sign(&self,",
+      "pub(crate) fn sign(",
+      "    &self,",
       "    public_inputs_hash: AttestablePublicInputsHash,",
       ") -> Result<Bytes, SignerError> {",
-      "    self.signer.sign_prehash(",
-      "        public_inputs_hash.into_inner())",
+      "    // #[cfg(test)] signing-call counter elided",
+      "    self.signer.sign_prehash(public_inputs_hash.into_inner())",
       "}",
       "",
       "pub struct Deriver<L2>",
-      "    where L2: BlockReader { ... }"
+      "where",
+      "    L2: BlockReader,",
+      "{ ... }"
     ]
   ];
   var hlByStep = [
-    [0,1,2,4],
-    [6,8,9,10,11,12,13],
-    [15,16]
+    [0,1,2,3,5],
+    [7,9,10,11,12,14,15],
+    [17,18,19,20]
   ];
 
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
