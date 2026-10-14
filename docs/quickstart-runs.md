@@ -7,6 +7,7 @@ Pin: eez-core-protocol `9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f`.
 - Date: 2026-10-14
 - Machine: macOS 26.5.2, arm64, Apple M4
 - forge: 1.7.1 (4072e48705, built 2026-05-08)
+- bash: Homebrew bash 5.3.20, first on PATH. Stock macOS `/bin/bash` 3.2 fails the e2e runner with `script/e2e/lib/E2EBase.sh: line 458: declare: -A: invalid option` (verified 2026-10-14).
 - Conditions: cold (`/tmp/qs-measure` removed first, no forge cache). Docker was not running, so no containers; `kurtosis engine stop` found no engine. Load average before run about 3.3.
 - solc cache: Solc 0.8.34 was already cached (`~/Library/Application Support/svm/0.8.34`; macOS has no `~/.svm`), so the 213 s `forge build` excludes the compiler download. A first-time Foundry user also downloads solc on top of this; download time not measured.
 - Commands: exactly the qs1 sequence from the plan (clone, checkout pin, submodules, `forge build`, `bash script/e2e/run/local/parallel.sh counter counterL2`), with `date` stamps between steps.
