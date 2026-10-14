@@ -182,6 +182,7 @@
         <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:9px;width:230px;">
           <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">proxy.call(receiveTokens)</div>
           <div style="font-size:28px;line-height:1;color:var(--eez-green);">→</div>
+          <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.02em;color:var(--muted);white-space:nowrap;">delivered on the other chain</div>
         </div>
         <div style="flex:1 1 300px;max-width:380px;background:rgba(59,229,126,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:20px 22px;animation:riseIn .4s ease both;">
           <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#7ee08c;">OTHER CHAIN · Bridge</div>
@@ -204,6 +205,7 @@
         <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:9px;width:230px;">
           <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">proxy.call(receiveTokens)</div>
           <div style="font-size:28px;line-height:1;color:var(--eez-green);">→</div>
+          <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.02em;color:var(--muted);white-space:nowrap;">delivered on the other chain</div>
         </div>
         <div style="flex:1 1 300px;max-width:380px;background:rgba(59,229,126,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:20px 22px;animation:riseIn .4s ease both;">
           <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#7ee08c;">ORIGIN CHAIN · Bridge</div>
@@ -282,9 +284,9 @@
 
   var kickers = ["RUN IT.", "LOCK AND MINT.", "BURN AND RELEASE."];
   var captions = [
-    "The scenarios move ETH across: bridge from L1 to L2, bridgeL2 back to L1, with the script playing composer. The test then runs Bridge.sol's token round trip: lock and mint, burn and release.",
-    "Bridge.sol runs the same proxy call for ERC-20s. The origin bridge locks the token and calls the other bridge, which mints a wrapped copy only if the caller is its counterpart's proxy.",
-    "Going back, the bridge burns the wrapped copy and calls the origin bridge, which releases the locked token. The ETH scenarios don't touch Bridge.sol; the step 1 test, test_BridgeTokens_Roundtrip, runs this path."
+    "The scenarios move ETH across: bridge from L1 to L2, bridgeL2 from L2 to L1, with the script playing composer. The test then runs Bridge.sol's token round trip: lock and mint, burn and release.",
+    "Bridge.sol makes the same kind of proxy call for ERC-20s. The origin bridge locks the token and calls the proxy that stands for the other bridge. When the other chain runs that entry, receiveTokens mints a wrapped copy, but only for the counterpart's proxy.",
+    "Going back, the bridge burns the wrapped copy and calls the proxy that stands for the origin bridge. When the origin chain runs that entry, receiveTokens releases the locked token. The ETH scenarios skip Bridge.sol; the step 1 test runs this path."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
@@ -311,6 +313,7 @@
       "",
       "# token path in Bridge.sol: lock/mint, burn/release",
       "$ forge test --match-test test_BridgeTokens_Roundtrip",
+      "⋯",
       "[PASS] test_BridgeTokens_Roundtrip() (gas: 2236711)",
       "Suite result: ok. 1 passed; 0 failed; 0 skipped; …"
     ],
@@ -347,7 +350,7 @@
     ]
   ];
   var hlByStep = [
-    [10, 16, 19, 20],
+    [10, 16, 19, 21],
     [2, 4, 8, 11],
     [4, 7, 12]
   ];
