@@ -256,7 +256,7 @@ The system is flat. Depth comes from tone: canvas (`#0A0A0A`) → screen (`#1616
 
 ### Buttons
 Quiet until touched. Grey at rest, with one gradient action per stage.
-- **Solid pill:** white fill, black mono label (12.5px, 600, 0.03em), padding 5px 5px 5px 20px, ending in a 30px black circle holding an arrow. The circle slides 3px right on hover. This is the index's primary entry (DEPLOY ON TESTNET).
+- **Solid pill:** white fill, black mono label (12.5px, 600, 0.03em), padding 5px 5px 5px 20px, ending in a 30px black circle holding an arrow. The circle slides 3px right on hover. This is the index's primary entry (DAPP DEVELOPERS, the Quickstart).
 - **Outline pill:** the same shape on a transparent fill with an `edge` border. The circle is a `control` fill with an `edge` border. Used for track entries.
 - **Play / Start (stage primary):** the two-stop gradient fill running edge to edge (`border-box`), canvas-colored text, a 1px transparent border, 12px 28px (Start is 16px 34px at 20px text). It brightens to the hover gradient on hover, also `border-box`. No colored outline: a steel ring around the mint end reads as a stray stroke.
 - **Step buttons (Prev/Next):** `control` fill, `control-edge` border, Soft Ink text, 12px 22px. They lift to `control-hover` on hover and drop to 38% opacity when disabled.
@@ -285,7 +285,7 @@ Quiet until touched. Grey at rest, with one gradient action per stage.
 - **Empty state:** a dashed `#262626` box with centered mono text that offers a way out ("Try another keyword or clear filters").
 
 ### Navigation
-- **Index header:** the EEZ logo and a PRE-MAINNET mono label on the left. Mono 12px external links (`eez-core-protocol ↗`, `eez.dev testnet ↗`) in `#9A9A9A` on the right, going white on hover, plus a circular `?` help button. Wraps on narrow screens.
+- **Index header:** the EEZ logo on the left. The index carries its PRE-MAINNET label as a quiet mono line under the footer (`PRE-MAINNET · interfaces may move`); walkthroughs keep theirs in the stage header. Mono 12px external links (`eez-core-protocol ↗`, `eez.dev testnet ↗`) in `#9A9A9A` on the right, going white on hover, plus a circular `?` help button. Wraps on narrow screens.
 - **Stage header:** `← Quickstarts` back link (mono 12px, Slate, nudges left on hover), title, PRE-MAINNET, `NEXT: … →` link (nudges right), the `STEP 1 OF 3` counter and `ALL EXAMPLES →`.
 
 ### Walkthrough Stage (signature component)
