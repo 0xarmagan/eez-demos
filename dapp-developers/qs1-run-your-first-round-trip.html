@@ -149,20 +149,25 @@
     <!-- STEP 1: what you need, then clone at the pin -->
     <div id="s1" style="display:flex;flex-direction:column;gap:26px;">
       <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">WHAT YOU NEED</div>
-      <div style="display:flex;gap:18px;">
-        <div style="width:300px;max-width:100%;background:rgba(63,185,80,0.08);border:1px solid #2f6b3a;border-radius:10px;padding:22px 24px;">
+      <div style="display:flex;gap:16px;">
+        <div style="width:100%;max-width:256px;background:rgba(63,185,80,0.08);border:1px solid #2f6b3a;border-radius:10px;padding:20px 22px;">
           <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--eez-green);">NEEDED</div>
-          <div style="font-size:30px;font-weight:600;margin-top:10px;">Git</div>
+          <div style="font-size:26px;font-weight:600;margin-top:10px;">Foundry 1.7.1</div>
+          <div style="font-size:16px;color:var(--muted);margin-top:8px;line-height:1.45;"><span style="font-family:var(--mono);">forge</span>, <span style="font-family:var(--mono);">cast</span> and <span style="font-family:var(--mono);">anvil</span> on PATH. Install: <span style="font-family:var(--mono);color:#d8d8d8;">book.getfoundry.sh</span></div>
+        </div>
+        <div style="width:100%;max-width:256px;background:rgba(63,185,80,0.08);border:1px solid #2f6b3a;border-radius:10px;padding:20px 22px;">
+          <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--eez-green);">NEEDED</div>
+          <div style="font-size:26px;font-weight:600;margin-top:10px;">Git</div>
           <div style="font-size:16px;color:var(--muted);margin-top:8px;line-height:1.45;">clones the repo and its submodules</div>
         </div>
-        <div style="width:300px;max-width:100%;background:rgba(63,185,80,0.08);border:1px solid #2f6b3a;border-radius:10px;padding:22px 24px;">
+        <div style="width:100%;max-width:256px;background:rgba(63,185,80,0.08);border:1px solid #2f6b3a;border-radius:10px;padding:20px 22px;">
           <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--eez-green);">NEEDED</div>
-          <div style="font-size:30px;font-weight:600;margin-top:10px;">Foundry 1.7.1</div>
-          <div style="font-size:16px;color:var(--muted);margin-top:8px;line-height:1.45;"><span style="font-family:var(--mono);">forge</span> builds, <span style="font-family:var(--mono);">anvil</span> runs the local chains</div>
+          <div style="font-size:26px;font-weight:600;margin-top:10px;">bash 4+</div>
+          <div style="font-size:16px;color:var(--muted);margin-top:8px;line-height:1.45;">macOS ships bash 3.2, which fails here. <span style="font-family:var(--mono);">brew install bash</span> puts bash 5 first on PATH.</div>
         </div>
-        <div style="width:300px;max-width:100%;background:transparent;border:1px dashed #3a3a3a;border-radius:10px;padding:22px 24px;">
+        <div style="width:100%;max-width:256px;background:transparent;border:1px dashed #3a3a3a;border-radius:10px;padding:20px 22px;">
           <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">NOT NEEDED</div>
-          <div style="font-size:30px;font-weight:600;margin-top:10px;color:#6e7681;text-decoration:line-through;">Docker</div>
+          <div style="font-size:26px;font-weight:600;margin-top:10px;color:#6e7681;text-decoration:line-through;">Docker</div>
           <div style="font-size:16px;color:var(--muted);margin-top:8px;line-height:1.45;">nothing here runs in a container</div>
         </div>
       </div>
@@ -240,7 +245,7 @@
           </div>
         </div>
       </div>
-      <div style="font-size:17px;color:var(--muted);max-width:1060px;line-height:1.5;">In each run, one call to <span style="font-family:var(--mono);color:#d8d8d8;">incrementProxy()</span> reached the other chain and got <span style="font-family:var(--mono);color:#d8d8d8;">1</span> back in the same transaction. PASS also means the script checked the entries on both chains against the ones it computed.</div>
+      <div style="font-size:17px;color:var(--muted);max-width:1060px;line-height:1.5;">In each run, one call to <span style="font-family:var(--mono);color:#d8d8d8;">incrementProxy()</span> got <span style="font-family:var(--mono);color:#d8d8d8;">1</span> back in the same transaction. PASS also means the script checked the entries on both chains against the ones it computed.</div>
     </div>
 
   
@@ -275,7 +280,7 @@
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">Run Your First Round Trip</h1>
       <p class="intro-lede">Clone eez-core-protocol at a pinned commit, build it, and run two scenarios on local anvil chains: a call that starts on L1 and gets its answer from L2, and the same call the other way round.</p>
-      <p class="intro-lede">You need Git and Foundry, no Docker. It took about 5 minutes on an Apple M4 laptop with Foundry 1.7.1, and the first build is most of it.</p>
+      <p class="intro-lede">You need Foundry 1.7.1 (<code style="font-family:var(--mono);">forge</code>, <code style="font-family:var(--mono);">cast</code> and <code style="font-family:var(--mono);">anvil</code> on PATH; <a href="https://book.getfoundry.sh/getting-started/installation" target="_blank" style="color:#d8d8d8;">install guide</a>), Git, and bash 4 or newer. macOS ships bash 3.2; <code style="font-family:var(--mono);">brew install bash</code> puts bash 5 first on PATH. No Docker. It took about 5 minutes on an Apple M4 laptop with Foundry 1.7.1, first-time solc download not included, and the first build is most of it.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 · CLONE AT THE PIN</b>Check out the exact commit these cards were run against, so your output matches theirs.</li>
@@ -311,7 +316,7 @@
 
   var kickers = ["CLONE AT THE PIN.", "BUILD AND RUN BOTH DIRECTIONS.", "WHAT THAT PASS PROVED."];
   var captions = [
-    "Clone at a fixed commit so your output matches these cards. You need Git and Foundry; nothing runs in Docker.",
+    "Clone at a fixed commit so your output matches these cards. You need Foundry 1.7.1 with forge, cast and anvil on PATH, Git, and bash 4 or newer (macOS ships 3.2; brew install bash puts bash 5 first on PATH). No Docker.",
     "One build, then both scenarios at once. About 5 minutes on an Apple M4 laptop with Foundry 1.7.1, and the first build is most of it.",
     "Locally, the scenario script played composer. You'll see what it did in two cards."
   ];
@@ -320,7 +325,11 @@
   // so the panel never dumps the full function ungrouped.
   var codeByStep = [
     [
-      "# needs Git and Foundry 1.7.1; no Docker",
+      "# needs Foundry 1.7.1 (forge, cast, anvil on PATH),",
+      "# Git, and bash 4+. No Docker.",
+      "# Foundry: https://book.getfoundry.sh/getting-started/installation",
+      "# macOS ships bash 3.2; this puts bash 5 first on PATH:",
+      "#   brew install bash",
       "",
       "$ git clone https://github.com/eez-association/eez-core-protocol.git",
       "$ cd eez-core-protocol",
@@ -355,7 +364,7 @@
     '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/test/mocks/CounterContracts.sol#L62" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/test/mocks/CounterContracts.sol:62 · incrementProxy ↗</a>'
   ];
   var hlByStep = [
-    [2,3,4,5],
+    [6,7,8,9],
     [1,3,6,7,9],
     [3,4,6]
   ];
