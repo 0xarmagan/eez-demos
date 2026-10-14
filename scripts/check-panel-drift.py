@@ -100,6 +100,7 @@ TEST_SNIPPET_MAP = {
     "q5-encode-a-calls-content-hash.html": "test/Q5ContentHash.t.sol",
     "q6-why-you-cant-call-the-manager-directly.html": "test/Q6ManagerDirect.t.sol",
     "q8-read-a-remote-contracts-state.html": "test/Q8RemoteReads.t.sol",
+    "qs2-read-your-side-of-it.html": "test/QS2CounterAndProxy.t.sol",
 }
 
 # Every Solidity walkthrough also embeds its whole snippet behind the FULL
