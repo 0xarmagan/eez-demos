@@ -50,6 +50,12 @@ jobs:
       - name: Snippet-fidelity checker still catches injected drift
         run: python3 scripts/test_snippet_fidelity.py
 
+      - name: Quickstart excerpts are verbatim upstream
+        run: python3 scripts/check-excerpts.py
+
+      - name: Excerpt checker still catches drift
+        run: python3 scripts/test_check_excerpts.py
+
       # The export gate: every walkthrough reaches llms-full.txt, with a code
       # block for every step it narrates. "At least one block" was the old
       # floor and a page could lose two steps of three under it.

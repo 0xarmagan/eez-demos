@@ -43,6 +43,7 @@ SNIPPETS = os.path.join(REPO_ROOT, "snippets")
 # protocol-researchers page WAS a silent skip. It now scans both directories.
 SNIPPET_MAP = {
     "pr5-how-the-address-is-derived.html": "q1-compute-address.sol",
+    "qs2-read-your-side-of-it.html": "qs2-counter-and-proxy.sol",
     "q2-send-a-cross-chain-call.html": "q2-cross-chain-call.sol",
     "q3-fix-the-msg-sender-gotcha.html": "q3-msg-sender.sol",
     "q4-check-if-an-address-is-a-proxy.html": "q4-proxy-registry.sol",
@@ -74,6 +75,18 @@ NON_SOLIDITY = {
     "pr2-commit-first-repair-if-needed.html": "Rust (eez-composer)",
     "pr3-the-deriver.html": "Rust (eez-deriver)",
     "pr4-how-the-composer-proves-a-batch.html": "protobuf + Rust constants",
+    "qs1-run-your-first-round-trip.html": "shell commands and their recorded output (run by scripts/run-quickstart.sh)",
+}
+
+# Verbatim upstream excerpts. Not compiled here, but checked line for line against
+# the pinned source by scripts/check-excerpts.py, which is the stronger check for
+# code nobody should edit after copying.
+EXCERPT_CHECKED = {
+    "qs0-one-call-two-rollups.html": "upstream excerpt, check-excerpts.py",
+    "qs3-who-answered.html": "upstream excerpt, check-excerpts.py",
+    "qs5-three-gotchas-before-you-build.html": "upstream excerpt, check-excerpts.py",
+    "qs7-cross-chain-flash-loan.html": "shell step + upstream excerpts, run-quickstart.sh + check-excerpts.py",
+    "qs8-bridge-tokens-both-ways.html": "shell step + upstream excerpts, run-quickstart.sh + check-excerpts.py",
 }
 
 # Panel lines that are prose or deliberate elision, not Solidity to compile.
@@ -158,7 +171,7 @@ def main():
     for track in ("dapp-developers", "protocol-researchers"):
         d = os.path.join(REPO_ROOT, track)
         for f in sorted(os.listdir(d)):
-            if f.endswith(".html") and re.match(r"(q|pr)[1-9]", f):
+            if f.endswith(".html") and re.match(r"(qs[0-9]|q[1-9]|pr[1-9])", f):
                 present.append((f, os.path.join(d, f)))
 
     failures, checked = [], 0
@@ -181,11 +194,17 @@ def main():
             print(f"  not Solidity, nothing to compile: {page} "
                   f"({NON_SOLIDITY[page]})")
             continue
+        if page in EXCERPT_CHECKED:
+            print(f"  verbatim upstream excerpt, checked by check-excerpts.py: {page} "
+                  f"({EXCERPT_CHECKED[page]})")
+            continue
         failures.append(f"{page}: no snippet registered in SNIPPET_MAP (add one, "
                         f"or name it in ILLUSTRATIVE_ONLY / NON_SOLIDITY with a reason)")
 
     for page, snippet_name in sorted(SNIPPET_MAP.items()):
         page_path = find_page_path(page)
+        if page_path is None and page.startswith("qs"):
+            continue  # registered ahead of its card; check-excerpts.py catches a missing card
         if page_path is None:
             failures.append(f"{page}: registered in SNIPPET_MAP but the page is missing")
             continue
@@ -242,6 +261,8 @@ def main():
     # asserts equality line for line, including blanks and line count.
     for page, rel in sorted(FULL_SNIPPET_MAP.items()):
         page_path = find_page_path(page)
+        if page_path is None and page.startswith("qs"):
+            continue  # registered ahead of its card
         snippet_path = os.path.join(SNIPPETS, rel)
         if page_path is None:
             failures.append(f"{page}: registered in FULL_SNIPPET_MAP but the page is missing")
