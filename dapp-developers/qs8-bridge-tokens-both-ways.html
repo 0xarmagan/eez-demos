@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
+<link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
+<title>Bridge Tokens Both Ways — EEZ</title>
+<link rel="canonical" href="https://eez-demos.vercel.app/dapp-developers/qs8-bridge-tokens-both-ways.html">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;background:#000;}
+  :root{ --sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; --muted:#9aa3b3; --label:#9ba6d6; --eez-green:#3BE57E; --eez-canvas:#0A0A0A; --eez-screen:#161616; --eez-chrome:#1F1F1F; --eez-edge:#2E2E2E; --eez-grad:linear-gradient(90deg,#8AE5AC 0%,#6283BD 55%,#4439CB 100%); --eez-grad-btn:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%); --eez-ink-on-grad:#0A0A0A; }
+  @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
+  @keyframes flowByte{ from{transform:translateX(-14px);opacity:0;} to{transform:translateX(0);opacity:1;} }
+  @keyframes pulse{ 0%,100%{box-shadow:0 0 0 0 rgba(63,185,80,0.4);} 50%{box-shadow:0 0 0 8px rgba(63,185,80,0);} }
+  @keyframes blink{ 0%,49%{opacity:1;} 50%,100%{opacity:0;} }
+  @media (prefers-reduced-motion: reduce){ *{ animation-duration:0.001ms !important; animation-delay:0ms !important; transition-duration:0.001ms !important; } }
+  button{font-family:var(--mono);}
+  button:focus-visible{outline:2px solid var(--eez-green);outline-offset:2px;}
+  .btn:hover{background:#1a1a1a !important;}
+  .btn:disabled{opacity:.38;cursor:default;}
+  .btn:disabled:hover{background:#141414 !important;}
+  .btn-play:hover{background:linear-gradient(90deg,#9DEBBB 0%,#7593CD 100%) !important;}
+  a.back{font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;}
+  a.back{transition:color .15s ease,transform .15s ease;}
+  a.back:hover{color:#fff;}
+  a.back:not([style]):hover{transform:translateX(-3px);}
+  a.back[style]:hover{transform:translateX(3px);}
+  .byte{display:inline-flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:14px;border-radius:4px;padding:5px 8px;}
+
+  /* Mobile reflow: below 1120px, the fixed 1920x1080 stage becomes a normal
+     stacked document instead of a scaled-and-panned deck. !important is
+     required to win over the inline styles the markup and scaleStage() set. */
+  a:focus-visible{outline:2px solid var(--eez-green);outline-offset:2px;}
+  @media (max-width:1120px){
+    .stage-wrap{position:static !important;inset:auto !important;display:block !important;overflow:visible !important;height:auto !important;width:100% !important;}
+    #stage{position:static !important;width:100% !important;height:auto !important;transform:none !important;background-size:24px 24px;}
+    #stage > div{position:static !important;width:100% !important;height:auto !important;}
+    #stage > div:first-child{position:relative !important;padding:16px 20px !important;flex-wrap:wrap;row-gap:10px;}
+    #stage > div:nth-child(2){padding:24px 20px !important;justify-content:flex-start !important;}
+    #stage > div:nth-child(3){margin:0 20px 24px;width:calc(100% - 40px) !important;}
+    #stage > div:nth-child(3) #codePanel{height:auto !important;max-height:60vh;font-size:15px !important;line-height:28px !important;}
+    #stage > div:last-child{flex-direction:column;align-items:stretch !important;gap:20px;padding:20px 20px 32px !important;}
+    #stage > div:last-child > div:first-child{max-width:none !important;}
+    #stage > div:last-child > div:last-child{align-items:stretch !important;}
+    #stage > div:last-child button{flex:1;}
+    /* Safety net: bespoke per-diagram rows use fixed gaps/widths that were
+       sized for the 1920px stage. Rather than hand-adapt 14 different
+       diagrams, force every inline flex row inside the stage to wrap
+       instead of overflow — turns "must pan sideways" into "reads on two
+       lines", satisfying reflow even where a row wasn't designed for 350px. */
+    #stage *{min-width:0;overflow-wrap:anywhere;}
+    #stage svg{width:auto !important;height:auto !important;}
+    #stage [style*="display:flex"]{flex-wrap:wrap !important;}
+    body{overflow-x:hidden;}
+    /* Scroll affordance: codePanel already scrolls horizontally (overflow-x:auto)
+       when a line is longer than the viewport — this just makes that visible,
+       since a static screenshot or a first glance gives no other hint it's there. */
+    #codePanel{position:relative;}
+    #codePanel::after{content:"";position:absolute;top:0;right:0;bottom:0;width:28px;background:linear-gradient(to right,transparent,#050505);pointer-events:none;}
+  }
+  /* ============================================================
+     LEAD-IN SLIDE  (see docs/DESIGN.md - the settled format is two
+     layers: card -> 3-step walkthrough. The orientation copy that
+     used to sit ABOVE the stage now renders as a slide INSIDE it,
+     so the page still never scrolls and there is no second column
+     and no explanatory figure.)
+
+     It is a <section>, and it is inserted as the FOURTH child of
+     #stage, on purpose: the shared <1120px block above addresses
+     #stage > div:first-child / :nth-child(2) / :nth-child(3) /
+     :last-child, and a non-div in slot 4 leaves all four of those
+     resolving to exactly the same elements as before.
+
+     No new colours - every value is a :root custom property or a
+     literal already used elsewhere on this page.
+     ============================================================ */
+  #intro{position:absolute;left:0;top:97px;right:0;bottom:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:0 96px;font-family:var(--sans);}
+  #intro[hidden]{display:none;}
+  /* riseIn is the page's existing entrance keyframe, and the
+     prefers-reduced-motion block above already neutralises it. */
+  .intro-inner{width:100%;max-width:1500px;animation:riseIn .4s ease both;}
+  .intro-eyebrow{font-family:var(--mono);font-size:16px;letter-spacing:0.16em;color:var(--eez-green);}
+  .intro-title{font-size:56px;font-weight:600;line-height:1.14;color:#fff;margin:20px 0 0;max-width:1380px;text-wrap:pretty;}
+  .intro-lede{font-size:25px;line-height:1.5;color:#d8d8d8;margin:26px 0 0;max-width:1280px;text-wrap:pretty;}
+  .intro-learn-label{font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:var(--muted);margin-top:54px;}
+  /* Three across, one per demo step - a full-width index, not cards
+     in a void: a hairline rule per column, no box, no fill. */
+  .intro-learn{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px;}
+  .intro-learn li{border-top:1px solid var(--eez-edge);padding-top:16px;font-size:19px;line-height:1.5;color:#d8d8d8;text-wrap:pretty;}
+  .intro-learn b{display:block;font-family:var(--mono);font-size:14px;font-weight:400;letter-spacing:0.12em;color:var(--eez-green);margin-bottom:11px;}
+  .intro-actions{margin-top:54px;}
+  /* Same gradient treatment as .btn-play, one size up for the stage;
+     it carries class="btn-play" so it inherits that hover rule and
+     the shared button:focus-visible green ring. */
+  #btnStart{font-size:20px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:1px solid #6283BD;border-radius:100px;padding:16px 34px;cursor:pointer;}
+
+  @media (max-width:1120px){
+    #intro{position:static !important;padding:28px 20px 36px;}
+    .intro-title{font-size:30px;margin-top:14px;}
+    .intro-lede{font-size:17px;margin-top:16px;}
+    .intro-learn-label{margin-top:34px;}
+    .intro-learn{grid-template-columns:minmax(0,1fr);gap:20px;}
+    .intro-learn li{font-size:16px;}
+    .intro-actions{margin-top:32px;}
+    #btnStart{font-size:16px;padding:13px 24px;width:100%;}
+  }
+</style>
+<!-- The stage is authored at 1920x1080 and fitted by scaleStage(); the lead-in
+     hides the demo behind it from JS. Both corrections live in the script at the
+     end of <body>, and the render-blocking eez-tour.js fetch gives the browser a
+     paint opportunity before they run - so the first frame used to be the
+     unscaled stage with the demo showing through the lead-in. Holding the stage
+     until that init pass has run makes the first painted frame the correct one.
+     The class is set from script, so with JS off nothing is ever hidden. -->
+<script>document.documentElement.className += " pre-fit";</script>
+<style>.pre-fit #stage{visibility:hidden;}</style>
+</head>
+<body>
+<div role="main" class="stage-wrap" style="position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
+<div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background-color:var(--eez-canvas);background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:42px 42px;color:#fff;transform-origin:center center;">
+
+  <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1a1a1a;">
+    <div style="position:absolute;left:0;bottom:0;width:100%;height:3px;background:#1a1a1a;"><div id="timebar" style="height:100%;width:100%;transform:scaleX(0);transform-origin:left;background:var(--eez-grad);"></div></div>
+    <div style="display:flex;align-items:center;gap:18px;">
+      <a class="back" href="../index.html">← Quickstarts</a>
+      <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">Bridge Tokens Both Ways</div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#8a8a8a;">PRE-MAINNET</div>
+      <a class="back" href="../index.html#dapp-developers" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: All dApp Developer Demos &rarr;</a>
+      </div>
+    <div style="display:flex;align-items:center;gap:22px;">
+      <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
+      <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">STEP 1 OF 3</div>
+      <a class="back" href="../index.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">ALL EXAMPLES →</a>
+    </div>
+  </div>
+
+  <!-- ===== DIAGRAM ===== -->
+  <div id="stageCol" style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
+
+
+
+    <!-- STEP 1: the two scenarios, one per direction (ETH escrow) -->
+    <div id="s1" style="display:flex;flex-direction:column;gap:26px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">TWO SCENARIOS · ONE PER DIRECTION</div>
+      <div style="display:flex;flex-direction:column;gap:18px;width:982px;max-width:100%;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:22px 24px;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--eez-green);width:92px;flex:none;">bridge</div>
+        <div style="font-family:var(--mono);font-size:16px;color:#eef3f8;">L1</div>
+        <div style="font-size:20px;color:var(--eez-green);">→</div>
+        <div style="font-family:var(--mono);font-size:16px;color:#eef3f8;">L2</div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--muted);">0.00001 ETH in · etherDelta +</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;margin-left:auto;">PASS</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px;">
+        <div style="font-family:var(--mono);font-size:13px;color:var(--eez-green);width:92px;flex:none;">bridgeL2</div>
+        <div style="font-family:var(--mono);font-size:16px;color:#eef3f8;">L2</div>
+        <div style="font-size:20px;color:var(--eez-green);">→</div>
+        <div style="font-family:var(--mono);font-size:16px;color:#eef3f8;">L1</div>
+        <div style="font-family:var(--mono);font-size:13px;color:var(--muted);">0.00001 ETH out · etherDelta −</div>
+        <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;margin-left:auto;">PASS</div>
+      </div>
+      </div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">Going out, the L1 manager keeps the ETH and credits the rollup. Coming back, the rollup's credit drops and the L1 escrow pays the receiver. Locally, the scenario script plays composer: it posts the entries a composer would. The forge test then runs Bridge.sol's ERC-20 round trip.</div>
+    </div>
+
+    <!-- STEP 2: lock on the origin chain, mint a wrapped copy on the other -->
+    <div id="s2" style="display:none;flex-direction:column;gap:34px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">OUT · LOCK, THEN MINT</div>
+      <div style="display:flex;align-items:center;">
+        <div style="flex:1 1 300px;max-width:380px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:20px 22px;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">ORIGIN CHAIN · Bridge</div>
+          <div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">token locked</div>
+          <div style="font-family:var(--mono);font-size:15px;color:var(--muted);margin-top:6px;">safeTransferFrom → Bridge</div>
+        </div>
+        <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:9px;width:230px;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">proxy.call(receiveTokens)</div>
+          <div style="font-size:28px;line-height:1;color:var(--eez-green);">→</div>
+        </div>
+        <div style="flex:1 1 300px;max-width:380px;background:rgba(59,229,126,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:20px 22px;animation:riseIn .4s ease both;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#7ee08c;">OTHER CHAIN · Bridge</div>
+          <div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">WrappedToken minted</div>
+          <div style="font-family:var(--mono);font-size:15px;color:var(--eez-green);margin-top:6px;">mint(to, amount)</div>
+        </div>
+      </div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">The call arrives through the proxy that stands for the origin chain's bridge. <span style="font-family:var(--mono);">receiveTokens</span> reverts for any other caller, so only that bridge can mint.</div>
+    </div>
+
+    <!-- STEP 3: burn the wrapped copy, release the locked original -->
+    <div id="s3" style="display:none;flex-direction:column;gap:34px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">BACK · BURN, THEN RELEASE</div>
+      <div style="display:flex;align-items:center;">
+        <div style="flex:1 1 300px;max-width:380px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:20px 22px;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">OTHER CHAIN · Bridge</div>
+          <div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">WrappedToken burned</div>
+          <div style="font-family:var(--mono);font-size:15px;color:var(--muted);margin-top:6px;">burn(msg.sender, amount)</div>
+        </div>
+        <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:9px;width:230px;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">proxy.call(receiveTokens)</div>
+          <div style="font-size:28px;line-height:1;color:var(--eez-green);">→</div>
+        </div>
+        <div style="flex:1 1 300px;max-width:380px;background:rgba(59,229,126,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:20px 22px;animation:riseIn .4s ease both;">
+          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#7ee08c;">ORIGIN CHAIN · Bridge</div>
+          <div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">token released</div>
+          <div style="font-family:var(--mono);font-size:15px;color:var(--eez-green);margin-top:6px;">safeTransfer(to, amount)</div>
+        </div>
+      </div>
+      <div style="font-size:16px;color:var(--muted);max-width:900px;">The bridge recorded where each wrapped token came from, so the return call names the original token and its home rollup. There, <span style="font-family:var(--mono);">originalRollupId == rollupId</span>, and the bridge pays out of what it locked.</div>
+    </div>
+
+  
+    <!-- Narration sits directly under the diagram it describes (audit fix 04):
+         same #kicker/#caption ids, so render() is untouched. -->
+    <div id="narration" style="margin-top:40px;border-top:1px solid #1a1a1a;padding-top:26px;max-width:1010px;" aria-live="polite" aria-atomic="true">
+      <div id="kicker" style="font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:var(--eez-green);margin-bottom:11px;"></div>
+      <div id="caption" style="font-size:22px;line-height:1.45;color:#d8d8d8;text-wrap:pretty;"></div>
+    </div>
+</div>
+
+  <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:var(--eez-chrome);border:1px solid var(--eez-edge);border-radius:10px;overflow:hidden;">
+    <div aria-hidden="true" style="position:absolute;left:0;top:0;right:0;height:2px;background:var(--eez-grad);z-index:4;"></div>
+    <div style="display:flex;align-items:center;gap:14px;padding:14px 114px 14px 20px;border-bottom:1px solid var(--eez-edge);background:var(--eez-chrome);position:relative;">
+      <div style="display:flex;align-items:center;gap:8px;flex:none;" title="This source is cited at a pinned commit, not a moving branch">
+        <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
+        <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
+      </div>
+      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh ↗</a></div>
+      <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
+    </div>
+    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
+  </div>
+
+  <!-- ===== LEAD-IN SLIDE - shown before the walkthrough begins =====
+       This is a lead-in, NOT step 0. N, step, stepLabel, the dots,
+       kickers, captions and codeByStep are all untouched, so the
+       counter still reads STEP 1 OF 3 and there are still three dots.
+       Inserted as the 4th child of #stage; see the CSS note. -->
+  <section id="intro" aria-labelledby="introTitle">
+    <div class="intro-inner">
+      <div class="intro-eyebrow">DAPP DEVELOPERS</div>
+      <h1 class="intro-title" id="introTitle">Bridge Tokens Both Ways</h1>
+      <p class="intro-lede">Run the two bridge scenarios and watch ETH go from L1 to L2 and back, then run the test that sends an ERC-20 through Bridge.sol and back.</p>
+      <p class="intro-lede">Then read how Bridge.sol does the same for ERC-20s: lock and mint going out, burn and release coming back. Bridge.sol is a test fixture, not a production bridge.</p>
+      <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
+      <ul class="intro-learn">
+        <li><b>01 · RUN IT.</b>Both ETH directions and the token round trip pass from a fresh pinned clone.</li>
+        <li><b>02 · LOCK AND MINT.</b>Only the other bridge's proxy can mint the wrapped copy.</li>
+        <li><b>03 · BURN AND RELEASE.</b>Burning the copy releases the original it stands for.</li>
+      </ul>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
+      <div class="intro-actions">
+        <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
+      </div>
+    </div>
+  </section>
+
+  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:flex-end;padding:0 48px;gap:48px;">
+    <div id="stepNav" style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
+        <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:1px solid #6283BD;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
+        <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
+      </div>
+      <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="../assets/eez-tour.js"></script>
+<script>
+(function(){
+  var N = 3, STEP_MS = 3200;
+  var step = 0, playing = false, timer = null;
+
+  var kickers = ["RUN IT.", "LOCK AND MINT.", "BURN AND RELEASE."];
+  var captions = [
+    "The scenarios move ETH across: bridge from L1 to L2, bridgeL2 back to L1, with the script playing composer. The test then runs Bridge.sol's token round trip: lock and mint, burn and release.",
+    "Bridge.sol runs the same proxy call for ERC-20s. The origin bridge locks the token and calls the other bridge, which mints a wrapped copy only if the caller is its counterpart's proxy.",
+    "Going back, the bridge burns the wrapped copy and calls the origin bridge, which releases the locked token. The ETH scenarios don't touch Bridge.sol; the step 1 test, test_BridgeTokens_Roundtrip, runs this path."
+  ];
+
+  // Progressive code reveal: each step shows only the lines relevant so far,
+  // so the panel never dumps the full function ungrouped.
+  var codeByStep = [
+    [
+      "# needs Git, Foundry 1.7.1 (forge, cast, anvil on PATH)",
+      "# and bash 4+; macOS ships 3.2, so: brew install bash",
+      "# fresh clone at the pinned commit, then build",
+      "$ git clone https://github.com/eez-association/eez-core-protocol.git",
+      "$ cd eez-core-protocol",
+      "$ git checkout -q 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f",
+      "$ git submodule update --init --recursive",
+      "$ forge build",
+      "",
+      "# one scenario per direction, run side by side",
+      "$ bash script/e2e/run/local/parallel.sh bridge bridgeL2",
+      "  [bridgeL2] starting (L1=18547 chain=41339, L2=18548 chain=41340)",
+      "  [bridge] starting (L1=18545 chain=41337, L2=18546 chain=41338)",
+      "  [bridge] PASS",
+      "  [bridgeL2] PASS",
+      "",
+      "===== RESULT: 2 passed, 0 failed, 0 skipped =====",
+      "",
+      "# token path in Bridge.sol: lock/mint, burn/release",
+      "$ forge test --match-test test_BridgeTokens_Roundtrip",
+      "[PASS] test_BridgeTokens_Roundtrip() (gas: 2236711)",
+      "Suite result: ok. 1 passed; 0 failed; 0 skipped; …"
+    ],
+    [
+      "// ORIGIN CHAIN · bridgeTokens(token, amount, …)",
+      "// Native token: lock in this contract",
+      "IERC20(token).safeTransferFrom(msg.sender, address(this), amount);",
+      "// payload = receiveTokens(token, rollupId, to, amount, …)",
+      "(bool success, bytes memory reason) = bridgeProxy.call(payload);",
+      "if (!success) revert ProxyCallFailed(reason);",
+      "",
+      "// OTHER CHAIN · receiveTokens, via onlyBridgeProxy",
+      "if (msg.sender != expectedProxy) revert UnauthorizedCaller();",
+      "// Token is foreign → mint wrapped tokens",
+      "// wrapped = _getOrDeployWrapped(originalToken, …)",
+      "IBridgeToken(wrapped).mint(to, amount);",
+      "emit WrappedTokensMinted(wrapped, to, amount);"
+    ],
+    [
+      "// OTHER CHAIN · bridgeTokens(wrapped, amount, …)",
+      "TokenInfo memory info = wrappedTokenInfo[token];",
+      "if (info.originalToken != address(0)) {",
+      "// Wrapped token: burn and trace back to original",
+      "IBridgeToken(token).burn(msg.sender, amount);",
+      "// payload names info.originalToken, info.originalRollupId",
+      "⋯",
+      "(bool success, bytes memory reason) = bridgeProxy.call(payload);",
+      "",
+      "// ORIGIN CHAIN · receiveTokens, via onlyBridgeProxy",
+      "if (originalRollupId == rollupId) {",
+      "// Token is native to this chain → release locked tokens",
+      "IERC20(originalToken).safeTransfer(to, amount);",
+      "emit TokensReleased(originalToken, to, amount);"
+    ]
+  ];
+  var hlByStep = [
+    [10, 16, 19, 20],
+    [2, 4, 8, 11],
+    [4, 7, 12]
+  ];
+  // Each step cites its own source: the runner, then the two Bridge.sol paths.
+  // Literal anchors so verify-citations.py sees and pins them.
+  var citeByStep = [
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/periphery/Bridge.sol#L166" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/periphery/Bridge.sol:166 · bridgeTokens ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/periphery/Bridge.sol#L226" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/periphery/Bridge.sol:226 · receiveTokens ↗</a>'
+  ];
+  // The shell step carries a 69-character clone URL, so each step sets its own
+  // type size to keep every line inside the 662px panel without a scrollbar.
+  var fontByStep = [["13px","22px"], ["14px","25px"], ["14px","25px"]];
+  var fullSnippet = [];
+  var showFull = false;
+  function currentLines(){ return showFull ? fullSnippet : (codeByStep[step] || []); }
+
+  var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
+
+  
+  // Single-pass tokenizer: strings and comments are consumed before identifiers,
+  // so keywords inside a string literal are never colorized and the highlighter
+  // never re-scans its own injected markup.
+  var HL_KW = {
+    // Solidity
+    "pragma":1,"import":1,"contract":1,"interface":1,"library":1,"abstract":1,
+    "function":1,"constructor":1,"modifier":1,"fallback":1,"receive":1,
+    "event":1,"emit":1,"error":1,"revert":1,"require":1,"assert":1,
+    "return":1,"returns":1,"if":1,"else":1,"for":1,"while":1,"do":1,
+    "break":1,"continue":1,"try":1,"catch":1,"unchecked":1,"assembly":1,
+    "new":1,"delete":1,"using":1,"is":1,"struct":1,"enum":1,"mapping":1,
+    "public":1,"private":1,"internal":1,"external":1,
+    "pure":1,"view":1,"payable":1,"nonpayable":1,
+    "immutable":1,"constant":1,"override":1,"virtual":1,"indexed":1,"anonymous":1,
+    "memory":1,"storage":1,"calldata":1,"transient":1,
+    // Rust
+    "pub":1,"fn":1,"let":1,"mut":1,"match":1,"impl":1,"trait":1,"mod":1,
+    "use":1,"async":1,"await":1,"where":1,"crate":1,"dyn":1,"ref":1,"move":1,
+    // protobuf / gRPC
+    "service":1,"rpc":1,"message":1,"syntax":1,"repeated":1,"optional":1
+  };
+  var HL_BI = {
+    "keccak256":1,"sha256":1,"ripemd160":1,"ecrecover":1,
+    "abi":1,"encode":1,"encodePacked":1,"encodeCall":1,
+    "encodeWithSelector":1,"encodeWithSignature":1,"decode":1,
+    "msg":1,"block":1,"tx":1,"gasleft":1,"blockhash":1,"selfdestruct":1,
+    "type":1,"creationCode":1,"runtimeCode":1,
+    "call":1,"staticcall":1,"delegatecall":1,"transfer":1,"send":1,
+    "computeCrossChainCallHash":1,
+    "executeCrossChainCall":1,"staticCrossChainCall":1,"executeOnBehalf":1
+  };
+  function hlIsType(w) {
+    return /^(address|bool|string|byte)$/.test(w)
+      || /^u?int([0-9]+)?$/.test(w)
+      || /^bytes([0-9]+)?$/.test(w);
+  }
+  function hlEsc(s) {
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  }
+  function hlSpan(color, text, italic) {
+    return '<span style="color:' + color + (italic ? ";font-style:italic" : "") + '">'
+      + hlEsc(text) + '</span>';
+  }
+  function highlightCode(line) {
+    var C_KW = "#ff7b72", C_TY = "#79c0ff", C_BI = "#d2a8ff",
+        C_ST = "#a5d6ff", C_CM = "#6e7681", C_NM = "#79c0ff";
+    var out = "", i = 0, n = line.length;
+    while (i < n) {
+      var ch = line.charAt(i);
+      // line comment — consumes the rest of the line
+      if (ch === "/" && line.charAt(i + 1) === "/") {
+        out += hlSpan(C_CM, line.slice(i), true);
+        break;
+      }
+      // string literal
+      if (ch === '"' || ch === "'") {
+        var q = ch, j = i + 1;
+        while (j < n && line.charAt(j) !== q) {
+          if (line.charAt(j) === "\\") { j++; }
+          j++;
+        }
+        var end = Math.min(j + 1, n);
+        out += hlSpan(C_ST, line.slice(i, end));
+        i = end;
+        continue;
+      }
+      // identifier
+      if (/[A-Za-z_$]/.test(ch)) {
+        var k = i;
+        while (k < n && /[A-Za-z0-9_$]/.test(line.charAt(k))) { k++; }
+        var w = line.slice(i, k);
+        if (HL_KW[w]) { out += hlSpan(C_KW, w); }
+        else if (hlIsType(w)) { out += hlSpan(C_TY, w); }
+        else if (HL_BI[w]) { out += hlSpan(C_BI, w); }
+        else { out += hlEsc(w); }
+        i = k;
+        continue;
+      }
+      // numeric literal (incl. hex)
+      if (/[0-9]/.test(ch)) {
+        var m = i;
+        while (m < n && /[0-9a-fA-FxX_.]/.test(line.charAt(m))) { m++; }
+        out += hlSpan(C_NM, line.slice(i, m));
+        i = m;
+        continue;
+      }
+      out += hlEsc(ch);
+      i++;
+    }
+    return out;
+  }
+
+  function render(){
+    document.getElementById("stepLabel").textContent = "STEP " + (step+1) + " OF " + N;
+    document.getElementById("kicker").textContent = kickers[step];
+    document.getElementById("caption").textContent = captions[step];
+    document.getElementById("btnPlay").textContent = playing ? "❚❚ Pause" : "▶ Play";
+
+    els.s1.style.display = step === 0 ? "flex" : "none";
+    els.s2.style.display = step === 1 ? "flex" : "none";
+    els.s3.style.display = step === 2 ? "flex" : "none";
+
+    var cite = document.getElementById("srcCite");
+    if (cite) { cite.innerHTML = citeByStep[step] || cite.getAttribute("data-demo-cite"); }
+    var cpEl = document.getElementById("codePanel");
+    var fz = fontByStep[step] || ["19px","34px"];
+    cpEl.style.fontSize = fz[0];
+    cpEl.style.lineHeight = fz[1];
+
+    var code = currentLines();
+    var hl = showFull ? [] : (hlByStep[step] || []);
+    var dm = showFull ? {} : ((typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {});
+    var html = "";
+    for(var i=0;i<code.length;i++){
+      var lit = hl.indexOf(i) !== -1;
+      var d = dm[i] || "";
+      var t = code[i].length ? code[i] : " ";
+      var bg = "background:transparent;";
+      if (d === "del") { bg = "background:rgba(248,81,73,0.13);box-shadow:inset 3px 0 0 #f85149;"; }
+      else if (d === "add") { bg = "background:rgba(63,185,80,0.13);box-shadow:inset 3px 0 0 var(--eez-green);"; }
+      else if (lit) { bg = "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 var(--eez-green);"; }
+      var mark = (d === "del") ? "-" : ((d === "add") ? "+" : " ");
+      var mcol = (d === "del") ? "#f85149" : ((d === "add") ? "var(--eez-green)" : "#3a3a3a");
+      html += '<div style="display:flex;align-items:stretch;padding:1px 16px;white-space:nowrap;' + bg + '">'
+        + '<span style="width:26px;flex:none;text-align:right;padding-right:8px;color:#3a3a3a;user-select:none;">' + (i+1) + '</span>'
+        + '<span style="width:12px;flex:none;text-align:center;color:' + mcol + ';user-select:none;border-right:1px solid var(--eez-edge);margin-right:11px;">' + mark + '</span>'
+        + '<span style="white-space:pre;' + ((lit || d) ? "color:#eef3f8;" : "color:var(--muted);") + '">'
+        + highlightCode(t) + '</span></div>';
+    }
+    html += '<div style="display:flex;align-items:stretch;padding:1px 16px;">'
+      + '<span style="width:26px;flex:none;"></span>'
+      + '<span style="width:12px;flex:none;border-right:1px solid var(--eez-edge);margin-right:11px;"></span>'
+      + '<span style="display:inline-block;width:10px;height:20px;background:var(--eez-green);animation:blink 1s step-end infinite;vertical-align:middle;"></span></div>';
+    document.getElementById("codePanel").innerHTML = html;
+
+    // Named stepper: the current step shows its kicker name, the others stay
+    // compact (number + title tooltip) so seven steps still fit the footer.
+    var d = "";
+    for(var j=0;j<N;j++){
+      var cur = j===step;
+      var st = cur
+        ? "color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:1px solid transparent;"
+        : (j<step ? "color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;" : "color:var(--muted);background:transparent;border:1px solid #222;");
+      d += '<button type="button" data-step="'+j+'" title="'+kickers[j]+'"'
+        + (cur ? ' aria-current="step"' : '')
+        + ' style="display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:13px;letter-spacing:0.06em;border-radius:100px;padding:8px 14px;cursor:pointer;transition:background .2s,color .2s;'+st+'">'
+        + '<span>'+(j+1)+'</span>'
+        + (cur ? '<span style="letter-spacing:0.1em;">'+kickers[j]+'</span>' : '')
+        + '</button>';
+    }
+    document.getElementById("dots").innerHTML = d;
+  }
+
+  function scaleStage(){
+    var w = window.innerWidth, h = window.innerHeight;
+    var s = Math.min(w/1920, h/1080);
+    var stage = document.getElementById("stage");
+    var wrap = stage.parentNode;
+    if (s < 0.58) {
+      s = 0.58;
+      stage.style.transformOrigin = "top left";
+      wrap.style.position = "static";
+      wrap.style.display = "block";
+      wrap.style.overflow = "visible";
+      wrap.style.width = (1920*s) + "px";
+      wrap.style.height = (1080*s) + "px";
+      document.body.style.overflowX = "auto";
+    } else {
+      stage.style.transformOrigin = "center center";
+      wrap.style.position = "fixed";
+      wrap.style.inset = "0";
+      wrap.style.display = "flex";
+      wrap.style.alignItems = "center";
+      wrap.style.justifyContent = "center";
+      wrap.style.overflow = "hidden";
+      wrap.style.width = "";
+      wrap.style.height = "";
+      document.body.style.overflowX = "";
+    }
+    stage.style.transform = "scale(" + s + ")";
+  }
+  // Prev at the first step and Next at the last one are no-ops (both clamp),
+  // so they carry a real disabled state instead of looking live and doing
+  // nothing. Driven from the two bar functions because between them they run
+  // after every step change - manual, autoplay and init alike.
+  function syncEnds(){
+    var p = document.getElementById("btnPrev"), n = document.getElementById("btnNext");
+    if (p) { p.disabled = (step <= 0); }
+    if (n) { n.disabled = (step >= N-1); }
+  }
+  function staticBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; syncEnds(); }
+  function animateBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; void b.offsetWidth; b.style.transition="transform "+STEP_MS+"ms linear"; b.style.transform="scaleX("+((step+1)/N)+")"; syncEnds(); }
+  function schedule(){ clearTimeout(timer); animateBar(); timer = setTimeout(function(){ if(!playing) return; if(step >= N-1){ playing=false; render(); return; } step++; render(); schedule(); }, STEP_MS); }
+  function togglePlay(){ if(playing){ clearTimeout(timer); playing=false; staticBar(); render(); return; } if(step >= N-1) step = 0; playing = true; render(); schedule(); }
+  function next(){ clearTimeout(timer); playing=false; step=Math.min(N-1,step+1); render(); staticBar(); }
+  function prev(){ clearTimeout(timer); playing=false; step=Math.max(0,step-1); render(); staticBar(); }
+
+  document.getElementById("btnPrev").addEventListener("click", prev);
+  document.getElementById("btnNext").addEventListener("click", next);
+  document.getElementById("dots").addEventListener("click", function(e){
+    var b = e.target && e.target.closest ? e.target.closest("button[data-step]") : null;
+    if(!b) return;
+    clearTimeout(timer); playing = false; step = +b.getAttribute("data-step"); render(); staticBar();
+  });
+  // Reading beats autoplay: starting a selection in the code pauses the timer.
+  document.getElementById("codePanel").addEventListener("mousedown", function(){
+    if(playing){ clearTimeout(timer); playing = false; render(); staticBar(); }
+  });
+  document.getElementById("btnPlay").addEventListener("click", togglePlay);
+
+  // ---- Lead-in slide -------------------------------------------------
+  // Slide zero is a separate overlay inside the stage, NOT step 0: N,
+  // step, the dots and every *ByStep array are untouched. Dismissal
+  // lasts for this page view only - nothing is written to localStorage.
+  var introEl = document.getElementById("intro");
+  var introHidden = [];   // [element, its own inline display] while covered
+  function introShowing(){ return !!introEl && !introEl.hasAttribute("hidden"); }
+  function hideDemoForIntro(){
+    var kids = document.querySelectorAll("#stage > div");
+    // kids[0] is the header bar - left live, so Quickstarts, the ? button
+    // and the NEXT link stay reachable from the lead-in.
+    for (var i = 1; i < kids.length; i++) {
+      introHidden.push([kids[i], kids[i].style.display]);
+      kids[i].style.display = "none";
+    }
+  }
+  function dismissIntro(){
+    if (!introShowing()) { return; }
+    // One orientation per session: remember the dismissal so the next
+    // walkthrough opens straight at step 1 (same end state as a NEXT-link
+    // arrival). sessionStorage so a fresh visit gets the lead-in again;
+    // guarded because storage access can throw (private windows, blocked).
+    try { window.sessionStorage.setItem("eez-demos:intro-dismissed:v1", "1"); } catch (e) { /* no-op */ }
+    introEl.setAttribute("hidden", "");
+    for (var i = 0; i < introHidden.length; i++) {
+      // Restore the recorded inline value, not "" - stageCol and the
+      // footer bar both depend on an inline display:flex.
+      introHidden[i][0].style.display = introHidden[i][1];
+    }
+    introHidden.length = 0;
+    render(); staticBar();
+    var play = document.getElementById("btnPlay");
+    if (play) { play.focus(); }
+  }
+  if (introEl) {
+    hideDemoForIntro();
+    var btnStart = document.getElementById("btnStart");
+    // A real <button>, so Enter and Space activate it natively; the
+    // keydown handler below stays off the keyboard while it is up.
+    if (btnStart) { btnStart.addEventListener("click", dismissIntro); }
+    // Arriving via a NEXT link (bottom-bar <a class="back">, see the other
+    // 14 walkthroughs) means the reader already opted in to this track by
+    // clicking through the previous page - skip straight to step 1 instead
+    // of making them dismiss the lead-in again. Reusing dismissIntro keeps
+    // this in sync with the Start button's own end state. A reload of this
+    // exact URL (marker still in the address bar) legitimately skips the
+    // intro again; a reload of the bare URL carries no marker and still
+    // shows it.
+    if (window.location.hash === "#skip-intro") { dismissIntro(); }
+    // Already dismissed a lead-in this session — the reader is oriented,
+    // skip this one too. A cold arrival (shared link, new tab) still gets it.
+    try {
+      if (window.sessionStorage.getItem("eez-demos:intro-dismissed:v1") === "1") { dismissIntro(); }
+    } catch (e) { /* treat as a cold arrival */ }
+  }
+
+  // The pin is read out of whichever citation link the page has, deferred so it
+  // also catches pages that build their citation row during the first render.
+  setTimeout(function(){
+    var lbl = document.getElementById("pinLabel");
+    if (!lbl) { return; }
+    var links = document.querySelectorAll('a[href*="/blob/"]');
+    for (var i = 0; i < links.length; i++) {
+      var m = /\/blob\/([0-9a-f]{7,40})\//.exec(links[i].getAttribute("href") || "");
+      if (m) { lbl.textContent = "PINNED " + m[1].slice(0, 7); return; }
+    }
+  }, 0);
+
+  var btnHelp = document.getElementById("btnHelp");
+  function openTour(){
+    // The tour spotlights stage elements the lead-in is covering, so the
+    // lead-in goes first.
+    if (introShowing()) { dismissIntro(); }
+    if (playing) { togglePlay(); }
+    if (root_EEZTour()) { root_EEZTour().start(); }
+  }
+  function root_EEZTour(){ return (typeof EEZTour !== "undefined") ? EEZTour : null; }
+  if (btnHelp) { btnHelp.addEventListener("click", openTour); }
+  // The lead-in already orients a cold arrival, so the tour does not open
+  // behind it. Stacking the two meant the reader's first click after "Start
+  // the walkthrough" landed on the tour scrim instead of Next. The ? button
+  // still opens the tour on demand.
+  if (!introEl && root_EEZTour()) { root_EEZTour().maybeStart(); }
+
+  function copyFallback(text, done){
+    try {
+      var ta = document.createElement("textarea");
+      ta.value = text;
+      ta.setAttribute("readonly", "");
+      ta.style.position = "fixed";
+      ta.style.top = "-1000px";
+      document.body.appendChild(ta);
+      ta.select();
+      var ok = document.execCommand("copy");
+      document.body.removeChild(ta);
+      done(ok);
+    } catch (e) { done(false); }
+  }
+  // Full-context toggle. The step snippets are hand-wrapped teaching slices with
+  // no pragma, no imports and no contract wrapper; FULL swaps in the whole
+  // compilable file so COPY yields something that actually builds.
+  var btnFull = document.getElementById("btnFull");
+  var citeEl = document.getElementById("srcCite");
+  function applyPanelMode(){
+    if (btnFull) {
+      btnFull.textContent = showFull ? "STEP" : "FULL";
+      btnFull.style.color = showFull ? "var(--eez-green)" : "var(--muted)";
+      btnFull.style.borderColor = showFull ? "#2c6b3c" : "#2e2e2e";
+      btnFull.title = showFull ? "Back to the step snippet" : "Show the full compilable file";
+    }
+    if (citeEl) {
+      citeEl.innerHTML = showFull
+        ? citeEl.getAttribute("data-demo-cite")
+        : (citeByStep[step] || citeEl.getAttribute("data-demo-cite"));
+    }
+    // The whole file is longer and wider than the column, so full-context mode
+    // trades type size for reach and turns the vertical axis into a scroller
+    // instead of clipping the tail off unreachably.
+    var cp = document.getElementById("codePanel");
+    cp.style.fontSize = showFull ? "13px" : "19px";
+    cp.style.lineHeight = showFull ? "20px" : "34px";
+    cp.style.overflowY = "auto";
+    cp.scrollTop = 0;
+    cp.scrollLeft = 0;
+    render();
+  }
+  if (btnFull) {
+    btnFull.addEventListener("click", function(){ showFull = !showFull; applyPanelMode(); });
+  }
+  var btnCopy = document.getElementById("btnCopy");
+  if (btnCopy) {
+    btnCopy.addEventListener("click", function(){
+      var lines = currentLines();
+      var text = lines.join("\n").replace(/[ \t]+$/gm, "").replace(/\n+$/, "") + "\n";
+      var done = function(ok){
+        btnCopy.textContent = ok ? "COPIED" : "COPY FAILED";
+        btnCopy.style.color = ok ? "var(--eez-green)" : "#f85149";
+        btnCopy.style.borderColor = ok ? "#2c6b3c" : "#6b2c2c";
+        setTimeout(function(){
+          btnCopy.textContent = "COPY";
+          btnCopy.style.color = "var(--muted)";
+          btnCopy.style.borderColor = "#2e2e2e";
+        }, 1400);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function(){ done(true); },
+                                                function(){ copyFallback(text, done); });
+      } else {
+        copyFallback(text, done);
+      }
+    });
+  }
+  window.addEventListener("keydown", function(e){
+    // The lead-in owns the keyboard while it is showing: no stepping and
+    // no autoplay, and Space has to reach the Start button rather than
+    // being swallowed by Play below.
+    if (introShowing()) {
+      if (e.key === "Escape") { window.location.href = "../index.html"; }
+      return;
+    }
+    if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
+    else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
+    else if(e.key===" "){ e.preventDefault(); togglePlay(); }
+    else if(e.key==="Escape"){ window.location.href = "../index.html"; }
+    else if(e.key==="r"||e.key==="R"){ clearTimeout(timer); step = 0; playing = true; render(); schedule(); }
+    else if(e.key==="?"){ var hb = document.getElementById("btnHelp"); if (hb) hb.click(); }
+  });
+  window.addEventListener("resize", scaleStage);
+  scaleStage(); applyPanelMode(); staticBar();
+  document.documentElement.classList.remove("pre-fit");
+})();
+</script>
+</body></html>
