@@ -3,13 +3,13 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Deploy on the EEZ testnet — EEZ Quickstarts</title>
 <link rel="canonical" href="https://eez-demos.vercel.app/deploy.html">
-<meta name="description" content="One contract, live on the EEZ L2, in about fifteen minutes — prerequisites, endpoints, the deploy command, and what to do when it fails.">
+<meta name="description" content="One contract, live on the EEZ-X testnet rollup — prerequisites, endpoints, the deploy command, and what to do when it fails.">
 <meta property="og:title" content="Deploy on the EEZ testnet — EEZ Quickstarts">
-<meta property="og:description" content="One contract, live on the EEZ L2, in about fifteen minutes.">
+<meta property="og:description" content="One contract, live on the EEZ-X testnet rollup.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Deploy on the EEZ testnet — EEZ Quickstarts">
-<meta name="twitter:description" content="One contract, live on the EEZ L2, in about fifteen minutes.">
+<meta name="twitter:description" content="One contract, live on the EEZ-X testnet rollup.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="alternate" type="text/markdown" href="llms.txt" title="llms.txt — agent-readable index">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -81,6 +81,11 @@ table.net td{padding:12px 14px;border-bottom:1px solid #141414;vertical-align:mi
 table.net tr:last-child td{border-bottom:none}
 td.k{font-weight:600;white-space:nowrap;color:#e6e6e6}
 table.net .val{font-size:12.5px}
+.rl{display:flex;align-items:center;white-space:nowrap}
+.rl + .rl{margin-top:6px}
+.rl .val{word-break:normal}
+td.n{white-space:nowrap}
+.rk{display:inline-block;width:46px;font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:#6f6f6f;text-transform:uppercase}
 .copy{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted);background:none;border:1px solid #2a2a2a;border-radius:6px;padding:3px 9px;margin-left:8px;cursor:pointer;vertical-align:middle}
 .copy:hover:not(:disabled){color:#fff;border-color:#555}
 .copy:disabled{opacity:.35;cursor:not-allowed}
@@ -135,10 +140,10 @@ table.net .val{font-size:12.5px}
   </div>
 
   <h1>Deploy on the EEZ testnet</h1>
-  <p class="lede">Five steps, about fifteen minutes, one contract live on the EEZ L2. Everything you need is on this page &mdash; the walkthroughs explain <em>why</em> it works, and none of them are prerequisites.</p>
+  <p class="lede">Five steps, one contract live on the EEZ-X testnet rollup. Everything you need is on this page &mdash; the walkthroughs explain <em>why</em> it works, and none of them are prerequisites.</p>
 
-  <div class="banner" id="pendingBanner">
-    <b>Public endpoints are not live yet.</b> Every command on this page is final; the amber values fill in the day they are. Meanwhile the same protocol runs on your own machine &mdash; <a href="./start-here.html" style="color:#e6dcc0">run the three dapp steps locally</a>.
+  <div class="banner" id="testnetNote">
+    <b>The EEZ-X testnet is live</b> on Chiado, with its dashboard at <a href="https://eez.dev/dashboard/" target="_blank" rel="noopener" style="color:#e6dcc0">eez.dev ↗</a>. Two things to know before you start: the deploy command in step 4 has not yet been run end to end against this testnet, and the testnet runs eez-core-protocol @ 855fe06, while the walkthroughs cite 9a1f815, 11 commits later. To see the protocol at 9a1f815 on your own machine first, <a href="./dapp-developers/qs1-run-your-first-round-trip.html" style="color:#e6dcc0">run the Quickstart locally</a>.
   </div>
 
   <div class="steps">
@@ -148,10 +153,12 @@ table.net .val{font-size:12.5px}
       <div class="step-num" aria-hidden="true">1</div>
       <div class="step-body">
         <h2 class="step-title">Install Foundry</h2>
-        <p class="step-why">The demos and this page are pinned to <a href="https://book.getfoundry.sh/getting-started/installation">Foundry v1.7.1</a>. Nothing else is needed.</p>
+        <p class="step-why">The demos and this page are pinned to <a href="https://book.getfoundry.sh/getting-started/installation">Foundry v1.7.1</a>; the command below installs that version. Step 2 also needs a browser wallet.</p>
         <div class="term">
           <div class="term-head"><span class="term-label">SHELL</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
-<pre><span class="p">$ </span>curl -L https://foundry.paradigm.xyz | bash &amp;&amp; foundryup</pre>
+<pre><span class="p">$ </span>curl -L https://foundry.paradigm.xyz | bash
+<span class="p">$ </span>export PATH="$HOME/.foundry/bin:$PATH"
+<span class="p">$ </span>foundryup --install v1.7.1</pre>
         </div>
       </div>
     </section>
@@ -161,10 +168,11 @@ table.net .val{font-size:12.5px}
       <div class="step-num" aria-hidden="true">2</div>
       <div class="step-body">
         <h2 class="step-title">Fund a throwaway key</h2>
-        <p class="step-why">The <a href="" data-href="faucet">faucet</a> hands out xDAI on Chiado, which funds both layers. Then hand the key to your shell:</p>
+        <p class="step-why">Get Chiado xDAI for the key from the <a href="https://faucet.gnosischain.com/?chain=chiado" target="_blank" rel="noopener">Gnosis Chiado faucet</a>. Import the key into a browser wallet, then move some xDAI to the EEZ-X rollup with the Bridge &amp; Calls tab of the <a href="https://eez.dev/dashboard/" target="_blank" rel="noopener">eez.dev dashboard</a>, a demo app on the testnet (it shows the rollup balance as ETH). Then hand the key and its address to your shell:</p>
         <div class="term">
           <div class="term-head"><span class="term-label">SHELL</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
-<pre><span class="p">$ </span>export KEY=0x&hellip;   <span class="c"># the private key the faucet funded</span></pre>
+<pre><span class="p">$ </span>export KEY=0x&hellip;   <span class="c"># the throwaway key you funded</span>
+<span class="p">$ </span>export ADDR=$(cast wallet address --private-key $KEY)</pre>
         </div>
         <p class="warn">&#9888; Use a throwaway key. Never a key that holds real assets &mdash; testnet or not.</p>
       </div>
@@ -175,29 +183,29 @@ table.net .val{font-size:12.5px}
       <div class="step-num" aria-hidden="true">3</div>
       <div class="step-body">
         <h2 class="step-title">Point your shell at the network</h2>
-        <p class="step-why">Everything below comes from this table &mdash; the L2 manager is a predeploy, the same <code>0x4200&hellip;0007</code> on every EEZ L2; the L1 manager comes from the canonical deploy.</p>
+        <p class="step-why">Send transactions to the chain&rsquo;s <b>front</b> URL. It forwards ordinary transactions, like this deploy, unchanged and composes cross-chain ones; a cross-chain call sent to the direct RPC would bypass the composer. The front also answers the reads used below; the direct RPC is for reads and protocol tooling. The L2 manager is a genesis predeploy, read from the deployment&rsquo;s genesis profile (eez-rollupX @ 2c19e36 puts it at <a href="https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/scripts/update-eezl2-genesis.sh#L15"><code>0x4B27&hellip;402C</code></a>); the L1 manager is the testnet&rsquo;s EEZ contract on Chiado. Every URL, manager address and explorer in the table comes from the dashboard&rsquo;s own config; the chain ids are what <code>eth_chainId</code> returns on each RPC.</p>
         <div class="netwrap">
         <table class="net">
-          <tr><th>CHAIN</th><th>RPC URL</th><th>CHAIN ID</th><th>EEZ MANAGER</th><th>EXPLORER</th></tr>
+          <tr><th>CHAIN</th><th>RPC URLS</th><th>CHAIN ID</th><th>EEZ MANAGER</th><th>EXPLORER</th></tr>
           <tr>
-            <td class="k">EEZ L2 (testnet)</td>
-            <td><span class="val pending" data-val="l2.rpcUrl">COMING SOON</span><button class="copy" data-copy="l2.rpcUrl" disabled>COPY</button></td>
-            <td><span class="val pending" data-val="l2.chainId">COMING SOON</span></td>
-            <td><span class="val" data-val="l2.managerAddress">0x4200&hellip;0007</span><button class="copy" data-copy="l2.managerAddress">COPY</button></td>
-            <td><span class="val pending" data-val="l2.explorer" data-link>COMING SOON</span></td>
+            <td class="k">EEZ-X Testnet (L2)</td>
+            <td><div class="rl"><span class="rk">front</span><span class="val" data-val="l2.frontUrl">https://eez.dev/composer/l2</span><button class="copy" data-copy="l2.frontUrl">COPY</button></div><div class="rl"><span class="rk">reads</span><span class="val" data-val="l2.rpcUrl">https://eez.dev/rpc/l2</span><button class="copy" data-copy="l2.rpcUrl">COPY</button></div></td>
+            <td class="n"><span class="val" data-val="l2.chainId">699069</span></td>
+            <td><span class="val" data-val="l2.managerAddress">0x4B2760F84B83d6b3829E30A7573B0172B6d6402C</span><button class="copy" data-copy="l2.managerAddress">COPY</button></td>
+            <td><span class="val" data-val="l2.explorer" data-link>eez.dev/explorer</span></td>
           </tr>
           <tr>
             <td class="k">Chiado (L1)</td>
-            <td><span class="val" data-val="l1.rpcUrl">https://rpc.chiadochain.net</span><button class="copy" data-copy="l1.rpcUrl">COPY</button></td>
-            <td><span class="val" data-val="l1.chainId">10200</span></td>
-            <td><span class="val pending" data-val="l1.managerAddress">COMING SOON</span><button class="copy" data-copy="l1.managerAddress" disabled>COPY</button></td>
+            <td><div class="rl"><span class="rk">front</span><span class="val" data-val="l1.frontUrl">https://eez.dev/composer/l1</span><button class="copy" data-copy="l1.frontUrl">COPY</button></div><div class="rl"><span class="rk">reads</span><span class="val" data-val="l1.rpcUrl">https://eez.dev/rpc/l1</span><button class="copy" data-copy="l1.rpcUrl">COPY</button></div></td>
+            <td class="n"><span class="val" data-val="l1.chainId">10200</span></td>
+            <td><span class="val" data-val="l1.managerAddress">0x96d6617629b90bdf275dd1d4888170ad5266fa33</span><button class="copy" data-copy="l1.managerAddress">COPY</button></td>
             <td><span class="val" data-val="l1.explorer" data-link>gnosis-chiado.blockscout.com</span></td>
           </tr>
         </table>
         </div>
         <div class="term">
-          <div class="term-head"><span class="term-label">SHELL &middot; THE L2 RPC FROM THE TABLE</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
-<pre><span class="p">$ </span>export EEZ_RPC=<span class="val pending" data-val="l2.rpcUrl">COMING_SOON</span></pre>
+          <div class="term-head"><span class="term-label">SHELL &middot; THE L2 FRONT FROM THE TABLE</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
+<pre><span class="p">$ </span>export EEZ_RPC=<span class="val" data-val="l2.frontUrl">https://eez.dev/composer/l2</span></pre>
         </div>
       </div>
     </section>
@@ -207,10 +215,10 @@ table.net .val{font-size:12.5px}
       <div class="step-num" aria-hidden="true">4</div>
       <div class="step-body">
         <h2 class="step-title">Deploy</h2>
-        <p class="step-why">One command. <code>src/MyContract.sol</code> is whatever you're shipping.</p>
+        <p class="step-why">One command. <code>src/MyContract.sol</code> is whatever you're shipping. Without <code>--broadcast</code>, Foundry 1.7.1 only prints the unsigned transaction.</p>
         <div class="term">
           <div class="term-head"><span class="term-label">SHELL</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
-<pre><span class="p">$ </span>forge create src/MyContract.sol:MyContract --rpc-url $EEZ_RPC --private-key $KEY</pre>
+<pre><span class="p">$ </span>forge create src/MyContract.sol:MyContract --rpc-url $EEZ_RPC --private-key $KEY --broadcast</pre>
         </div>
         <div class="term out">
           <div class="term-head"><span class="term-label">EXPECTED OUTPUT &middot; NOT A COMMAND</span></div>
@@ -232,7 +240,7 @@ Transaction hash: 0x&hellip;</pre>
       <div class="step-body">
         <h2 class="step-title">If it fails</h2>
         <div class="fails">
-          <div class="fail"><span class="sym">insufficient funds</span><p class="fix">The key isn't funded on the L2 &mdash; go back to the <a href="" data-href="faucet">faucet</a>, then <code>cast balance $ADDR --rpc-url $EEZ_RPC</code> to confirm before retrying.</p></div>
+          <div class="fail"><span class="sym">insufficient funds</span><p class="fix">The key isn't funded on the EEZ-X rollup &mdash; move xDAI over with the dashboard's Bridge &amp; Calls tab on <a href="https://eez.dev/dashboard/" target="_blank" rel="noopener">eez.dev</a>, then <code>cast balance $ADDR --rpc-url $EEZ_RPC</code> to confirm before retrying.</p></div>
           <div class="fail"><span class="sym">connection refused / timeout</span><p class="fix"><code>$EEZ_RPC</code> doesn't match the table in step 3 &mdash; re-copy it. <code>cast chain-id --rpc-url $EEZ_RPC</code> should print the chain id from the table.</p></div>
           <div class="fail"><span class="sym">nonce too low</span><p class="fix">An earlier transaction from this key is stuck or already mined &mdash; <code>cast nonce $ADDR --rpc-url $EEZ_RPC</code> to inspect, then resend.</p></div>
         </div>
@@ -245,6 +253,11 @@ Transaction hash: 0x&hellip;</pre>
   <h2 class="step-title" style="margin-top:64px">Deployed. Now make it cross-chain</h2>
   <p class="step-why">In this order.</p>
   <div class="grid">
+    <a class="card" href="./index.html#quickstart">
+      <h3 class="card-title">Start with the Quickstart</h3>
+      <p class="card-hook">One call across two rollups, run locally, then patterns you can copy.</p>
+      <div class="cta">START WITH CARD 00 <span class="circ">&rarr;</span></div>
+    </a>
     <a class="card" href="./dapp-developers/q7-your-cross-chain-address.html">
       <h3 class="card-title">Give it a cross-chain address</h3>
       <p class="card-hook">Your contract's stand-in on every other rollup &mdash; readable before anything is deployed.</p>
@@ -330,11 +343,9 @@ Transaction hash: 0x&hellip;</pre>
     if(v){ a.href = v; a.target = "_blank"; a.rel = "noopener"; }
   });
 
-  var banner = document.getElementById("pendingBanner");
-  if(live && banner) banner.hidden = true;
   if(live && cfg.deployedAt){
     var pin = document.getElementById("pinLine");
-    if(pin) pin.insertAdjacentText("beforeend", " Canonical deploy: " + cfg.deployedAt + ".");
+    if(pin) pin.insertAdjacentText("beforeend", " The testnet runs " + cfg.deployedAt + ".");
   }
 })();
 </script>

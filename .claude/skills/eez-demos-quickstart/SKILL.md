@@ -56,7 +56,7 @@ Every command a card shows has been executed, and the output it shows came from 
   - `:237` `ExecuteNetwork — network mode: outputs user tx fields`, so on a network you send only the trigger.
   Other scenarios use the same `Execute`/`ExecuteL2`/`ExecuteNetwork` split (`grep -n '^contract' <scenario>.s.sol`).
 - So a **local** card says what you *see* ("see it work", "watch the round trip"). It never says you *build* or *deploy*. Name the composer's role once: "Locally, the scenario script plays composer."
-- Only a **devnet** card (qs4, qs6, still stubs) may say *build* or *deploy*. Say "composer", never "sequencer", for who builds entries.
+- Only a card that runs on a real network (qs6, still a stub) may say *build* or *deploy*. Say "composer", never "sequencer", for who builds entries.
 
 ## 5. Excerpts
 
@@ -82,7 +82,7 @@ Every code step is one of the following:
 - The qs pages (`dapp-developers/qs0`–`qs8`) and `index.html`'s `#quickstart` section exist. Check that a link target exists before adding it. `audit.sh` fails on a broken link.
 - **Phase:** a card whose main point is a runnable pattern a developer would copy goes under Build patterns. A card that explains what happened goes under See it work.
 - **Index phase strip**: `index.html` `<section class="sec" id="quickstart">` has four rows: Understand, See it work, Make it real, Build patterns. Each card is an `<a class="card" href="dapp-developers/<page>">` with a `card-title` and a `card-hook`. `build-llms.py` takes titles, hooks and page order from these anchors. The hook states a consequence (CONTRIBUTING "Format").
-- **Stubs** (qs4, qs6): model them on `dapp-developers/q1-compute-your-cross-chain-address.html` without its meta refresh. Include the title, "Coming soon", one sentence on what the card will show, "Needs: a Linux host and at least 16 GB for Docker (the devnet does not run on macOS yet)", links to `../rollup-operators/ro1-run-the-devnet-with-kurtosis.html` and `../index.html#quickstart`, and `PRE-MAINNET`. Leave out `codeByStep` and captions, so `build-llms.py` and panel-drift skip the stub.
+- **Stub** (qs6): modelled on `dapp-developers/q1-compute-your-cross-chain-address.html` without its meta refresh. It has the title, "Coming soon", one sentence on what the card will show (deploying and calling your own contract with the Remix cross-chain plugin), a link to `../index.html#quickstart`, and `PRE-MAINNET`. Its index card keeps the `COMING SOON` badge. qs4 (real composer on a local devnet) was removed, and the phase strip is numbered 00–07 without a gap; slugs keep their `qsN` names. Leave out `codeByStep` and captions, so `build-llms.py` and panel-drift skip the stub.
 - Adding or removing a walkthrough means bumping the `EXPECTED_WALKTHROUGHS` constant in `scripts/build-llms.py` (24 now) in the same change, or `build-llms.py --check` fails. Stubs without captions don't count. `start-here.html` names the count in words; keep it in step.
 - Leave `EXPECTED_CARDS` in `scripts/check-manifest.py` alone. It counts manifest task cards, not pages.
 - Kickers are short ALL-CAPS phrases, one per step (`"RUN IT."`, `"BORROW ON L1, USE IT ON L2."`). A hands-on card's step 1 is `RUN IT.` Steps 2–3 are a short imperative or claim that says what the reader learns there (`"REPAID BEFORE THE TRANSACTION ENDS."`, `"ASK IT, DON'T INSPECT IT"`).

@@ -157,8 +157,8 @@
         </div>
         <div style="width:100%;max-width:256px;background:rgba(63,185,80,0.08);border:1px solid #2f6b3a;border-radius:10px;padding:20px 22px;">
           <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--eez-green);">NEEDED</div>
-          <div style="font-size:26px;font-weight:600;margin-top:10px;">Git</div>
-          <div style="font-size:16px;color:var(--muted);margin-top:8px;line-height:1.45;">clones the repo and its submodules</div>
+          <div style="font-size:26px;font-weight:600;margin-top:10px;">Git, jq</div>
+          <div style="font-size:16px;color:var(--muted);margin-top:8px;line-height:1.45;">Git clones the repo; the runner parses JSON with <span style="font-family:var(--mono);">jq</span>. recent macOS ships it.</div>
         </div>
         <div style="width:100%;max-width:256px;background:rgba(63,185,80,0.08);border:1px solid #2f6b3a;border-radius:10px;padding:20px 22px;">
           <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--eez-green);">NEEDED</div>
@@ -217,7 +217,7 @@
           </div>
           <div style="width:100%;max-width:300px;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--mono);font-size:16px;">
             <div style="color:#d8d8d8;">increment() →</div>
-            <div style="color:var(--eez-green);">← returns 1</div>
+            <div style="color:var(--eez-green);">← 1, from the entry</div>
           </div>
           <div style="width:100%;max-width:380px;background:#10151c;border:1px solid #232b36;border-radius:9px;padding:16px 20px;">
             <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:var(--label);">L2 ANVIL</div>
@@ -236,7 +236,7 @@
           </div>
           <div style="width:100%;max-width:300px;display:flex;flex-direction:column;align-items:center;gap:8px;font-family:var(--mono);font-size:16px;">
             <div style="color:#d8d8d8;">increment() →</div>
-            <div style="color:var(--eez-green);">← returns 1</div>
+            <div style="color:var(--eez-green);">← 1, from the entry</div>
           </div>
           <div style="width:100%;max-width:380px;background:#10151c;border:1px solid #232b36;border-radius:9px;padding:16px 20px;">
             <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:var(--label);">L1 ANVIL</div>
@@ -245,7 +245,7 @@
           </div>
         </div>
       </div>
-      <div style="font-size:17px;color:var(--muted);max-width:1060px;line-height:1.5;">In each run, one call to <span style="font-family:var(--mono);color:#d8d8d8;">incrementProxy()</span> got <span style="font-family:var(--mono);color:#d8d8d8;">1</span> back in the same transaction. PASS also means the script checked the entries on both chains against the ones it computed.</div>
+      <div style="font-size:17px;color:var(--muted);max-width:1060px;line-height:1.5;">In each run, one call to <span style="font-family:var(--mono);color:#d8d8d8;">incrementProxy()</span> got <span style="font-family:var(--mono);color:#d8d8d8;">1</span> back in the same transaction. Locally, the script precomputed that 1 into the entry and ran the other chain's <span style="font-family:var(--mono);color:#d8d8d8;">increment()</span> separately; PASS means it checked the entries on both chains against the ones it computed.</div>
     </div>
 
   
@@ -279,8 +279,9 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">Run Your First Round Trip</h1>
-      <p class="intro-lede">Clone eez-core-protocol at a pinned commit, build it, and run two scenarios on local anvil chains: a call that starts on L1 and gets its answer from L2, and the same call the other way round.</p>
-      <p class="intro-lede">You need Foundry 1.7.1 (<code style="font-family:var(--mono);">forge</code>, <code style="font-family:var(--mono);">cast</code> and <code style="font-family:var(--mono);">anvil</code> on PATH; <a href="https://book.getfoundry.sh/getting-started/installation" target="_blank" style="color:#d8d8d8;">install guide</a>), Git, and bash 4 or newer. macOS ships bash 3.2; <code style="font-family:var(--mono);">brew install bash</code> puts bash 5 first on PATH. No Docker. It took about 5 minutes on an Apple M4 laptop with Foundry 1.7.1, first-time solc download not included, and the first build is most of it.</p>
+      <p class="intro-lede">Clone eez-core-protocol at a pinned commit, build it, and run two scenarios on local anvil chains: a call that starts on L1 and gets back the value L2's execution produces, and the same call the other way round. Locally, the script precomputes that value into the entry.</p>
+      <p class="intro-lede">You need Foundry 1.7.1 (<code style="font-family:var(--mono);">forge</code>, <code style="font-family:var(--mono);">cast</code> and <code style="font-family:var(--mono);">anvil</code> on PATH; <a href="https://book.getfoundry.sh/getting-started/installation" target="_blank" style="color:#d8d8d8;">install guide</a>), Git, jq, and bash 4 or newer. recent macOS already has jq; elsewhere, <code style="font-family:var(--mono);">brew install jq</code> or <code style="font-family:var(--mono);">apt install jq</code>. macOS ships bash 3.2; <code style="font-family:var(--mono);">brew install bash</code> puts bash 5 first on PATH. No Docker. It took about 5 minutes on an Apple M4 laptop with Foundry 1.7.1, first-time solc download not included, and the first build is most of it.</p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Try it live: the Counter Demo on <a href="https://eez.dev/dashboard/#/counter-demo" target="_blank" rel="noopener" style="color:#d8d8d8;">eez.dev ↗</a></p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 · CLONE AT THE PIN</b>Check out the exact commit these cards were run against, so your output matches theirs.</li>
@@ -316,7 +317,7 @@
 
   var kickers = ["CLONE AT THE PIN.", "BUILD AND RUN BOTH DIRECTIONS.", "WHAT THAT PASS PROVED."];
   var captions = [
-    "Clone at a fixed commit so your output matches these cards. You need Foundry 1.7.1 with forge, cast and anvil on PATH, Git, and bash 4 or newer (macOS ships 3.2; brew install bash puts bash 5 first on PATH). No Docker.",
+    "Clone at a fixed commit so your output matches these cards. You need Foundry 1.7.1 with forge, cast and anvil on PATH, Git, jq (recent macOS ships it), and bash 4 or newer (macOS ships 3.2; brew install bash puts bash 5 first on PATH). No Docker.",
     "One build, then both scenarios at once. About 5 minutes on an Apple M4 laptop with Foundry 1.7.1, and the first build is most of it.",
     "Locally, the scenario script played composer. You'll see what it did in two cards."
   ];
@@ -326,10 +327,11 @@
   var codeByStep = [
     [
       "# needs Foundry 1.7.1 (forge, cast, anvil on PATH),",
-      "# Git, and bash 4+. No Docker.",
+      "# Git, jq, and bash 4+. No Docker.",
       "# Foundry: https://book.getfoundry.sh/getting-started/installation",
       "# macOS ships bash 3.2; this puts bash 5 first on PATH:",
       "#   brew install bash",
+      "# jq: recent macOS ships it, or brew/apt install jq",
       "",
       "$ git clone https://github.com/eez-association/eez-core-protocol.git",
       "$ cd eez-core-protocol",
@@ -341,10 +343,10 @@
       "$ forge build",
       "",
       "$ bash script/e2e/run/local/parallel.sh counter counterL2",
-      "  [counter] starting (L1=18545 chain=41337, L2=18546 chain=41338)",
       "  [counterL2] starting (L1=18547 chain=41339, L2=18548 chain=41340)",
-      "  [counter] PASS",
+      "  [counter] starting (L1=18545 chain=41337, L2=18546 chain=41338)",
       "  [counterL2] PASS",
+      "  [counter] PASS",
       "",
       "===== RESULT: 2 passed, 0 failed, 0 skipped ====="
     ],
@@ -352,8 +354,8 @@
       "# counter:   L1 called L2, got 1 back",
       "# counterL2: L2 called L1, got 1 back",
       "",
-      "  [counter] PASS",
       "  [counterL2] PASS",
+      "  [counter] PASS",
       "",
       "===== RESULT: 2 passed, 0 failed, 0 skipped ====="
     ]
@@ -364,7 +366,7 @@
     '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/test/mocks/CounterContracts.sol#L62" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/test/mocks/CounterContracts.sol:62 · incrementProxy ↗</a>'
   ];
   var hlByStep = [
-    [6,7,8,9],
+    [7,8,9,10],
     [1,3,6,7,9],
     [3,4,6]
   ];

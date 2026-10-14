@@ -14,7 +14,7 @@
  *    script would describe buttons that are not there.
  *
  * 3. It shows once per SITE, not once per page. Someone working through all
- *    17 walkthroughs should meet this once.
+ *    24 walkthroughs should meet this once.
  *
  * No dependencies, no build step, ES5-compatible.
  */
@@ -99,20 +99,21 @@
     if (q(".search-box-row")) {
       steps.push({ els: [q(".search-box-row")], pad: 10,
         kicker: "FIND ONE",
-        body: "Search all 17 walkthroughs by keyword \u2014 try msg.sender, CREATE2 or Kurtosis. " +
+        body: "Search all 24 walkthroughs by keyword \u2014 try msg.sender, CREATE2 or Kurtosis. " +
               "Pressing / jumps here from anywhere on the page." });
     }
     if (q(".filter-tabs")) {
       steps.push({ els: [q(".filter-tabs")], pad: 10,
         kicker: "OR BROWSE BY AUDIENCE",
-        body: "Three tracks: 7 for dapp developers, 4 for rollup operators, 6 for protocol " +
+        body: "Three tracks: 14 for dapp developers, 4 for rollup operators, 6 for protocol " +
               "researchers. A filter never lands you on an empty list." });
     }
     var firstTime = q(".sec-head");
     if (firstTime) {
       steps.push({ els: [firstTime], pad: 12,
         kicker: "NOT SURE WHERE TO START",
-        body: "These three are the ones to open first, one per audience. Each takes about a minute." });
+        body: "Dapp developers start here, with the Quickstart from card 00. Rollup operators and " +
+              "protocol researchers each get a reading order on Start here." });
     }
     if (q(".card")) {
       steps.push({ els: [q(".card")], pad: 8,
@@ -369,7 +370,7 @@
        lead-in slide on a walkthrough and the "first time here?" row on the
        index; stacking a spotlight tour on top of those was the popup pile-up
        this replaced. The ? button (pulsed once above) opens it on demand.
-       Kept as a callable no-op so the 17 pages' maybeStart() sites and any
+       Kept as a callable no-op so the pages' maybeStart() sites and any
        scaffolded page stay valid. */
     maybeStart: function () { return false; }
   };

@@ -192,7 +192,7 @@
         </div>
       </div>
       <div style="font-size:18px;color:#c9c9c9;max-width:960px;line-height:1.5;">Every proxy call checks that its rollup was verified in the current block. L2 has the same gate: the execution table must have been loaded in this block.</div>
-      <a class="back" href="q8-read-a-remote-contracts-state.html" style="font-size:14px;color:var(--eez-green);">DEEP DIVE: How to read a remote contract's state &rarr;</a>
+      <a class="back" href="q8-read-a-remote-contracts-state.html" style="font-size:14px;color:var(--eez-green);">SEE ALSO: the block gate for reads, in How to read a remote contract's state &rarr;</a>
     </div>
 
     <!-- Step 3: on L2, with USE_GAS_LEFT on, the manager's sampled gasleft() is in the hash. -->
@@ -207,7 +207,7 @@
         <div style="flex:1;background:rgba(124,131,255,0.07);border:1.5px solid #7c83ff;border-radius:10px;padding:18px 22px;">
           <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--label);">CALL LEAVING L2</div>
           <div style="font-family:var(--mono);font-size:17px;color:#eef1ff;margin-top:12px;">callGas = gasleft()</div>
-          <div style="font-size:15px;color:#a9b0d6;margin-top:10px;">With <span style="font-family:var(--mono);">USE_GAS_LEFT</span> on (the intended production mode, off in every current deployment): the <span style="font-family:var(--mono);">gasleft()</span> the L2 manager samples after its proxy checks. Otherwise 0.</div>
+          <div style="font-size:15px;color:#a9b0d6;margin-top:10px;">With <span style="font-family:var(--mono);">USE_GAS_LEFT</span> on (the intended production mode, off in every current deployment): the <span style="font-family:var(--mono);">gasleft()</span> the L2 manager samples after its proxy checks and any value transfer. Otherwise 0.</div>
         </div>
       </div>
       <div style="background:rgba(63,185,80,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:18px 24px;max-width:960px;">
@@ -254,7 +254,7 @@
       <ul class="intro-learn">
         <li><b>01 &#183; MSG.SENDER IS THE PROXY.</b>Your contract is called by the source's proxy, so an owner check against the source reverts.</li>
         <li><b>02 &#183; AN ENTRY COUNTS ONLY IN ITS BLOCK.</b>A proxy call reverts unless its rollup was verified in the current block.</li>
-        <li><b>03 &#183; ON L2, GAS CAN BE PART OF THE CALL.</b>With <span style="font-family:var(--mono);">USE_GAS_LEFT</span> on (off in every current deployment), a call leaving L2 hashes the <span style="font-family:var(--mono);">gasleft()</span> the L2 manager samples after its proxy checks, so call sites attach a fixed amount.</li>
+        <li><b>03 &#183; ON L2, GAS CAN BE PART OF THE CALL.</b>With <span style="font-family:var(--mono);">USE_GAS_LEFT</span> on (off in every current deployment), a call leaving L2 hashes the <span style="font-family:var(--mono);">gasleft()</span> the L2 manager samples after its proxy checks and any value transfer, so call sites attach a fixed amount.</li>
       </ul>
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
@@ -312,8 +312,8 @@
       "// through _validateProxyAndGetDestinationInfo:",
       "_requireVerifiedThisBlock(destRid);",
       "",
-      "// :1578, the gate: lastVerifiedBlock must",
-      "// equal block.number, or",
+      "// _requireVerifiedThisBlock (:1578): unless",
+      "// lastVerifiedBlock == block.number, :1580",
       "revert ExecutionNotInCurrentBlock(rollupId);",
       "",
       "// postAndVerifyBatch reaches",
@@ -338,8 +338,8 @@
       "",
       "// With EEZL2's USE_GAS_LEFT on (intended for",
       "// production, off in every current deployment),",
-      "// callGas is the gasleft() the L2 manager",
-      "// samples after its proxy checks (EEZL2.sol:282),",
+      "// callGas = the L2 manager's gasleft() after its",
+      "// proxy checks and value transfer (EEZL2.sol:282),",
       "// not the gas you forward. L1 uses ZERO_CALL_GAS."
     ]
   ];

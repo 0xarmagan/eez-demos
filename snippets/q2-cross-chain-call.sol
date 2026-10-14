@@ -23,11 +23,12 @@ interface IRemote {
 }
 
 /// @dev A cross-chain call fails for reasons an ordinary same-chain call
-///      cannot, and the proxy forwards raw revert data either way
-///      (CrossChainProxy.sol:137-141). So `ok == false` tells you the call
-///      did not happen — never why. No matching entry in this block and a
-///      genuine revert in the destination contract are indistinguishable
-///      here; see docs/CAVEATS.md "Missing entries and destination reverts".
+///      cannot. `ok == false` alone does not say why. The proxy forwards the
+///      raw revert data (CrossChainProxy.sol:137-141), which usually does
+///      (ExecutionNotFound / EntryNotFound vs the destination's own error), but
+///      a destination can emit the same selector, so don't branch on it. This
+///      Caller discards it; see docs/CAVEATS.md "Missing entries and
+///      destination reverts".
 error CrossChainCallFailed();
 
 /// @dev Raised on a value that came back from another rollup. The point of the
@@ -62,17 +63,17 @@ if (!ok) revert CrossChainCallFailed();
     ///      The one thing to get right: the proxy picks static-vs-mutable from
     ///      the CALLER'S frame, not from `view`. Its probe does a `tstore`, and
     ///      a `tstore` only halts under STATICCALL (CrossChainProxy.sol:89). A
-    ///      plain `.call(data)` here would therefore take the mutable path and
-    ///      demand an ExecutionEntry no composer wrote for a read — on L2 that
-    ///      is `EntryNotFound(hash, callGas)` (EEZL2.sol:501), with a hash that
-    ///      folds `isStatic = false`. STATICCALL is what routes it to
-    ///      `staticCrossChainCall` (EEZL2.sol:660) and a static entry.
+    ///      plain `.call(data)` here would take the mutable path; the composer
+    ///      would then build an ExecutionEntry for it, hashed with
+    ///      `isStatic = false`, instead of a static one. STATICCALL routes it to
+    ///      `staticCrossChainCall` (EEZL2.sol:660) and a static entry, which is
+    ///      read-only: it cannot change state on either side.
     function settleIfFunded(address user, uint256 need) external returns (bool) {
 bytes memory data = abi.encodeCall(
     IRemote.balanceOf, (user)
 );
 
-// STATICCALL, not CALL: the proxy keys off this
+// STATICCALL for a read: the proxy keys off this
 // frame, not off `view`.
 (bool ok, bytes memory ret) =
     proxyAddress.staticcall(data);

@@ -3,13 +3,13 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Start here — EEZ Quickstarts</title>
 <link rel="canonical" href="https://eez-demos.vercel.app/start-here.html">
-<meta name="description" content="Three reading orders through the EEZ walkthroughs — one for dapp developers, one for rollup operators, one for protocol researchers. Existing pages, put in the order that makes them make sense.">
+<meta name="description" content="Where to start in the EEZ walkthroughs: the dApp Quickstart for developers, and a reading order each for rollup operators and protocol researchers.">
 <meta property="og:title" content="Start here — EEZ Quickstarts">
-<meta property="og:description" content="Three reading orders through the EEZ walkthroughs. Existing pages, in the order that makes them make sense.">
+<meta property="og:description" content="Where to start: the dApp Quickstart, plus reading orders for rollup operators and protocol researchers.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Start here — EEZ Quickstarts">
-<meta name="twitter:description" content="Three reading orders through the EEZ walkthroughs.">
+<meta name="twitter:description" content="Where to start in the EEZ walkthroughs.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="alternate" type="text/markdown" href="llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="llms-full.txt" title="llms-full.txt — every walkthrough inlined">
@@ -87,53 +87,63 @@ code{font-family:var(--mono);font-size:.92em;color:#cfcfcf}
   <a class="back" href="./index.html">&larr; Quickstarts</a>
 
   <h1>Start here</h1>
-  <p class="lede">Twenty-four walkthroughs is a lot to land on. These are three reading orders through the ones that already exist &mdash; one per audience. No new material, just the order that makes them make sense and the reason each step follows the last.</p>
+  <p class="lede">Twenty-four walkthroughs is a lot to land on. Dapp developers start with the Quickstart, then go deeper in the reference track. Rollup operators and protocol researchers each get a reading order through the walkthroughs that already exist, and the reason each step follows the last.</p>
 
   <!-- ================= DAPP DEVELOPERS ================= -->
-  <div class="sec-head"><h2 class="eyebrow">[ DAPP DEVELOPERS &middot; ABOUT TEN MINUTES ]</h2></div>
-  <p class="sec-note">Three functions, then the one surprise worth knowing before you build anything. Here to ship, not read? <a href="./deploy.html" style="color:#cfcfcf">Deploy a contract on the EEZ testnet</a> &mdash; about fifteen minutes, no walkthroughs required.</p>
+  <div class="sec-head"><h2 class="eyebrow">[ DAPP DEVELOPERS ]</h2></div>
+  <p class="sec-note">Start with the Quickstart: eight cards in four phases, from one call across two rollups to patterns you can copy. The EEZ-X testnet is live: try it on <a href="https://eez.dev/dashboard/" target="_blank" rel="noopener" style="color:#cfcfcf">eez.dev ↗</a>, or point Foundry at it with the <a href="./deploy.html" style="color:#cfcfcf">testnet deploy page</a>.</p>
 
   <div class="grid">
-    <a class="card" href="./dapp-developers/q8-read-a-remote-contracts-state.html">
-      <div class="card-head"><h3 class="card-title"><span class="card-num">01</span>How to read another rollup's state from your contract</h3></div>
-      <p class="card-hook">Learn how the answer is written down before your transaction runs, instead of being fetched while you wait.</p>
-      <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">&rarr;</span></div>
+    <a class="card" href="./dapp-developers/qs0-one-call-two-rollups.html">
+      <div class="card-head"><h3 class="card-title">Understand</h3><span class="badge">START HERE</span></div>
+      <p class="card-hook">Card 00: your L1 contract gets an L2 contract's return value back in the same transaction.</p>
+      <div class="cta">START WITH CARD 00 <span class="circ">&rarr;</span></div>
     </a>
 
-    <a class="card" href="./dapp-developers/q2-send-a-cross-chain-call.html">
-      <div class="card-head"><h3 class="card-title"><span class="card-num">02</span>How to use another chain's answer in the same transaction</h3><span class="badge">THE DIFFERENTIATOR</span></div>
-      <p class="card-hook">Learn how the value that comes back decides what the rest of your transaction does &mdash; and why that removes the callback, the timeout and the retry you would otherwise have to write.</p>
-      <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">&rarr;</span></div>
+    <a class="card" href="./dapp-developers/qs1-run-your-first-round-trip.html">
+      <div class="card-head"><h3 class="card-title">See it work</h3></div>
+      <p class="card-hook">Cards 01&ndash;03: run a round trip on local chains, read your side of it, and see who answered.</p>
+      <div class="cta">CARDS 01&ndash;03 <span class="circ">&rarr;</span></div>
     </a>
 
-    <a class="card" href="./dapp-developers/q3-fix-the-msg-sender-gotcha.html">
-      <div class="card-head"><h3 class="card-title"><span class="card-num">03</span>Why msg.sender isn't your contract on the other side</h3><span class="badge">BEFORE YOU BUILD</span></div>
-      <p class="card-hook">Learn why every <code>onlyOwner</code>, allowlist and <code>approve</code> on the far side keys to a proxy address instead of your contract &mdash; and why nothing reverts when it does.</p>
-      <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">&rarr;</span></div>
+    <a class="card" href="./dapp-developers/qs5-three-gotchas-before-you-build.html">
+      <div class="card-head"><h3 class="card-title">Make it real</h3></div>
+      <p class="card-hook">Cards 04&ndash;05: three gotchas before you build. Deploying your own contract with the Remix cross-chain plugin is coming soon.</p>
+      <div class="cta">CARDS 04&ndash;05 <span class="circ">&rarr;</span></div>
+    </a>
+
+    <a class="card" href="./dapp-developers/qs7-cross-chain-flash-loan.html">
+      <div class="card-head"><h3 class="card-title">Build patterns</h3></div>
+      <p class="card-hook">Cards 06&ndash;07: a cross-chain flash loan, and tokens bridged both ways.</p>
+      <div class="cta">CARDS 06&ndash;07 <span class="circ">&rarr;</span></div>
     </a>
   </div>
 
-  <p class="later">Then, when you hit them:
-    <a href="./dapp-developers/q4-check-if-an-address-is-a-proxy.html">is this address a proxy</a>,
-    <a href="./dapp-developers/q6-why-you-cant-call-the-manager-directly.html">why you can't call the manager directly</a>,
+  <p class="later">Then go deeper, in this order:
     <a href="./dapp-developers/q7-your-cross-chain-address.html">your contract's address on another rollup</a>,
-    <a href="./dapp-developers/q5-encode-a-calls-content-hash.html">encoding a call's content hash</a>.
+    <a href="./dapp-developers/q2-send-a-cross-chain-call.html">calling a contract on another rollup</a>,
+    <a href="./dapp-developers/q3-fix-the-msg-sender-gotcha.html">msg.sender across chains</a>,
+    <a href="./dapp-developers/q4-check-if-an-address-is-a-proxy.html">is this address a proxy</a>,
+    <a href="./dapp-developers/q6-why-you-cant-call-the-manager-directly.html">how the guard makes sure only proxy calls reach execution</a>,
+    <a href="./dapp-developers/q5-encode-a-calls-content-hash.html">encoding a call's content hash</a>,
+    <a href="./dapp-developers/q8-read-a-remote-contracts-state.html">reading another rollup's state</a>.
   </p>
 
   <div class="run">
-    <h3>Run all three locally</h3>
-    <p>The same three steps as runnable tests, on your own machine. No testnet, no Docker &mdash; the snippets carry no <code>forge-std</code> and no submodules, so they build on a bare checkout. You need <a href="https://book.getfoundry.sh/getting-started/installation" style="color:#cfcfcf">Foundry v1.7.1</a> and nothing else.</p>
+    <h3>Run the tests offline</h3>
+    <p>Four steps as runnable tests, on your own machine: read another rollup&rsquo;s state, call it, use its answer in the same transaction, then the <code>msg.sender</code> surprise. No testnet, no Docker &mdash; the snippets carry no <code>forge-std</code> and no submodules, so they build on a bare checkout. You need <a href="https://book.getfoundry.sh/getting-started/installation" style="color:#cfcfcf">Foundry v1.7.1</a> and nothing else.</p>
 <div class="codewrap"><pre>git clone https://github.com/0xarmagan/eez-demos.git
 cd eez-demos/starter &amp;&amp; ./run.sh
 
 <span class="c"># or run one step at a time, from eez-demos/snippets:</span>
-forge test --match-test test_routedReadReturnsThePreCommittedEntry -vv   <span class="c"># 01</span>
-forge test --match-test test_theBranchTracksTheValueNotTheSuccessFlag -vv <span class="c"># 02</span>
-forge test --match-test test_sameChainCheck_revertsWhenCalledViaProxy -vv <span class="c"># 03</span>
+forge test --match-test test_routedReadReturnsThePreCommittedEntry -vv     <span class="c"># step 1</span>
+forge test --match-test test_staticcallTakesTheReadPath -vv                <span class="c"># step 2</span>
+forge test --match-test test_theBranchTracksTheValueNotTheSuccessFlag -vv  <span class="c"># step 3</span>
+forge test --match-test test_sameChainCheck_revertsWhenCalledViaProxy -vv  <span class="c"># step !</span>
 
-<span class="c"># expected: ./run.sh prints one line per step, all three ending</span>
+<span class="c"># expected: ./run.sh prints steps 1, 2, 3 and !, each ending</span>
 <span class="c">#   pass</span>
-<span class="c"># anything else prints the failing test's output below the step.</span></pre><button class="copyblock" type="button">COPY</button></div>
+<span class="c"># then "4 passed, 0 failed". A failing step prints its test output.</span></pre><button class="copyblock" type="button">COPY</button></div>
   </div>
 <script>
 document.querySelectorAll(".copyblock").forEach(function(btn){
@@ -170,7 +180,7 @@ document.querySelectorAll(".copyblock").forEach(function(btn){
     </a>
 
     <a class="card" href="./rollup-operators/ro4-send-and-test-cross-chain-calls.html">
-      <div class="card-head"><h3 class="card-title"><span class="card-num">04</span>How to send and test cross-chain calls</h3></div>
+      <div class="card-head"><h3 class="card-title"><span class="card-num">04</span>How to send and test a cross-chain call</h3></div>
       <p class="card-hook">Learn how to drive traffic through the stack you just brought up, and how to tell that it worked.</p>
       <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">&rarr;</span></div>
     </a>

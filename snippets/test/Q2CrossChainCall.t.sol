@@ -15,7 +15,10 @@ import {Caller, IRemote, CrossChainCallFailed} from "../q2-cross-chain-call.sol"
 // a STATICCALL (EIP-1153), and that halt is the entire signal. `view` on the
 // callee has nothing to do with it. So `staticcall` reaches the read path and a
 // pre-committed static entry; a plain `call` reaches the execution path and
-// demands an entry no composer wrote for a read.
+// needs an ExecutionEntry instead. In production the composer reads the same
+// frame and builds whichever entry the frame asks for, so a plain-call read
+// still works; staticcall is what makes it a read-only static entry. This
+// table commits only static entries, so here a plain call misses.
 //
 // That halt is real here, not simulated: `ProbeProxy` does the actual `tstore`
 // and solc/revm enforce the static-context rule. This is the one part of the
@@ -105,9 +108,10 @@ contract EntryTable {
     }
 
     /// @dev Same name and signature as the manager's execution entry point. The
-    ///      execution pool is left empty on purpose: no composer writes an
-    ///      ExecutionEntry for a read, which is exactly why a plain `call` for a
-    ///      read fails — under the same error name, with the non-static key.
+    ///      execution pool is left empty on purpose, so the test can show that a
+    ///      plain `call` lands here and not on the static entry: it misses
+    ///      under the same error name, with the non-static key. (In production
+    ///      the composer would have built an ExecutionEntry for that call.)
     function executeCrossChainCall(address sourceAddress, bytes calldata callData)
         external
         payable
@@ -223,11 +227,12 @@ contract Q2CrossChainCallTest {
     // ── The rule: the frame picks the path ──
 
     /// @dev A plain CALL with the very same calldata does NOT reach the read
-    ///      path. It reaches `executeCrossChainCall` and misses, because no
-    ///      composer writes an ExecutionEntry for a read. The error name is the
-    ///      same one a read miss uses; the key in the payload is what shows the
-    ///      path: it was hashed with `isStatic = false`. This is the failure a
-    ///      `.call(data)` read produces in production.
+    ///      path. It reaches `executeCrossChainCall`, which looks for an
+    ///      ExecutionEntry keyed `isStatic = false`, so the committed static
+    ///      entry can never satisfy it. Only a static entry exists here, so it
+    ///      misses. The error name is the same one a read miss uses; the key in
+    ///      the payload is what shows the path. (In production the composer
+    ///      sees the plain CALL and builds that ExecutionEntry instead.)
     function test_plainCallTakesTheExecutionPathAndMisses() public {
         _commitBalance(100);
         (bool ok, bytes memory ret) = address(proxy).call(readData);
@@ -267,8 +272,9 @@ contract Q2CrossChainCallTest {
     }
 
     /// @dev An entry exists and records that the destination reverted. The
-    ///      caller sees the identical outcome as the miss above — this is
-    ///      docs/CAVEATS.md "Missing entries and destination reverts", executable.
+    ///      caller sees the identical outcome as the miss above, because Caller
+    ///      replaces the forwarded revert data with CrossChainCallFailed — this
+    ///      is docs/CAVEATS.md "Missing entries and destination reverts", executable.
     function test_destinationRevertIsIndistinguishableFromAMiss() public {
         table.commitStatic(
             address(caller), readData, false, abi.encodeWithSelector(RemoteBalanceUnavailable.selector)
