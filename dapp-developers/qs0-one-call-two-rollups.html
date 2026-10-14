@@ -230,7 +230,7 @@
       </div>
       <div class="qs0-warn">
         <b>ONLY IN THAT BLOCK</b>
-        <div>In any other block your call reverts <code>ExecutionNotInCurrentBlock</code>. With no matching entry it reverts <code>ExecutionNotFound</code>. Either way the revert comes back through the proxy to your contract. In qs1 the scenario script plays composer.</div>
+        <div>In a block where the rollup wasn&rsquo;t verified, your call reverts <code>ExecutionNotInCurrentBlock</code>. With no matching entry it reverts <code>ExecutionNotFound</code>. Either way the revert comes back through the proxy to your contract. In qs1 the scenario script plays composer.</div>
       </div>
     </div>
 
@@ -263,8 +263,8 @@
       </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap;">
         <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no callback</div>
-        <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no second transaction</div>
-        <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no waiting for a relayer</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no second transaction from you</div>
+        <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no waiting after your call</div>
       </div>
       <div class="qs0-note">The batch's proof covers each entry's <code>returnData</code>, so the value can't be swapped after the composer posts it. Counter@L2 runs the same call on L2, keyed by the same call hash.</div>
       <div class="qs0-note">Further reading: <a class="qs0-link" href="q2-send-a-cross-chain-call.html#skip-intro">q2 &middot; use the answer in your contract &rarr;</a></div>
@@ -301,7 +301,7 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">One Call, Two Rollups, One Transaction</h1>
-      <p class="intro-lede">Your contract on L1 calls a contract on L2 and gets its return value back in the same transaction. No bridge message, no callback, no second transaction.</p>
+      <p class="intro-lede">Your contract on L1 calls a contract on L2 and gets its return value back in the same transaction. No bridge message, no callback, no second transaction from you.</p>
       <p class="intro-lede">It works because the composer computed the answer before your transaction ran and posted it, verified, earlier in the same block. Your call looks it up. This card is one picture and no install; qs1 runs it.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
@@ -340,7 +340,7 @@
   var captions = [
     "Your contract calls the proxy for Counter@L2 like any other contract. The proxy has no functions of its own, so its fallback hands your calldata and your contract's address to the EEZ manager.",
     "Earlier in this block the composer's postAndVerifyBatch verified a batch and queued its entries. executeCrossChainCall works only in that block: it hashes your call and takes the queued entry carrying that hash.",
-    "The manager applies the entry, checks its rolling hash and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, no second transaction."
+    "The manager applies the entry, checks its rolling hash and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, and no second transaction from you."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
@@ -364,17 +364,18 @@
       "}"
     ],
     [
-      "// tx 1, the composer: postAndVerifyBatch",
+      "// tx 1, composer: postAndVerifyBatch",
+      "// \u22ef step 4, _markVerifiedBlockAndResetQueues:",
       "rec.lastVerifiedBlock = uint64(block.number);",
+      "// \u22ef step 8, back in postAndVerifyBatch:",
       "_saveRemainderEntries(batch);",
-      "",
       "// tx 2, you: the proxy calls",
       "function executeCrossChainCall(",
       "    address sourceAddress,",
       "    bytes calldata callData",
-      "// \u22ef ) external payable returns (bytes memory)",
+      "// \u22ef ), then _validateProxyAndGetDestinationInfo:",
       "    _requireVerifiedThisBlock(destRid);",
-      "    // \u22ef hash the call, scan the queue",
+      "    // \u22ef then _consumeAndExecuteEntry() scans:",
       "    idx = _findMatchingEntry(",
       "        // \u22ef queue, cursor, call hash, rollup",
       "    );",
@@ -398,7 +399,7 @@
   ];
   var hlByStep = [
     [0,2,7,8,9],
-    [1,2,5,9,11,14],
+    [2,4,6,10,12,15],
     [1,8]
   ];
 
