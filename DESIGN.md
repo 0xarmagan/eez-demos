@@ -186,12 +186,12 @@ A monochrome bench with one green light and one gradient, used sparingly.
 ### Named Rules
 **The One Light Rule.** Green means live or focused. If an element isn't the current state, the focused element, or a value being traced, it isn't green.
 
-**The Hover-Only Gradient Rule.** At rest, the gradient appears in only two places on a stage: the primary action (Play or Start) and the step progress bar. Everywhere else it shows up only on hover, as the 2px hairline on a card's top edge or the fill of a CTA circle.
+**The Hover-Only Gradient Rule.** At rest, the gradient appears in only two places on a stage: the primary action (Play or Start) and the step progress bar. Everywhere else it shows up only on hover, as a 1px gradient ring around a hovered card or the fill of a CTA circle.
 
 **The Edge-to-Edge Gradient Rule.** Any gradient fill on an element with a border (pills, step chips, arrow circles, Play/Start) uses `border-box` in the `background` shorthand, e.g. `background: var(--eez-grad-btn) border-box`, and a transparent border. Without it the gradient repeats under the border and a 1px sliver of the start color shows on the far edge. That includes `:hover` rules, because the `background` shorthand resets the box to `padding-box`.
 
 **Known drift (don't copy):**
-- The index card hover hairline uses an older 180° gradient (`#8ce8ab → #3f2acd`) instead of `grad-mint → grad-indigo`.
+- The index card hover ring and arrow circle use an older 180° gradient (`#8ce8ab → #3f2acd`) instead of `grad-mint → grad-indigo`.
 - The live-dot pulse uses `rgba(63,185,80,…)`, which isn't `eez-green`.
 - Two pages still define `screen` as `#0b0b0b` and `edge` as `#1f1f1f`.
 
@@ -250,7 +250,7 @@ The system is flat. Depth comes from tone: canvas (`#0A0A0A`) → screen (`#1616
 - **Gently rounded cards** (16px). The search field uses 12px.
 - **Small squared chips** (4–5px) for tool buttons in the code panel (FULL, COPY), keyboard hints, and byte cells in diagrams.
 - **Circles** (50%) for the help button and the arrow circles.
-- **Borders** are always 1px, in `edge` or `control-edge`. The only thicker line is the 2px gradient hairline across a hovered card's top edge.
+- **Borders** are always 1px, in `edge` or `control-edge`. On hover a card's border is overdrawn by a 1px gradient ring that follows its 16px corners.
 
 ## Components
 
@@ -270,7 +270,7 @@ Quiet until touched. Grey at rest, with one gradient action per stage.
 - **Corner Style:** 16px.
 - **Background:** `screen`, going to `#0D0D0D` on hover.
 - **Shadow Strategy:** none at rest; card lift on hover (see Elevation).
-- **Border:** 1px `edge`, going to `#333` on hover. A 2px gradient hairline fades in across the top on hover.
+- **Border:** 1px `edge`. On hover a 1px gradient ring fades in around the whole card (a masked `::before` at `inset:-1px`, `border-radius:inherit`, `border-box` gradient), so the card itself must not use `overflow:hidden`.
 - **Internal Padding:** 28px 26px 26px, with a 16px vertical gap.
 - **Anatomy:**
   - a mono card number (`00`, very quiet `#4D4D4D`, brightening on hover);
