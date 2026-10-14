@@ -64,8 +64,8 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
 .grid.cols-2{grid-template-columns:repeat(2,1fr)}
 @media(max-width:700px){.grid.cols-2{grid-template-columns:1fr}}
-.card{position:relative;text-decoration:none;color:inherit;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:16px;padding:28px 26px 26px;display:flex;flex-direction:column;gap:16px;min-width:0;overflow:hidden;transition:transform .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease}
-.card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--grad);opacity:0;transition:opacity .25s ease}
+.card{position:relative;text-decoration:none;color:inherit;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:16px;padding:28px 26px 26px;display:flex;flex-direction:column;gap:16px;min-width:0;transition:transform .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease}
+.card::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:var(--grad) border-box;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:0;transition:opacity .25s ease}
 .card:hover{transform:translateY(-4px);background:#0d0d0d;border-color:#333;box-shadow:0 20px 44px -20px rgba(0,0,0,.75)}
 .card:visited .card-title{color:#b8b8b8}
 .card:visited .card-num{color:#3a3a3a}
@@ -82,8 +82,11 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .cta .circ{width:26px;height:26px;border-radius:50%;border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none;color:#fff;transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease}
 .card:hover .cta .circ{transform:translateX(2px)}
 
-/* quickstart: entry card, then one row per phase */
-.qs-entry{margin-bottom:28px}
+/* quickstart: a section intro (not a step), then one row per phase */
+.qs-intro{margin:0 0 28px;max-width:720px}
+.qs-title{font-size:26px;line-height:1.2;font-weight:600;letter-spacing:-.01em;color:#fff;margin:0}
+.qs-lede{font-size:15.5px;line-height:1.6;color:#8f8f8f;margin:10px 0 0;max-width:64ch;text-wrap:pretty}
+@media(max-width:640px){.qs-title{font-size:22px}}
 .phase{display:grid;grid-template-columns:150px 1fr;gap:16px;margin-top:16px}
 .phase-label{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.1em;color:var(--muted);margin:0;padding-top:30px}
 @media(max-width:700px){.phase{grid-template-columns:1fr;gap:10px;margin-top:24px}.phase-label{padding-top:0}}
@@ -160,11 +163,10 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <h2 class="eyebrow">[ DAPP DEVELOPERS — QUICKSTART ]</h2>
     </div>
 
-    <a class="card qs-entry" href="./dapp-developers/qs0-one-call-two-rollups.html">
-      <div class="card-head"><h3 class="card-title">Build cross-rollup apps</h3></div>
-      <p class="card-hook">Write cross-chain logic — flash loans, bridging — as naturally as a same-chain call. Run a cross-rollup round trip locally in about 5 minutes (Apple M4, first solc download not included).</p>
-      <div class="cta">START WITH CARD 00 <span class="circ">→</span></div>
-    </a>
+    <div class="qs-intro">
+      <p class="qs-title">Build cross-rollup apps</p>
+      <p class="qs-lede">Write cross-chain logic — flash loans, bridging — as naturally as a same-chain call. Run a cross-rollup round trip locally in about 5 minutes (Apple M4, first solc download not included).</p>
+    </div>
 
     <div class="phase">
       <h3 class="phase-label">UNDERSTAND</h3>
@@ -392,9 +394,6 @@ h1 .l{font-weight:300;color:#dcdcdc}
       var text = card.textContent.toLowerCase();
 
       var matchesFilter = (activeFilter === "all") || trackId === activeFilter;
-      // The entry banner repeats card 00, so it only shows on the unfiltered page;
-      // a filtered or searched list then matches the counts on the filter pills.
-      if (card.classList.contains("qs-entry") && (activeFilter !== "all" || query)) { matchesFilter = false; }
       var matchesSearch = !query || text.indexOf(query) !== -1;
 
       if (matchesFilter && matchesSearch) {
@@ -409,6 +408,11 @@ h1 .l{font-weight:300;color:#dcdcdc}
       var visibleCards = sec.querySelectorAll('.card:not([style*="display: none"])');
       sec.style.display = (visibleCards.length === 0) ? "none" : "";
     });
+
+    // The quickstart intro describes the whole track, so it only shows on
+    // the unfiltered, unsearched page.
+    var qsIntro = document.querySelector(".qs-intro");
+    if (qsIntro) { qsIntro.style.display = (activeFilter === "all" && !query) ? "" : "none"; }
 
     document.querySelectorAll(".phase").forEach(function(row) {
       var visibleInRow = row.querySelectorAll('.card:not([style*="display: none"])');
