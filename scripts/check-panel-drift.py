@@ -70,7 +70,7 @@ ILLUSTRATIVE_ONLY = {
 # and "deliberately not compilable" are not the same claim, and a page moving
 # from one to the other should be a visible edit.
 NON_SOLIDITY = {
-    "pr1-the-four-components-of-rollup0.html": "Rust (eez-rollup0 crates)",
+    "pr1-the-four-components-of-rollup0.html": "Rust (eez-rollupX crates)",
     "pr2-commit-first-repair-if-needed.html": "Rust (eez-composer)",
     "pr3-the-deriver.html": "Rust (eez-deriver)",
     "pr4-how-the-composer-proves-a-batch.html": "protobuf + Rust constants",

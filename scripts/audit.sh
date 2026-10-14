@@ -75,7 +75,7 @@ fi
 
 echo "== Infra-layer .rs citations (the authoritative one, not diagram shorthand) use the crates/ path =="
 # The .sol check above only ever covered eez-core-protocol; this is its
-# equivalent for eez-rollup0's Rust crates (missed a real bug this way once —
+# equivalent for eez-rollupX's Rust crates (missed a real bug this way once —
 # a bare "eez-deriver/src/deriver.rs" header with no crates/ prefix). Scoped to
 # the code-panel header div and pr1's citation-chip data, same as every other
 # demo's single authoritative citation — small in-diagram "file.rs:N" badges

@@ -129,7 +129,7 @@ def collect():
             for m in LOC_RE.finditer(src):
                 loc = m.group("loc")
                 fpath = loc.split(":")[0]
-                repo = "eez-rollup0" if fpath.startswith(("crates/", "testing/")) else "eez-core-protocol"
+                repo = "eez-rollupX" if fpath.startswith(("crates/", "testing/")) else "eez-core-protocol"
                 out.append({
                     "page": rel, "kind": "loc", "repo": repo, "sha": None,
                     "path": fpath, "lines": parse_lines(loc[len(fpath):]),

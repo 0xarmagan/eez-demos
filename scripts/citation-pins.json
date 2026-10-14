@@ -2,14 +2,15 @@
   "_comment": "Commit SHAs every citation link is pinned to. Bump a SHA here, run scripts/verify-citations.py --repin to rewrite the links, then re-run the verifier. Never point citation links at a mutable branch: line numbers drift silently and the citations are the credibility of this whole site.",
   "repos": {
     "eez-core-protocol": {
-      "sha": "9735f53abbb6b9f5e863f405ad4555b4701b7fda",
-      "pinned_on": "2026-08-23",
-      "upstream_date": "2026-08-14"
+      "sha": "9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f",
+      "pinned_on": "2026-10-14",
+      "upstream_date": "2026-10-08",
+      "_note": "the commit eez-rollupX pins as its eez-core-protocol submodule"
     },
-    "eez-rollup0": {
-      "sha": "a4b9b2f1da1208c0f4f9c5b2ff4e45d6281ad1d2",
-      "pinned_on": "2026-08-23",
-      "upstream_date": "2026-08-21"
+    "eez-rollupX": {
+      "sha": "2c19e36bed2720c00f89841ccfca47ec7c921e06",
+      "pinned_on": "2026-10-14",
+      "upstream_date": "2026-10-14"
     }
   }
 }

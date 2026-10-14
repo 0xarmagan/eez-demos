@@ -373,7 +373,7 @@ def build_index(pages):
     out.append("- [Repository](https://github.com/0xarmagan/eez-demos): source of this site")
     out.append("- [eez-core-protocol](https://github.com/eez-association/eez-core-protocol): "
                "the contracts every Solidity walkthrough cites")
-    out.append("- [eez-rollup0](https://github.com/eez-association/eez-rollup0): "
+    out.append("- [eez-rollupX](https://github.com/eez-association/eez-rollupX): "
                "the node, composer, deriver and proof-signer")
     out.append("- [CONTRIBUTING](https://github.com/0xarmagan/eez-demos/blob/main/CONTRIBUTING.md): "
                "how a walkthrough gets added and audited")
