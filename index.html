@@ -3,13 +3,13 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EEZ Quickstarts</title>
 <link rel="canonical" href="https://eez-demos.vercel.app/">
-<meta name="description" content="17 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
+<meta name="description" content="24 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
 <meta property="og:title" content="EEZ Quickstarts">
-<meta property="og:description" content="17 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
+<meta property="og:description" content="24 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="EEZ Quickstarts">
-<meta name="twitter:description" content="17 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
+<meta name="twitter:description" content="24 animated walkthroughs of how EEZ actually works — for dapp developers, rollup operators, and protocol researchers.">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="alternate" type="text/markdown" href="llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="llms-full.txt" title="llms-full.txt — every walkthrough inlined">
@@ -82,8 +82,11 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .cta .circ{width:26px;height:26px;border-radius:50%;border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none;color:#fff;transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease}
 .card:hover .cta .circ{transform:translateX(2px)}
 
-/* first-time-here: one pick per audience, same card as the grids below */
-.starter{margin-bottom:56px}
+/* quickstart: entry card, then one row per phase */
+.qs-entry{margin-bottom:28px}
+.phase{display:grid;grid-template-columns:150px 1fr;gap:16px;margin-top:16px}
+.phase-label{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.1em;color:var(--muted);margin:0;padding-top:30px}
+@media(max-width:700px){.phase{grid-template-columns:1fr;gap:10px;margin-top:24px}.phase-label{padding-top:0}}
 
 
 @media(max-width:640px){.wrap{padding:32px 18px 72px}h1{font-size:32px}}
@@ -128,12 +131,12 @@ h1 .l{font-weight:300;color:#dcdcdc}
   <div class="search-filter-wrap">
     <div class="search-box-row">
       <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-      <input id="searchInput" class="search-input" type="text" placeholder="Search 17 walkthroughs (e.g., msg.sender, Kurtosis, deriver, CREATE2)..." aria-label="Search walkthroughs">
+      <input id="searchInput" class="search-input" type="text" placeholder="Search 24 walkthroughs (e.g., msg.sender, Kurtosis, deriver, CREATE2)..." aria-label="Search walkthroughs">
       <span class="search-shortcut">/</span>
     </div>
     <div class="filter-tabs">
-      <button class="filter-btn active" data-filter="all">ALL (17)</button>
-      <button class="filter-btn" data-filter="dapp-developers">DAPP DEVS (7)</button>
+      <button class="filter-btn active" data-filter="all">ALL (24)</button>
+      <button class="filter-btn" data-filter="dapp-developers">DAPP DEVS (14)</button>
       <button class="filter-btn" data-filter="rollup-operators">ROLLUP OPS (4)</button>
       <button class="filter-btn" data-filter="protocol-researchers">PROTOCOL RESEARCHERS (6)</button>
     </div>
@@ -150,36 +153,82 @@ h1 .l{font-weight:300;color:#dcdcdc}
     <a class="pill outline" href="#protocol-researchers">PROTOCOL RESEARCHERS <span class="circ">→</span></a>
   </div>
 
-  <!-- ================= FIRST TIME HERE ================= -->
-  <div class="sec-head" style="margin:0 0 18px">
-    <h2 class="eyebrow">[ FIRST TIME HERE? THREE STEPS, IN THIS ORDER ]</h2>
-  </div>
-  <div class="grid starter">
+  <!-- ================= DAPP DEVELOPERS: QUICKSTART ================= -->
+  <section class="sec" id="quickstart">
+    <div class="sec-head" style="margin:0 0 18px">
+      <h2 class="eyebrow">[ DAPP DEVELOPERS — QUICKSTART ]</h2>
+    </div>
 
-    <a class="card" href="./dapp-developers/q8-read-a-remote-contracts-state.html">
-      <div class="card-head"><h3 class="card-title"><span class="card-num">01</span>How to read another rollup's state from your contract</h3><span class="badge">DAPP DEVS</span></div>
-      <p class="card-hook">Learn how the answer is written down before your transaction runs, instead of being fetched while you wait.</p>
-      <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
+    <a class="card qs-entry" href="./dapp-developers/qs0-one-call-two-rollups.html">
+      <div class="card-head"><h3 class="card-title">Build cross-rollup apps</h3></div>
+      <p class="card-hook">Write cross-chain logic — flash loans, bridging — as naturally as a same-chain call. Run a cross-rollup round trip locally in about 5 minutes (Apple M4, first solc download not included).</p>
+      <div class="cta">START WITH CARD 00 <span class="circ">→</span></div>
     </a>
 
-    <a class="card" href="./dapp-developers/q2-send-a-cross-chain-call.html">
-      <div class="card-head"><h3 class="card-title"><span class="card-num">02</span>How to use another chain's answer in the same transaction</h3><span class="badge">THE DIFFERENTIATOR</span></div>
-      <p class="card-hook">Learn how the value that comes back decides what the rest of your transaction does — and why that removes the callback, the timeout and the retry you would otherwise have to write.</p>
-      <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
-    </a>
+    <div class="phase">
+      <h3 class="phase-label">UNDERSTAND</h3>
+      <div class="grid">
+        <a class="card" href="./dapp-developers/qs0-one-call-two-rollups.html">
+          <div class="card-head"><h3 class="card-title"><span class="card-num">00</span>One Call, Two Rollups, One Transaction</h3></div>
+          <p class="card-hook">Your L1 contract gets an L2 contract's return value back in the same transaction, with no bridge message and no callback.</p>
+        </a>
+      </div>
+    </div>
 
-    <a class="card" href="./dapp-developers/q3-fix-the-msg-sender-gotcha.html">
-      <div class="card-head"><h3 class="card-title"><span class="card-num">03</span>Why msg.sender isn't your contract on the other side</h3><span class="badge">BEFORE YOU BUILD</span></div>
-      <p class="card-hook">Learn why every <code>onlyOwner</code>, allowlist and <code>approve</code> on the far side keys to a proxy address instead of your contract — and why nothing reverts when it does.</p>
-      <div class="cta">WATCH THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
-    </a>
+    <div class="phase">
+      <h3 class="phase-label">SEE IT WORK</h3>
+      <div class="grid">
+        <a class="card" href="./dapp-developers/qs1-run-your-first-round-trip.html">
+          <div class="card-head"><h3 class="card-title"><span class="card-num">01</span>Run Your First Round Trip</h3></div>
+          <p class="card-hook">Two scenarios pass on local anvil chains: a call that starts on L1 gets its answer from L2, then the same call runs the other way round.</p>
+        </a>
+        <a class="card" href="./dapp-developers/qs2-read-your-side-of-it.html">
+          <div class="card-head"><h3 class="card-title"><span class="card-num">02</span>Read Your Side of It</h3></div>
+          <p class="card-hook">Neither contract imports anything from EEZ: your side is an ordinary Solidity call that uses its return value.</p>
+        </a>
+        <a class="card" href="./dapp-developers/qs3-who-answered.html">
+          <div class="card-head"><h3 class="card-title"><span class="card-num">03</span>Who Answered?</h3></div>
+          <p class="card-hook">The L1 call never waited for L2: its answer was already in an entry, and locally you can read the entry the scenario script wrote as composer.</p>
+        </a>
+      </div>
+    </div>
 
-  </div>
+    <div class="phase">
+      <h3 class="phase-label">MAKE IT REAL</h3>
+      <div class="grid">
+        <a class="card" href="./dapp-developers/qs4-run-it-with-a-real-composer.html">
+          <div class="card-head"><h3 class="card-title"><span class="card-num">04</span>Run It With a Real Composer</h3><span class="badge">COMING SOON</span></div>
+          <p class="card-hook">A real composer replaces the scenario script, on a local devnet that needs a Linux host.</p>
+        </a>
+        <a class="card" href="./dapp-developers/qs5-three-gotchas-before-you-build.html">
+          <div class="card-head"><h3 class="card-title"><span class="card-num">05</span>Three Gotchas Before You Build</h3></div>
+          <p class="card-hook">Three things behave differently from a same-chain call: a test that never leaves one chain hides all three. Cross-chain, two of them revert, and the third matters once an L2 turns on USE_GAS_LEFT.</p>
+        </a>
+        <a class="card" href="./dapp-developers/qs6-deploy-your-own-contract.html">
+          <div class="card-head"><h3 class="card-title"><span class="card-num">06</span>Deploy Your Own Contract</h3><span class="badge">COMING SOON</span></div>
+          <p class="card-hook">Your own contract, deployed to the local devnet and called across chains.</p>
+        </a>
+      </div>
+    </div>
 
-  <p class="card-hook" style="margin:16px 0 0">
-    <a href="./start-here.html" style="color:#fff">Start here</a> — the same three steps with the commands to run them locally,
-    plus reading orders for <a href="./start-here.html" style="color:#fff">rollup operators and protocol researchers</a>.
-  </p>
+    <div class="phase">
+      <h3 class="phase-label">BUILD PATTERNS</h3>
+      <div class="grid">
+        <a class="card" href="./dapp-developers/qs7-cross-chain-flash-loan.html">
+          <div class="card-head"><h3 class="card-title"><span class="card-num">07</span>Cross-Chain Flash Loan</h3></div>
+          <p class="card-hook">Borrowed tokens go to an L2 and back before the repayment check runs, all inside one L1 transaction.</p>
+        </a>
+        <a class="card" href="./dapp-developers/qs8-bridge-tokens-both-ways.html">
+          <div class="card-head"><h3 class="card-title"><span class="card-num">08</span>Bridge Tokens Both Ways</h3></div>
+          <p class="card-hook">Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair of chains, then run the test that sends an ERC-20 through the Bridge.sol test fixture and back.</p>
+        </a>
+      </div>
+    </div>
+
+    <p class="card-hook" style="margin:16px 0 0">
+      Rollup operators and protocol researchers: <a href="./start-here.html" style="color:#fff">Start here</a> has a reading order for each.
+    </p>
+  </section>
 
   <!-- ================= DAPP DEVELOPERS ================= -->
   <section class="sec" id="dapp-developers">
@@ -316,11 +365,11 @@ h1 .l{font-weight:300;color:#dcdcdc}
   </section>
 
   <footer class="closer">
-    <span class="closer-label">THAT'S ALL 17 — MORE COMING AS THE PROTOCOL DOES</span>
+    <span class="closer-label">THAT'S ALL 24 — MORE COMING AS THE PROTOCOL DOES</span>
     <div class="closer-links">
       <a href="https://github.com/eez-association/eez-core-protocol">Star eez-core-protocol ↗</a>
       <a href="https://github.com/0xarmagan/eez-demos/blob/main/CONTRIBUTING.md">Suggest a demo ↗</a>
-      <a href="llms.txt" title="Agent-readable index of all 17 walkthroughs, their code and their citations">llms.txt ↗</a>
+      <a href="llms.txt" title="Agent-readable index of all 24 walkthroughs, their code and their citations">llms.txt ↗</a>
     </div>
   </footer>
 
@@ -341,10 +390,11 @@ h1 .l{font-weight:300;color:#dcdcdc}
     cards.forEach(function(card) {
       var sec = card.closest("section");
       var secId = sec ? sec.id : "";
-      var isStarter = card.closest(".starter") !== null;
+      // The quickstart track is dApp-developer material, so it shows under that filter too.
+      var trackId = (secId === "quickstart") ? "dapp-developers" : secId;
       var text = card.textContent.toLowerCase();
 
-      var matchesFilter = (activeFilter === "all") || (isStarter ? activeFilter === "all" : secId === activeFilter);
+      var matchesFilter = (activeFilter === "all") || trackId === activeFilter;
       var matchesSearch = !query || text.indexOf(query) !== -1;
 
       if (matchesFilter && matchesSearch) {
@@ -360,13 +410,10 @@ h1 .l{font-weight:300;color:#dcdcdc}
       sec.style.display = (visibleCards.length === 0) ? "none" : "";
     });
 
-    var starter = document.querySelector(".starter");
-    var starterSecHead = starter ? starter.previousElementSibling : null;
-    if (starter) {
-      var visibleStarter = starter.querySelectorAll('.card:not([style*="display: none"])');
-      starter.style.display = (visibleStarter.length === 0) ? "none" : "";
-      if (starterSecHead) starterSecHead.style.display = (visibleStarter.length === 0) ? "none" : "";
-    }
+    document.querySelectorAll(".phase").forEach(function(row) {
+      var visibleInRow = row.querySelectorAll('.card:not([style*="display: none"])');
+      row.style.display = (visibleInRow.length === 0) ? "none" : "";
+    });
 
     emptyState.style.display = (totalVisible === 0) ? "block" : "none";
   }

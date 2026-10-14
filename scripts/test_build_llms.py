@@ -32,13 +32,26 @@ sys.path.insert(0, str(ROOT / "scripts"))
 def _pages():
     """The generator's own page list, so the two cannot disagree about what a
     walkthrough is (a redirect stub has no captions and is not one)."""
+    return _build_llms().collect()
+
+
+def _build_llms():
     import importlib.util
 
     spec = importlib.util.spec_from_file_location(
         "build_llms", ROOT / "scripts" / "build-llms.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
-    return mod.collect()
+    return mod
+
+
+def test_quickstart_entry_card_does_not_title_qs0():
+    """The index's entry card links qs0 as "Build cross-rollup apps". It must
+    be skipped, so qs0 keeps its own phase-strip title in llms.txt."""
+    cards = _build_llms().index_cards()
+    title, _ = cards["dapp-developers/qs0-one-call-two-rollups.html"]
+    assert title == "One Call, Two Rollups, One Transaction", \
+        "qs0 titled %r in index_cards()" % title
 
 
 def test_every_walkthrough_emits_at_least_one_code_block():

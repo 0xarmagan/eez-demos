@@ -1,6 +1,6 @@
 # EEZ Quickstarts
 
-> Seventeen interactive walkthroughs of the Ethereum Economic Zone, each built on real
+> Twenty-four interactive walkthroughs of the Ethereum Economic Zone, each built on real
 > protocol source cited at a pinned commit rather than on pseudocode. Covers writing
 > contracts that call across rollups, running the stack, and how RollupX settles and proves.
 
@@ -20,492 +20,737 @@ a commit SHA, so a link tells you exactly which revision a claim was true of.
 
 Writing contracts that call across rollups.
 
-## How to read another rollup's state from your contract
+## One Call, Two Rollups, One Transaction
 
-Learn how the answer is written down before your transaction runs, instead of being fetched while you wait.
+Your L1 contract gets an L2 contract's return value back in the same transaction, with no bridge message and no callback.
 
-- Page: https://eez-demos.vercel.app/dapp-developers/q8-read-a-remote-contracts-state.html
+- Page: https://eez-demos.vercel.app/dapp-developers/qs0-one-call-two-rollups.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:113 · _fallback`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113
 
-### Step 1 — A CONTRACT ON THIS CHAIN
+### Step 1 — YOUR CONTRACT CALLS A PROXY.
 
-The proxy is an ordinary contract, deployed on this chain. Every opcode that asks the EVM about an address answers about it — not about the contract it stands for.
+Your contract calls the proxy for Counter@L2 like any other contract. The proxy has no functions of its own, so its fallback hands your calldata and your contract's address to the EEZ manager.
 
 ```solidity
-address proxy = eez.computeCrossChainProxyAddress(
-    remote, remoteRollupId
+fallback() external payable {
+    // ⋯ manager + self-probe branches
+    _fallback();
+}
+
+function _fallback() internal {
+    // ⋯ static-context probe
+    (success, result) =
+        // EEZ.call → executeCrossChainCall(
+        //     msg.sender, msg.data)
+    if (success) {
+        result = abi.decode(result, (bytes));
+    }
+    // ⋯ return(result) to your contract
+}
+```
+
+### Step 2 — THE ANSWER IS ALREADY THERE.
+
+Earlier in this block the composer's postAndVerifyBatch verified a batch and queued its entries. executeCrossChainCall works only in that block: it hashes your call and takes the queued entry carrying that hash.
+
+```solidity
+// tx 1, composer: postAndVerifyBatch
+// ⋯ step 4, _markVerifiedBlockAndResetQueues:
+rec.lastVerifiedBlock = uint64(block.number);
+// ⋯ step 8, back in postAndVerifyBatch:
+_saveRemainderEntries(batch);
+// tx 2, you: the proxy calls
+function executeCrossChainCall(
+    address sourceAddress,
+    bytes calldata callData
+// ⋯ ), then _validateProxyAndGetDestinationInfo:
+    _requireVerifiedThisBlock(destRid);
+    // ⋯ then _consumeAndExecuteEntry() scans:
+    idx = _findMatchingEntry(
+        // ⋯ queue, cursor, call hash, rollup
+    );
+    entry = rec.entryQueue[idx];
+```
+
+### Step 3 — SAME TRANSACTION.
+
+The manager applies the entry, checks it matches what was proven, and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, and no second transaction from you.
+
+```solidity
+// _consumeAndExecuteEntry, entry found
+bytes memory returnData = entry.returnData;
+
+_executeEntry(
+    // ⋯ roots, calls, rollingHash
 );
+// reverts RollingHashMismatch on divergence
 
-// a contract deployed on THIS chain, with its
-// own code and its own balance
+return returnData;
+
+// ⋯ executeCrossChainCall returns it,
+// the proxy decodes it and return()s it:
+// your contract has the answer.
 ```
 
-### Step 2 — FOUR READS, NO REVERT
+## Run Your First Round Trip
 
-balance, extcodesize, extcodecopy and delegatecall describe the proxy; block-state opcodes describe the chain you are executing on. Each read succeeds and returns a real number about the wrong contract.
+Two scenarios pass on local anvil chains: a call that starts on L1 gets its answer from L2, then the same call runs the other way round.
 
-```diff
- address proxy = eez.computeCrossChainProxyAddress(
-     remote, remoteRollupId
- );
+- Page: https://eez-demos.vercel.app/dapp-developers/qs1-run-your-first-round-trip.html
+- Source: `eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17
 
- // a contract deployed on THIS chain, with its
- // own code and its own balance
+### Step 1 — CLONE AT THE PIN.
 
--uint256 bal  = proxy.balance;       // PROXY's ether
--uint256 size = proxy.code.length;   // PROXY's code
--bool sameChain =
--    block.chainid == remoteChainId;  // THIS chain
+Clone at a fixed commit so your output matches these cards. You need Foundry 1.7.1 with forge, cast and anvil on PATH, Git, and bash 4 or newer (macOS ships 3.2; brew install bash puts bash 5 first on PATH). No Docker.
+
+```text
+# needs Foundry 1.7.1 (forge, cast, anvil on PATH),
+# Git, and bash 4+. No Docker.
+# Foundry: https://book.getfoundry.sh/getting-started/installation
+# macOS ships bash 3.2; this puts bash 5 first on PATH:
+#   brew install bash
+
+$ git clone https://github.com/eez-association/eez-core-protocol.git
+$ cd eez-core-protocol
+$ git checkout -q 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
+$ git submodule update --init --recursive
 ```
 
-### Step 3 — ASK IT, DON'T INSPECT IT
+### Step 2 — BUILD AND RUN BOTH DIRECTIONS.
 
-Call through the proxy instead — the read is routed, and resolves against an entry written before your transaction ran.
+One build, then both scenarios at once. About 5 minutes on an Apple M4 laptop with Foundry 1.7.1, and the first build is most of it.
 
-```diff
- address proxy = eez.computeCrossChainProxyAddress(
-     remote, remoteRollupId
- );
+```text
+# the first build is most of the time
+$ forge build
 
--uint256 bal  = proxy.balance;       // PROXY's ether
-+uint256 bal = IRemote(proxy).balanceOf(user);
- // the proxy is an IDENTITY, not a mirror:
- // ask it, don't inspect it
+$ bash script/e2e/run/local/parallel.sh counter counterL2
+  [counter] starting (L1=18545 chain=41337, L2=18546 chain=41338)
+  [counterL2] starting (L1=18547 chain=41339, L2=18548 chain=41340)
+  [counter] PASS
+  [counterL2] PASS
+
+===== RESULT: 2 passed, 0 failed, 0 skipped =====
 ```
 
-### Full compilable source — snippets/q8-remote-reads.sol
+### Step 3 — WHAT THAT PASS PROVED.
+
+Locally, the scenario script played composer. You'll see what it did in two cards.
+
+```text
+# counter:   L1 called L2, got 1 back
+# counterL2: L2 called L1, got 1 back
+
+  [counter] PASS
+  [counterL2] PASS
+
+===== RESULT: 2 passed, 0 failed, 0 skipped =====
+```
+
+## Read Your Side of It
+
+Neither contract imports anything from EEZ: your side is an ordinary Solidity call that uses its return value.
+
+- Page: https://eez-demos.vercel.app/dapp-developers/qs2-read-your-side-of-it.html
+- Source: `eez-core-protocol/test/mocks/CounterContracts.sol:16 · Counter`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/test/mocks/CounterContracts.sol#L16
+
+### Step 1 — THE CONTRACT ON L2.
+
+Counter is plain Solidity. In the qs1 run it lives on L2, and increment() returns the new count.
+
+```solidity
+contract Counter is ICounterView {
+    uint256 public counter;
+
+    function increment() external returns (uint256) {
+        counter++;
+        return counter;
+    }
+}
+```
+
+### Step 2 — YOUR CONTRACT ON L1.
+
+incrementProxy() calls target.increment() like any other contract and uses the return value on the next line. The fixed gas amount is the one extra; Three Gotchas explains when it matters.
+
+```solidity
+uint256 constant PROXY_CALL_GAS = 5_000_000;
+
+contract CounterAndProxy {
+    Counter public target;
+    uint256 public targetCounter;
+    uint256 public counter;
+
+    // ⋯ constructor: step 3
+
+    function incrementProxy() external {
+        targetCounter = target.increment{gas: PROXY_CALL_GAS}();
+        counter++;
+    }
+}
+```
+
+### Step 3 — POINT IT ANYWHERE.
+
+The only cross-chain part is which address target holds. The scenario passes Counter's proxy on L1. The TEST tab passes a local Counter, and the same code passes.
+
+```solidity
+contract CounterAndProxy {
+    Counter public target;
+    // ⋯
+
+    constructor(Counter _target) {
+        target = _target;
+    }
+
+    // ⋯ incrementProxy() as in step 2
+}
+```
+
+### Full compilable source — snippets/qs2-counter-and-proxy.sol
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import {IEEZ} from "./lib/IEEZ.sol";
-
-// Panel source for: dapp-developers/q8-read-a-remote-contracts-state.html
-// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:113
-// and eez-core-protocol/docs/CAVEATS.md, "Opcodes that differ on cross-chain
-// proxies" and "Missing entries and destination reverts"
+// Panel source for: dapp-developers/qs2-read-your-side-of-it.html
+// Mirrors eez-core-protocol/test/mocks/CounterContracts.sol:4-23 and :53-66
 // @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
 //
-// This is the caveat with no compiler help. q3's mistake reverts, so you find
-// it the first time a call arrives through a proxy. The reads below SUCCEED and
-// return a real number about the wrong contract, so they ship.
-//
-// WHY: a CrossChainProxy is an ordinary contract, deployed on THIS chain, with
-// its own code and its own balance. An opcode that asks the EVM about an
-// address answers about that local contract. Only a CALL is routed: the proxy's
-// fallback (CrossChainProxy.sol:113, `_fallback`) forwards to the manager, which
-// resolves an outcome that was written down before your transaction ran. So
-// inspection is local, invocation is resolved.
-//
-// The four that answer about the proxy, per CAVEATS.md: `balance`,
-// `extcodesize`, `extcodecopy`, `delegatecall`. Plus every block-state opcode
-// (`number`, `blockhash`, `chainid`, `coinbase`, `gaslimit`), which describes
-// the chain currently executing, not the source chain — so the same logical
-// action reads differently on L1 and on L2.
-//
-// `delegatecall` deserves its own line: delegatecalling a proxy runs the
-// PROXY's code in your storage context. It does not reach the remote contract.
-//
-// WHEN A ROUTED READ RESOLVES — both sides gate on the block, but what else
-// must match differs, so do not learn one half and carry it to the other chain:
-//
-//   L1: `staticCrossChainCall` (EEZ.sol:1379-1449) opens with
-//   `_validateProxyAndGetDestinationInfo()` (:1380), which reverts
-//   `ExecutionNotInCurrentBlock(destRid)` unless that rollup was verified in
-//   this block (:1578-1580). It then scans `staticEntryQueue` (:1420), or the
-//   batch's transient pool while one is mid-flight, and matches on
-//   `proxyEntryHash`, `destinationRollupId` and `_rootsMatch(...)` (:1437-1438).
-//   Upstream's own comment: "Static entries require both current-block
-//   verification (checked above) and matching root pins."
-//
-//   L2: `staticCrossChainCall` (EEZL2.sol:660) opens with the same-named helper,
-//   whose gate at EEZL2.sol:791 is
-//   `if (lastLoadBlock != block.number) revert ExecutionNotInCurrentBlock();`,
-//   and matches on the call hash and the live entry cursor (:705).
-//
-//   Mutating calls go through the same helper on both sides, so they are
-//   block-gated too (EEZ.sol:863, EEZL2.sol:272).
-//
-// A read with nothing to resolve against reverts — `ExecutionNotFound()` on L1
-// (EEZ.sol:1410, :1448), `EntryNotFound(bytes32 crossChainCallHash, uint64
-// callGas)` on L2 (EEZL2.sol:699, :714). Those are the strings to search for.
-//
-// AND REVERT DATA WON'T TELL YOU WHY IT FAILED. CAVEATS.md, "Missing entries
-// and destination reverts": a static lookup miss reverts at the proxy, as does a
-// matched reverting destination, and revert data alone is not a reliable way to
-// distinguish them — CrossChainProxy.sol:138-139 forwards the raw revert data
-// unmodified. Do not write a `try/catch` that claims to know which one happened.
+// These are the contracts the qs1 round trip runs. Copied verbatim: Counter
+// lives on L2, CounterAndProxy on L1. Nothing in CounterAndProxy knows it is
+// calling across chains. `target` just holds an address, and on the scenario
+// that address is Counter's cross-chain proxy on L1.
 
-interface IRemote {
-    function balanceOf(address account) external view returns (uint256);
+/// @dev Explicit gas attached to the cross-chain proxy call sites below. L2 folds the gas left
+///      after its pre-hash checks into the outgoing call hash, so these sites attach a fixed amount
+///      that a test-side probe with the same attach reproduces (equals `BaseL2.CALL_GAS`).
+uint256 constant PROXY_CALL_GAS = 5_000_000;
+
+/// @notice View surface of `Counter`. Gives call sites a compile-checked handle on the
+///         auto-generated `counter()` getter (`Counter.counter.selector` is not reachable
+///         through the contract type).
+interface ICounterView {
+    function counter() external view returns (uint256);
 }
 
-contract RemoteReader {
-    IEEZ internal immutable eez;
-    address internal immutable remote;
-    uint64 internal immutable remoteRollupId;
+contract Counter is ICounterView {
+    uint256 public counter;
 
-    constructor(IEEZ eez_, address remote_, uint64 remoteRollupId_) {
-        eez = eez_;
-        remote = remote_;
-        remoteRollupId = remoteRollupId_;
+    function increment() external returns (uint256) {
+        counter++;
+        return counter;
+    }
+}
+
+contract CounterAndProxy {
+    Counter public target;
+    uint256 public targetCounter;
+    uint256 public counter;
+
+    constructor(Counter _target) {
+        target = _target;
     }
 
-    /// @dev The trap. Compiles, runs, returns real numbers about the proxy.
-    ///      Returns are intentionally unnamed: the panel lines below declare
-    ///      `bal`, `size` and `sameChain` verbatim, and named returns would
-    ///      shadow them.
-    function inspectionLies(uint256 remoteChainId)
-        external
-        view
-        returns (uint256, uint256, bool)
-    {
-address proxy = eez.computeCrossChainProxyAddress(
-    remote, remoteRollupId
-);
-// a contract deployed on THIS chain, with its
-// own code and its own balance
-
-uint256 bal  = proxy.balance;       // PROXY's ether
-uint256 size = proxy.code.length;   // PROXY's code
-bool sameChain =
-    block.chainid == remoteChainId;  // THIS chain
-        return (bal, size, sameChain);
-    }
-
-    /// @dev The fix. A view call through the proxy is routed, and resolves
-    ///      against an entry the composer already wrote — so what comes back is
-    ///      the remote contract's state, not the proxy's.
-    ///
-    ///      Both sides resolve it only in the block the entries were loaded: on
-    ///      L1 the rollup must be verified this block and the entry's root pins
-    ///      must match (EEZ.sol:1578-1580, :1437-1438), on L2 the table must be
-    ///      loaded this block (EEZL2.sol:791). With no matching entry this
-    ///      reverts — `ExecutionNotFound()` on L1, `EntryNotFound(...)` on L2 —
-    ///      and revert data alone cannot reliably tell that from the
-    ///      destination reverting.
-    function readRemoteBalance(address user) external view returns (uint256) {
-address proxy = eez.computeCrossChainProxyAddress(
-    remote, remoteRollupId
-);
-
-uint256 bal = IRemote(proxy).balanceOf(user);
-// the proxy is an IDENTITY, not a mirror:
-// ask it, don't inspect it
-        return bal;
-    }
-
-    /// @dev A live proxy says nothing about the remote target. Code at the proxy
-    ///      address means the manager will route through it — not that anything
-    ///      answers on the other side. See q4 for reading the registry.
-    function proxyExistsButProvesNothing() external view returns (bool) {
-        address proxy = eez.computeCrossChainProxyAddress(remote, remoteRollupId);
-        return proxy.code.length != 0;
+    function incrementProxy() external {
+        targetCounter = target.increment{gas: PROXY_CALL_GAS}();
+        counter++;
     }
 }
 ```
 
-### Runnable test — snippets/test/Q8RemoteReads.t.sol
+### Runnable test — snippets/test/QS2CounterAndProxy.t.sol
 
 ```solidity
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import {IEEZ} from "../lib/IEEZ.sol";
-import {RemoteReader, IRemote} from "../q8-remote-reads.sol";
+import {Counter, CounterAndProxy} from "../qs2-counter-and-proxy.sol";
 
-// Runnable proof of the q8 caveat. Paste into any Foundry project and run:
-//
-//   forge test --match-contract Q8RemoteReads -vv
-//
-// Depends on nothing but solc — no forge-std, no submodules.
-//
-// The first three cases are the whole hazard: NOTHING REVERTS. Each is a
-// successful read returning a real number about the wrong contract. Unlike the
-// q3 owner check, there is no failure to notice.
-//
-// WHAT IS FAKED HERE, AND WHAT IS NOT. Q6ManagerDirect.t.sol refuses to fake
-// protocol state and says so in its header; the same line is held here.
-// `EntryTable` below is not an EEZ manager and does not pretend to be one. It
-// is a local model of the one property the routed read rests on: the outcome
-// was written into a table BEFORE the transaction ran, it is matched by a hash
-// of the call, and a miss reverts `ExecutionNotFound()`. That is the shape of
-// EEZ resolution — the opposite of fetch-on-demand messaging, where the answer
-// is gone and fetched while you wait.
-//
-// What this establishes: the reader in ../q8-remote-reads.sol behaves correctly
-// against a resolver of that shape, including both failure modes a builder will
-// actually meet. What it does NOT establish: that upstream resolves this way.
-// The citations on the page and scripts/verify-citations.py are the check for
-// that, and nothing in a local table could stand in for it.
-//
-// Deliberately not modelled, because a local table cannot: the composer, the
-// rolling hash, state roots, the entry queues, and the rule for when a static
-// entry is still valid (both sides gate on the block, EEZ.sol:1578-1580 and
-// EEZL2.sol:791; L1 also requires the entry's root pins to match the live
-// roots, EEZ.sol:1437-1438). The key below
-// is a REDUCED stand-in for `computeCrossChainCallHash` — q5 has the real
-// eight-field preimage. What is under test is lookup-then-revert, not the
-// field list.
-
-/// @dev Minimal cheatcode surface. Same address forge injects.
-interface Vm {
-    function deal(address, uint256) external;
-    function label(address, string calldata) external;
-    function expectRevert(bytes4) external;
-}
-
-/// @dev Named exactly as L1 names it (EEZ.sol:1410, :1448), so a reader who
-///      hits it in production can search for the same string. L2 reports its
-///      miss as `EntryNotFound(bytes32 crossChainCallHash, uint64 callGas)`
-///      instead (EEZL2.sol:173), which this local model does not reproduce.
-error ExecutionNotFound();
-
-/// @dev The destination's own error, for the case where an entry exists and
-///      records that the destination call reverted.
-error RemoteBalanceUnavailable();
-
-// @stand-in a local table, not a manager: it holds outcomes keyed by a reduced
-//           call hash so the test can exercise hit, miss and destination-revert
-//           without faking EEZ storage. See the header.
-contract EntryTable {
-    struct Entry {
-        bool present;
-        bool success;
-        bytes data;
-    }
-
-    mapping(bytes32 => Entry) private entries;
-
-    address private immutable destAddress;
-    uint64 private immutable destRollupId;
-
-    constructor(address destAddress_, uint64 destRollupId_) {
-        destAddress = destAddress_;
-        destRollupId = destRollupId_;
-    }
-
-    /// @dev Reduced stand-in for computeCrossChainCallHash. The real preimage is
-    ///      eight fields in a fixed order (q5); the point here is only that the
-    ///      entry is addressed by the content of the call.
-    function keyFor(address sourceAddress, bytes memory callData) public view returns (bytes32) {
-        return keccak256(abi.encode(true, sourceAddress, destAddress, destRollupId, callData));
-    }
-
-    /// @dev The composer's job, done by hand. In production nothing in your
-    ///      transaction writes this table.
-    function commit(address sourceAddress, bytes calldata callData, bool success, bytes calldata data) external {
-        entries[keyFor(sourceAddress, callData)] = Entry(true, success, data);
-    }
-
-    /// @dev Same name and signature as the manager's read entry point, so the
-    ///      shape of the call the proxy makes is the real one.
-    function staticCrossChainCall(address sourceAddress, bytes calldata callData)
-        external
-        view
-        returns (bytes memory)
-    {
-        Entry storage entry = entries[keyFor(sourceAddress, callData)];
-        if (!entry.present) revert ExecutionNotFound();
-        if (!entry.success) {
-            bytes memory reason = entry.data;
-            assembly {
-                revert(add(reason, 0x20), mload(reason))
-            }
-        }
-        return entry.data;
-    }
-}
-
-// @stand-in a two-line model of CrossChainProxy's read path: a real local
-//           contract with its own code and balance, whose fallback forwards to
-//           the manager's view entry point and hands back exactly what comes
-//           out — including raw revert data (CrossChainProxy.sol:113-142).
-contract StubProxy {
-    address internal immutable manager;
-
-    constructor(address manager_) {
-        manager = manager_;
-    }
-
-    fallback() external payable {
-        (bool ok, bytes memory result) =
-            manager.staticcall(abi.encodeCall(EntryTable.staticCrossChainCall, (msg.sender, msg.data)));
-        if (ok) {
-            // The manager returns `bytes`, so the raw result is double-encoded.
-            result = abi.decode(result, (bytes));
-        }
-        assembly {
-            switch ok
-            case 0 { revert(add(result, 0x20), mload(result)) }
-            default { return(add(result, 0x20), mload(result)) }
-        }
-    }
-
-    receive() external payable {}
-}
-
-// @stand-in an address book, nothing more: the reader asks for its proxy and
-//           gets the stub back. It does not derive anything — q7 is the page
-//           for the real CREATE2 derivation.
-contract MockEEZ {
-    address private immutable proxyAddress;
-
-    constructor(address proxyAddress_) {
-        proxyAddress = proxyAddress_;
-    }
-
-    function computeCrossChainProxyAddress(address, uint64) external view returns (address) {
-        return proxyAddress;
-    }
-}
-
-// @stand-in the contract being read, as it exists on the OTHER rollup. It is
-//           local here only so the test can hold two different numbers at once.
-//           The routed read must never touch it, which is what `calls` proves.
-contract Counterpart {
-    uint256 public calls;
-
-    mapping(address => uint256) private balances;
-
-    function setBalance(address who, uint256 amount) external {
-        balances[who] = amount;
-    }
-
-    function balanceOf(address who) external returns (uint256) {
-        calls++;
-        return balances[who];
-    }
-}
-
-contract Q8RemoteReadsTest {
-    Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
-
-    address internal constant USER = address(0xA11CE);
-    address internal constant STRANGER = address(0xB0B);
-    uint64 internal constant REMOTE_ROLLUP_ID = 1;
-
-    uint256 internal constant COMMITTED_BALANCE = 500 ether;
-    uint256 internal constant PROXY_BALANCE = 1 wei;
-    uint256 internal constant COUNTERPART_BALANCE = 7 ether;
-
-    Counterpart internal counterpart;
-    EntryTable internal table;
-    StubProxy internal proxy;
-    RemoteReader internal reader;
-
-    function setUp() public {
-        counterpart = new Counterpart();
-        counterpart.setBalance(USER, COMMITTED_BALANCE);
-        vm.deal(address(counterpart), COUNTERPART_BALANCE);
-
-        table = new EntryTable(address(counterpart), REMOTE_ROLLUP_ID);
-        proxy = new StubProxy(address(table));
-        vm.deal(address(proxy), PROXY_BALANCE);
-
-        reader = new RemoteReader(
-            IEEZ(address(new MockEEZ(address(proxy)))), address(counterpart), REMOTE_ROLLUP_ID
-        );
-
-        // The entry for the one read this test expects to resolve. Written
-        // before any of it runs, which is the whole point.
-        table.commit(
-            address(reader),
-            abi.encodeCall(IRemote.balanceOf, (USER)),
-            true,
-            abi.encode(COMMITTED_BALANCE)
-        );
-
-        vm.label(address(proxy), "proxy(counterpart)");
-        vm.label(address(counterpart), "counterpart");
-        vm.label(address(table), "entryTable");
-    }
-
-    /// @dev The trap, part one. `.balance` answers about the proxy. No revert.
-    function test_balanceReadsTheProxyNotTheCounterpart() public view {
-        (uint256 bal,,) = reader.inspectionLies(block.chainid + 1);
-        require(bal == PROXY_BALANCE, "expected the proxy's own balance");
-        require(bal != COUNTERPART_BALANCE, "must not be the counterpart's balance");
-    }
-
-    /// @dev The trap, part two. The proxy has code, so an `extcodesize`-style
-    ///      "is this a contract" check passes — and proves nothing about whether
-    ///      anything exists on the other rollup.
-    function test_codeSizeIsTheProxysOwn() public view {
-        (, uint256 size,) = reader.inspectionLies(block.chainid + 1);
-        require(size == address(proxy).code.length, "the proxy's own code size");
-        require(
-            keccak256(address(proxy).code) != keccak256(address(counterpart).code),
-            "proxy code is not the counterpart's code"
-        );
-        require(reader.proxyExistsButProvesNothing(), "code at the proxy address proves only that");
-    }
-
-    /// @dev The trap, part three. Block context is local. A reader comparing
-    ///      against the counterparty's chain id silently takes the wrong branch.
-    function test_blockContextIsLocal() public view {
-        (,, bool sameChain) = reader.inspectionLies(block.chainid + 1);
-        require(!sameChain, "block.chainid is this chain's, never the remote one");
-    }
-
-    /// @dev The fix. Calling THROUGH the proxy returns the remote contract's
-    ///      state, because a call is routed and an inspection is not — and the
-    ///      value comes out of the entry, not out of a live fetch. `calls == 0`
-    ///      is that second half: the counterpart is never touched.
-    function test_routedReadReturnsThePreCommittedEntry() public view {
-        uint256 seen = reader.readRemoteBalance(USER);
-        require(seen == COMMITTED_BALANCE, "routed read returns the committed outcome");
-        require(counterpart.calls() == 0, "resolution never calls the counterpart");
-    }
-
-    /// @dev The honest limit. With no matching entry the routed read reverts
-    ///      `ExecutionNotFound()` rather than returning zero. In production that
-    ///      is an L1 read whose static entry is not in scope: no entry in the
-    ///      queue matches the call and the live root pins (EEZ.sol:1437-1438).
-    ///      A read after the block moved on fails earlier, with
-    ///      `ExecutionNotInCurrentBlock` (EEZ.sol:1580, EEZL2.sol:791), and an L2
-    ///      miss reverts `EntryNotFound(...)` instead (EEZL2.sol:699, :714).
-    function test_unresolvedReadRevertsExecutionNotFound() public {
-        vm.expectRevert(ExecutionNotFound.selector);
-        reader.readRemoteBalance(STRANGER);
-    }
-
-    /// @dev CAVEATS.md, "Missing entries and destination reverts": revert data
-    ///      alone is not a reliable way to tell a lookup miss from a matched
-    ///      reverting destination.
-    ///      The proxy forwards raw revert data and adds nothing of its own, so
-    ///      the caller has no field saying which layer failed — only the bytes it
-    ///      was handed. Both cases below hand back the same bytes.
-    function test_missAndDestinationRevertAreIndistinguishable() public {
-        bytes memory callData = abi.encodeCall(IRemote.balanceOf, (STRANGER));
-
-        // A: nothing committed for STRANGER, so the table itself reverts.
-        (bool okMiss, bytes memory fromMiss) = address(proxy).staticcall(callData);
-
-        // B: an entry EXISTS and records that the destination call reverted,
-        // carrying the destination's own revert bytes.
-        table.commit(address(this), callData, false, abi.encodeWithSelector(ExecutionNotFound.selector));
-        (bool okReverted, bytes memory fromReverted) = address(proxy).staticcall(callData);
-
-        require(!okMiss && !okReverted, "both fail");
-        require(keccak256(fromMiss) == keccak256(fromReverted), "the caller cannot tell them apart");
-
-        // And a destination that reverts with its own error is no more legible:
-        // it is still just bytes arriving from the proxy.
-        table.commit(address(this), callData, false, abi.encodeWithSelector(RemoteBalanceUnavailable.selector));
-        (bool okOther, bytes memory fromOther) = address(proxy).staticcall(callData);
-        require(!okOther, "still a revert from the proxy");
-        require(fromOther.length == 4, "four bytes of someone else's error, and no attribution");
+// The same CounterAndProxy, pointed at a same-chain Counter: the call site is
+// identical whether `target` is a local contract or a cross-chain proxy.
+contract QS2CounterAndProxyTest {
+    function test_sameCallSiteWorksAgainstALocalCounter() public {
+        Counter target = new Counter();
+        CounterAndProxy cap = new CounterAndProxy(target);
+        cap.incrementProxy();
+        require(target.counter() == 1, "target not incremented");
+        require(cap.targetCounter() == 1, "return value not used");
+        require(cap.counter() == 1, "local state not updated");
     }
 }
 ```
 
-## How to use another chain's answer in the same transaction
+## Who Answered?
 
-Learn how the value that comes back decides what the rest of your transaction does — and why that removes the callback, the timeout and the retry you would otherwise have to write.
+The L1 call never waited for L2: its answer was already in an entry, and locally you can read the entry the scenario script wrote as composer.
+
+- Page: https://eez-demos.vercel.app/dapp-developers/qs3-who-answered.html
+- Source: `eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:94 · ExecutionEntry`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L94
+
+### Step 1 — THE ANSWER, WRITTEN DOWN FIRST.
+
+Before your call runs, the L1 entry already holds its answer: success, and a return value of 1. On a real network the composer builds this entry. Locally, the scenario script plays composer.
+
+```solidity
+// _l1Entries: the entry posted on L1
+entries[0] = ExecutionEntry({
+  rollupUpdates: deltas,
+  proxyEntryHash: proxyEntryHash,
+  destinationRollupId: L2_ROLLUP_ID,
+  ⋯
+  success: true,
+  returnData: abi.encode(uint256(1))
+});
+```
+
+### Step 2 — THE REAL CALL, ON L2.
+
+The L2 entry holds the call that really runs: CounterAndProxy on L1 calling increment() on Counter on L2. Locally, the script delivers it too, as the L2 system address.
+
+```solidity
+// _l2Entries: the entry loaded on L2
+calls[0] = CrossChainCall({
+  ⋯
+  sourceAddress: counterAndProxy,
+  sourceRollupId: MAINNET_ROLLUP_ID,
+  targetAddress: counterL2,
+  value: 0,
+  data: _incrementCallData()
+});
+⋯
+entries[0] = L2ExecutionEntry({
+  ⋯
+  incomingCalls: calls,
+  ⋯
+});
+```
+
+### Step 3 — ONE HASH TIES THEM.
+
+Both entries carry the same proxyEntryHash, built by one helper, _callHash. That shared hash ties L1's cached answer to the run on L2. Deep dives: q5 for the call hash, pr6 for the rolling hash.
+
+```solidity
+// Both entries set the same field
+// from one helper:
+// _callHash(counterL2, counterAndProxy)
+// _l1Entries
+entries[0] = ExecutionEntry({
+  ⋯
+  proxyEntryHash: proxyEntryHash,
+  ⋯
+});
+// _l2Entries
+entries[0] = L2ExecutionEntry({
+  proxyEntryHash: proxyEntryHash,
+  ⋯
+});
+```
+
+## Three Gotchas Before You Build
+
+Three things behave differently from a same-chain call: a test that never leaves one chain hides all three. Cross-chain, two of them revert, and the third matters once an L2 turns on USE_GAS_LEFT.
+
+- Page: https://eez-demos.vercel.app/dapp-developers/qs5-three-gotchas-before-you-build.html
+- Source: `eez-core-protocol/src/base/CrossChainProxy.sol:67 · fallback`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L67
+
+### Step 1 — MSG.SENDER IS THE PROXY.
+
+Cross-chain, your contract is called by the source's proxy, not the source. Check msg.sender against the proxy address, or an owner check reverts every time.
+
+```solidity
+// CrossChainProxy.sol · fallback()
+// The manager (EEZ on L1, EEZL2 on L2) has
+// the source's proxy make your call:
+fallback() external payable {
+  // sender is EEZ, sig is executeOnBehalf
+  // decodes destination, callGas, data
+  ⋯
+  ? destination.call{value: msg.value}(data)
+  ⋯
+
+// The proxy is the caller. In your contract,
+// msg.sender == proxy(source), not source.
+```
+
+### Step 2 — AN ENTRY COUNTS ONLY IN ITS BLOCK.
+
+Every proxy call checks that its rollup was verified in the current block. An entry posted in block N is dead in block N+1, and the call reverts with ExecutionNotInCurrentBlock.
+
+```solidity
+// EEZ.sol · every proxy call on L1 goes
+// through _validateProxyAndGetDestinationInfo:
+_requireVerifiedThisBlock(destRid);
+
+// :1578, the gate: lastVerifiedBlock must
+// equal block.number, or
+revert ExecutionNotInCurrentBlock(rollupId);
+
+// postAndVerifyBatch reaches
+// _markVerifiedBlockAndResetQueues (:804),
+// which sets lastVerifiedBlock to this block
+// (:806). Next block, the same entry is out
+// of reach.
+// L2: lastLoadBlock != block.number reverts
+// too (EEZL2.sol:791).
+```
+
+### Step 3 — ON L2, GAS CAN BE PART OF THE CALL.
+
+If an L2 deploys its manager with USE_GAS_LEFT on (the intended production mode, off in every current deployment), the gas left when the manager hashes the call goes into the hash. That is why call sites attach a fixed amount.
+
+```solidity
+// paraphrasing CounterContracts.sol:4-6:
+/// L2 folds the gas left after its pre-hash
+/// checks into the outgoing call hash, so these
+/// sites attach a fixed amount
+uint256 constant PROXY_CALL_GAS = 5_000_000;
+
+function incrementProxy() external {
+  // :63 attaches it: targetCounter =
+  //   target.increment{gas: PROXY_CALL_GAS}();
+  ⋯
+
+// With EEZL2's USE_GAS_LEFT on (intended for
+// production, off in every current deployment),
+// callGas is the gasleft() the L2 manager
+// samples after its proxy checks (EEZL2.sol:282),
+// not the gas you forward. L1 uses ZERO_CALL_GAS.
+```
+
+## Cross-Chain Flash Loan
+
+Borrowed tokens go to an L2 and back before the repayment check runs, all inside one L1 transaction.
+
+- Page: https://eez-demos.vercel.app/dapp-developers/qs7-cross-chain-flash-loan.html
+- Source: `eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17
+
+### Step 1 — RUN IT.
+
+One L1 transaction borrows 10,000 tokens, sends them to L2 and back, and repays the pool. Locally, the scenario script plays composer and posts the entries in a separate transaction first.
+
+```text
+# needs Git, Foundry 1.7.1 (forge, cast, anvil on PATH)
+# and bash 4+; macOS ships 3.2, so: brew install bash
+# fresh clone at the pinned commit
+$ git clone https://github.com/eez-association/eez-core-protocol.git
+$ cd eez-core-protocol
+$ git checkout -q 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
+$ git submodule update --init --recursive
+$ forge build
+
+# local anvil pair; the script plays composer
+$ bash script/e2e/run/local/parallel.sh flash-loan
+  [flash-loan] starting (L1=18545 chain=41337, L2=18546 chain=41338)
+  [flash-loan] PASS
+
+===== RESULT: 1 passed, 0 failed, 0 skipped =====
+```
+
+### Step 2 — BORROW ON L1, USE IT ON L2.
+
+onFlashLoan bridges the loan to executorL2, then calls it through its proxy. On L2 it claims the NFT, and its return leg releases the escrow on L1 inside that same call.
+
+```text
+// L1 · FlashLoanBridgeExecutor.onFlashLoan
+IERC20(_token).approve(address(bridge), amount);
+bridge.bridgeTokens(_token, amount, l2RollupId, executorL2);
+(bool success,) = executorL2Proxy.call(
+  ⋯ abi.encodeCall(this.claimAndBridgeBack, (⋯))
+);
+require(success, "Cross-chain call failed");
+
+// L2 · claimAndBridgeBack, reached through the proxy
+FlashLoanersNFT(nftContract).claim();
+uint256 balance = IERC20(wrappedToken).balanceOf(address(this));
+// then bridgeTokens(wrappedToken, balance, ⋯): back to L1
+```
+
+### Step 3 — REPAID BEFORE THE TRANSACTION ENDS.
+
+The pool checks its balance after onFlashLoan returns. It is whole only because the return leg already released the escrow on L1; otherwise the transaction reverts.
+
+```text
+// L1 · FlashLoan.flashLoan, the pool
+uint256 balanceBefore = IERC20(token).balanceOf(address(this));
+IERC20(token).safeTransfer(msg.sender, amount);
+IFlashLoanReceiver(msg.sender).onFlashLoan(token, amount);
+uint256 balanceAfter = IERC20(token).balanceOf(address(this));
+require(balanceAfter >= balanceBefore, "Flash loan not repaid");
+
+// last line of onFlashLoan, after the return leg
+// 3. Repay (tokens are back from bridge release)
+IERC20(_token).safeTransfer(msg.sender, amount);
+```
+
+## Bridge Tokens Both Ways
+
+Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair of chains, then run the test that sends an ERC-20 through the Bridge.sol test fixture and back.
+
+- Page: https://eez-demos.vercel.app/dapp-developers/qs8-bridge-tokens-both-ways.html
+- Source: `eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17
+
+### Step 1 — RUN IT.
+
+The scenarios move ETH across: bridge from L1 to L2, bridgeL2 from L2 to L1, with the script playing composer. The test then runs Bridge.sol's token round trip: lock and mint, burn and release.
+
+```text
+# needs Git, Foundry 1.7.1 (forge, cast, anvil on PATH)
+# and bash 4+; macOS ships 3.2, so: brew install bash
+# fresh clone at the pinned commit, then build
+$ git clone https://github.com/eez-association/eez-core-protocol.git
+$ cd eez-core-protocol
+$ git checkout -q 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
+$ git submodule update --init --recursive
+$ forge build
+
+# one scenario per direction, run side by side
+$ bash script/e2e/run/local/parallel.sh bridge bridgeL2
+  [bridgeL2] starting (L1=18547 chain=41339, L2=18548 chain=41340)
+  [bridge] starting (L1=18545 chain=41337, L2=18546 chain=41338)
+  [bridge] PASS
+  [bridgeL2] PASS
+
+===== RESULT: 2 passed, 0 failed, 0 skipped =====
+
+# token path in Bridge.sol: lock/mint, burn/release
+$ forge test --match-test test_BridgeTokens_Roundtrip
+⋯
+[PASS] test_BridgeTokens_Roundtrip() (gas: 2236711)
+Suite result: ok. 1 passed; 0 failed; 0 skipped; …
+```
+
+### Step 2 — LOCK AND MINT.
+
+Bridge.sol makes the same kind of proxy call for ERC-20s. The origin bridge locks the token and calls the proxy that stands for the other bridge. When the other chain runs that entry, receiveTokens mints a wrapped copy, but only for the counterpart's proxy.
+
+```text
+// ORIGIN CHAIN · bridgeTokens(token, amount, …)
+// Native token: lock in this contract
+IERC20(token).safeTransferFrom(msg.sender, address(this), amount);
+// payload = receiveTokens(token, rollupId, to, amount, …)
+(bool success, bytes memory reason) = bridgeProxy.call(payload);
+if (!success) revert ProxyCallFailed(reason);
+
+// OTHER CHAIN · receiveTokens, via onlyBridgeProxy
+if (msg.sender != expectedProxy) revert UnauthorizedCaller();
+// Token is foreign → mint wrapped tokens
+// wrapped = _getOrDeployWrapped(originalToken, …)
+IBridgeToken(wrapped).mint(to, amount);
+emit WrappedTokensMinted(wrapped, to, amount);
+```
+
+### Step 3 — BURN AND RELEASE.
+
+Going back, the bridge burns the wrapped copy and calls the proxy that stands for the origin bridge. When the origin chain runs that entry, receiveTokens releases the locked token. The ETH scenarios skip Bridge.sol; the step 1 test runs this path.
+
+```text
+// OTHER CHAIN · bridgeTokens(wrapped, amount, …)
+TokenInfo memory info = wrappedTokenInfo[token];
+if (info.originalToken != address(0)) {
+// Wrapped token: burn and trace back to original
+IBridgeToken(token).burn(msg.sender, amount);
+// payload names info.originalToken, info.originalRollupId
+⋯
+(bool success, bytes memory reason) = bridgeProxy.call(payload);
+
+// ORIGIN CHAIN · receiveTokens, via onlyBridgeProxy
+if (originalRollupId == rollupId) {
+// Token is native to this chain → release locked tokens
+IERC20(originalToken).safeTransfer(to, amount);
+emit TokensReleased(originalToken, to, amount);
+```
+
+## How to get your contract's address on another rollup
+
+Learn how to read it, or deploy it.
+
+- Page: https://eez-demos.vercel.app/dapp-developers/q7-your-cross-chain-address.html
+- Source: `eez-core-protocol/src/base/EEZBase.sol:204 · createCrossChainProxy`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L204
+
+### Step 1 — CALL IT INTO EXISTENCE
+
+One call deploys the proxy and registers it — you get the address back.
+
+```solidity
+function createCrossChainProxy(
+    address originalAddress,
+    uint64 originalRollupId
+) external returns (address proxy);
+```
+
+### Step 2 — OR READ IT FIRST
+
+Or read the address before anything is deployed. It is a view call.
+
+```solidity
+function createCrossChainProxy(
+    address originalAddress,
+    uint64 originalRollupId
+) external returns (address proxy);
+
+function computeCrossChainProxyAddress(
+    address originalAddress,
+    uint64 originalRollupId
+) external view returns (address);
+```
+
+### Step 3 — THE ONE RULE
+
+Remote addresses only. A proxy for your own network reverts.
+
+```solidity
+function createCrossChainProxy(
+    address originalAddress,
+    uint64 originalRollupId
+) external returns (address proxy);
+
+function computeCrossChainProxyAddress(
+    address originalAddress,
+    uint64 originalRollupId
+) external view returns (address);
+
+// A proxy stands in for a REMOTE address.
+if (originalRollupId == _getRollupId())
+    revert SameNetworkProxy(originalRollupId);
+```
+
+### Full compilable source — snippets/q7-create-proxy.sol
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+// Panel source for: dapp-developers/q7-your-cross-chain-address.html
+// Mirrors eez-core-protocol/src/base/EEZBase.sol:204, :239 and :250
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
+//
+// The two calls this page teaches. Neither is usually required: the protocol
+// creates the proxy itself on the first inbound call, through the public
+// getOrCreateCrossChainProxy (eez-core-protocol/src/base/EEZBase.sol:214),
+// called at eez-core-protocol/src/EEZ.sol:1169 and src/L2/EEZL2.sol:596.
+// Neither call requires knowing how the address is derived — that is
+// protocol-researcher territory.
+//
+// Signatures and bodies are hand-wrapped to the code panel's column, the
+// same way snippets/q1-compute-address.sol is, so that every line the panel
+// shows exists verbatim here. scripts/check-panel-drift.py asserts that.
+
+/// @dev Stand-in for the real proxy. Only `type(...).creationCode` matters
+///      here; like upstream, the constructor takes no arguments and records
+///      its deployer (the manager) as msg.sender.
+contract CrossChainProxy {
+    address internal immutable EEZ;
+
+    constructor() {
+        EEZ = msg.sender;
+    }
+}
+
+/// @dev The two entry points, as a dapp codes against them.
+interface IEEZProxyFactory {
+function createCrossChainProxy(
+    address originalAddress,
+    uint64 originalRollupId
+) external returns (address proxy);
+
+function computeCrossChainProxyAddress(
+    address originalAddress,
+    uint64 originalRollupId
+) external view returns (address);
+}
+
+struct ProxyInfo {
+    bool isProxy;
+    address originalAddress;
+    uint64 originalRollupId;
+}
+
+contract CreateProxySnippet {
+    /// @notice Error when a proxy is requested for an address on THIS
+    ///         manager's own network.
+    error SameNetworkProxy(uint64 rollupId);
+
+    bytes32 public immutable PROXY_INIT_CODE_HASH;
+
+    mapping(address proxy => ProxyInfo info) public authorizedProxies;
+
+    event CrossChainProxyCreated(
+        address indexed proxy,
+        address indexed originalAddress,
+        uint64 originalRollupId
+    );
+
+    constructor() {
+        PROXY_INIT_CODE_HASH = keccak256(type(CrossChainProxy).creationCode);
+    }
+
+    function _getRollupId() internal pure returns (uint64) {
+        return 0;
+    }
+
+function createCrossChainProxy(
+    address originalAddress,
+    uint64 originalRollupId
+) external returns (address proxy) {
+    return _createCrossChainProxyInternal(originalAddress, originalRollupId);
+}
+
+function _createCrossChainProxyInternal(
+    address originalAddress,
+    uint64 originalRollupId
+) internal returns (address proxy) {
+// A proxy stands in for a REMOTE address.
+if (originalRollupId == _getRollupId())
+    revert SameNetworkProxy(originalRollupId);
+
+    bytes32 salt = keccak256(
+        abi.encodePacked(originalRollupId, originalAddress)
+    );
+    proxy = address(new CrossChainProxy{salt: salt}());
+    authorizedProxies[proxy] =
+        ProxyInfo(true, originalAddress, originalRollupId);
+    emit CrossChainProxyCreated(
+        proxy, originalAddress, originalRollupId
+    );
+}
+
+function computeCrossChainProxyAddress(
+    address originalAddress,
+    uint64 originalRollupId
+) public view returns (address) {
+    bytes32 salt = keccak256(
+        abi.encodePacked(originalRollupId, originalAddress)
+    );
+    return address(uint160(uint256(keccak256(
+        abi.encodePacked(
+            bytes1(0xff), address(this),
+            salt, PROXY_INIT_CODE_HASH
+        )
+    ))));
+}
+}
+```
+
+## How to call a contract on another rollup
+
+Learn how to encode it like any normal call and send it to the proxy.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q2-send-a-cross-chain-call.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:113 · _fallback`
@@ -1021,9 +1266,9 @@ contract Q2CrossChainCallTest {
 }
 ```
 
-## Why msg.sender isn't your contract on the other side
+## How to handle msg.sender across chains
 
-Learn why every onlyOwner, allowlist and approve on the far side keys to a proxy address instead of your contract — and why nothing reverts when it does.
+Learn how to whitelist the proxy instead of the address you expected.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/q3-fix-the-msg-sender-gotcha.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:67 · fallback`
@@ -1223,179 +1468,6 @@ contract Q3MsgSenderTest {
         vm.expectRevert();
         gated.crossChainSafe();
     }
-}
-```
-
-## How to get your contract's address on another rollup
-
-Learn how to read it, or deploy it.
-
-- Page: https://eez-demos.vercel.app/dapp-developers/q7-your-cross-chain-address.html
-- Source: `eez-core-protocol/src/base/EEZBase.sol:204 · createCrossChainProxy`
-- Pinned at commit: `9a1f815`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L204
-
-### Step 1 — CALL IT INTO EXISTENCE
-
-One call deploys the proxy and registers it — you get the address back.
-
-```solidity
-function createCrossChainProxy(
-    address originalAddress,
-    uint64 originalRollupId
-) external returns (address proxy);
-```
-
-### Step 2 — OR READ IT FIRST
-
-Or read the address before anything is deployed. It is a view call.
-
-```solidity
-function createCrossChainProxy(
-    address originalAddress,
-    uint64 originalRollupId
-) external returns (address proxy);
-
-function computeCrossChainProxyAddress(
-    address originalAddress,
-    uint64 originalRollupId
-) external view returns (address);
-```
-
-### Step 3 — THE ONE RULE
-
-Remote addresses only. A proxy for your own network reverts.
-
-```solidity
-function createCrossChainProxy(
-    address originalAddress,
-    uint64 originalRollupId
-) external returns (address proxy);
-
-function computeCrossChainProxyAddress(
-    address originalAddress,
-    uint64 originalRollupId
-) external view returns (address);
-
-// A proxy stands in for a REMOTE address.
-if (originalRollupId == _getRollupId())
-    revert SameNetworkProxy(originalRollupId);
-```
-
-### Full compilable source — snippets/q7-create-proxy.sol
-
-```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
-
-// Panel source for: dapp-developers/q7-your-cross-chain-address.html
-// Mirrors eez-core-protocol/src/base/EEZBase.sol:204, :239 and :250
-// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
-//
-// The two calls this page teaches. Neither is usually required: the protocol
-// creates the proxy itself on the first inbound call, through the public
-// getOrCreateCrossChainProxy (eez-core-protocol/src/base/EEZBase.sol:214),
-// called at eez-core-protocol/src/EEZ.sol:1169 and src/L2/EEZL2.sol:596.
-// Neither call requires knowing how the address is derived — that is
-// protocol-researcher territory.
-//
-// Signatures and bodies are hand-wrapped to the code panel's column, the
-// same way snippets/q1-compute-address.sol is, so that every line the panel
-// shows exists verbatim here. scripts/check-panel-drift.py asserts that.
-
-/// @dev Stand-in for the real proxy. Only `type(...).creationCode` matters
-///      here; like upstream, the constructor takes no arguments and records
-///      its deployer (the manager) as msg.sender.
-contract CrossChainProxy {
-    address internal immutable EEZ;
-
-    constructor() {
-        EEZ = msg.sender;
-    }
-}
-
-/// @dev The two entry points, as a dapp codes against them.
-interface IEEZProxyFactory {
-function createCrossChainProxy(
-    address originalAddress,
-    uint64 originalRollupId
-) external returns (address proxy);
-
-function computeCrossChainProxyAddress(
-    address originalAddress,
-    uint64 originalRollupId
-) external view returns (address);
-}
-
-struct ProxyInfo {
-    bool isProxy;
-    address originalAddress;
-    uint64 originalRollupId;
-}
-
-contract CreateProxySnippet {
-    /// @notice Error when a proxy is requested for an address on THIS
-    ///         manager's own network.
-    error SameNetworkProxy(uint64 rollupId);
-
-    bytes32 public immutable PROXY_INIT_CODE_HASH;
-
-    mapping(address proxy => ProxyInfo info) public authorizedProxies;
-
-    event CrossChainProxyCreated(
-        address indexed proxy,
-        address indexed originalAddress,
-        uint64 originalRollupId
-    );
-
-    constructor() {
-        PROXY_INIT_CODE_HASH = keccak256(type(CrossChainProxy).creationCode);
-    }
-
-    function _getRollupId() internal pure returns (uint64) {
-        return 0;
-    }
-
-function createCrossChainProxy(
-    address originalAddress,
-    uint64 originalRollupId
-) external returns (address proxy) {
-    return _createCrossChainProxyInternal(originalAddress, originalRollupId);
-}
-
-function _createCrossChainProxyInternal(
-    address originalAddress,
-    uint64 originalRollupId
-) internal returns (address proxy) {
-// A proxy stands in for a REMOTE address.
-if (originalRollupId == _getRollupId())
-    revert SameNetworkProxy(originalRollupId);
-
-    bytes32 salt = keccak256(
-        abi.encodePacked(originalRollupId, originalAddress)
-    );
-    proxy = address(new CrossChainProxy{salt: salt}());
-    authorizedProxies[proxy] =
-        ProxyInfo(true, originalAddress, originalRollupId);
-    emit CrossChainProxyCreated(
-        proxy, originalAddress, originalRollupId
-    );
-}
-
-function computeCrossChainProxyAddress(
-    address originalAddress,
-    uint64 originalRollupId
-) public view returns (address) {
-    bytes32 salt = keccak256(
-        abi.encodePacked(originalRollupId, originalAddress)
-    );
-    return address(uint160(uint256(keccak256(
-        abi.encodePacked(
-            bytes1(0xff), address(this),
-            salt, PROXY_INIT_CODE_HASH
-        )
-    ))));
-}
 }
 ```
 
@@ -1845,6 +1917,489 @@ contract Q5ContentHashTest {
             _hash(false, SRC, SRC_RID, TGT, TGT_RID) == _hash(false, SRC, SRC_RID, TGT, TGT_RID),
             "must be deterministic"
         );
+    }
+}
+```
+
+## How to read a remote contract's state
+
+Learn why balance and code size answer about the proxy — a real number about the wrong contract, with no revert.
+
+- Page: https://eez-demos.vercel.app/dapp-developers/q8-read-a-remote-contracts-state.html
+- Source: `eez-core-protocol/src/base/CrossChainProxy.sol:113 · _fallback`
+- Pinned at commit: `9a1f815`
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113
+
+### Step 1 — A CONTRACT ON THIS CHAIN
+
+The proxy is an ordinary contract, deployed on this chain. Every opcode that asks the EVM about an address answers about it — not about the contract it stands for.
+
+```solidity
+address proxy = eez.computeCrossChainProxyAddress(
+    remote, remoteRollupId
+);
+
+// a contract deployed on THIS chain, with its
+// own code and its own balance
+```
+
+### Step 2 — FOUR READS, NO REVERT
+
+balance, extcodesize, extcodecopy and delegatecall describe the proxy; block-state opcodes describe the chain you are executing on. Each read succeeds and returns a real number about the wrong contract.
+
+```diff
+ address proxy = eez.computeCrossChainProxyAddress(
+     remote, remoteRollupId
+ );
+
+ // a contract deployed on THIS chain, with its
+ // own code and its own balance
+
+-uint256 bal  = proxy.balance;       // PROXY's ether
+-uint256 size = proxy.code.length;   // PROXY's code
+-bool sameChain =
+-    block.chainid == remoteChainId;  // THIS chain
+```
+
+### Step 3 — ASK IT, DON'T INSPECT IT
+
+Call through the proxy instead — the read is routed, and resolves against an entry written before your transaction ran.
+
+```diff
+ address proxy = eez.computeCrossChainProxyAddress(
+     remote, remoteRollupId
+ );
+
+-uint256 bal  = proxy.balance;       // PROXY's ether
++uint256 bal = IRemote(proxy).balanceOf(user);
+ // the proxy is an IDENTITY, not a mirror:
+ // ask it, don't inspect it
+```
+
+### Full compilable source — snippets/q8-remote-reads.sol
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+import {IEEZ} from "./lib/IEEZ.sol";
+
+// Panel source for: dapp-developers/q8-read-a-remote-contracts-state.html
+// Mirrors eez-core-protocol/src/base/CrossChainProxy.sol:113
+// and eez-core-protocol/docs/CAVEATS.md, "Opcodes that differ on cross-chain
+// proxies" and "Missing entries and destination reverts"
+// @ 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f
+//
+// This is the caveat with no compiler help. q3's mistake reverts, so you find
+// it the first time a call arrives through a proxy. The reads below SUCCEED and
+// return a real number about the wrong contract, so they ship.
+//
+// WHY: a CrossChainProxy is an ordinary contract, deployed on THIS chain, with
+// its own code and its own balance. An opcode that asks the EVM about an
+// address answers about that local contract. Only a CALL is routed: the proxy's
+// fallback (CrossChainProxy.sol:113, `_fallback`) forwards to the manager, which
+// resolves an outcome that was written down before your transaction ran. So
+// inspection is local, invocation is resolved.
+//
+// The four that answer about the proxy, per CAVEATS.md: `balance`,
+// `extcodesize`, `extcodecopy`, `delegatecall`. Plus every block-state opcode
+// (`number`, `blockhash`, `chainid`, `coinbase`, `gaslimit`), which describes
+// the chain currently executing, not the source chain — so the same logical
+// action reads differently on L1 and on L2.
+//
+// `delegatecall` deserves its own line: delegatecalling a proxy runs the
+// PROXY's code in your storage context. It does not reach the remote contract.
+//
+// WHEN A ROUTED READ RESOLVES — both sides gate on the block, but what else
+// must match differs, so do not learn one half and carry it to the other chain:
+//
+//   L1: `staticCrossChainCall` (EEZ.sol:1379-1449) opens with
+//   `_validateProxyAndGetDestinationInfo()` (:1380), which reverts
+//   `ExecutionNotInCurrentBlock(destRid)` unless that rollup was verified in
+//   this block (:1578-1580). It then scans `staticEntryQueue` (:1420), or the
+//   batch's transient pool while one is mid-flight, and matches on
+//   `proxyEntryHash`, `destinationRollupId` and `_rootsMatch(...)` (:1437-1438).
+//   Upstream's own comment: "Static entries require both current-block
+//   verification (checked above) and matching root pins."
+//
+//   L2: `staticCrossChainCall` (EEZL2.sol:660) opens with the same-named helper,
+//   whose gate at EEZL2.sol:791 is
+//   `if (lastLoadBlock != block.number) revert ExecutionNotInCurrentBlock();`,
+//   and matches on the call hash and the live entry cursor (:705).
+//
+//   Mutating calls go through the same helper on both sides, so they are
+//   block-gated too (EEZ.sol:863, EEZL2.sol:272).
+//
+// A read with nothing to resolve against reverts — `ExecutionNotFound()` on L1
+// (EEZ.sol:1410, :1448), `EntryNotFound(bytes32 crossChainCallHash, uint64
+// callGas)` on L2 (EEZL2.sol:699, :714). Those are the strings to search for.
+//
+// AND REVERT DATA WON'T TELL YOU WHY IT FAILED. CAVEATS.md, "Missing entries
+// and destination reverts": a static lookup miss reverts at the proxy, as does a
+// matched reverting destination, and revert data alone is not a reliable way to
+// distinguish them — CrossChainProxy.sol:138-139 forwards the raw revert data
+// unmodified. Do not write a `try/catch` that claims to know which one happened.
+
+interface IRemote {
+    function balanceOf(address account) external view returns (uint256);
+}
+
+contract RemoteReader {
+    IEEZ internal immutable eez;
+    address internal immutable remote;
+    uint64 internal immutable remoteRollupId;
+
+    constructor(IEEZ eez_, address remote_, uint64 remoteRollupId_) {
+        eez = eez_;
+        remote = remote_;
+        remoteRollupId = remoteRollupId_;
+    }
+
+    /// @dev The trap. Compiles, runs, returns real numbers about the proxy.
+    ///      Returns are intentionally unnamed: the panel lines below declare
+    ///      `bal`, `size` and `sameChain` verbatim, and named returns would
+    ///      shadow them.
+    function inspectionLies(uint256 remoteChainId)
+        external
+        view
+        returns (uint256, uint256, bool)
+    {
+address proxy = eez.computeCrossChainProxyAddress(
+    remote, remoteRollupId
+);
+// a contract deployed on THIS chain, with its
+// own code and its own balance
+
+uint256 bal  = proxy.balance;       // PROXY's ether
+uint256 size = proxy.code.length;   // PROXY's code
+bool sameChain =
+    block.chainid == remoteChainId;  // THIS chain
+        return (bal, size, sameChain);
+    }
+
+    /// @dev The fix. A view call through the proxy is routed, and resolves
+    ///      against an entry the composer already wrote — so what comes back is
+    ///      the remote contract's state, not the proxy's.
+    ///
+    ///      Both sides resolve it only in the block the entries were loaded: on
+    ///      L1 the rollup must be verified this block and the entry's root pins
+    ///      must match (EEZ.sol:1578-1580, :1437-1438), on L2 the table must be
+    ///      loaded this block (EEZL2.sol:791). With no matching entry this
+    ///      reverts — `ExecutionNotFound()` on L1, `EntryNotFound(...)` on L2 —
+    ///      and revert data alone cannot reliably tell that from the
+    ///      destination reverting.
+    function readRemoteBalance(address user) external view returns (uint256) {
+address proxy = eez.computeCrossChainProxyAddress(
+    remote, remoteRollupId
+);
+
+uint256 bal = IRemote(proxy).balanceOf(user);
+// the proxy is an IDENTITY, not a mirror:
+// ask it, don't inspect it
+        return bal;
+    }
+
+    /// @dev A live proxy says nothing about the remote target. Code at the proxy
+    ///      address means the manager will route through it — not that anything
+    ///      answers on the other side. See q4 for reading the registry.
+    function proxyExistsButProvesNothing() external view returns (bool) {
+        address proxy = eez.computeCrossChainProxyAddress(remote, remoteRollupId);
+        return proxy.code.length != 0;
+    }
+}
+```
+
+### Runnable test — snippets/test/Q8RemoteReads.t.sol
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.28;
+
+import {IEEZ} from "../lib/IEEZ.sol";
+import {RemoteReader, IRemote} from "../q8-remote-reads.sol";
+
+// Runnable proof of the q8 caveat. Paste into any Foundry project and run:
+//
+//   forge test --match-contract Q8RemoteReads -vv
+//
+// Depends on nothing but solc — no forge-std, no submodules.
+//
+// The first three cases are the whole hazard: NOTHING REVERTS. Each is a
+// successful read returning a real number about the wrong contract. Unlike the
+// q3 owner check, there is no failure to notice.
+//
+// WHAT IS FAKED HERE, AND WHAT IS NOT. Q6ManagerDirect.t.sol refuses to fake
+// protocol state and says so in its header; the same line is held here.
+// `EntryTable` below is not an EEZ manager and does not pretend to be one. It
+// is a local model of the one property the routed read rests on: the outcome
+// was written into a table BEFORE the transaction ran, it is matched by a hash
+// of the call, and a miss reverts `ExecutionNotFound()`. That is the shape of
+// EEZ resolution — the opposite of fetch-on-demand messaging, where the answer
+// is gone and fetched while you wait.
+//
+// What this establishes: the reader in ../q8-remote-reads.sol behaves correctly
+// against a resolver of that shape, including both failure modes a builder will
+// actually meet. What it does NOT establish: that upstream resolves this way.
+// The citations on the page and scripts/verify-citations.py are the check for
+// that, and nothing in a local table could stand in for it.
+//
+// Deliberately not modelled, because a local table cannot: the composer, the
+// rolling hash, state roots, the entry queues, and the rule for when a static
+// entry is still valid (both sides gate on the block, EEZ.sol:1578-1580 and
+// EEZL2.sol:791; L1 also requires the entry's root pins to match the live
+// roots, EEZ.sol:1437-1438). The key below
+// is a REDUCED stand-in for `computeCrossChainCallHash` — q5 has the real
+// eight-field preimage. What is under test is lookup-then-revert, not the
+// field list.
+
+/// @dev Minimal cheatcode surface. Same address forge injects.
+interface Vm {
+    function deal(address, uint256) external;
+    function label(address, string calldata) external;
+    function expectRevert(bytes4) external;
+}
+
+/// @dev Named exactly as L1 names it (EEZ.sol:1410, :1448), so a reader who
+///      hits it in production can search for the same string. L2 reports its
+///      miss as `EntryNotFound(bytes32 crossChainCallHash, uint64 callGas)`
+///      instead (EEZL2.sol:173), which this local model does not reproduce.
+error ExecutionNotFound();
+
+/// @dev The destination's own error, for the case where an entry exists and
+///      records that the destination call reverted.
+error RemoteBalanceUnavailable();
+
+// @stand-in a local table, not a manager: it holds outcomes keyed by a reduced
+//           call hash so the test can exercise hit, miss and destination-revert
+//           without faking EEZ storage. See the header.
+contract EntryTable {
+    struct Entry {
+        bool present;
+        bool success;
+        bytes data;
+    }
+
+    mapping(bytes32 => Entry) private entries;
+
+    address private immutable destAddress;
+    uint64 private immutable destRollupId;
+
+    constructor(address destAddress_, uint64 destRollupId_) {
+        destAddress = destAddress_;
+        destRollupId = destRollupId_;
+    }
+
+    /// @dev Reduced stand-in for computeCrossChainCallHash. The real preimage is
+    ///      eight fields in a fixed order (q5); the point here is only that the
+    ///      entry is addressed by the content of the call.
+    function keyFor(address sourceAddress, bytes memory callData) public view returns (bytes32) {
+        return keccak256(abi.encode(true, sourceAddress, destAddress, destRollupId, callData));
+    }
+
+    /// @dev The composer's job, done by hand. In production nothing in your
+    ///      transaction writes this table.
+    function commit(address sourceAddress, bytes calldata callData, bool success, bytes calldata data) external {
+        entries[keyFor(sourceAddress, callData)] = Entry(true, success, data);
+    }
+
+    /// @dev Same name and signature as the manager's read entry point, so the
+    ///      shape of the call the proxy makes is the real one.
+    function staticCrossChainCall(address sourceAddress, bytes calldata callData)
+        external
+        view
+        returns (bytes memory)
+    {
+        Entry storage entry = entries[keyFor(sourceAddress, callData)];
+        if (!entry.present) revert ExecutionNotFound();
+        if (!entry.success) {
+            bytes memory reason = entry.data;
+            assembly {
+                revert(add(reason, 0x20), mload(reason))
+            }
+        }
+        return entry.data;
+    }
+}
+
+// @stand-in a two-line model of CrossChainProxy's read path: a real local
+//           contract with its own code and balance, whose fallback forwards to
+//           the manager's view entry point and hands back exactly what comes
+//           out — including raw revert data (CrossChainProxy.sol:113-142).
+contract StubProxy {
+    address internal immutable manager;
+
+    constructor(address manager_) {
+        manager = manager_;
+    }
+
+    fallback() external payable {
+        (bool ok, bytes memory result) =
+            manager.staticcall(abi.encodeCall(EntryTable.staticCrossChainCall, (msg.sender, msg.data)));
+        if (ok) {
+            // The manager returns `bytes`, so the raw result is double-encoded.
+            result = abi.decode(result, (bytes));
+        }
+        assembly {
+            switch ok
+            case 0 { revert(add(result, 0x20), mload(result)) }
+            default { return(add(result, 0x20), mload(result)) }
+        }
+    }
+
+    receive() external payable {}
+}
+
+// @stand-in an address book, nothing more: the reader asks for its proxy and
+//           gets the stub back. It does not derive anything — q7 is the page
+//           for the real CREATE2 derivation.
+contract MockEEZ {
+    address private immutable proxyAddress;
+
+    constructor(address proxyAddress_) {
+        proxyAddress = proxyAddress_;
+    }
+
+    function computeCrossChainProxyAddress(address, uint64) external view returns (address) {
+        return proxyAddress;
+    }
+}
+
+// @stand-in the contract being read, as it exists on the OTHER rollup. It is
+//           local here only so the test can hold two different numbers at once.
+//           The routed read must never touch it, which is what `calls` proves.
+contract Counterpart {
+    uint256 public calls;
+
+    mapping(address => uint256) private balances;
+
+    function setBalance(address who, uint256 amount) external {
+        balances[who] = amount;
+    }
+
+    function balanceOf(address who) external returns (uint256) {
+        calls++;
+        return balances[who];
+    }
+}
+
+contract Q8RemoteReadsTest {
+    Vm internal constant vm = Vm(address(uint160(uint256(keccak256("hevm cheat code")))));
+
+    address internal constant USER = address(0xA11CE);
+    address internal constant STRANGER = address(0xB0B);
+    uint64 internal constant REMOTE_ROLLUP_ID = 1;
+
+    uint256 internal constant COMMITTED_BALANCE = 500 ether;
+    uint256 internal constant PROXY_BALANCE = 1 wei;
+    uint256 internal constant COUNTERPART_BALANCE = 7 ether;
+
+    Counterpart internal counterpart;
+    EntryTable internal table;
+    StubProxy internal proxy;
+    RemoteReader internal reader;
+
+    function setUp() public {
+        counterpart = new Counterpart();
+        counterpart.setBalance(USER, COMMITTED_BALANCE);
+        vm.deal(address(counterpart), COUNTERPART_BALANCE);
+
+        table = new EntryTable(address(counterpart), REMOTE_ROLLUP_ID);
+        proxy = new StubProxy(address(table));
+        vm.deal(address(proxy), PROXY_BALANCE);
+
+        reader = new RemoteReader(
+            IEEZ(address(new MockEEZ(address(proxy)))), address(counterpart), REMOTE_ROLLUP_ID
+        );
+
+        // The entry for the one read this test expects to resolve. Written
+        // before any of it runs, which is the whole point.
+        table.commit(
+            address(reader),
+            abi.encodeCall(IRemote.balanceOf, (USER)),
+            true,
+            abi.encode(COMMITTED_BALANCE)
+        );
+
+        vm.label(address(proxy), "proxy(counterpart)");
+        vm.label(address(counterpart), "counterpart");
+        vm.label(address(table), "entryTable");
+    }
+
+    /// @dev The trap, part one. `.balance` answers about the proxy. No revert.
+    function test_balanceReadsTheProxyNotTheCounterpart() public view {
+        (uint256 bal,,) = reader.inspectionLies(block.chainid + 1);
+        require(bal == PROXY_BALANCE, "expected the proxy's own balance");
+        require(bal != COUNTERPART_BALANCE, "must not be the counterpart's balance");
+    }
+
+    /// @dev The trap, part two. The proxy has code, so an `extcodesize`-style
+    ///      "is this a contract" check passes — and proves nothing about whether
+    ///      anything exists on the other rollup.
+    function test_codeSizeIsTheProxysOwn() public view {
+        (, uint256 size,) = reader.inspectionLies(block.chainid + 1);
+        require(size == address(proxy).code.length, "the proxy's own code size");
+        require(
+            keccak256(address(proxy).code) != keccak256(address(counterpart).code),
+            "proxy code is not the counterpart's code"
+        );
+        require(reader.proxyExistsButProvesNothing(), "code at the proxy address proves only that");
+    }
+
+    /// @dev The trap, part three. Block context is local. A reader comparing
+    ///      against the counterparty's chain id silently takes the wrong branch.
+    function test_blockContextIsLocal() public view {
+        (,, bool sameChain) = reader.inspectionLies(block.chainid + 1);
+        require(!sameChain, "block.chainid is this chain's, never the remote one");
+    }
+
+    /// @dev The fix. Calling THROUGH the proxy returns the remote contract's
+    ///      state, because a call is routed and an inspection is not — and the
+    ///      value comes out of the entry, not out of a live fetch. `calls == 0`
+    ///      is that second half: the counterpart is never touched.
+    function test_routedReadReturnsThePreCommittedEntry() public view {
+        uint256 seen = reader.readRemoteBalance(USER);
+        require(seen == COMMITTED_BALANCE, "routed read returns the committed outcome");
+        require(counterpart.calls() == 0, "resolution never calls the counterpart");
+    }
+
+    /// @dev The honest limit. With no matching entry the routed read reverts
+    ///      `ExecutionNotFound()` rather than returning zero. In production that
+    ///      is an L1 read whose static entry is not in scope: no entry in the
+    ///      queue matches the call and the live root pins (EEZ.sol:1437-1438).
+    ///      A read after the block moved on fails earlier, with
+    ///      `ExecutionNotInCurrentBlock` (EEZ.sol:1580, EEZL2.sol:791), and an L2
+    ///      miss reverts `EntryNotFound(...)` instead (EEZL2.sol:699, :714).
+    function test_unresolvedReadRevertsExecutionNotFound() public {
+        vm.expectRevert(ExecutionNotFound.selector);
+        reader.readRemoteBalance(STRANGER);
+    }
+
+    /// @dev CAVEATS.md, "Missing entries and destination reverts": revert data
+    ///      alone is not a reliable way to tell a lookup miss from a matched
+    ///      reverting destination.
+    ///      The proxy forwards raw revert data and adds nothing of its own, so
+    ///      the caller has no field saying which layer failed — only the bytes it
+    ///      was handed. Both cases below hand back the same bytes.
+    function test_missAndDestinationRevertAreIndistinguishable() public {
+        bytes memory callData = abi.encodeCall(IRemote.balanceOf, (STRANGER));
+
+        // A: nothing committed for STRANGER, so the table itself reverts.
+        (bool okMiss, bytes memory fromMiss) = address(proxy).staticcall(callData);
+
+        // B: an entry EXISTS and records that the destination call reverted,
+        // carrying the destination's own revert bytes.
+        table.commit(address(this), callData, false, abi.encodeWithSelector(ExecutionNotFound.selector));
+        (bool okReverted, bytes memory fromReverted) = address(proxy).staticcall(callData);
+
+        require(!okMiss && !okReverted, "both fail");
+        require(keccak256(fromMiss) == keccak256(fromReverted), "the caller cannot tell them apart");
+
+        // And a destination that reverts with its own error is no more legible:
+        // it is still just bytes arriving from the proxy.
+        table.commit(address(this), callData, false, abi.encodeWithSelector(RemoteBalanceUnavailable.selector));
+        (bool okOther, bytes memory fromOther) = address(proxy).staticcall(callData);
+        require(!okOther, "still a revert from the proxy");
+        require(fromOther.length == 4, "four bytes of someone else's error, and no attribution");
     }
 }
 ```

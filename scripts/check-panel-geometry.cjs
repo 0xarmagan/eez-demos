@@ -89,7 +89,7 @@ async function main() {
     }
 
     // A page with no step dots is not a walkthrough (e.g. a redirect stub).
-    const steps = await page.$$eval("#dots > div", (d) => d.length).catch(() => 0);
+    const steps = await page.$$eval("#dots > *", (d) => d.length).catch(() => 0);
     if (!steps) {
       skipped.push(`${f} (no #dots steps — did its JS throw?)`);
       await page.close();
@@ -103,7 +103,7 @@ async function main() {
       // measurement, so a swallowed click fails loudly instead of silently
       // re-measuring the same step.
       const label = await page.$eval("#stepLabel", (el) => el.textContent.trim());
-      const want = String(i + 1).padStart(2, "0") + " / " + String(steps).padStart(2, "0");
+      const want = "STEP " + (i + 1) + " OF " + steps;
       if (label !== want) {
         console.error(`STUCK ${f}  expected step label ${want}, got ${label}`);
         failures++;
