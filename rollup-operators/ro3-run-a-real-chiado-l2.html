@@ -25,7 +25,7 @@
   .btn:hover{background:#1a1a1a !important;}
   .btn:disabled{opacity:.38;cursor:default;}
   .btn:disabled:hover{background:#141414 !important;}
-  .btn-play:hover{background:linear-gradient(90deg,#9DEBBB 0%,#7593CD 100%) !important;}
+  .btn-play:hover{background:linear-gradient(90deg,#9DEBBB 0%,#7593CD 100%) border-box !important;}
   a.back{font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;}
   a.back{transition:color .15s ease,transform .15s ease;}
   a.back:hover{color:#fff;}
@@ -99,7 +99,7 @@
   /* Same gradient treatment as .btn-play, one size up for the stage;
      it carries class="btn-play" so it inherits that hover rule and
      the shared button:focus-visible green ring. */
-  #btnStart{font-size:20px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:1px solid #6283BD;border-radius:100px;padding:16px 34px;cursor:pointer;}
+  #btnStart{font-size:20px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:16px 34px;cursor:pointer;}
 
   @media (max-width:1120px){
     #intro{position:static !important;padding:28px 20px 36px;}
@@ -263,7 +263,7 @@
     <div id="stepNav" style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
       <div style="display:flex;align-items:center;gap:12px;">
         <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
-        <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:1px solid #6283BD;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
+        <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
         <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
       </div>
       <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
@@ -479,7 +479,7 @@
     for(var j=0;j<N;j++){
       var cur = j===step;
       var st = cur
-        ? "color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:1px solid transparent;"
+        ? "color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;"
         : (j<step ? "color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;" : "color:var(--muted);background:transparent;border:1px solid #222;");
       d += '<button type="button" data-step="'+j+'" title="'+kickers[j]+'"'
         + (cur ? ' aria-current="step"' : '')
@@ -650,7 +650,18 @@
   var btnCopy = document.getElementById("btnCopy");
   if (btnCopy) {
     btnCopy.addEventListener("click", function(){
+      // Run panels mix "$ " commands with comments and sample output; copy
+      // only the commands (with their "\" continuation lines), prompt
+      // stripped, so a paste into a terminal runs.
       var lines = codeByStep[step] || [];
+      var cmds = [], cont = false;
+      lines.forEach(function(l){
+        if (l.indexOf("$ ") === 0) { cmds.push(l.slice(2)); }
+        else if (cont) { cmds.push(l); }
+        else { return; }
+        cont = /\\$/.test(l);
+      });
+      if (cmds.length) { lines = cmds; }
       var text = lines.join("\n").replace(/[ \t]+$/gm, "").replace(/\n+$/, "") + "\n";
       var done = function(ok){
         btnCopy.textContent = ok ? "COPIED" : "COPY FAILED";
@@ -674,14 +685,16 @@
     // The lead-in owns the keyboard while it is showing: no stepping and
     // no autoplay, and Space has to reach the Start button rather than
     // being swallowed by Play below.
-    if (introShowing()) {
-      if (e.key === "Escape") { window.location.href = "../index.html"; }
-      return;
-    }
+    if (introShowing()) { return; }
+    // Leave typing, modified keys, and Space/Enter on a focused control to
+    // the browser, so a focused button still activates natively.
+    var t = e.target, tag = t && t.tagName;
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || (t && t.isContentEditable)) { return; }
+    if (e.key === " " && (tag === "BUTTON" || tag === "A")) { return; }
     if(e.key==="ArrowRight"){ e.preventDefault(); next(); }
     else if(e.key==="ArrowLeft"){ e.preventDefault(); prev(); }
     else if(e.key===" "){ e.preventDefault(); togglePlay(); }
-    else if(e.key==="Escape"){ window.location.href = "../index.html"; }
     else if(e.key==="r"||e.key==="R"){ clearTimeout(timer); step = 0; playing = true; render(); schedule(); }
     else if(e.key==="?"){ var hb = document.getElementById("btnHelp"); if (hb) hb.click(); }
   });

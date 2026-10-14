@@ -1,32 +1,72 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Deploy Your Own Contract — Coming soon</title>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Deploy Your Own Contract (coming soon) — EEZ Quickstarts</title>
+<meta name="description" content="Quickstart card 05, coming soon: deploy your own contract and call it across chains with the Remix cross-chain plugin.">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;
-       background:#0A0A0A;color:#9aa3b3;
-       font-family:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;
-       font-size:15px;line-height:1.6;padding:24px;box-sizing:border-box}
-  main{max-width:520px;width:100%}
-  h1{margin:8px 0 4px;font-size:26px;line-height:1.25;color:#e8ecf3;font-weight:600}
-  .tag{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.08em;color:#8a8a8a}
-  .soon{color:#3BE57E;font-weight:600;margin:0 0 16px}
-  p{margin:0 0 12px}
-  a{color:#3BE57E}
+*{box-sizing:border-box}
+html,body{margin:0;background:#000}
+:root{--sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;--mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;--muted:#9aa3b3;--eez-green:#3BE57E;--eez-canvas:#0A0A0A;--eez-screen:#161616;--eez-edge:#2E2E2E;--eez-grad:linear-gradient(90deg,#8AE5AC 0%,#6283BD 55%,#4439CB 100%)}
+body{
+  min-height:100vh;color:#fff;font-family:var(--sans);
+  background-color:var(--eez-canvas);
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:42px 42px;
+}
+.wrap{max-width:760px;margin:0 auto;padding:48px 32px 100px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.back{font-family:var(--mono);font-size:12px;color:var(--muted);text-decoration:none;display:inline-block;transition:color .15s ease,transform .15s ease}
+.back:hover{color:#fff;transform:translateX(-3px)}
+.pm{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:#8a8a8a}
+a:focus-visible{outline:2px solid var(--eez-green);outline-offset:2px;border-radius:4px}
+.head{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;margin:56px 0 0}
+h1{font-size:40px;line-height:1.12;font-weight:700;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 .num{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--muted);letter-spacing:.03em;margin-right:12px;vertical-align:middle}
+.badge{font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted);border:1px solid #2a2a2a;border-radius:100px;padding:3px 9px;white-space:nowrap}
+.lede{font-size:17px;line-height:1.6;color:#d8d8d8;margin:20px 0 0;max-width:60ch;text-wrap:pretty}
+.next{position:relative;display:flex;flex-direction:column;gap:12px;margin-top:48px;text-decoration:none;color:inherit;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:16px;padding:24px 26px;overflow:hidden;transition:transform .2s ease,border-color .2s ease,background .2s ease,box-shadow .2s ease}
+.next::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:var(--eez-grad);opacity:0;transition:opacity .25s ease}
+.next:hover{transform:translateY(-4px);background:#0d0d0d;border-color:#333;box-shadow:0 20px 44px -20px rgba(0,0,0,.75)}
+.next:hover::before{opacity:1}
+.next-title{font-size:17.5px;font-weight:600;line-height:1.35;margin:0}
+.next-title .n{font-family:var(--mono);font-size:12px;font-weight:500;color:#8a8a8a;margin-right:9px}
+.next-hook{font-size:13.5px;line-height:1.55;color:#8f8f8f;margin:0}
+.cta{display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--muted);transition:color .15s}
+.cta .circ{width:26px;height:26px;border-radius:50%;border:1px solid #2a2a2a;display:flex;align-items:center;justify-content:center;font-size:12px;flex:none;color:#fff;transition:background .2s ease,border-color .2s ease,color .2s ease,transform .2s ease}
+.next:hover .cta{color:#fff}
+.next:hover .cta .circ{background:var(--eez-grad) border-box;border-color:transparent;color:#000;transform:translateX(2px)}
+.foot{margin-top:28px;font-family:var(--mono);font-size:12px}
+.foot a{color:var(--muted);text-decoration:none}
+.foot a:hover{color:#fff}
+@media(max-width:640px){.wrap{padding:32px 18px 72px}h1{font-size:30px}.head{margin-top:40px}}
+@media (prefers-reduced-motion: reduce){*{transition-duration:0.001ms !important}}
 </style>
 </head>
 <body>
-  <main>
-    <div class="tag">PRE-MAINNET</div>
-    <h1>Deploy Your Own Contract</h1>
-    <p class="soon">Coming soon</p>
-    <p>This card will deploy your own contract and call it across chains with the Remix cross-chain plugin.</p>
-    <p>
-      <a href="../index.html#quickstart">Back to the Quickstart →</a>
-    </p>
-  </main>
+<main class="wrap">
+  <div class="top">
+    <a class="back" href="../index.html#quickstart">&larr; Quickstarts</a>
+    <span class="pm">PRE-MAINNET</span>
+  </div>
+
+  <div class="head">
+    <h1><span class="num">05</span>Deploy Your Own Contract</h1>
+    <span class="badge">COMING SOON</span>
+  </div>
+  <p class="lede">This card will deploy your own contract and call it across chains with the Remix cross-chain plugin. Until it ships, the Quickstart carries on with two patterns you can copy.</p>
+
+  <a class="next" href="qs7-cross-chain-flash-loan.html">
+    <h2 class="next-title"><span class="n">06</span>Cross-Chain Flash Loan</h2>
+    <p class="next-hook">Borrowed tokens go to an L2 and back before the repayment check runs, all inside one L1 transaction.</p>
+    <span class="cta">NEXT: WATCH THE 3-STEP WALKTHROUGH <span class="circ" aria-hidden="true">&rarr;</span></span>
+  </a>
+
+  <p class="foot"><a href="../index.html#quickstart">Back to the Quickstart</a></p>
+</main>
 </body>
 </html>
