@@ -246,7 +246,7 @@
       <p class="intro-lede">The pool, the executor and the NFT are test-only mocks from <code style="font-family:var(--mono);font-size:0.86em;">src/periphery/defiMock</code>, not a lending protocol. What carries over to your dApp is the shape: L1 calls L2, L2 calls back to L1, all inside one L1 transaction.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
-        <li><b>01 · RUN IT</b>Run the flash-loan scenario on a local L1 and L2 and see it pass. You need Git, Foundry 1.7.1 and bash 4 or newer. About 5 minutes from a cold clone.</li>
+        <li><b>01 · RUN IT</b>Run the flash-loan scenario on a local L1 and L2 and see it pass. You need Git, Foundry 1.7.1 and bash 4 or newer. Same setup as Run Your First Round Trip, then one scenario.</li>
         <li><b>02 · BORROW ON L1, USE IT ON L2</b>How the executor sends the loan to L2 and calls its L2 twin, which calls back to L1.</li>
         <li><b>03 · REPAID BEFORE THE TRANSACTION ENDS</b>Why the pool's balance check passes only because the return leg landed on L1 first.</li>
       </ul>
@@ -279,8 +279,8 @@
 
   var kickers = ["RUN IT.", "BORROW ON L1, USE IT ON L2.", "REPAID BEFORE THE TRANSACTION ENDS."];
   var captions = [
-    "One L1 transaction borrows 10,000 tokens, sends them to L2 and back, and repays the pool. Locally, the scenario script plays composer.",
-    "onFlashLoan bridges the loan to executorL2, then calls it through its proxy. On L2 it claims the NFT and bridges the tokens back to L1 inside that same call.",
+    "One L1 transaction borrows 10,000 tokens, sends them to L2 and back, and repays the pool. Locally, the scenario script plays composer and posts the entries in a separate transaction first.",
+    "onFlashLoan bridges the loan to executorL2, then calls it through its proxy. On L2 it claims the NFT, and its return leg releases the escrow on L1 inside that same call.",
     "The pool checks its balance after onFlashLoan returns. It is whole only because the return leg already released the escrow on L1; otherwise the transaction reverts."
   ];
 
