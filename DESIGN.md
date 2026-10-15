@@ -229,7 +229,7 @@ Use the tokens above for new work.
   - Diagram on the left and code panel on the right (712px tall).
   - Caption and Prev / Play / Next across the bottom.
   - The intro slide covers the stage below the 97px header, padded 96px to the sides, with a three-column "what you'll learn" index.
-- **Readable minimums (1120px and up):** the scaled stage holds rendered text at 11px or more and every link and button at 24px or more, by counter-scaling only the elements that would fall below (`applyFloor` in each walkthrough). Code panels are exempt, since their lines are sized to the 662px column and they scroll sideways. The tool chips (FULL / TEST / COPY) re-pack right to left when they grow. Letterbox bands around the stage use the canvas colour, not black.
+- **Readable minimums (1120px and up):** the scaled stage holds rendered text at 11px or more and every link and button at 24px or more, by counter-scaling only the elements that would fall below (`applyFloor` in each walkthrough). Code panels are exempt from that rule; instead, a 14px run-command panel grows toward 11px only as far as its longest line still fits the 662px column (so on a 1280 laptop it lands around 9.5-10px). Citation headers ellipsize the directory, never `file:LINE` or the file name. The tool chips (FULL / TEST / COPY) re-pack right to left when they grow. Letterbox bands around the stage use the canvas colour, not black.
 - **Reflow:** below 1120px the stage stops scaling and becomes a stacked document. Inline flex rows are forced to wrap, the code panel caps at 60vh with a right-edge fade showing it scrolls sideways, and Prev / Play / Next stretch to full width.
 - **Breakpoints:** 640px (index type and gutter), 700px (grids and phases), 1120px (stage reflow).
 
