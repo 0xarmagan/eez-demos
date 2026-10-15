@@ -8,7 +8,7 @@
 
 **Tech Stack:** static HTML/JS, Python 3 checks, bash, Foundry 1.7.1 (`forge`, `anvil`), eez-core-protocol @ `9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f`.
 
-**Spec:** `docs/superpowers/specs/2026-10-14-dapp-quickstart-track-design.md`. Read it before any task. Shared copy: https://claude.ai/code/artifact/f3d0f192-d550-4f13-82e6-07a0a4476583
+**Spec:** `docs/specs/2026-10-14-dapp-quickstart-track-design.md`. Read it before any task. Shared copy: https://claude.ai/code/artifact/f3d0f192-d550-4f13-82e6-07a0a4476583
 
 ## Global Constraints
 

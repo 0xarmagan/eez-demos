@@ -210,7 +210,7 @@ Nothing ships until all of these pass:
 ## Out of scope
 
 - The four unanswered workshop questions listed above.
-- `<noscript>` fallbacks, the branch-protection gap, and the stale `docs/DESIGN.md:49-51`
+- `<noscript>` fallbacks, the branch-protection gap, and the stale `docs/founding-design.md:49-51`
   private-repo lines — all pre-existing, tracked separately.
 - Any change to the walkthroughs' 3-step format or their diagrams.
 

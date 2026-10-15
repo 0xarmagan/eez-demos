@@ -475,7 +475,7 @@ An externally-drafted walkthrough — *"How to read a remote contract's state"* 
 
 **Files:**
 - Create: `dapp-developers/q8-<slug>.html`, `snippets/q8-remote-reads.sol`, `snippets/test/Q8RemoteReads.t.sol`
-- Modify: `index.html` (card), the `NEXT:` chain on the neighbouring dapp page, `docs/DESIGN.md`
+- Modify: `index.html` (card), the `NEXT:` chain on the neighbouring dapp page, `docs/founding-design.md`
 - Produce: `docs/reviews/2026-08-25/11-q8-adjudication.md`
 
 - [ ] **Step 1: Fix the false claim in Step 3 (BLOCKING)**
@@ -518,13 +518,13 @@ Expected: all five cases green, including the unresolved-read revert. If no tool
 
 - [ ] **Step 6: Wire it into every consumer before merging**
 
-Adding a page is not adding a file. Confirm each: the index card on `index.html`; the `NEXT:` link chain; `scripts/verify-citations.py` parses its citation (the draft carries a second `Also:` source — confirm the page's `loc:`/link shape is one the parser reads, or add the second citation in the shape it does); `check-panel-drift.py` passes; `check-panel-geometry.cjs` passes; `build-llms.py` emits its steps (it must not become a third silent-drop case — see Task 7); `docs/DESIGN.md` records the page. Settle the slug too: the draft's header says `q8-reads-that-lie.html` while its title is *"How to read a remote contract's state"* — the site's convention is a descriptive slug, and `CONTRIBUTING.md` records "a stray marketing word" as a past defect.
+Adding a page is not adding a file. Confirm each: the index card on `index.html`; the `NEXT:` link chain; `scripts/verify-citations.py` parses its citation (the draft carries a second `Also:` source — confirm the page's `loc:`/link shape is one the parser reads, or add the second citation in the shape it does); `check-panel-drift.py` passes; `check-panel-geometry.cjs` passes; `build-llms.py` emits its steps (it must not become a third silent-drop case — see Task 7); `docs/founding-design.md` records the page. Settle the slug too: the draft's header says `q8-reads-that-lie.html` while its title is *"How to read a remote contract's state"* — the site's convention is a descriptive slug, and `CONTRIBUTING.md` records "a stray marketing word" as a past defect.
 
 - [ ] **Step 7: Run the full audit, then commit**
 
 ```bash
 bash scripts/audit.sh && python3 scripts/verify-citations.py && python3 scripts/check-snippet-fidelity.py && python3 scripts/build-llms.py
-git add dapp-developers snippets index.html llms.txt llms-full.txt docs/DESIGN.md docs/reviews/2026-08-25/11-q8-adjudication.md
+git add dapp-developers snippets index.html llms.txt llms-full.txt docs/founding-design.md docs/reviews/2026-08-25/11-q8-adjudication.md
 git commit -m "feat: q8 — reading remote state, and the four opcodes that lie"
 ```
 
