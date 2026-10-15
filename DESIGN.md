@@ -229,6 +229,7 @@ Use the tokens above for new work.
   - Diagram on the left and code panel on the right (712px tall).
   - Caption and Prev / Play / Next across the bottom.
   - The intro slide covers the stage below the 97px header, padded 96px to the sides, with a three-column "what you'll learn" index.
+- **Readable minimums (1120px and up):** the scaled stage holds rendered text at 11px or more and every link and button at 24px or more, by counter-scaling only the elements that would fall below (`applyFloor` in each walkthrough). Code panels are exempt, since their lines are sized to the 662px column and they scroll sideways. The tool chips (FULL / TEST / COPY) re-pack right to left when they grow. Letterbox bands around the stage use the canvas colour, not black.
 - **Reflow:** below 1120px the stage stops scaling and becomes a stacked document. Inline flex rows are forced to wrap, the code panel caps at 60vh with a right-edge fade showing it scrolls sideways, and Prev / Play / Next stretch to full width.
 - **Breakpoints:** 640px (index type and gutter), 700px (grids and phases), 1120px (stage reflow).
 
@@ -285,8 +286,9 @@ Quiet until touched. Grey at rest, with one gradient action per stage.
 - **Empty state:** a dashed `#262626` box with centered mono text that offers a way out ("Try another keyword or clear filters").
 
 ### Navigation
+- **Logo:** the full EEZ lockup (mark plus "Ethereum Economic Zone" wordmark) at 46px tall on the index from 641px up, so the wordmark stays legible; the mark alone (36px) on phones. Walkthrough headers carry the mark (26px stage px) plus "Quickstarts" as the link home. Never shrink the lockup below 46px: the wordmark becomes unreadable.
 - **Index header:** the EEZ logo on the left. The index carries its PRE-MAINNET label as a quiet mono line under the footer (`PRE-MAINNET · interfaces may move`); walkthroughs keep theirs in the stage header. Mono 12px external links (`eez-core-protocol ↗`, `eez.dev testnet ↗`) in `#9A9A9A` on the right, going white on hover, plus a circular `?` help button. Wraps on narrow screens.
-- **Stage header:** `← Quickstarts` back link (mono 12px, Slate, nudges left on hover), title, PRE-MAINNET, `NEXT: … →` link (nudges right), the `STEP 1 OF 3` counter and `ALL EXAMPLES →`.
+- **Stage header:** the EEZ mark plus `Quickstarts` link home (mono 12px, Slate), title, PRE-MAINNET, `NEXT: … →` link (nudges right), the `STEP 1 OF 3` counter and `ALL EXAMPLES →`.
 
 ### Walkthrough Stage (signature component)
 The site's core component.
@@ -306,7 +308,7 @@ The site's core component.
 - **Do** start every new walkthrough from the `pr5` template (`scripts/new-demo.sh`) and keep the 1920×1080 stage, the `codeByStep` reveal, the PRE-MAINNET label, the `NEXT:` chain and the 1120px reflow.
 - **Do** use the `:root` custom properties (`--eez-green`, `--eez-screen`, `--eez-edge`, `--eez-grad-btn`, `--muted`, `--label`) rather than literal hex.
 - **Do** set every label, number, chip, CTA and citation in Geist Mono, and every explanation in Geist.
-- **Do** give every interactive element the 2px `eez-green` focus ring with a 2px offset.
+- **Do** give every interactive element the 2px `eez-green` focus ring with a 2px offset, and a hit area of at least 24px on every device.
 - **Do** put real values in diagrams (addresses, hashes, byte cells), never placeholder boxes.
 - **Do** keep the 42px hairline grid on every canvas, index and stage alike.
 

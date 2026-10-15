@@ -13,7 +13,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700;800&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   *{box-sizing:border-box;}
-  html,body{margin:0;background:#000;}
+  html,body{margin:0;background:#0A0A0A;}
   :root{ --sans:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'Geist Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace; --muted:#9aa3b3; --label:#9ba6d6; --eez-green:#3BE57E; --eez-canvas:#0A0A0A; --eez-screen:#161616; --eez-chrome:#1F1F1F; --eez-edge:#2E2E2E; --eez-grad:linear-gradient(90deg,#8AE5AC 0%,#6283BD 55%,#4439CB 100%); --eez-grad-btn:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%); --eez-ink-on-grad:#0A0A0A; }
   @keyframes riseIn{ from{transform:translateY(12px);opacity:0;} to{transform:translateY(0);opacity:1;} }
   @keyframes flowByte{ from{transform:translateX(-14px);opacity:0;} to{transform:translateX(0);opacity:1;} }
@@ -139,25 +139,33 @@
      until that init pass has run makes the first painted frame the correct one.
      The class is set from script, so with JS off nothing is ever hidden. -->
 <script>document.documentElement.className += " pre-fit";</script>
-<style>.pre-fit #stage{visibility:hidden;}</style>
+<style>  /* Header on the stacked layout: drop the dot separator and the vertical
+     rules that only make sense on one line. */
+  @media (max-width:1120px){
+    .hdr-dot{display:none !important;}
+    .hdr-rule{border-left:0 !important;padding-left:0 !important;}
+  }
+  .hdr-home{display:inline-flex;align-items:center;gap:10px;}
+  .hdr-home img{display:block;height:26px;width:auto;flex:none;}
+.pre-fit #stage{visibility:hidden;}</style>
 </head>
 <body>
-<div role="main" class="stage-wrap" style="position:fixed;inset:0;background:#000;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
+<div role="main" class="stage-wrap" style="position:fixed;inset:0;background:var(--eez-canvas);display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
 <div id="stage" style="position:relative;width:1920px;height:1080px;flex:none;background-color:var(--eez-canvas);background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);background-size:42px 42px;color:#fff;transform-origin:center center;">
 
   <div style="position:absolute;left:0;top:0;width:1920px;height:96px;display:flex;align-items:center;justify-content:space-between;padding:0 48px;border-bottom:1px solid #1a1a1a;">
     <div style="position:absolute;left:0;bottom:0;width:100%;height:3px;background:#1a1a1a;"><div id="timebar" style="height:100%;width:100%;transform:scaleX(0);transform-origin:left;background:var(--eez-grad);"></div></div>
     <div style="display:flex;align-items:center;gap:18px;">
-      <a class="back" href="../index.html">← Quickstarts</a>
-      <div style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
+      <a class="back hdr-home" href="../index.html" aria-label="EEZ Quickstarts home"><img src="../favicon.svg" alt="" width="16" height="26">Quickstarts</a>
+      <div class="hdr-dot" style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
       <div style="font-size:22px;font-weight:600;color:#fff;">One Call, Two Rollups, One Transaction</div>
       <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#8a8a8a;">PRE-MAINNET</div>
-      <a class="back" href="qs1-run-your-first-round-trip.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Run Your First Round Trip &rarr;</a>
+      <a class="back hdr-rule" href="qs1-run-your-first-round-trip.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Run Your First Round Trip &rarr;</a>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">STEP 1 OF 3</div>
-      <a class="back" href="../index.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">ALL EXAMPLES →</a>
+      <a class="back hdr-rule" href="../index.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">ALL EXAMPLES →</a>
     </div>
   </div>
 
@@ -566,6 +574,101 @@
     document.getElementById("dots").innerHTML = d;
   }
 
+  // Readable minimums: the stage is a 1920x1080 canvas scaled to fit, so on a
+  // 1440 laptop (scale 0.75) its 11-14px labels render at 8-10px and its
+  // controls drop under 24px. Hold rendered text at >= 11px and controls at
+  // >= 24px by counter-scaling just the elements that would fall below.
+  var FLOOR_TEXT = 11, FLOOR_HIT = 24;
+  function applyFloor(s){
+    var stage = document.getElementById("stage");
+    if (!stage) { return; }
+    // Only undo what this function itself changed, so the page's own size
+    // switches (FULL mode's 13px code, for one) are never overwritten.
+    var els = stage.querySelectorAll("*");
+    for (var i = 0; i < els.length; i++) {
+      var el = els[i];
+      if (el.dataset.fsBumped) { el.style.fontSize = el.dataset.fsBase; delete el.dataset.fsBumped; }
+    }
+    for (var k = 0; k < els.length; k++) {
+      var e2 = els[k];
+      if (s >= 1 || e2.closest("svg") || e2.closest("#codePanel")) { continue; }
+      var own = false;
+      for (var c = e2.firstChild; c; c = c.nextSibling) {
+        if (c.nodeType === 3 && c.textContent.trim()) { own = true; break; }
+      }
+      if (!own) { continue; }
+      var px = parseFloat(getComputedStyle(e2).fontSize) || 0;
+      if (px * s < FLOOR_TEXT) {
+        e2.dataset.fsBase = e2.style.fontSize;
+        e2.dataset.fsBumped = "1";
+        e2.style.fontSize = (FLOOR_TEXT / s).toFixed(2) + "px";
+      }
+    }
+    var hits = stage.querySelectorAll("a, button");
+    for (var j = 0; j < hits.length; j++) {
+      var h = hits[j];
+      if (h.dataset.hitBumped) {
+        var pb = h.dataset.hitBase.split("|");
+        h.style.paddingTop = pb[0]; h.style.paddingBottom = pb[1]; h.style.minHeight = pb[2]; h.style.minWidth = pb[3];
+        delete h.dataset.hitBumped;
+      }
+      var r = h.getBoundingClientRect();
+      if (!r.width || (r.height >= FLOOR_HIT && r.width >= FLOOR_HIT)) { continue; }
+      h.dataset.hitBase = [h.style.paddingTop, h.style.paddingBottom, h.style.minHeight, h.style.minWidth].join("|");
+      h.dataset.hitBumped = "1";
+      if (r.height < FLOOR_HIT) {
+        // Equal padding above and below keeps the label on the row's centre line.
+        var extra = (FLOOR_HIT - r.height) / 2 / s;
+        var cs = getComputedStyle(h);
+        h.style.paddingTop = (parseFloat(cs.paddingTop) + extra).toFixed(2) + "px";
+        h.style.paddingBottom = (parseFloat(cs.paddingBottom) + extra).toFixed(2) + "px";
+        // A control with a fixed height (the round ? button) can't grow by padding.
+        if (h.getBoundingClientRect().height < FLOOR_HIT - 0.5) { h.style.minHeight = (FLOOR_HIT / s).toFixed(2) + "px"; }
+      }
+      if (r.width < FLOOR_HIT) { h.style.minWidth = (FLOOR_HIT / s).toFixed(2) + "px"; }
+    }
+    // The code panel's tool chips (FULL / TEST / COPY) sit at fixed right
+    // offsets sized for 11px labels. Once they grow, re-pack them right to
+    // left with a gap, and widen the header's right padding to clear them.
+    var rows = [];
+    var abs = stage.querySelectorAll("button");
+    for (var q = 0; q < abs.length; q++) {
+      var row = abs[q].parentNode;
+      if (rows.indexOf(row) === -1 && getComputedStyle(abs[q]).position === "absolute") { rows.push(row); }
+    }
+    rows.forEach(function(row){
+      var chips = Array.prototype.filter.call(row.children, function(c){
+        return c.tagName === "BUTTON" && getComputedStyle(c).position === "absolute";
+      });
+      if (!chips.length) { return; }
+      if (row.dataset.padRBase === undefined) { row.dataset.padRBase = row.style.paddingRight; }
+      row.style.paddingRight = row.dataset.padRBase;
+      chips.forEach(function(c){
+        if (c.dataset.rightBase === undefined) { c.dataset.rightBase = c.style.right; }
+        c.style.right = c.dataset.rightBase;
+      });
+      if (window.innerWidth <= 1120) { return; }
+      chips.sort(function(a, b){ return parseFloat(a.dataset.rightBase) - parseFloat(b.dataset.rightBase); });
+      var x = parseFloat(chips[0].dataset.rightBase) || 14;
+      chips.forEach(function(c){
+        if (c.offsetParent === null) { return; }
+        c.style.right = x + "px";
+        x += c.offsetWidth + 8;
+      });
+      var padR = parseFloat(getComputedStyle(row).paddingRight) || 0;
+      if (x + 12 > padR) { row.style.paddingRight = (x + 12) + "px"; }
+    });
+  }
+  // Steps re-render the code panel and the step pills, so re-apply the floor
+  // whenever the stage's content changes (style edits don't retrigger this).
+  var floorScale = 1, floorQueued = false;
+  if (window.MutationObserver) {
+    new MutationObserver(function(){
+      if (floorQueued) { return; }
+      floorQueued = true;
+      requestAnimationFrame(function(){ floorQueued = false; applyFloor(floorScale); });
+    }).observe(document.getElementById("stage"), { childList: true, subtree: true });
+  }
   function scaleStage(){
     var w = window.innerWidth, h = window.innerHeight;
     var s = Math.min(w/1920, h/1080);
@@ -593,6 +696,8 @@
       document.body.style.overflowX = "";
     }
     stage.style.transform = "scale(" + s + ")";
+    floorScale = window.innerWidth > 1120 ? s : 1;
+    applyFloor(floorScale);
   }
   // Prev at the first step and Next at the last one are no-ops (both clamp),
   // so they carry a real disabled state instead of looking live and doing
