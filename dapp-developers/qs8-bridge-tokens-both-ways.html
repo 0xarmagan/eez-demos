@@ -547,7 +547,7 @@
     var els = stage.querySelectorAll("*");
     for (var i = 0; i < els.length; i++) {
       var el = els[i];
-      if (el.dataset.fsBumped) { el.style.fontSize = el.dataset.fsBase; delete el.dataset.fsBumped; }
+      if (el.dataset.fsBumped) { if (el.style.fontSize === el.dataset.fsSet) { el.style.fontSize = el.dataset.fsBase; } delete el.dataset.fsBumped; }
     }
     for (var k = 0; k < els.length; k++) {
       var e2 = els[k];
@@ -562,6 +562,31 @@
         e2.dataset.fsBase = e2.style.fontSize;
         e2.dataset.fsBumped = "1";
         e2.style.fontSize = (FLOOR_TEXT / s).toFixed(2) + "px";
+        e2.dataset.fsSet = e2.style.fontSize;
+      }
+    }
+    // Run-command panels set code at 14px, which renders at 9-10px on a
+    // 1280-1440 laptop. Grow it toward the text floor, but only as far as the
+    // longest line still fits the panel, so nothing scrolls out of view.
+    var cp = document.getElementById("codePanel");
+    if (cp && s < 1) {
+      var base = parseFloat(getComputedStyle(cp).fontSize) || 0;
+      if (base * s < FLOOR_TEXT) {
+        var want = FLOOR_TEXT / s;
+        cp.dataset.fsBase = cp.style.fontSize;
+        cp.style.fontSize = want.toFixed(2) + "px";
+        // The gutter doesn't scale with the font, so step down until it fits.
+        for (var t = 0; t < 12 && cp.scrollWidth > cp.clientWidth + 1; t++) {
+          var cur = parseFloat(cp.style.fontSize);
+          if (cur <= base) { break; }
+          var next = Math.min(cur - 0.25, cur * cp.clientWidth / cp.scrollWidth);
+          cp.style.fontSize = Math.max(base, next).toFixed(2) + "px";
+        }
+        if (parseFloat(cp.style.fontSize) > base + 0.01) {
+          cp.dataset.fsBumped = "1"; cp.dataset.fsSet = cp.style.fontSize;
+        } else {
+          cp.style.fontSize = cp.dataset.fsBase;
+        }
       }
     }
     var hits = stage.querySelectorAll("a, button");
@@ -856,7 +881,10 @@
   function fitCite(el){
     var a = el && el.querySelector("a");
     if (!a || a.getAttribute("data-fit")) { return; }
-    var txt = a.textContent, cut = txt.lastIndexOf("/", txt.search(/:\d/));
+    var txt = a.textContent, end = txt.search(/:\d/);
+    if (end < 0) { end = txt.indexOf(" · "); }
+    if (end < 0) { end = txt.length; }
+    var cut = txt.lastIndexOf("/", end);
     if (cut < 0) { return; }
     a.setAttribute("data-fit", "1");
     a.title = txt.replace(/\s*↗$/, "") + " (view source on GitHub)";

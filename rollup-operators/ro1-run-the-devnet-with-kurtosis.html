@@ -249,7 +249,7 @@
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/testing/kurtosis/README.md" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">testing/kurtosis/README.md ↗</a></div>
+      <div id="srcCite" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/testing/kurtosis/README.md" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">testing/kurtosis/README.md ↗</a></div>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
@@ -518,7 +518,7 @@
     var els = stage.querySelectorAll("*");
     for (var i = 0; i < els.length; i++) {
       var el = els[i];
-      if (el.dataset.fsBumped) { el.style.fontSize = el.dataset.fsBase; delete el.dataset.fsBumped; }
+      if (el.dataset.fsBumped) { if (el.style.fontSize === el.dataset.fsSet) { el.style.fontSize = el.dataset.fsBase; } delete el.dataset.fsBumped; }
     }
     for (var k = 0; k < els.length; k++) {
       var e2 = els[k];
@@ -533,6 +533,31 @@
         e2.dataset.fsBase = e2.style.fontSize;
         e2.dataset.fsBumped = "1";
         e2.style.fontSize = (FLOOR_TEXT / s).toFixed(2) + "px";
+        e2.dataset.fsSet = e2.style.fontSize;
+      }
+    }
+    // Run-command panels set code at 14px, which renders at 9-10px on a
+    // 1280-1440 laptop. Grow it toward the text floor, but only as far as the
+    // longest line still fits the panel, so nothing scrolls out of view.
+    var cp = document.getElementById("codePanel");
+    if (cp && s < 1) {
+      var base = parseFloat(getComputedStyle(cp).fontSize) || 0;
+      if (base * s < FLOOR_TEXT) {
+        var want = FLOOR_TEXT / s;
+        cp.dataset.fsBase = cp.style.fontSize;
+        cp.style.fontSize = want.toFixed(2) + "px";
+        // The gutter doesn't scale with the font, so step down until it fits.
+        for (var t = 0; t < 12 && cp.scrollWidth > cp.clientWidth + 1; t++) {
+          var cur = parseFloat(cp.style.fontSize);
+          if (cur <= base) { break; }
+          var next = Math.min(cur - 0.25, cur * cp.clientWidth / cp.scrollWidth);
+          cp.style.fontSize = Math.max(base, next).toFixed(2) + "px";
+        }
+        if (parseFloat(cp.style.fontSize) > base + 0.01) {
+          cp.dataset.fsBumped = "1"; cp.dataset.fsSet = cp.style.fontSize;
+        } else {
+          cp.style.fontSize = cp.dataset.fsBase;
+        }
       }
     }
     var hits = stage.querySelectorAll("a, button");
@@ -791,6 +816,33 @@
         copyFallback(text, done);
       }
     });
+  }
+  // Keep "file.sol:LINE" visible when the citation is too wide: the
+  // directory prefix ellipsizes, the file name and line number never do.
+  function fitCite(el){
+    var a = el && el.querySelector("a");
+    if (!a || a.getAttribute("data-fit")) { return; }
+    var txt = a.textContent, end = txt.search(/:\d/);
+    if (end < 0) { end = txt.indexOf(" · "); }
+    if (end < 0) { end = txt.length; }
+    var cut = txt.lastIndexOf("/", end);
+    if (cut < 0) { return; }
+    a.setAttribute("data-fit", "1");
+    a.title = txt.replace(/\s*↗$/, "") + " (view source on GitHub)";
+    a.style.display = "inline-flex"; a.style.maxWidth = "100%"; a.style.minWidth = "0";
+    a.textContent = "";
+    var dir = document.createElement("span");
+    dir.textContent = txt.slice(0, cut + 1);
+    dir.style.cssText = "overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;";
+    var file = document.createElement("span");
+    file.textContent = txt.slice(cut + 1);
+    file.style.cssText = "flex:none;white-space:nowrap;";
+    a.appendChild(dir); a.appendChild(file);
+  }
+  var citeNode = document.getElementById("srcCite");
+  if (citeNode && window.MutationObserver) {
+    new MutationObserver(function(){ fitCite(citeNode); }).observe(citeNode, { childList: true });
+    fitCite(citeNode);
   }
   window.addEventListener("keydown", function(e){
     // The lead-in owns the keyboard while it is showing: no stepping and
