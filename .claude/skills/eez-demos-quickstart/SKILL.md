@@ -6,11 +6,11 @@ description: Use when adding or editing a card in the eez-demos dApp Quickstart 
 # eez-demos Quickstart cards
 
 A quickstart card makes two promises a reader acts on: the commands work as pasted, and the code is real.
-This skill covers what [CONTRIBUTING.md](../../../CONTRIBUTING.md) doesn't. Read CONTRIBUTING for the format, the source-of-truth rules and the PR checklist. Read [docs/DESIGN.md](../../../docs/DESIGN.md) for why the walkthrough format is fixed.
+This skill covers what [CONTRIBUTING.md](../../../CONTRIBUTING.md) doesn't. Read CONTRIBUTING for the format, the source-of-truth rules and the PR checklist. Read [docs/founding-design.md](../../../docs/founding-design.md) for why the walkthrough format is fixed.
 
 ## 1. Before you write
 
-1. Read the spec, `docs/superpowers/specs/2026-10-14-dapp-quickstart-track-design.md`, and the **Global Constraints** at the top of `docs/superpowers/plans/2026-10-14-dapp-quickstart-track.md`. They give the pins, slugs, `NEXT:` chain and the forbidden claims (no DEX, no lending).
+1. Read the spec, `docs/specs/2026-10-14-dapp-quickstart-track-design.md`, and the **Global Constraints** at the top of `docs/plans/2026-10-14-dapp-quickstart-track.md`. They give the pins, slugs, `NEXT:` chain and the forbidden claims (no DEX, no lending).
 2. Load `eez-protocol-dev` (it may be listed as `anthropic-skills:eez-protocol-dev`) to ground every claim. If it isn't available, read the pinned source directly; never write from memory.
 3. Get the source at the pin (`scripts/citation-pins.json`, eez-core-protocol `9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f`):
    `git clone https://github.com/eez-association/eez-core-protocol.git && cd eez-core-protocol && git checkout -q 9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f`. Clone outside this repo (e.g. under `/tmp`), never into it. This clone is for reading source and checking excerpts. `run-quickstart.sh` makes its own temp dir and clone.

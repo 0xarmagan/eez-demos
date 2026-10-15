@@ -56,7 +56,7 @@ What a neighbor can't truthfully copy: every code panel is verbatim source cited
   - an empty section says "coming soon" and never gets a made-up example;
   - anything unverifiable is labeled as such.
 - **Public copy voice:** the team's warm, connected "we" voice. No robotic openers and no repeated framing words.
-- `docs/DESIGN.md` is the 2026-08-18 founding design note (scope and tracks), not a visual system record.
+- `docs/founding-design.md` is the 2026-08-18 founding design note (scope and tracks), not a visual system record.
 
 ## Evidence on Hand
 
