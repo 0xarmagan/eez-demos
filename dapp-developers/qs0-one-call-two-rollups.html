@@ -142,6 +142,11 @@
 <style>  /* Header on the stacked layout: drop the dot separator and the vertical
      rules that only make sense on one line. */
   @media (max-width:1120px){
+    /* No diagram box may be wider than its column on the stacked layout:
+       a 730px one-line snippet or a fixed 400px card otherwise widens the
+       page, and phones zoom the whole page out to fit it. Code panels keep
+       their own sideways scroll. */
+    #stage div:not(#codePanel div){max-width:100% !important;}
     .hdr-dot{display:none !important;}
     .hdr-rule{border-left:0 !important;padding-left:0 !important;}
   }
