@@ -75,9 +75,12 @@ lit('<h1 class="intro-title" id="introTitle">How the address is derived</h1>',
 lit('<div class="intro-eyebrow">PROTOCOL RESEARCHERS</div>', f'<div class="intro-eyebrow">{eyebrow}</div>')
 
 # --- NEXT link: pr5's points at pr6; the new page is not wired in yet ----
-sub(r'<a class="back" href="pr6-the-rolling-hash\.html#skip-intro"[^>]*>.*?</a>',
-    '<a class="back" href="../index.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">'
+#     Two links carry it: the small header one and the bottom-bar Up-next button.
+sub(r'<a class="back hdr-rule" href="pr6-the-rolling-hash\.html#skip-intro"[^>]*>.*?</a>',
+    '<a class="back hdr-rule" href="../index.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">'
     'NEXT: TODO next demo (set href + label, or delete this link if last in the chain) &rarr;</a>')
+sub(r'(<a id="nextDemo" class="next-demo" href=")pr6-the-rolling-hash\.html#skip-intro(".*?<span class="next-demo-t">)The rolling hash(</span>)',
+    r'\1../index.html\2TODO next demo (same href + title as the header NEXT link)\3')
 
 # --- lead-in copy ----------------------------------------------------------
 sub(r'<p class="intro-lede">.*?</p>\s*<p class="intro-lede">.*?</p>',
