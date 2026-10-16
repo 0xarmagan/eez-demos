@@ -72,7 +72,7 @@ python3 scripts/build-llms.py --check   # report only
 - [ ] Hook states a consequence, not a restatement of the title
 - [ ] Card matches the existing visual style; walkthrough matches `q1`'s structure
 - [ ] Added a card on `index.html`, under the correct audience section
-- [ ] `NEXT:` chain updated on both neighbors
+- [ ] `NEXT:` chain updated on both neighbors: the header `NEXT:` link and the bottom-bar `#nextDemo` button both point to the same page with the same title
 - [ ] Served locally and clicked through all 3 steps — not just eyeballed the source
 
 ## Audit, before merge

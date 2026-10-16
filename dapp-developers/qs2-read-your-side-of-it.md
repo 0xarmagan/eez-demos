@@ -1,64 +1,108 @@
-# Read Your Side of It
+# Follow One Call There and Back
 
 > EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
 
-Neither contract imports anything from EEZ: your side is an ordinary Solidity call that uses its return value.
+Your contract makes an ordinary call to a proxy, the proxy hands it to the L1 manager, and the 1 that Counter returns on L2 comes back as data that was posted before your call.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/qs2-read-your-side-of-it.html
-- Source: `eez-core-protocol/test/mocks/CounterContracts.sol:16 · Counter`
+- Source: `eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:157 · DeployL2`
 - Pinned at commit: `9a1f815`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/test/mocks/CounterContracts.sol#L16
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L157
 
-### Step 1 — THE CONTRACT ON L2.
+### Step 1 — SET UP ONCE.
 
-Counter is plain Solidity. In the card 01 run it lives on L2, and increment() returns the new count.
-
-```solidity
-contract Counter is ICounterView {
-    uint256 public counter;
-
-    function increment() external returns (uint256) {
-        counter++;
-        return counter;
-    }
-}
-```
-
-### Step 2 — YOUR CONTRACT ON L1.
-
-incrementProxy() calls target.increment() like any other contract and uses the return value on the next line. The fixed gas amount is the one extra; Three Gotchas explains when it matters.
+Counter is deployed on L2 only. On L1, the scenario asks the L1 manager for Counter's proxy, then builds CounterAndProxy with that proxy as its target. Neither contract imports anything from EEZ.
 
 ```solidity
-uint256 constant PROXY_CALL_GAS = 5_000_000;
+// DeployL2, broadcast on L2:
+Counter counterL2 = new Counter();
 
-contract CounterAndProxy {
-    Counter public target;
-    uint256 public targetCounter;
-    uint256 public counter;
+// Deploy, broadcast on L1: the L1 manager
+// creates Counter@L2's proxy if it is missing
+address counterProxy = getOrCreateProxy(IEEZ(address(rollups)), counterL2Addr, L2_ROLLUP_ID);
 
-    // ⋯ constructor: step 3
-
-    function incrementProxy() external {
-        targetCounter = target.increment{gas: PROXY_CALL_GAS}();
-        counter++;
-    }
-}
+// your contract gets the proxy as its target
+CounterAndProxy cap = new CounterAndProxy(Counter(counterProxy));
 ```
 
-### Step 3 — POINT IT ANYWHERE.
+### Step 2 — AN ORDINARY CALL.
 
-The only cross-chain part is which address target holds. The scenario passes Counter's proxy on L1. The TEST tab passes a local Counter, and the same code passes.
+incrementProxy() calls target.increment() like any other contract call. target is counterProxy, a contract on L1, so that is where the call goes. The TEST tab runs this same contract against a local Counter.
 
 ```solidity
 contract CounterAndProxy {
-    Counter public target;
-    // ⋯
+  Counter public target;
+  uint256 public targetCounter;
+  uint256 public counter;
 
-    constructor(Counter _target) {
-        target = _target;
-    }
+  constructor(Counter _target) {
+    target = _target;
+  }
 
-    // ⋯ incrementProxy() as in step 2
+  function incrementProxy() external {
+    targetCounter = target.increment{gas: PROXY_CALL_GAS}();
+    counter++;
+  }
+}
+```
+
+### Step 3 — THE PROXY HANDS IT ON.
+
+CrossChainProxy has no increment(). Its fallback checks that this isn't a static call, then calls executeCrossChainCall on the L1 manager with who called it, CounterAndProxy, and the exact calldata, increment().
+
+```solidity
+fallback() external payable {
+  // ⋯ manager and self-probe branches
+  _fallback();
+}
+function _fallback() internal {
+  // ⋯ probe: is this call a STATICCALL?
+  if (!success) {
+    // ⋯ read path: staticCrossChainCall
+  } else {
+    (success, result) =
+      EEZ.call{value: msg.value}(abi.encodeCall(IEEZ.executeCrossChainCall, (msg.sender, msg.data)));
+  }
+  // ⋯ step 5: decode it, return it
+}
+```
+
+### Step 4 — THE ANSWER WAS POSTED FIRST.
+
+L1 never calls out to L2 mid-transaction. Counter runs on L2, from the L2 entry: it stores counter = 1 and returns 1. The L1 entry, posted before your call, already holds that 1. Locally, the scenario script plays composer and writes both.
+
+```solidity
+// on L2: Counter, run by the L2 entry's call
+function increment() external returns (uint256) {
+  counter++;
+  return counter;
+}
+
+// on L1: the entry posted before your call,
+// by the batch (E2ECounter.s.sol, _l1Entries)
+entries[0] = ExecutionEntry({
+  ⋯
+  success: true,
+  returnData: abi.encode(uint256(1))
+});
+```
+
+### Step 5 — BACK IN YOUR CONTRACT.
+
+The manager returns the entry's returnData, the proxy unwraps it and returns the bytes, and Solidity decodes the uint256 that increment() declares. targetCounter is now 1. CounterAndProxy's own counter++ is a separate write on L1.
+
+```solidity
+// EEZ, the L1 manager (_consumeAndExecuteEntry)
+bytes memory returnData = entry.returnData;
+// ⋯ _executeEntry checks roots + rolling hash
+return returnData;
+// CrossChainProxy (_fallback)
+result = abi.decode(result, (bytes));
+// ⋯ return(result) hands the bytes back
+// CounterAndProxy: Solidity decodes the uint256
+function incrementProxy() external {
+  targetCounter = target.increment{gas: PROXY_CALL_GAS}();
+  counter++;
 }
 ```
 
