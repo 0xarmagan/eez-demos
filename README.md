@@ -13,7 +13,7 @@ EEZ is pre-mainnet, and every page says so. Read capability claims as design int
 | **Rollup operators** | `rollup-operators/ro1`–`ro4` | Devnet, deployment, Chiado, cross-chain traffic |
 | **Protocol researchers** | `protocol-researchers/pr1`–`pr6` | How Rollup0 settles and proves |
 
-There are 24 walkthroughs in all, plus `start-here.html` (a reading order per track) and `deploy.html` (deploying on the EEZ-X testnet). Agents can read the whole site as plain text from [`llms.txt`](llms.txt) and [`llms-full.txt`](llms-full.txt), because the code panels render from JavaScript.
+There are 24 walkthroughs in all, plus `start-here.html` (a reading order per track) and `deploy.html` (deploying on the EEZ-X testnet). Agents can read the whole site as plain text from [`llms.txt`](llms.txt) and [`llms-full.txt`](llms-full.txt), because the code panels render from JavaScript. Each Quickstart card also has a markdown mirror beside it (`dapp-developers/qs*.md`) with a Next link, so an agent can walk the track card by card.
 
 ## Run it locally
 
@@ -36,7 +36,7 @@ snippets/    compilable Solidity + Foundry tests behind the code panels
 starter/     a guided run through snippets/ (cd starter && ./run.sh)
 scripts/     CI checks, generators, and the new-page scaffold
 docs/        plans, specs, reviews, measured runs (see docs/README.md)
-llms.txt, llms-full.txt    generated; rebuild with scripts/build-llms.py
+llms.txt, llms-full.txt    generated, with the qs*.md card mirrors; rebuild with scripts/build-llms.py
 PRODUCT.md   who the site is for and the rules it keeps
 DESIGN.md    the visual system ("The Lit Bench")
 ```

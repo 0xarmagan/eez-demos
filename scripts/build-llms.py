@@ -170,6 +170,12 @@ def diffs_of(src):
     return out
 
 
+def next_of(src):
+    """The page's NEXT link, resolved to a site-relative path ("" if none)."""
+    m = re.search(r'<a class="back[^"]*" href="([^"#]+)[^"]*"[^>]*>\s*NEXT', src)
+    return m.group(1) if m else ""
+
+
 def citation_of(src):
     """(display text, url, short sha, repo-relative path) for the page's citation."""
     m = re.search(
@@ -289,6 +295,7 @@ def collect():
                 "cite_txt": cite_txt, "cite_url": cite_url, "sha": sha,
                 "lang": lang_for(cite_path, track),
                 "snippet": snips.get(name), "test": tests.get(name),
+                "next": next_of(src),
             })
     if missing_from_grid:
         print("NOTE: pages absent from index.html's card grid, appended after "
@@ -347,7 +354,10 @@ def build_index(pages):
             continue
         out.append("## %s\n\n%s\n" % (label, blurb))
         for p in rows:
-            out.append("- [%s](%s/%s): %s" % (p["title"], BASE, p["rel"], p["hook"]))
+            line = "- [%s](%s/%s): %s" % (p["title"], BASE, p["rel"], p["hook"])
+            if is_quickstart(p):
+                line += " Markdown: %s/%s" % (BASE, mirror_rel(p))
+            out.append(line)
         out.append("")
 
     out.append("## Compilable source\n")
@@ -384,6 +394,87 @@ def build_index(pages):
     return "\n".join(out).rstrip() + "\n"
 
 
+def page_body(p):
+    """Everything under a walkthrough's title: links, steps, source, tests.
+    Shared by llms-full.txt and the per-card markdown mirrors, so the two can
+    never say different things."""
+    out = []
+    out.append("- Page: %s/%s" % (BASE, p["rel"]))
+    if p["cite_txt"]:
+        out.append("- Source: `%s`" % p["cite_txt"])
+    if p["sha"]:
+        out.append("- Pinned at commit: `%s`" % p["sha"])
+    if p["cite_url"]:
+        out.append("- Verify: %s" % p["cite_url"])
+    out.append("")
+    for i, lines in enumerate(p["steps"]):
+        kick = p["kickers"][i] if i < len(p["kickers"]) else "Step %d" % (i + 1)
+        cap = p["captions"][i] if i < len(p["captions"]) else ""
+        out.append("### Step %d — %s\n" % (i + 1, kick))
+        if cap:
+            out.append("%s\n" % cap)
+        dm = p["diffs"][i] if i < len(p["diffs"]) else {}
+        if dm:
+            # The page marks these lines - and + in the gutter. Flatten
+            # them into a plain block and the removed line reads as if it
+            # belonged, which is worse than losing formatting: an agent
+            # would copy both halves of a before/after pair.
+            marked = []
+            for n, ln in enumerate(lines):
+                pre = {"del": "-", "add": "+"}.get(dm.get(n), " ")
+                marked.append((pre + ln).rstrip() if ln.strip() else pre.rstrip())
+            body = "\n".join(marked).rstrip()
+            if body.strip():
+                out.append("```diff\n%s\n```\n" % body)
+        else:
+            body = "\n".join(lines).rstrip()
+            if body.strip():
+                out.append("```%s\n%s\n```\n" % (p["lang"], body))
+    if p["snippet"]:
+        sp = os.path.join(ROOT, "snippets", p["snippet"])
+        if os.path.exists(sp):
+            out.append("### Full compilable source — snippets/%s\n" % p["snippet"])
+            out.append("```solidity\n%s\n```\n"
+                       % open(sp, encoding="utf-8").read().rstrip())
+    if p["test"]:
+        tp = os.path.join(ROOT, "snippets", p["test"])
+        if os.path.exists(tp):
+            out.append("### Runnable test — snippets/%s\n" % p["test"])
+            out.append("```solidity\n%s\n```\n"
+                       % open(tp, encoding="utf-8").read().rstrip())
+    return out
+
+
+def is_quickstart(p):
+    return os.path.basename(p["rel"]).startswith("qs")
+
+
+def mirror_rel(p):
+    return p["rel"][:-len(".html")] + ".md"
+
+
+def build_mirror(p, pages):
+    """One Quickstart card as plain markdown: the same body llms-full.txt
+    carries, plus a Next link, so an agent can walk the track card by card
+    without driving the page."""
+    out = ["# %s\n" % p["title"],
+           "> EEZ is pre-mainnet: read capability claims as design intent, not "
+           "shipped behaviour. Every code block is cited at a pinned commit.\n"]
+    if p["hook"]:
+        out.append("%s\n" % p["hook"])
+    out.extend(page_body(p))
+    if p["next"]:
+        rel = os.path.normpath(os.path.join(os.path.dirname(p["rel"]), p["next"]))
+        nxt = next((q for q in pages if q["rel"] == rel), None)
+        if nxt and is_quickstart(nxt):
+            out.append("## Next\n\n[%s](%s)\n" % (nxt["title"], os.path.basename(mirror_rel(nxt))))
+        elif nxt:
+            out.append("## Next\n\n[%s](%s/%s), in the Reference track.\n"
+                       % (nxt["title"], BASE, nxt["rel"]))
+    out.append("---\n\nWhole site for agents: %s/llms.txt" % BASE)
+    return "\n".join(out).rstrip() + "\n"
+
+
 def build_full(pages):
     out = [head_for(pages).replace(
         "These files hand over the content directly: each",
@@ -397,49 +488,7 @@ def build_full(pages):
             out.append("## %s\n" % p["title"])
             if p["hook"]:
                 out.append("%s\n" % p["hook"])
-            out.append("- Page: %s/%s" % (BASE, p["rel"]))
-            if p["cite_txt"]:
-                out.append("- Source: `%s`" % p["cite_txt"])
-            if p["sha"]:
-                out.append("- Pinned at commit: `%s`" % p["sha"])
-            if p["cite_url"]:
-                out.append("- Verify: %s" % p["cite_url"])
-            out.append("")
-            for i, lines in enumerate(p["steps"]):
-                kick = p["kickers"][i] if i < len(p["kickers"]) else "Step %d" % (i + 1)
-                cap = p["captions"][i] if i < len(p["captions"]) else ""
-                out.append("### Step %d — %s\n" % (i + 1, kick))
-                if cap:
-                    out.append("%s\n" % cap)
-                dm = p["diffs"][i] if i < len(p["diffs"]) else {}
-                if dm:
-                    # The page marks these lines - and + in the gutter. Flatten
-                    # them into a plain block and the removed line reads as if it
-                    # belonged, which is worse than losing formatting: an agent
-                    # would copy both halves of a before/after pair.
-                    marked = []
-                    for n, ln in enumerate(lines):
-                        pre = {"del": "-", "add": "+"}.get(dm.get(n), " ")
-                        marked.append((pre + ln).rstrip() if ln.strip() else pre.rstrip())
-                    body = "\n".join(marked).rstrip()
-                    if body.strip():
-                        out.append("```diff\n%s\n```\n" % body)
-                else:
-                    body = "\n".join(lines).rstrip()
-                    if body.strip():
-                        out.append("```%s\n%s\n```\n" % (p["lang"], body))
-            if p["snippet"]:
-                sp = os.path.join(ROOT, "snippets", p["snippet"])
-                if os.path.exists(sp):
-                    out.append("### Full compilable source — snippets/%s\n" % p["snippet"])
-                    out.append("```solidity\n%s\n```\n"
-                               % open(sp, encoding="utf-8").read().rstrip())
-            if p["test"]:
-                tp = os.path.join(ROOT, "snippets", p["test"])
-                if os.path.exists(tp):
-                    out.append("### Runnable test — snippets/%s\n" % p["test"])
-                    out.append("```solidity\n%s\n```\n"
-                               % open(tp, encoding="utf-8").read().rstrip())
+            out.extend(page_body(p))
     return "\n".join(out).rstrip() + "\n"
 
 
@@ -459,6 +508,9 @@ def main():
         return 1
 
     targets = {"llms.txt": build_index(pages), "llms-full.txt": build_full(pages)}
+    for p in pages:
+        if is_quickstart(p):
+            targets[mirror_rel(p)] = build_mirror(p, pages)
     stale = []
     for name, content in targets.items():
         path = os.path.join(ROOT, name)
@@ -473,13 +525,14 @@ def main():
         if stale:
             print("STALE: %s — run python3 scripts/build-llms.py" % ", ".join(stale))
             return 1
-        print("llms.txt and llms-full.txt are current (%d walkthroughs)." % len(pages))
+        print("llms.txt, llms-full.txt and %d card mirrors are current (%d walkthroughs)."
+              % (len(targets) - 2, len(pages)))
         return 0
 
     for name in targets:
         size = len(targets[name].encode("utf-8"))
         mark = "updated" if name in stale else "unchanged"
-        print("  %-14s %7d bytes  %s" % (name, size, mark))
+        print("  %-48s %7d bytes  %s" % (name, size, mark))
     print("\n%d walkthroughs, %d snippets, %d tests"
           % (len(pages), sum(1 for p in pages if p["snippet"]),
              sum(1 for p in pages if p["test"])))
