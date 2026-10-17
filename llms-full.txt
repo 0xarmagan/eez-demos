@@ -123,7 +123,7 @@ $ git submodule update --init --recursive
 
 ### Step 2 — BUILD AND RUN BOTH DIRECTIONS.
 
-One build, then both scenarios at once. About 5 minutes on an Apple M4 laptop with Foundry 1.7.1, and the first build is most of it.
+One build, then both scenarios at once. About 5 minutes on an Apple M4 with Foundry 1.7.1 and solc already cached; the first build is most of it.
 
 ```text
 # the first build is most of the time
@@ -337,7 +337,7 @@ entries[0] = L2ExecutionEntry({
 
 ### Step 3 — ONE HASH, ONE CALL.
 
-Both entries carry the same proxyEntryHash, built by one helper, _callHash. That shared hash says both entries are the same call, and L2 checks it against the call it actually runs. It does not tie the answers: that they agree is what each rollup's proof systems attest. Locally, the script simply writes 1 on both sides.
+Both entries carry the same proxyEntryHash, built by one helper, _callHash. That shared hash says both entries are the same call, and L2 checks it against the call it actually runs. It does not tie the answers: rollup 1's proof systems attest that when they verify the batch. Locally the proof system accepts anything, and the script writes 1 on both sides.
 
 ```solidity
 // Both entries set the same field
@@ -411,7 +411,7 @@ revert ExecutionNotInCurrentBlock(rollupId);
 If an L2 deploys its manager with USE_GAS_LEFT on (the intended production mode, off in every current deployment), the gas left when the manager hashes the call goes into the hash. That is why call sites attach a fixed amount.
 
 ```solidity
-// paraphrasing CounterContracts.sol:4-6:
+// quoting CounterContracts.sol:4-5
 /// L2 folds the gas left after its pre-hash
 /// checks into the outgoing call hash, so these
 /// sites attach a fixed amount

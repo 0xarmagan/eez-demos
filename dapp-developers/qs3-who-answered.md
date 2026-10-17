@@ -49,7 +49,7 @@ entries[0] = L2ExecutionEntry({
 
 ### Step 3 — ONE HASH, ONE CALL.
 
-Both entries carry the same proxyEntryHash, built by one helper, _callHash. That shared hash says both entries are the same call, and L2 checks it against the call it actually runs. It does not tie the answers: that they agree is what each rollup's proof systems attest. Locally, the script simply writes 1 on both sides.
+Both entries carry the same proxyEntryHash, built by one helper, _callHash. That shared hash says both entries are the same call, and L2 checks it against the call it actually runs. It does not tie the answers: rollup 1's proof systems attest that when they verify the batch. Locally the proof system accepts anything, and the script writes 1 on both sides.
 
 ```solidity
 // Both entries set the same field

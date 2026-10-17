@@ -54,8 +54,12 @@ Every command a card shows has been executed, and the output it shows came from 
   - `:209` `Execute — local mode: postAndVerifyBatch tx + incrementProxy tx from the EOA`, so the script posts the entry the composer would;
   - `:188` `ExecuteL2 — local mode: system-driven L2 simulation of the inbound call`, so the script also acts as the L2 system address;
   - `:237` `ExecuteNetwork — network mode: outputs user tx fields`, so on a network you send only the trigger.
-  Other scenarios use the same `Execute`/`ExecuteL2`/`ExecuteNetwork` split (`grep -n '^contract' <scenario>.s.sol`).
+  Not every scenario has all three. Check which executors exist (`grep -n '^contract' <scenario>.s.sol`) and describe only those: a top-level static scenario such as `script/e2e/scenarios/static/L1_to_L2/topLevelStaticCounter/E2ETopLevelStaticCounter.s.sol` has `Execute` (`:151`) and `ExecuteNetwork` (`:189`) and no `ExecuteL2`, so nothing runs on L2 and the card must not say the script acts as the L2 system address.
 - So a **local** card says what you *see* ("see it work", "watch the round trip"). It never says you *build* or *deploy*. Name the composer's role once: "Locally, the scenario script plays composer."
+- **Static (read-only) scenarios** need three more honest lines, all in the scenario header (`E2ETopLevelStaticCounter.s.sol:19-57`):
+  - Locally the script also *predicts* the L2 result: `DeployL2` runs the real staticcall and exports `PREDICTED_STATIC_RESULT` (`:111-120`), the way a composer predicts it off-chain. Say so; don't imply L2 answered live.
+  - The entry is pinned to L2's live root, so a no-tx `eth_call` read stays valid only until the next transaction moves that root.
+  - The L1 trigger still writes: the reader stores what it read (`lastRead`). Only the no-tx `eth_call` is write-free, so "read without writing" holds for that path alone.
 - Only a card that runs on a real network (qs6, still a stub) may say *build* or *deploy*. Say "composer", never "sequencer", for who builds entries.
 
 ## 5. Excerpts
@@ -78,7 +82,7 @@ Every code step is one of the following:
 
 ## 6. Track wiring
 
-- **`NEXT:` chain**, from the Global Constraints: qs0 → qs1 → qs2 → qs3 → qs5 → qs7 → qs8 → `../index.html#dapp-developers`. Links have the form `<a class="back" href="qs3-who-answered.html#skip-intro" …>NEXT: Who Answered? &rarr;</a>`. `#skip-intro` skips the lead-in. A new card goes into the chain where its phase puts it. A new Build-patterns card goes after qs8: qs8's `NEXT:` moves to it, and it takes over `../index.html#dapp-developers`. Change both neighbours, and only the `NEXT:` link on existing pages.
+- **`NEXT:` chain**, as the live pages run it: qs0 → qs1 → qs2 → qs3 → qs5 → qs7 → qs8 → Reference 01 (`q7-your-cross-chain-address.html#skip-intro`). The plan's Global Constraints predate the Reference hand-off; where they differ, the pages win. Links have the form `<a class="back" href="qs3-who-answered.html#skip-intro" …>NEXT: Who Answered? &rarr;</a>`. `#skip-intro` skips the lead-in. A new card goes into the chain where its phase puts it. A new Build-patterns card goes after qs8: qs8's `NEXT:` moves to it, and it takes over whatever qs8 pointed to before. Read that target from the page (`grep -o 'href="[^"]*"[^>]*>NEXT' dapp-developers/qs8-*.html`); today it is Reference 01, q7. Change both neighbours, and only the `NEXT:` link on existing pages.
 - The qs pages (`dapp-developers/qs0`–`qs8`) and `index.html`'s `#quickstart` section exist. Check that a link target exists before adding it. `audit.sh` fails on a broken link.
 - **Phase:** a card whose main point is a runnable pattern a developer would copy goes under Build patterns. A card that explains what happened goes under See it work.
 - **Index phase strip**: `index.html` `<section class="sec" id="quickstart">` has four rows: Understand, See it work, Make it real, Build patterns. Each card is an `<a class="card" href="dapp-developers/<page>">` with a `card-title` and a `card-hook`. `build-llms.py` takes titles, hooks and page order from these anchors. The hook states a consequence (CONTRIBUTING "Format").
