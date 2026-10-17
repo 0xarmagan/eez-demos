@@ -305,7 +305,7 @@
   var captions = [
     "Before your call runs, the L1 entry already holds its answer: success, and a return value of 1. On a real network the composer builds this entry. Locally, the scenario script plays composer.",
     "The L2 entry holds the call that really runs: CounterAndProxy on L1 calling increment() on Counter on L2. Locally, the script delivers it too, as the L2 system address.",
-    "Both entries carry the same proxyEntryHash, built by one helper, _callHash. That shared hash says both entries are the same call, and L2 checks it against the call it actually runs. It does not tie the answers: that they agree is what each rollup's proof systems attest. Locally, the script simply writes 1 on both sides."
+    "Both entries carry the same proxyEntryHash, built by one helper, _callHash. That shared hash says both entries are the same call, and L2 checks it against the call it actually runs. It does not tie the answers: rollup 1's proof systems attest that when they verify the batch. Locally the proof system accepts anything, and the script writes 1 on both sides."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,

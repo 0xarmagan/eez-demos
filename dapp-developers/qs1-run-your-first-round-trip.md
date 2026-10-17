@@ -29,7 +29,7 @@ $ git submodule update --init --recursive
 
 ### Step 2 — BUILD AND RUN BOTH DIRECTIONS.
 
-One build, then both scenarios at once. About 5 minutes on an Apple M4 laptop with Foundry 1.7.1, and the first build is most of it.
+One build, then both scenarios at once. About 5 minutes on an Apple M4 with Foundry 1.7.1 and solc already cached; the first build is most of it.
 
 ```text
 # the first build is most of the time

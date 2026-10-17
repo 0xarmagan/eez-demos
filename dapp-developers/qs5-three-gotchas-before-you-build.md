@@ -55,7 +55,7 @@ revert ExecutionNotInCurrentBlock(rollupId);
 If an L2 deploys its manager with USE_GAS_LEFT on (the intended production mode, off in every current deployment), the gas left when the manager hashes the call goes into the hash. That is why call sites attach a fixed amount.
 
 ```solidity
-// paraphrasing CounterContracts.sol:4-6:
+// quoting CounterContracts.sol:4-5
 /// L2 folds the gas left after its pre-hash
 /// checks into the outgoing call hash, so these
 /// sites attach a fixed amount
