@@ -46,7 +46,7 @@ DESIGN.md    the visual system ("The Lit Bench")
 CI runs these checks, and you should too:
 
 ```bash
-bash scripts/audit.sh                      # links, JS syntax, PRE-MAINNET label, generated files
+bash scripts/audit.sh                      # links, JS syntax, pre-mainnet note, generated files
 python3 scripts/verify-citations.py        # every file:line citation vs upstream at its pinned SHA
 python3 scripts/check-panel-drift.py       # every panel line vs a compilable snippet
 python3 scripts/check-snippet-fidelity.py  # snippets vs upstream at the pin

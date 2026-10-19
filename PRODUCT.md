@@ -49,7 +49,7 @@ What a neighbor can't truthfully copy: every code panel is verbatim source cited
 ## Brand Commitments
 
 - Branded as EEZ (Ethereum Economic Zone), with the EEZ logo, under the title "EEZ Quickstarts".
-- **PRE-MAINNET on every page.** Capability claims are design intent, not shipped behavior.
+- **Every page says EEZ is pre-mainnet**: walkthroughs in the intro slide's "Verified against … — pre-mainnet; interfaces may move." line, the index in its footer line, card 05 in its text. There is no header badge. Capability claims are design intent, not shipped behavior.
 - **Honesty rules (binding):**
   - no card or caption implies something works, or takes less time, than it does;
   - stated timings name the hardware they were measured on;

@@ -2,7 +2,7 @@
 
 > EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
 
-Two scenarios pass on local anvil chains: a call that starts on L1 gets back the value L2's execution produces (locally, precomputed in the entry), then the same call runs the other way round.
+Two scenarios pass on local anvil chains: one call starts on L1 and gets back the value L2's execution produces, and one makes the same call from L2. Locally, that value is precomputed in the entry.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/qs1-run-your-first-round-trip.html
 - Source: `eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh`
