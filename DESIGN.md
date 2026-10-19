@@ -157,7 +157,7 @@ There are two surfaces. The **index** (`index.html`, `start-here.html`, `deploy.
 - Geist for prose and Geist Mono for labels, numbers, eyebrows and code.
 - One green signal (`eez-green`) for live state and focus. The gradient is reserved for the primary action and hover accents.
 - Pill-shaped controls, cards with 16px corners, and small 4–5px chips for tool buttons and byte cells.
-- A PRE-MAINNET label on every page, styled as a quiet mono label rather than a warning banner.
+- Every page says EEZ is pre-mainnet, in text rather than a badge: the walkthrough intro's verified-against line and the index footer line.
 
 ## Colors
 
@@ -214,7 +214,7 @@ Use the tokens above for new work.
 - **Body** (400, 18px, 1.55, max 640px): the index hero subline. Ledes on secondary pages use 15.5px.
 - **Body Small** (400, 13.5px, 1.55): card hooks and section notes, in Quiet Ink.
 - **Code** (Geist Mono 400, 19px on a 34px line; 15px/28px reflowed): the code panel, revealed step by step.
-- **Label** (Geist Mono 500, 11.5–12.5px, 0.04–0.16em tracking, uppercase): eyebrows, phase labels, filter chips, CTAs, PRE-MAINNET, card numbers.
+- **Label** (Geist Mono 500, 11.5–12.5px, 0.04–0.16em tracking, uppercase): eyebrows, phase labels, filter chips, CTAs, the index's PRE-MAINNET footer line, card numbers.
 
 ### Named Rules
 **The Readout Rule.** Anything that names, counts or points (eyebrows, step numbers, chips, CTAs, back links, citations) is set in Geist Mono. Anything that explains is set in Geist. Don't mix them in the same element.
@@ -225,7 +225,7 @@ Use the tokens above for new work.
 
 - **Index:** one column with a 1200px max width, padded 48px 32px 100px (32px 18px 72px under 640px). Card grids use `repeat(auto-fit, minmax(300px, 1fr))` with 16px gaps, and two-column grids collapse to one under 700px. Quickstart phases are a 150px mono label column next to their card row, which stacks under 700px. Sections are separated by 56px heads, and the page closes with a hairline-topped footer row 72px down.
 - **Walkthrough stage:** a fixed 1920×1080 frame scaled by `scaleStage()`.
-  - Header bar at the top: back link, title, PRE-MAINNET, NEXT link, step counter.
+  - Header bar at the top: home link (EEZ mark), title, NEXT link, step counter.
   - Diagram on the left and code panel on the right (712px tall).
   - Caption and Prev / Play / Next across the bottom.
   - The intro slide covers the stage below the 97px header, padded 96px to the sides, with a three-column "what you'll learn" index.
@@ -287,8 +287,8 @@ Quiet until touched. Grey at rest, with one gradient action per stage.
 
 ### Navigation
 - **Logo:** the full EEZ lockup (mark plus "Ethereum Economic Zone" wordmark) at 46px tall on the index from 641px up, so the wordmark stays legible; the mark alone (36px) on phones. Walkthrough headers carry the mark (26px stage px) plus "Quickstarts" as the link home. Never shrink the lockup below 46px: the wordmark becomes unreadable.
-- **Index header:** the EEZ logo on the left. The index carries its PRE-MAINNET label as a quiet mono line under the footer (`PRE-MAINNET · interfaces may move`); walkthroughs keep theirs in the stage header. Mono 12px external links (`eez-core-protocol ↗`, `eez.dev testnet ↗`) in `#9A9A9A` on the right, going white on hover, plus a circular `?` help button. Wraps on narrow screens.
-- **Stage header:** the EEZ mark plus `Quickstarts` link home (mono 12px, Slate), title, PRE-MAINNET, `NEXT: … →` link (nudges right), the `STEP 1 OF 3` counter and `ALL EXAMPLES →`.
+- **Index header:** the EEZ logo on the left. The index carries its PRE-MAINNET label as a quiet mono line under the footer (`PRE-MAINNET · interfaces may move`); walkthroughs say it in the intro's verified-against line, with no header badge. Mono 12px external links (`eez-core-protocol ↗`, `eez.dev testnet ↗`) in `#9A9A9A` on the right, going white on hover, plus a circular `?` help button. Wraps on narrow screens.
+- **Stage header:** the EEZ mark plus `Quickstarts` link home (mono 12px, Slate), title, `NEXT: … →` link (nudges right), the `STEP 1 OF 3` counter and `ALL EXAMPLES →`.
 
 ### Walkthrough Stage (signature component)
 The site's core component.
@@ -305,7 +305,7 @@ The site's core component.
 ## Do's and Don'ts
 
 ### Do:
-- **Do** start every new walkthrough from the `pr5` template (`scripts/new-demo.sh`) and keep the 1920×1080 stage, the `codeByStep` reveal, the PRE-MAINNET label, the `NEXT:` chain and the 1120px reflow.
+- **Do** start every new walkthrough from the `pr5` template (`scripts/new-demo.sh`) and keep the 1920×1080 stage, the `codeByStep` reveal, the intro's verified-against line (it carries "pre-mainnet"), the `NEXT:` chain and the 1120px reflow.
 - **Do** use the `:root` custom properties (`--eez-green`, `--eez-screen`, `--eez-edge`, `--eez-grad-btn`, `--muted`, `--label`) rather than literal hex.
 - **Do** set every label, number, chip, CTA and citation in Geist Mono, and every explanation in Geist.
 - **Do** give every interactive element the 2px `eez-green` focus ring with a 2px offset, and a hit area of at least 24px on every device.
@@ -318,5 +318,5 @@ The site's core component.
 - **Don't** add shadows at rest, glows, or glassy blur to cards or panels. Depth is tonal.
 - **Don't** color body text, warnings or decoration green. Green means live or focused.
 - **Don't** put code on index cards. Cards carry a title, a consequence hook and a CTA.
-- **Don't** make PRE-MAINNET or COMING SOON louder, such as red or amber banners, or quieter, such as removing them. They're fixed mono labels.
+- **Don't** make the pre-mainnet note or COMING SOON louder, such as red or amber banners, or drop them. The walkthrough header carries no PRE-MAINNET badge; the note lives in the intro line and the index footer.
 - **Don't** copy the drift values listed under Colors (the 180° card gradient, `rgba(63,185,80)` green, `#0b0b0b`/`#1f1f1f` page overrides).

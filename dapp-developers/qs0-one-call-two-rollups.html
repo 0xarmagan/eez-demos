@@ -165,7 +165,6 @@
       <a class="back hdr-home" href="../index.html" aria-label="EEZ Quickstarts home"><img src="../favicon.svg" alt="" width="16" height="26">Quickstarts</a>
       <div class="hdr-dot" style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
       <div style="font-size:22px;font-weight:600;color:#fff;">One Call, Two Rollups, One Transaction</div>
-      <div style="font-family:var(--mono);font-size:11px;letter-spacing:0.08em;color:#8a8a8a;">PRE-MAINNET</div>
       <a class="back hdr-rule" href="qs1-run-your-first-round-trip.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Run Your First Round Trip &rarr;</a>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
@@ -317,7 +316,7 @@
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">One Call, Two Rollups, One Transaction</h1>
       <p class="intro-lede">Your contract on L1 calls a contract on L2 and gets its return value back in the same transaction. No bridge message, no callback, no second transaction from you.</p>
-      <p class="intro-lede">It works because you send your transaction to the composer&rsquo;s RPC. The composer simulates it, then lands postAndVerifyBatch and your transaction as one bundle in the same block, with the batch first, so the answer is posted and verified before your call looks it up. Sent through a plain L1 RPC instead, your call reverts, usually with <code>ExecutionNotInCurrentBlock</code>. This card is one picture and no install; card 01 runs it.</p>
+      <p class="intro-lede">It works because you send your transaction to the composer&rsquo;s RPC. The composer is the service that builds execution entries: precomputed results of cross-chain calls. It simulates your transaction, then lands postAndVerifyBatch and your transaction in the same block, batch first. So the answer is posted and verified before your call looks it up. Sent through a plain L1 RPC instead, your call reverts, usually with <code>ExecutionNotInCurrentBlock</code>. This card is one picture and no install; card 01 runs it.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 · YOUR CONTRACT CALLS A PROXY</b>A proxy on L1 stands in for the L2 contract. Calling it is an ordinary call.</li>
@@ -354,7 +353,7 @@
   var kickers = ["YOUR CONTRACT CALLS A PROXY.", "THE ANSWER IS ALREADY THERE.", "SAME TRANSACTION."];
   var captions = [
     "Your contract calls the proxy for Counter@L2 like any other contract. The proxy has no functions of its own, so its fallback hands your calldata and your contract's address to the EEZ manager.",
-    "The composer lands its postAndVerifyBatch and your transaction as one bundle, batch first, so the batch is verified and its entries queued before your call runs. executeCrossChainCall works only in that block: it hashes your call and takes the first queued entry, from the cursor on, whose hash, destination rollup and expected starting roots all match.",
+    "The composer lands its postAndVerifyBatch and your transaction as one bundle, batch first, so the batch is verified and its entries queued before your call runs. executeCrossChainCall works only in that block: it hashes your call and takes the first queued entry whose hash, destination rollup and expected starting roots all match.",
     "The manager applies the entry, checks its roots and rolling hash against what the batch committed to, and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, and no second transaction from you."
   ];
 

@@ -9,7 +9,7 @@
 #   title     display title, e.g. "My New Topic"
 #
 # This gets you a structurally-correct file (fixed stage, terminal code
-# panel, PRE-MAINNET label, favicon, mobile scaleStage floor) with every
+# panel, pre-mainnet intro note, favicon, mobile scaleStage floor) with every
 # piece of real content — diagram, code, citation, kickers, captions —
 # replaced with an obvious TODO. It does NOT wire the file into
 # index.html or the NEXT: chain — that's still a manual step, see
