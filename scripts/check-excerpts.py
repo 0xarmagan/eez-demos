@@ -26,15 +26,6 @@ EXCERPTS = {
         1: ["src/EEZ.sol"],
         2: ["src/EEZ.sol"],
     },
-    # qs2 is also in check-panel-drift.py's SNIPPET_MAP for its FULL and TEST
-    # tabs; panel-drift skips these steps and leaves them to this check.
-    "qs2-read-your-side-of-it.html": {
-        0: ["script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol"],
-        1: ["test/mocks/CounterContracts.sol"],
-        2: ["src/base/CrossChainProxy.sol"],
-        3: ["test/mocks/CounterContracts.sol", "script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol"],
-        4: ["src/EEZ.sol", "src/base/CrossChainProxy.sol", "test/mocks/CounterContracts.sol"],
-    },
     "qs3-who-answered.html": {
         0: ["script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol"],
         1: ["script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol"],
