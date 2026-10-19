@@ -83,7 +83,6 @@ NON_SOLIDITY = {
 # code nobody should edit after copying.
 EXCERPT_CHECKED = {
     "qs0-one-call-two-rollups.html": "upstream excerpt, check-excerpts.py",
-    "qs2-read-your-side-of-it.html": "upstream excerpt steps, check-excerpts.py; FULL/TEST still checked here via SNIPPET_MAP",
     "qs3-who-answered.html": "upstream excerpt, check-excerpts.py",
     "qs5-three-gotchas-before-you-build.html": "upstream excerpt, check-excerpts.py",
     "qs7-cross-chain-flash-loan.html": "shell step + upstream excerpts, run-quickstart.sh + check-excerpts.py",
@@ -113,29 +112,17 @@ TEST_SNIPPET_MAP = {
 FULL_SNIPPET_MAP = dict(SNIPPET_MAP)
 
 
-def panel_steps(html_path):
+def panel_lines(html_path):
     src = open(html_path, encoding="utf-8").read()
     m = re.search(r"var codeByStep = (\[.*?\n  \]);", src, re.S)
     if not m:
         raise RuntimeError("codeByStep not found")
     steps = re.findall(r'\[\s*((?:"(?:[^"\\]|\\.)*",?\s*)*)\]', m.group(1))
-    return [[json.loads('"' + raw + '"') for raw in re.findall(r'"((?:[^"\\]|\\.)*)"', step)]
-            for step in steps]
-
-
-def panel_lines(html_path):
-    return [ln for step in panel_steps(html_path) for ln in step]
-
-
-def excerpt_steps(page):
-    """Steps of a SNIPPET_MAP page that check-excerpts.py checks against upstream
-    instead (a page can mix snippet steps with upstream excerpt steps)."""
-    import importlib.util
-    spec = importlib.util.spec_from_file_location(
-        "check_excerpts", os.path.join(REPO_ROOT, "scripts", "check-excerpts.py"))
-    mod = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(mod)
-    return set(mod.EXCERPTS.get(page, {}))
+    out = []
+    for step in steps:
+        for raw in re.findall(r'"((?:[^"\\]|\\.)*)"', step):
+            out.append(json.loads('"' + raw + '"'))
+    return out
 
 
 def test_snippet_lines(html_path):
@@ -229,8 +216,7 @@ def main():
         snippet = {ln.rstrip() for ln in open(snippet_path, encoding="utf-8").read().splitlines()}
 
         try:
-            skip = excerpt_steps(page)
-            lines = [ln for i, step in enumerate(panel_steps(page_path)) if i not in skip for ln in step]
+            lines = panel_lines(page_path)
         except RuntimeError as e:
             failures.append(f"{page}: {e}")
             continue

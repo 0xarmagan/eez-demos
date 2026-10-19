@@ -60,7 +60,7 @@ Locally, the scenario script played composer. You'll see what it did in two card
 
 ## Next
 
-[Follow One Call There and Back](qs2-read-your-side-of-it.md)
+[Read Your Side of It](qs2-read-your-side-of-it.md)
 
 ---
 
