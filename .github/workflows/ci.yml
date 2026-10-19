@@ -12,12 +12,17 @@ on:
     - cron: "0 6 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   structure:
     name: Structure, citations, panel drift
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Structural audit
         run: bash scripts/audit.sh
@@ -86,6 +91,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       # The code panel is a fixed 662x663 column with overflow:auto, so an
       # over-long line is not destroyed — it hides behind a scrollbar nobody
@@ -98,7 +105,11 @@ jobs:
           node-version: "20"
 
       - name: Install puppeteer
-        run: npm install --no-save puppeteer
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund puppeteer@24.37.5
+
+      # Only CI downloads the browser selected by the exact Puppeteer version.
+      - name: Download pinned browser
+        run: node node_modules/puppeteer/install.mjs
 
       - name: Code panel geometry
         run: NODE_PATH="$PWD/node_modules" node scripts/check-panel-geometry.cjs
@@ -108,11 +119,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: nightly
+          version: v1.7.1
 
       - name: forge build
         working-directory: snippets

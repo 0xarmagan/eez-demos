@@ -46,7 +46,8 @@ async function main() {
       .map((f) => path.resolve(__dirname, "..", f));
   }
 
-  const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
+  // Keep Chromium sandboxing enabled; fail if the host cannot support it.
+  const browser = await puppeteer.launch();
   let failures = 0;
   let checked = 0;
 

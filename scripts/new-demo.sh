@@ -25,6 +25,11 @@ case "$AUDIENCE" in
   *) echo "error: audience must be dapp-developers, rollup-operators, or protocol-researchers" >&2; exit 1 ;;
 esac
 
+[[ "$SLUG" =~ ^[a-z0-9][a-z0-9-]*$ ]] || {
+  echo "error: slug must contain only lowercase letters, digits and hyphens" >&2
+  exit 1
+}
+
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 TEMPLATE="$REPO_ROOT/protocol-researchers/pr5-how-the-address-is-derived.html"
 DEST="$REPO_ROOT/$AUDIENCE/$SLUG.html"
@@ -38,12 +43,14 @@ if [ -e "$DEST" ]; then
   exit 1
 fi
 
-cp "$TEMPLATE" "$DEST"
-
-python3 - "$DEST" "$TITLE" "$AUDIENCE" "$SLUG" <<'PYEOF'
-import re, sys
-path, title, audience, slug = sys.argv[1:5]
-s = open(path).read()
+python3 -B - "$DEST" "$TITLE" "$AUDIENCE" "$SLUG" "$TEMPLATE" "$REPO_ROOT" <<'PYEOF'
+import html, re, sys
+from pathlib import Path
+path, title, audience, slug, template, root = sys.argv[1:7]
+if Path(path).parent.resolve() != Path(root).resolve() / audience:
+    sys.exit("new-demo.sh: destination directory resolves outside its audience")
+title = html.escape(title, quote=True)
+s = Path(template).read_text(encoding="utf-8")
 
 def sub(pattern, repl):
     """Regex replace that FAILS LOUDLY if the template no longer matches, so a
@@ -135,7 +142,8 @@ lit("'snippets/q1-compute-address.sol \\u00b7 solc 0.8.28'", "'snippets/TODO.sol
 # scaffold carries no pr5 identifiers. (Other names are generic EEZ builtins.)
 lit('"computeCrossChainProxyAddress":1,', '')
 
-open(path, "w").write(s)
+with open(path, "x", encoding="utf-8") as output:
+    output.write(s)
 PYEOF
 
 echo "Created $DEST"

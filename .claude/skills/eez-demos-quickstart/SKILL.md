@@ -25,6 +25,7 @@ This skill covers what [CONTRIBUTING.md](../../../CONTRIBUTING.md) doesn't. Read
 Every command a card shows has been executed, and the output it shows came from that run.
 
 - Shell panels write each command as one `"$ <command>"` string in `codeByStep`. Output lines are plain strings, pasted from the run. Comments start with `# `.
+- The runner previews by default. Actual execution requires `--execute` and a disposable environment without credentials. It accepts only reviewed command forms; adding a scenario requires reviewing its upstream code and updating the runner allowlist.
 - `scripts/run-quickstart.sh` extracts only the lines that start with `$ ` (via `build-llms.py`'s `steps_of`), so:
   - **one command per `$ ` line, no `\` continuations.** The continuation line has no `$ `, so it is never run;
   - **each command appears in exactly one step.** Don't repeat earlier commands in later steps the way ro1 does: the script would run them twice (`git clone` fails the second time). To recap, use output or `# ` lines;
@@ -37,7 +38,7 @@ Every command a card shows has been executed, and the output it shows came from 
 - Run the gate with the bare filename (the script prepends `dapp-developers/`):
   ```bash
   bash scripts/run-quickstart.sh --extract-only <page>.html   # what will run
-  bash scripts/run-quickstart.sh <page>.html                  # run it; prints RAN: lines and ELAPSED
+  bash scripts/run-quickstart.sh --execute <page>.html        # explicit execution in a disposable environment
   ```
   A clone without `git checkout <full pin>` makes the script refuse. It reads the pin from `scripts/citation-pins.json` (eez-core-protocol `sha`), so a pin bump there is the only edit; then update the pages' checkout lines to match. Paste the PASS and RESULT lines from this run. Parallel scenarios finish in any order, so the page shows the order you got.
 - A command you didn't run never appears, not even as "optional" or "for reference". Self-test: `bash scripts/test_run_quickstart.sh` (CI runs it and `--extract-only` on qs1, qs7, qs8).
@@ -103,7 +104,7 @@ bash scripts/audit.sh && python3 scripts/verify-citations.py && python3 scripts/
   && (cd snippets && forge test)
 ```
 
-Also run: `bash scripts/run-quickstart.sh <page>.html` for a hands-on card, `python3 scripts/sync-embedded-snippets.py --check` for a snippet card, and `node --check` on the extracted inline script.
+Also run: `bash scripts/run-quickstart.sh --execute <page>.html` in a disposable environment for a hands-on card, `python3 scripts/sync-embedded-snippets.py --check` for a snippet card, and `node --check` on the extracted inline script.
 
 Then take a screenshot of every step at 1920×1080 and 390×844 and look at each one. Puppeteer is cached under `~/.npm/_npx/*/node_modules`:
 

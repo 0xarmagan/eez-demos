@@ -22,7 +22,6 @@ Usage:
 
 import pathlib
 import re
-import subprocess
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
@@ -55,8 +54,8 @@ def test_quickstart_entry_card_does_not_title_qs0():
 
 
 def test_every_walkthrough_emits_at_least_one_code_block():
-    subprocess.run([sys.executable, "scripts/build-llms.py"], cwd=ROOT, check=True)
-    text = (ROOT / "llms-full.txt").read_text(encoding="utf-8")
+    builder = _build_llms()
+    text = builder.build_full(builder.collect())
     sections = text.split("\n## ")[1:]
     empty = [s.splitlines()[0] for s in sections if "```" not in s]
     assert empty == [], "walkthroughs emitted with no code: %s" % empty
@@ -65,8 +64,8 @@ def test_every_walkthrough_emits_at_least_one_code_block():
 def test_every_walkthrough_emits_a_code_block_per_step():
     """The count gate. A page that narrates three steps and emits one has lost
     two, and nothing else in the repo can see that."""
-    subprocess.run([sys.executable, "scripts/build-llms.py"], cwd=ROOT, check=True)
-    text = (ROOT / "llms-full.txt").read_text(encoding="utf-8")
+    builder = _build_llms()
+    text = builder.build_full(builder.collect())
 
     # Walkthrough sections are "## <title>"; steps inside them are
     # "### Step N — <kicker>", and the snippet/test appendices are "### " too,

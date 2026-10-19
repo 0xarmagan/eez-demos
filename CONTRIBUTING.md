@@ -87,3 +87,30 @@ A second, independent pass — every real bug in this repo so far (a drifted sub
 6. Serve it locally and click through all 3 steps yourself — a diff review won't catch a broken `NEXT:` link or a step that renders wrong.
 
 Fix anything this turns up before merge — don't file a follow-up issue for a page that's already live.
+
+## Script execution and side effects
+
+The structural audit and export tests build exports in memory; they do not
+regenerate files. Run the export generator explicitly to update them.
+The snippet-fidelity tests modify only disposable copies of snippets. Their
+checker can still download pinned upstream source text into the disposable cache.
+
+The quickstart runner previews page commands by default. Its --extract-only flag
+is an alias for this default. After reviewing a page, --execute opts into a
+restricted set of commands executed as argument lists, without shell evaluation.
+Execution still builds and runs upstream code: use a disposable environment
+without mounted credentials or your home directory. Its temporary working
+directory is not a security sandbox.
+
+The browser geometry check keeps Chromium's sandbox enabled. If the host cannot
+support it, use a suitable isolated host instead of disabling the sandbox.
+CI pins Puppeteer to 24.37.5 and Foundry to v1.7.1. npm lifecycle scripts are
+disabled, followed by an explicit browser download step in CI. Transitive npm
+dependencies and action tags are not yet locked to immutable versions.
+
+Deployment examples import a throwaway key interactively into an encrypted
+keystore. Never put private keys or keystore passwords in command arguments or
+exported variables. Install Foundry from verified official release artifacts.
+
+Historical review and plan documents describe older commands and are not current
+installation or deployment instructions.

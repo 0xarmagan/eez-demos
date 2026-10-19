@@ -153,12 +153,12 @@ td.n{white-space:nowrap}
       <div class="step-num" aria-hidden="true">1</div>
       <div class="step-body">
         <h2 class="step-title">Install Foundry</h2>
-        <p class="step-why">The demos and this page are pinned to <a href="https://book.getfoundry.sh/getting-started/installation">Foundry v1.7.1</a>; the command below installs that version. Step 2 also needs a browser wallet.</p>
+        <p class="step-why">The demos and this page are pinned to <a href="https://book.getfoundry.sh/getting-started/installation">Foundry v1.7.1</a>; download the archive for your OS and architecture from the <a href="https://github.com/foundry-rs/foundry/releases/tag/v1.7.1" target="_blank" rel="noopener">official v1.7.1 release</a>. Verify its published checksums or attestations before extracting the tools into a directory on your PATH. Step 2 also needs a browser wallet.</p>
         <div class="term">
           <div class="term-head"><span class="term-label">SHELL</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
-<pre><span class="p">$ </span>curl -L https://foundry.paradigm.xyz | bash
-<span class="p">$ </span>export PATH="$HOME/.foundry/bin:$PATH"
-<span class="p">$ </span>foundryup --install v1.7.1</pre>
+<pre><span class="p">$ </span>forge --version
+<span class="p">$ </span>cast --version
+<span class="c"># Both should report version 1.7.1 after installation.</span></pre>
         </div>
       </div>
     </section>
@@ -168,11 +168,11 @@ td.n{white-space:nowrap}
       <div class="step-num" aria-hidden="true">2</div>
       <div class="step-body">
         <h2 class="step-title">Fund a throwaway key</h2>
-        <p class="step-why">Get Chiado xDAI for the key from the <a href="https://faucet.gnosischain.com/?chain=chiado" target="_blank" rel="noopener">Gnosis Chiado faucet</a>. Import the key into a browser wallet, then move some xDAI to the EEZ-X rollup with the Bridge &amp; Calls tab of the <a href="https://eez.dev/dashboard/" target="_blank" rel="noopener">eez.dev dashboard</a>, a demo app on the testnet (it shows the rollup balance as ETH). Then hand the key and its address to your shell:</p>
+        <p class="step-why">Get Chiado xDAI for the key from the <a href="https://faucet.gnosischain.com/?chain=chiado" target="_blank" rel="noopener">Gnosis Chiado faucet</a>. Import the key into a browser wallet, then move some xDAI to the EEZ-X rollup with the Bridge &amp; Calls tab of the <a href="https://eez.dev/dashboard/" target="_blank" rel="noopener">eez.dev dashboard</a>, a demo app on the testnet (it shows the rollup balance as ETH). Then import it into an encrypted local keystore. Enter the private key and a strong keystore password only at the hidden prompts; never put either secret in a command or environment variable:</p>
         <div class="term">
           <div class="term-head"><span class="term-label">SHELL</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
-<pre><span class="p">$ </span>export KEY=0x&hellip;   <span class="c"># the throwaway key you funded</span>
-<span class="p">$ </span>export ADDR=$(cast wallet address --private-key $KEY)</pre>
+<pre><span class="p">$ </span>cast wallet import eez-testnet --interactive
+<span class="p">$ </span>export ADDR=$(cast wallet address --account eez-testnet)</pre>
         </div>
         <p class="warn">&#9888; Use a throwaway key. Never a key that holds real assets &mdash; testnet or not.</p>
       </div>
@@ -218,7 +218,7 @@ td.n{white-space:nowrap}
         <p class="step-why">One command. <code>src/MyContract.sol</code> is whatever you're shipping. Without <code>--broadcast</code>, Foundry 1.7.1 only prints the unsigned transaction.</p>
         <div class="term">
           <div class="term-head"><span class="term-label">SHELL</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
-<pre><span class="p">$ </span>forge create src/MyContract.sol:MyContract --rpc-url $EEZ_RPC --private-key $KEY --broadcast</pre>
+<pre><span class="p">$ </span>forge create src/MyContract.sol:MyContract --rpc-url "$EEZ_RPC" --account eez-testnet --broadcast</pre>
         </div>
         <div class="term out">
           <div class="term-head"><span class="term-label">EXPECTED OUTPUT &middot; NOT A COMMAND</span></div>
