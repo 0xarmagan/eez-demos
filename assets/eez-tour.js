@@ -104,13 +104,14 @@
     }
 
     add(".hero-cta", 10, "WHERE TO START",
-        "Dapp developers start at 00. Operators and researchers jump to their track.");
+        "Dapp developers start at 00. Operators and researchers get a reading order on the line below.",
+        { els: [q(".hero-cta"), q(".hero-aside")] });
     add(".search-box-row", 10, "SEARCH",
         "Find any walkthrough by keyword. Press / to jump here.");
     add(".filter-tabs", 10, "FILTER BY ROLE",
         "Dapp developers, rollup operators or protocol researchers.");
     add("#quickstart .phase", 12, "THE QUICKSTART",
-        "Seven cards, 00 to 06, in four phases. Start here at 00 and read them in order.");
+        "Card 00 opens the Quickstart: seven cards, 00 to 06, in four phases. Read them in order.");
     add("#quickstart .card.soon", 8, "COMING SOON",
         "Dashed cards are not out yet.");
     add("#dapp-developers .sec-head", 12, "REFERENCE",
@@ -225,6 +226,8 @@
     layer.id = "tourLayer";
     layer.setAttribute("role", "dialog");
     layer.setAttribute("aria-label", "How to read this page");
+    layer.setAttribute("aria-modal", "true");
+    var opener = document.activeElement;
     layer.style.cssText = pageMode
       ? "position:fixed;left:0;top:0;right:0;bottom:0;z-index:2000;"
       : "position:absolute;left:0;top:0;width:1920px;height:1080px;z-index:200;";
@@ -261,10 +264,26 @@
       }
       markSeen();
       onDone();
+      // Hand focus back to whatever opened the tour, or keyboard users land
+      // on <body> at the top of the page.
+      if (opener && opener.focus && document.contains(opener)) {
+        try { opener.focus({ preventScroll: true }); } catch (e) { opener.focus(); }
+      }
     }
 
     function onKey(e) {
       if (e.key === "Escape") { e.stopPropagation(); e.preventDefault(); close(); }
+      else if (e.key === "Tab") {
+        // Focus stays inside the card while the tour is up (aria-modal).
+        var btns = card.querySelectorAll("button");
+        if (!btns.length) { return; }
+        var i = Array.prototype.indexOf.call(btns, document.activeElement);
+        var n = e.shiftKey ? i - 1 : i + 1;
+        if (i === -1) { n = 0; }
+        btns[(n + btns.length) % btns.length].focus();
+        e.stopPropagation(); e.preventDefault();
+      }
+      else if (e.key === "Enter" && e.target && e.target.closest && e.target.closest("#tourLayer button")) { return; }
       else if (e.key === "ArrowRight" || e.key === "Enter") { e.stopPropagation(); e.preventDefault(); go(1); }
       else if (e.key === "ArrowLeft") { e.stopPropagation(); e.preventDefault(); go(-1); }
     }
@@ -286,7 +305,13 @@
       var st = steps[idx];
       // On a scrolling page the target may be below the fold; centre it first,
       // then measure, or the spotlight lands on empty space.
-      if (pageMode && st.els[0] && st.els[0].scrollIntoView) {
+      var sheet = pageMode && boundsW() < 640;
+      if (sheet && st.els[0]) {
+        // On a phone the card docks at the bottom, so put the target near the
+        // top instead of the centre. Idempotent, because draw() also runs on scroll.
+        var want = st.els[0].getBoundingClientRect().top + (root.scrollY || 0) - 32;
+        if (Math.abs((root.scrollY || 0) - want) > 2) { root.scrollTo(0, Math.max(0, want)); }
+      } else if (pageMode && st.els[0] && st.els[0].scrollIntoView) {
         try { st.els[0].scrollIntoView({ block: "center", inline: "nearest" }); } catch (e) {
           st.els[0].scrollIntoView();
         }
@@ -300,6 +325,9 @@
       hole.style.width = hw + "px";
       hole.style.height = hh + "px";
 
+      var had = document.activeElement && card.contains(document.activeElement) ? document.activeElement.id : "";
+      var cardW = sheet ? boundsW() - 32 : CARD_W;
+      card.style.width = cardW + "px";
       card.innerHTML =
         '<div style="display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:11px;">' +
           '<div style="font-family:var(--mono);font-size:12px;letter-spacing:0.14em;color:#3BE57E;">' + st.kicker + '</div>' +
@@ -319,7 +347,10 @@
       var ch = card.offsetHeight || 190;
       var cx, cy;
       var BW = boundsW(), BH = boundsH();
-      if (hx + hw + GAP + CARD_W <= BW - 24) {
+      if (sheet) {
+        cx = 16;
+        cy = BH - 16 - ch;
+      } else if (hx + hw + GAP + CARD_W <= BW - 24) {
         // beside, to the right
         cx = hx + hw + GAP;
         cy = hy + hh / 2 - ch / 2;
@@ -339,14 +370,20 @@
         cx = Math.min(Math.max(24, hx), BW - CARD_W - 24);
         cy = hy + hh / 2 - ch / 2;
       }
-      if (cy < 24) { cy = 24; }
-      if (cy + ch > BH - 24) { cy = BH - 24 - ch; }
+      if (!sheet) {
+        if (cy < 24) { cy = 24; }
+        if (cy + ch > BH - 24) { cy = BH - 24 - ch; }
+      }
       card.style.left = cx + "px";
       card.style.top = cy + "px";
 
       $("tourNext").addEventListener("click", function () { go(1); });
       $("tourSkip").addEventListener("click", close);
       if ($("tourPrev")) { $("tourPrev").addEventListener("click", function () { go(-1); }); }
+      // draw() rebuilds the buttons (it also runs on scroll and resize), so put
+      // focus back on the same one, or on Next for a new step.
+      var f = (had && $(had)) || $("tourNext");
+      try { f.focus({ preventScroll: true }); } catch (e) { f.focus(); }
     }
 
     var onReflow = null;
