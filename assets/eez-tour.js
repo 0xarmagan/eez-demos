@@ -201,7 +201,7 @@
         els: [$("stepNav")],
         pad: 14,
         kicker: "MOVE THROUGH IT",
-        body: (n ? n + " steps. " : "") + "Next, Prev, or Play. On the last step, Next becomes Up next."
+        body: (n ? n + " steps. " : "") + "Click a step to jump to it. Arrow keys work too. Up next opens the next walkthrough."
       });
     }
 
