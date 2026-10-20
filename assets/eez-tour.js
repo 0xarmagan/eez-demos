@@ -103,12 +103,14 @@
       steps.push(st);
     }
 
+    add(".hero-cta", 10, "WHERE TO START",
+        "Dapp developers start at 00. Operators and researchers jump to their track.");
     add(".search-box-row", 10, "SEARCH",
         "Find any walkthrough by keyword. Press / to jump here.");
     add(".filter-tabs", 10, "FILTER BY ROLE",
         "Dapp developers, rollup operators or protocol researchers.");
     add("#quickstart .phase", 12, "THE QUICKSTART",
-        "Seven cards, 00 to 06. Read them in order.");
+        "Seven cards, 00 to 06, in four phases. Start here at 00 and read them in order.");
     add("#quickstart .card.soon", 8, "COMING SOON",
         "Dashed cards are not out yet.");
     add("#dapp-developers .sec-head", 12, "REFERENCE",
@@ -121,10 +123,10 @@
         "llms.txt gives agents every walkthrough as text.");
     add(".navlinks", 10, "THE SOURCE",
         "The contracts, the node, and the live testnet.");
-    add('#quickstart a.card[href*="qs1-"]', 8, "START HERE",
-        "Open the first walkthrough. \u201cHow this page works\u201d there explains the page.",
+    add('#quickstart a.card[href*="qs0-"]', 8, "START HERE",
+        "Open card 00. \u201cHow this page works\u201d there explains the page.",
         { cta: { label: "Open it \u203a",
-                 href: "./dapp-developers/qs1-run-your-first-round-trip.html" } });
+                 href: "./dapp-developers/qs0-one-call-two-rollups.html" } });
     return steps;
   }
 

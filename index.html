@@ -38,7 +38,7 @@ body{
 .navlinks{display:flex;align-items:center;gap:14px;font-family:var(--mono);font-size:12px;flex-wrap:wrap}
 .navlinks a{color:#9a9a9a;text-decoration:none;white-space:nowrap;display:inline-block;padding:4px 0}
 .navlinks a:hover{color:#fff}
-a:focus-visible,.card:focus-visible{outline:2px solid var(--eez-green);outline-offset:2px;border-radius:4px;}
+a:focus-visible,.card:focus-visible,button:focus-visible{outline:2px solid var(--eez-green);outline-offset:2px;border-radius:4px;}
 
 /* eyebrow — also used as an h2 section label, so UA heading defaults are neutralized */
 .eyebrow{font-family:var(--mono);font-size:12.5px;font-weight:400;letter-spacing:.1em;color:var(--muted);margin:0 0 18px}
@@ -49,10 +49,21 @@ h1 .w{font-weight:800}
 h1 .l{font-weight:300;color:#dcdcdc}
 .hero-sub{font-size:18px;line-height:1.55;color:#c9cfda;max-width:640px;margin:-14px 0 32px;text-wrap:pretty}
 @media(max-width:640px){.hero-sub{font-size:15.5px}}
-.cta-tour{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.03em;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:0;border-radius:100px;padding:12px 22px;cursor:pointer}
-.cta-tour .cta-q{font-weight:400;opacity:.78}
-.cta-tour:hover{filter:brightness(1.08)}
-.hero-cta{display:flex;align-items:center;gap:12px 22px;flex-wrap:wrap;margin:0 0 6px}
+.hero-cta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0}
+.pill{display:inline-flex;align-items:center;justify-content:space-between;gap:14px;font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.03em;text-decoration:none;border-radius:100px;padding:5px 5px 5px 20px;white-space:nowrap;transition:border-color .2s ease}
+.pill .circ{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none;transition:transform .2s ease}
+.pill:hover .circ{transform:translateX(3px)}
+.pill-solid{color:#000;background:#fff;border:1px solid #fff}
+.pill-solid .circ{background:#000;color:#fff}
+.pill-outline{color:#fff;background:transparent;border:1px solid var(--eez-edge)}
+.pill-outline .circ{background:var(--eez-chrome);border:1px solid var(--eez-edge);color:#fff}
+.pill-outline:hover{border-color:#555}
+.pill .pill-num{font-weight:400;color:#555}
+.hero-aside{display:flex;align-items:center;gap:6px 18px;flex-wrap:wrap;margin:2px 0 4px;font-family:var(--mono);font-size:12px}
+.hero-aside a,.link-btn{color:#9a9a9a;text-decoration:underline;text-decoration-color:#3a3a3a;text-underline-offset:4px;display:inline-block;padding:4px 0}
+.link-btn{background:none;border:0;font:inherit;cursor:pointer}
+.hero-aside a:hover,.link-btn:hover{color:#fff;text-decoration-color:#888}
+@media(max-width:640px){.hero-cta{flex-direction:column;align-items:stretch}.pill{white-space:normal}}
 
 
 /* section */
@@ -67,7 +78,6 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .card::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1px;background:var(--grad) border-box;-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none;opacity:0;transition:opacity .25s ease}
 .card:hover{transform:translateY(-4px);background:#0d0d0d;border-color:#333;box-shadow:0 20px 44px -20px rgba(0,0,0,.75)}
 .card:visited .card-title{color:#b8b8b8}
-.card:visited .card-num{color:#3a3a3a}
 .card:hover::before{opacity:1}
 .card.soon{border-style:dashed;background:transparent}
 .card.soon:hover{transform:none;background:transparent;border-color:var(--eez-edge);box-shadow:none}
@@ -78,7 +88,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .card:hover .cta .circ{background:var(--grad) border-box;border-color:transparent;color:#000}
 .card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .card-title{font-size:17.5px;font-weight:600;color:#fff;line-height:1.35;margin:0}
-.card-num{font-family:var(--mono);font-size:12px;font-weight:500;color:#4d4d4d;letter-spacing:.03em;margin-right:9px;transition:color .2s ease} /* intentionally quiet: redundant with card order, not the sole conveyor of info */
+.card-num{font-family:var(--mono);font-size:12px;font-weight:500;color:#808080;letter-spacing:.03em;margin-right:9px;transition:color .2s ease} /* quiet but readable: 4.6:1 on the card's screen fill */
 .badge{flex:none;font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--muted);border:1px solid #2a2a2a;border-radius:100px;padding:3px 9px;white-space:nowrap}
 .card-hook{font-size:13.5px;line-height:1.55;color:#8f8f8f;margin:0}
 .cta{margin-top:auto;padding-top:2px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-family:var(--mono);font-size:11.5px;font-weight:500;color:var(--muted);letter-spacing:.02em;transition:color .15s}
@@ -105,9 +115,10 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .search-filter-wrap{display:flex;flex-direction:column;gap:14px;margin-bottom:60px}
 .search-box-row{position:relative;width:100%}
 .search-input{width:100%;background:#090909;border:1px solid #222;border-radius:12px;padding:13px 44px 13px 42px;color:#fff;font-family:var(--sans);font-size:14px;transition:border-color .2s ease,box-shadow .2s ease}
-.search-input:focus{outline:none;border-color:var(--eez-green);box-shadow:0 0 0 3px rgba(63,185,80,0.15)}
+.search-input:focus{outline:none;border-color:var(--eez-green);box-shadow:0 0 0 3px rgba(59,229,126,.16)}
 .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#666;pointer-events:none}
 .search-shortcut{position:absolute;right:14px;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:11px;background:#161616;border:1px solid #2e2e2e;color:#888;border-radius:4px;padding:2px 7px;pointer-events:none}
+@media(hover:none){.search-shortcut{display:none}.search-input{padding-right:16px}}
 .filter-tabs{display:flex;gap:8px;flex-wrap:wrap}
 .filter-btn{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.04em;color:#888;background:#0d0d0d;border:1px solid #222;border-radius:100px;padding:6px 14px;cursor:pointer;transition:all .2s ease}
 .filter-btn:hover{color:#fff;border-color:#444}
@@ -135,8 +146,14 @@ h1 .l{font-weight:300;color:#dcdcdc}
   <p class="hero-sub">The Ethereum Economic Zone lets a contract on Ethereum or a rollup call a contract on another chain and use the answer in the same transaction, with no bridge message and no callback. These walkthroughs show how, with real protocol code cited at a pinned commit.</p>
 
   <div class="search-filter-wrap">
-    <div class="hero-cta">
-      <button class="cta-tour" type="button" id="btnTour"><span class="cta-q">First Time Here?</span> Take quick tour <span aria-hidden="true">→</span></button>
+    <nav class="hero-cta" aria-label="Where to start">
+      <a class="pill pill-solid" href="./dapp-developers/qs0-one-call-two-rollups.html"><span>START THE QUICKSTART <span class="pill-num">· 00</span></span> <span class="circ" aria-hidden="true">→</span></a>
+      <a class="pill pill-outline track-link" href="#rollup-operators">ROLLUP OPERATORS <span class="circ" aria-hidden="true">→</span></a>
+      <a class="pill pill-outline track-link" href="#protocol-researchers">PROTOCOL RESEARCHERS <span class="circ" aria-hidden="true">→</span></a>
+    </nav>
+    <div class="hero-aside">
+      <button class="link-btn" type="button" id="btnTour">First time here? Take the quick tour</button>
+      <a href="start-here.html">Reading order for operators and researchers</a>
     </div>
     <div class="search-box-row">
       <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -169,7 +186,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <h3 class="phase-label">UNDERSTAND</h3>
       <div class="grid">
         <a class="card" href="./dapp-developers/qs0-one-call-two-rollups.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">00</span>One Call, Two Rollups, One Transaction</h3></div>
+          <div class="card-head"><h4 class="card-title"><span class="card-num">00</span>One Call, Two Rollups, One Transaction</h4></div>
           <p class="card-hook">Your L1 contract gets an L2 contract's return value back in the same transaction, with no bridge message and no callback.</p>
         </a>
       </div>
@@ -179,15 +196,15 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <h3 class="phase-label">SEE IT WORK</h3>
       <div class="grid">
         <a class="card" href="./dapp-developers/qs1-run-your-first-round-trip.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">01</span>Run Your First Round Trip</h3></div>
+          <div class="card-head"><h4 class="card-title"><span class="card-num">01</span>Run Your First Round Trip</h4></div>
           <p class="card-hook">Two scenarios pass on local anvil chains: one call starts on L1 and gets back the value L2's execution produces, and one makes the same call from L2. Locally, that value is precomputed in the entry.</p>
         </a>
         <a class="card" href="./dapp-developers/qs2-read-your-side-of-it.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">02</span>Follow One Call There and Back</h3></div>
+          <div class="card-head"><h4 class="card-title"><span class="card-num">02</span>Follow One Call There and Back</h4></div>
           <p class="card-hook">Your contract makes an ordinary call to a proxy, the proxy hands it to the L1 manager, and the 1 that Counter returns on L2 comes back as data that was posted before your call.</p>
         </a>
         <a class="card" href="./dapp-developers/qs3-who-answered.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">03</span>Who Answered?</h3></div>
+          <div class="card-head"><h4 class="card-title"><span class="card-num">03</span>Who Answered?</h4></div>
           <p class="card-hook">Follow the call hash from its calculation to the matching entry, then read the success flag and the return data that gives your contract 1.</p>
         </a>
       </div>
@@ -197,11 +214,11 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <h3 class="phase-label">MAKE IT REAL</h3>
       <div class="grid">
         <a class="card" href="./dapp-developers/qs5-three-gotchas-before-you-build.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">04</span>Two Gotchas Before You Build</h3></div>
+          <div class="card-head"><h4 class="card-title"><span class="card-num">04</span>Two Gotchas Before You Build</h4></div>
           <p class="card-hook">Two cross-chain gotchas to check before you build: msg.sender is the source's proxy, and a state-changing proxy call needs an entry verified in the same block.</p>
         </a>
-        <div class="card soon" aria-disabled="true">
-          <div class="card-head"><h3 class="card-title">Deploy Your Own Contract</h3><span class="badge">COMING SOON</span></div>
+        <div class="card soon">
+          <div class="card-head"><h4 class="card-title">Deploy Your Own Contract</h4><span class="badge">COMING SOON</span></div>
           <p class="card-hook">Your own contract, deployed and called across chains with the Remix cross-chain plugin. Not part of the numbered sequence until it ships.</p>
         </div>
       </div>
@@ -211,11 +228,11 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <h3 class="phase-label">BUILD PATTERNS</h3>
       <div class="grid">
         <a class="card" href="./dapp-developers/qs7-cross-chain-flash-loan.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">05</span>Cross-Chain Flash Loan</h3></div>
+          <div class="card-head"><h4 class="card-title"><span class="card-num">05</span>Cross-Chain Flash Loan</h4></div>
           <p class="card-hook">Borrowed tokens go to an L2 and back before the repayment check runs, all inside one L1 transaction.</p>
         </a>
         <a class="card" href="./dapp-developers/qs8-bridge-tokens-both-ways.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">06</span>Bridge Tokens Both Ways</h3></div>
+          <div class="card-head"><h4 class="card-title"><span class="card-num">06</span>Bridge Tokens Both Ways</h4></div>
           <p class="card-hook">Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair of chains, then run the test that sends an ERC-20 through the Bridge.sol test fixture and back.</p>
         </a>
       </div>
@@ -427,6 +444,15 @@ h1 .l{font-weight:300;color:#dcdcdc}
       btn.setAttribute("aria-pressed", "true");
       activeFilter = btn.getAttribute("data-filter");
       filterCards();
+    });
+  });
+
+  document.querySelectorAll(".track-link").forEach(function(link) {
+    link.addEventListener("click", function() {
+      if (activeFilter !== "all" || (searchInput && searchInput.value)) {
+        if (searchInput) { searchInput.value = ""; }
+        filterBtns[0].click();
+      }
     });
   });
 

@@ -206,9 +206,9 @@ def index_cards():
         if "qs-entry" in cls.split():
             continue
         rel = href.lstrip("./")
-        # The title is an <h3> that opens with a card-number span, so stopping
+        # The title is an <h3> (<h4> in the quickstart) that opens with a card-number span, so stopping
         # at the first "</" captures the number instead of the title.
-        t = re.search(r'class="card-title"[^>]*>(.*?)</h3>', body, re.S)
+        t = re.search(r'class="card-title"[^>]*>(.*?)</h[34]>', body, re.S)
         h = re.search(r'class="card-hook"[^>]*>(.*?)</p>', body, re.S)
         title = rel
         if t:
