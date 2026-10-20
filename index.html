@@ -49,6 +49,12 @@ h1 .w{font-weight:800}
 h1 .l{font-weight:300;color:#dcdcdc}
 .hero-sub{font-size:18px;line-height:1.55;color:#c9cfda;max-width:640px;margin:-14px 0 32px;text-wrap:pretty}
 @media(max-width:640px){.hero-sub{font-size:15.5px}}
+.hero-cta{display:flex;align-items:center;gap:12px 22px;flex-wrap:wrap;margin:0 0 56px}
+.cta-primary{display:inline-flex;align-items:center;gap:10px;background:var(--eez-grad-btn);color:var(--eez-ink-on-grad);border-radius:100px;padding:12px 22px;font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.03em;text-decoration:none}
+.cta-primary span{transition:transform .2s ease}
+.cta-primary:hover span{transform:translateX(3px)}
+.cta-ghost{font-family:var(--mono);font-size:12.5px;color:#c9cfda;text-decoration:none;padding:6px 0;border-bottom:1px solid #2e2e2e}
+.cta-ghost:hover{color:#fff;border-color:#8a8a8a}
 
 
 /* section */
@@ -125,7 +131,11 @@ h1 .l{font-weight:300;color:#dcdcdc}
   </div>
 
   <h1><span class="w">Learn</span> <span class="l">how EEZ</span><br><span class="w">actually</span> <span class="l">works</span></h1>
-  <p class="hero-sub">We walk you through how a contract calls another rollup and uses the answer in the same transaction, with no callback. Every step shows real protocol code cited at a pinned commit.</p>
+  <p class="hero-sub">The Ethereum Economic Zone lets a contract on Ethereum or a rollup call a contract on another chain and use the answer in the same transaction, with no bridge message and no callback. These walkthroughs show how, with real protocol code cited at a pinned commit.</p>
+  <div class="hero-cta">
+    <a class="cta-primary" href="./dapp-developers/qs1-run-your-first-round-trip.html">Run your first round trip <span aria-hidden="true">→</span></a>
+    <a class="cta-ghost" href="./start-here.html">Not a dapp developer? Start here <span aria-hidden="true">→</span></a>
+  </div>
 
   <div class="search-filter-wrap">
     <div class="search-box-row">
@@ -134,10 +144,10 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <span class="search-shortcut">/</span>
     </div>
     <div class="filter-tabs">
-      <button class="filter-btn active" data-filter="all" title="24 walkthroughs, plus card 05, coming soon">ALL (24 + 1 SOON)</button>
-      <button class="filter-btn" data-filter="dapp-developers" title="14 walkthroughs, plus card 05, coming soon">DAPP DEVELOPERS (14 + 1 SOON)</button>
-      <button class="filter-btn" data-filter="rollup-operators">ROLLUP OPERATORS (4)</button>
-      <button class="filter-btn" data-filter="protocol-researchers">PROTOCOL RESEARCHERS (6)</button>
+      <button class="filter-btn active" aria-pressed="true" data-filter="all" title="24 walkthroughs, plus card 05, coming soon">ALL (24 + 1 SOON)</button>
+      <button class="filter-btn" aria-pressed="false" data-filter="dapp-developers" title="14 walkthroughs, plus card 05, coming soon">DAPP DEVELOPERS (14 + 1 SOON)</button>
+      <button class="filter-btn" aria-pressed="false" data-filter="rollup-operators">ROLLUP OPERATORS (4)</button>
+      <button class="filter-btn" aria-pressed="false" data-filter="protocol-researchers">PROTOCOL RESEARCHERS (6)</button>
     </div>
   </div>
 
@@ -350,6 +360,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
   <footer class="closer">
     <span class="closer-label">THAT'S ALL 24 — MORE COMING AS THE PROTOCOL DOES</span>
     <div class="closer-links">
+      <a href="start-here.html">Start here: reading order by role</a>
       <a href="https://github.com/eez-association/eez-core-protocol">Star eez-core-protocol ↗</a>
       <a href="https://github.com/0xarmagan/eez-demos/blob/main/CONTRIBUTING.md">Suggest a demo ↗</a>
       <a href="llms.txt" title="Agent-readable index of all 24 walkthroughs, their code and their citations">llms.txt ↗</a>
@@ -413,8 +424,9 @@ h1 .l{font-weight:300;color:#dcdcdc}
 
   filterBtns.forEach(function(btn) {
     btn.addEventListener("click", function() {
-      filterBtns.forEach(function(b) { b.classList.remove("active"); });
+      filterBtns.forEach(function(b) { b.classList.remove("active"); b.setAttribute("aria-pressed", "false"); });
       btn.classList.add("active");
+      btn.setAttribute("aria-pressed", "true");
       activeFilter = btn.getAttribute("data-filter");
       filterCards();
     });

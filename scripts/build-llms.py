@@ -326,9 +326,16 @@ def count_word(n):
 
 HEAD_TMPL = """# EEZ Quickstarts
 
-> %s interactive walkthroughs of the Ethereum Economic Zone, each built on real
-> protocol source cited at a pinned commit rather than on pseudocode. Covers writing
-> contracts that call across rollups, running the stack, and how RollupX settles and proves.
+> The Ethereum Economic Zone lets a contract on Ethereum or a rollup call a contract on
+> another chain and use the answer in the same transaction, with no bridge message and no
+> callback. %s interactive walkthroughs show how, each built on real protocol source cited
+> at a pinned commit rather than on pseudocode. Covers writing contracts that call across
+> rollups, running the stack, and how RollupX settles and proves.
+
+New here? Dapp developers start with
+[Run Your First Round Trip](BASE_URL/dapp-developers/qs1-run-your-first-round-trip.html).
+Rollup operators and protocol researchers get a reading order on
+[Start here](BASE_URL/start-here.html).
 
 Every code panel on this site is rendered from JavaScript at runtime, so fetching a page
 gives you the shell and not the content. These files hand over the content directly: each
@@ -343,7 +350,7 @@ a commit SHA, so a link tells you exactly which revision a claim was true of.
 
 
 def head_for(pages):
-    return HEAD_TMPL % count_word(len(pages))
+    return (HEAD_TMPL % count_word(len(pages))).replace("BASE_URL", BASE)
 
 
 def build_index(pages):

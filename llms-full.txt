@@ -1,8 +1,15 @@
 # EEZ Quickstarts
 
-> Twenty-four interactive walkthroughs of the Ethereum Economic Zone, each built on real
-> protocol source cited at a pinned commit rather than on pseudocode. Covers writing
-> contracts that call across rollups, running the stack, and how RollupX settles and proves.
+> The Ethereum Economic Zone lets a contract on Ethereum or a rollup call a contract on
+> another chain and use the answer in the same transaction, with no bridge message and no
+> callback. Twenty-four interactive walkthroughs show how, each built on real protocol source cited
+> at a pinned commit rather than on pseudocode. Covers writing contracts that call across
+> rollups, running the stack, and how RollupX settles and proves.
+
+New here? Dapp developers start with
+[Run Your First Round Trip](https://eez-demos.vercel.app/dapp-developers/qs1-run-your-first-round-trip.html).
+Rollup operators and protocol researchers get a reading order on
+[Start here](https://eez-demos.vercel.app/start-here.html).
 
 Every code panel on this site is rendered from JavaScript at runtime, so fetching a page
 gives you the shell and not the content. This file is the whole thing in one document: each
