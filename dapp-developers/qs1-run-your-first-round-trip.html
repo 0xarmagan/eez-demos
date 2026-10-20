@@ -89,13 +89,17 @@
   .intro-eyebrow{font-family:var(--mono);font-size:16px;letter-spacing:0.16em;color:var(--eez-green);}
   .intro-title{font-size:56px;font-weight:600;line-height:1.14;color:#fff;margin:20px 0 0;max-width:1380px;text-wrap:pretty;}
   .intro-lede{font-size:25px;line-height:1.5;color:#d8d8d8;margin:26px 0 0;max-width:1280px;text-wrap:pretty;}
-  .intro-learn-label{font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:var(--muted);margin-top:54px;}
+  .intro-learn-label{font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:var(--muted);margin-top:40px;}
   /* Three across, one per demo step - a full-width index, not cards
      in a void: a hairline rule per column, no box, no fill. */
   .intro-learn{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px;}
   .intro-learn li{border-top:1px solid var(--eez-edge);padding-top:16px;font-size:19px;line-height:1.5;color:#d8d8d8;text-wrap:pretty;}
   .intro-learn b{display:block;font-family:var(--mono);font-size:14px;font-weight:400;letter-spacing:0.12em;color:var(--eez-green);margin-bottom:11px;}
-  .intro-actions{margin-top:54px;}
+  .intro-proves{margin:28px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:36px;max-width:1500px;}
+  .intro-proves p{margin:0;border-top:1px solid var(--eez-edge);padding-top:16px;font-size:19px;line-height:1.5;color:#d8d8d8;text-wrap:pretty;}
+  .intro-proves b{display:block;font-family:var(--mono);font-size:14px;font-weight:400;letter-spacing:0.12em;color:var(--eez-green);margin-bottom:11px;}
+  .intro-proves #doesnt b{color:var(--muted);}
+  .intro-actions{margin-top:32px;}
   /* Same gradient treatment as .btn-play, one size up for the stage;
      it carries class="btn-play" so it inherits that hover rule and
      the shared button:focus-visible green ring. */
@@ -108,6 +112,8 @@
     .intro-learn-label{margin-top:34px;}
     .intro-learn{grid-template-columns:minmax(0,1fr);gap:20px;}
     .intro-learn li{font-size:16px;}
+    .intro-proves{grid-template-columns:minmax(0,1fr);gap:20px;margin-top:24px;}
+    .intro-proves p{font-size:16px;}
     .intro-actions{margin-top:32px;}
     #btnStart{font-size:16px;padding:13px 24px;width:100%;}
   }
@@ -322,6 +328,10 @@
         <li><b>02 · BUILD AND RUN BOTH DIRECTIONS</b>One <code style="font-family:var(--mono);">forge build</code>, then <code style="font-family:var(--mono);">counter</code> and <code style="font-family:var(--mono);">counterL2</code> in parallel, each on its own pair of anvil chains.</li>
         <li><b>03 · WHAT THAT PASS PROVED</b>Each run made one call to the other chain and got <code style="font-family:var(--mono);">1</code> back in the same transaction.</li>
       </ul>
+      <div class="intro-proves">
+        <p id="proves"><b>WHAT THIS PROVES</b>Both directions pass on two local anvil chains: a call from L1 to L2 and a call from L2 to L1 each get the other side's return value back inside the calling transaction.</p>
+        <p id="doesnt"><b>WHAT IT DOESN'T</b>Real proving or a live node. The script plays composer: it precomputes the return value into an entry, posts that entry before your call, and the batch is accepted by an accept-all proof system.</p>
+      </div>
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>

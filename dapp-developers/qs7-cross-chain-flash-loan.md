@@ -9,6 +9,10 @@ Borrowed tokens go to an L2 and back before the repayment check runs, all inside
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17
 
+**What this proves:** On two local anvil chains, one L1 transaction borrows 10,000 tokens, sends them to L2 and back, and repays the pool before the repayment check runs.
+
+**What it doesn't:** Real proving or a live node. The script plays composer and posts the entries in a separate transaction first, and the batch is accepted by an accept-all proof system.
+
 ### Step 1 — RUN IT.
 
 One L1 transaction borrows 10,000 tokens, sends them to L2 and back, and repays the pool. Locally, the scenario script plays composer and posts the entries in a separate transaction first.
