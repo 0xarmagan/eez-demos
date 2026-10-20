@@ -49,7 +49,7 @@ def test_quickstart_entry_card_does_not_title_qs0():
     be skipped, so qs0 keeps its own phase-strip title in llms.txt."""
     cards = _build_llms().index_cards()
     title, _ = cards["dapp-developers/qs0-one-call-two-rollups.html"]
-    assert title == "One Call, Two Rollups, One Transaction", \
+    assert title == "One Call, Two Chains, One Transaction", \
         "qs0 titled %r in index_cards()" % title
 
 

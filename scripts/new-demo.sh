@@ -85,7 +85,7 @@ lit('<div class="intro-eyebrow">PROTOCOL RESEARCHERS</div>', f'<div class="intro
 #     Two links carry it: the small header one and the bottom-bar Up-next button.
 sub(r'<a class="back hdr-rule" href="pr6-the-rolling-hash\.html"[^>]*>.*?</a>',
     '<a class="back hdr-rule" href="../index.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">'
-    'NEXT: TODO next demo (set href + label, or delete this link if last in the chain) &rarr;</a>')
+    'NEXT WALKTHROUGH: TODO next demo (set href + label, or delete this link if last in the chain) &rarr;</a>')
 sub(r'(<a id="nextDemo" class="next-demo" href=")pr6-the-rolling-hash\.html(".*?<span class="next-demo-t">)The rolling hash(</span>)',
     r'\1../index.html\2TODO next demo (same href + title as the header NEXT link)\3')
 
