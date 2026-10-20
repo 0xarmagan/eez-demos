@@ -55,9 +55,6 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .pill:hover .circ{transform:translateX(3px)}
 .pill-solid{color:#000;background:#fff;border:1px solid #fff}
 .pill-solid .circ{background:#000;color:#fff}
-.pill-outline{color:#fff;background:transparent;border:1px solid var(--eez-edge)}
-.pill-outline .circ{background:var(--eez-chrome);border:1px solid var(--eez-edge);color:#fff}
-.pill-outline:hover{border-color:#555}
 .pill .pill-num{font-weight:400;color:#555}
 .hero-aside{display:flex;align-items:center;gap:6px 18px;flex-wrap:wrap;margin:2px 0 4px;font-family:var(--mono);font-size:12px}
 .hero-aside a,.link-btn{color:#9a9a9a;text-decoration:underline;text-decoration-color:#3a3a3a;text-underline-offset:4px;display:inline-block;padding:4px 0}
@@ -148,12 +145,10 @@ h1 .l{font-weight:300;color:#dcdcdc}
   <div class="search-filter-wrap">
     <nav class="hero-cta" aria-label="Where to start">
       <a class="pill pill-solid" href="./dapp-developers/qs0-one-call-two-rollups.html"><span>START THE QUICKSTART <span class="pill-num">· 00</span></span> <span class="circ" aria-hidden="true">→</span></a>
-      <a class="pill pill-outline track-link" href="#rollup-operators">ROLLUP OPERATORS <span class="circ" aria-hidden="true">→</span></a>
-      <a class="pill pill-outline track-link" href="#protocol-researchers">PROTOCOL RESEARCHERS <span class="circ" aria-hidden="true">→</span></a>
     </nav>
     <div class="hero-aside">
       <button class="link-btn" type="button" id="btnTour">First time here? Take the quick tour</button>
-      <a href="start-here.html">Reading order for operators and researchers</a>
+      <a href="start-here.html">Operator or researcher? Your reading order <span aria-hidden="true">→</span></a>
     </div>
     <div class="search-box-row">
       <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -444,15 +439,6 @@ h1 .l{font-weight:300;color:#dcdcdc}
       btn.setAttribute("aria-pressed", "true");
       activeFilter = btn.getAttribute("data-filter");
       filterCards();
-    });
-  });
-
-  document.querySelectorAll(".track-link").forEach(function(link) {
-    link.addEventListener("click", function() {
-      if (activeFilter !== "all" || (searchInput && searchInput.value)) {
-        if (searchInput) { searchInput.value = ""; }
-        filterBtns[0].click();
-      }
     });
   });
 
