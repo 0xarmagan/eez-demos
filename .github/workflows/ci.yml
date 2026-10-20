@@ -88,7 +88,8 @@ jobs:
 
   panels:
     name: Code panels fit their column
-    runs-on: ubuntu-latest
+    # Keep the AppArmor policy below tied to a known runner OS.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -110,6 +111,28 @@ jobs:
       # Only CI downloads the browser selected by the exact Puppeteer version.
       - name: Download pinned browser
         run: node node_modules/puppeteer/install.mjs
+
+      # Ubuntu restricts user namespaces for downloaded Chrome binaries.
+      # Allow only the pinned executable to create Chromium's own sandbox.
+      # https://chromium.googlesource.com/chromium/src/+/main/docs/security/apparmor-userns-restrictions.md
+      - name: Allow pinned Chrome to create its sandbox
+        run: |
+          chrome_path="$(node -p 'require("puppeteer").executablePath()')"
+          # Validate the path before inserting it into a privileged policy file.
+          if [[ ! "$chrome_path" =~ ^/home/runner/\.cache/puppeteer/chrome/linux-[0-9.]+/chrome-linux64/chrome$ ]]; then
+            echo "::error::Unexpected Puppeteer Chrome path" >&2
+            exit 1
+          fi
+          test -x "$chrome_path"
+          sudo tee /etc/apparmor.d/eez-puppeteer >/dev/null <<EOF
+          abi <abi/4.0>,
+          include <tunables/global>
+
+          profile eez-puppeteer "$chrome_path" flags=(unconfined) {
+            userns,
+          }
+          EOF
+          sudo apparmor_parser -r /etc/apparmor.d/eez-puppeteer
 
       - name: Code panel geometry
         run: NODE_PATH="$PWD/node_modules" node scripts/check-panel-geometry.cjs
