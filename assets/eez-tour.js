@@ -96,6 +96,17 @@
     var steps = [];
     var q = function (sel) { return document.querySelector(sel); };
 
+    if (q(".cta-primary")) {
+      steps.push({ els: [q(".cta-primary")], pad: 10,
+        kicker: "DAPP DEVELOPERS · START HERE",
+        body: "Run your first round trip: clone eez-core-protocol at a pinned commit and watch a call " +
+              "go to the other chain and come back with its answer, on two local anvil chains." });
+    }
+    if (q(".cta-ghost")) {
+      steps.push({ els: [q(".cta-ghost")], pad: 10,
+        kicker: "ROLLUP OPERATORS AND PROTOCOL RESEARCHERS",
+        body: "Start here gives each role a reading order, so you know which walkthroughs to open first." });
+    }
     if (q(".search-box-row")) {
       steps.push({ els: [q(".search-box-row")], pad: 10,
         kicker: "FIND ONE",
@@ -108,18 +119,12 @@
         body: "Three tracks: 14 for dapp developers, 4 for rollup operators, 6 for protocol " +
               "researchers. A filter never lands you on an empty list." });
     }
-    var firstTime = q(".sec-head");
-    if (firstTime) {
-      steps.push({ els: [firstTime], pad: 12,
-        kicker: "NOT SURE WHERE TO START",
-        body: "Dapp developers start here, with the Quickstart from card 00. Rollup operators and " +
-              "protocol researchers each get a reading order on Start here." });
-    }
-    if (q(".card")) {
-      steps.push({ els: [q(".card")], pad: 8,
-        kicker: "WHAT A CARD IS",
-        body: "Every card is a 3-step walkthrough built on real, cited protocol source \u2014 not " +
-              "pseudocode. The line under the title tells you what you will come away knowing." });
+    var qs = q("#quickstart .phase");
+    if (qs) {
+      steps.push({ els: [qs], pad: 12,
+        kicker: "THE QUICKSTART, IN ORDER",
+        body: "Cards 00 to 06 go from understanding one call, to running it, to building with it. " +
+              "Every card is a 3-step walkthrough built on real, cited protocol source." });
     }
     return steps;
   }
