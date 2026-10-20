@@ -38,12 +38,17 @@
     n = Math.max(1, Math.min(cur.total, n));
     if (n === cur.n) { sync(); return; }
     applying = true;
-    var dot = document.querySelector('#dots button[data-step="' + (n - 1) + '"]');
-    if (dot) {
-      dot.click();
-    } else {
-      var next = document.getElementById("btnNext");
-      for (var i = cur.n; i < n && next; i++) { next.click(); }
+    document.documentElement.setAttribute("data-eez-applying", "1");
+    try {
+      var dot = document.querySelector('#dots button[data-step="' + (n - 1) + '"]');
+      if (dot) {
+        dot.click();
+      } else {
+        var next = document.getElementById("btnNext");
+        for (var i = cur.n; i < n && next; i++) { next.click(); }
+      }
+    } finally {
+      document.documentElement.removeAttribute("data-eez-applying");
     }
     applying = false;
   }
@@ -184,6 +189,9 @@
   document.addEventListener("click", function (e) {
     var t = e.target;
     if (!t || !t.closest || !t.closest("#btnNext, #dots button, #nextDemo")) { return; }
+    // Hash/back-forward navigation clicks a step control programmatically.
+    // That is not a user gesture, so it must not arm the double-click guard.
+    if (document.documentElement.hasAttribute("data-eez-applying")) { return; }
     var now = Date.now();
     if (now - lastStepAdvance < 450) {
       e.preventDefault();
