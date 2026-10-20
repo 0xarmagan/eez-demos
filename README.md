@@ -2,7 +2,7 @@
 
 Short, step-by-step walkthroughs of how EEZ works. Each step pairs a diagram with real protocol code cited at a pinned commit. Live at **[eez-demos.vercel.app](https://eez-demos.vercel.app)**.
 
-EEZ is pre-mainnet, and every page says so. Read capability claims as design intent, not shipped behavior.
+EEZ is pre-mainnet, and every walkthrough says so. Read capability claims as design intent, not shipped behavior.
 
 ## What's on the site
 

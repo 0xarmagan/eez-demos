@@ -118,7 +118,7 @@
     add("#protocol-researchers .sec-head", 12, "PROTOCOL RESEARCHERS",
         "How it works inside, component by component.");
     add(".closer", 12, "MORE",
-        "A reading order by role, and llms.txt for agents.");
+        "llms.txt gives agents every walkthrough as text.");
     add(".navlinks", 10, "THE SOURCE",
         "The contracts, the node, and the live testnet.");
     add('#quickstart a.card[href*="qs1-"]', 8, "START HERE",
