@@ -452,7 +452,7 @@
   var kickers = ["YOUR CONTRACT CALLS A PROXY.", "THE ANSWER IS ALREADY THERE.", "SAME TRANSACTION."];
   var captions = [
     "CounterAndProxy is your L1 caller contract. You call incrementProxy(); it calls increment() on Counter's L1 proxy and saves the returned value in targetCounter. The proxy's fallback passes the call to the EEZ manager.",
-    "The composer \u2014 the service that orders cross-chain calls and posts their proofs \u2014 lands its batch and your transaction as one bundle, batch first. The batch is verified and its entries (one record per call) are queued before your call runs. executeCrossChainCall works only in that block: it hashes your call and takes the first queued entry whose hash, destination rollup and expected starting roots all match.",
+    "The composer \u2014 the service that orders cross-chain calls and posts their proofs \u2014 lands its batch and your transaction as one bundle, batch first. The batch is verified and its entries (one record per call) are queued before your call runs. executeCrossChainCall works only in that block: it hashes your call and takes the first queued entry whose hash, destination rollup and expected starting roots (each chain's state before the call) all match.",
     "The manager applies the entry, checks its roots and rolling hash against what the batch committed to, and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, and no second transaction from you."
   ];
 

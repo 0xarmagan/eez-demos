@@ -180,7 +180,7 @@
         els: [$("codeCard")],
         pad: 8,
         kicker: "THE REAL SOURCE",
-        body: "Real code at a pinned commit. Click the file name to check it."
+        body: "Real code at a pinned commit. Click the citation to check it."
       });
     }
 
@@ -272,9 +272,19 @@
       if (e.target === layer) { close(); }
     });
 
+    // A tour opened at desktop width and then narrowed (or vice versa) cannot
+    // keep its old coordinate system. Close instead of leaving a 1920px layer
+    // inside a 375px page with the controls off-screen.
+    function onBreakpoint() {
+      var nowPage = isPageMode() || isNarrowStage();
+      if (nowPage !== pageMode) { close(); }
+    }
+    root.addEventListener("resize", onBreakpoint);
+
     function close() {
       if (layer.parentNode) { layer.parentNode.removeChild(layer); }
       document.removeEventListener("keydown", onKey, true);
+      root.removeEventListener("resize", onBreakpoint);
       if (onReflow) {
         root.removeEventListener("scroll", onReflow, true);
         root.removeEventListener("resize", onReflow);

@@ -59,7 +59,7 @@ function _fallback() internal {
 
 ### Step 2 — THE ANSWER IS ALREADY THERE.
 
-The composer — the service that orders cross-chain calls and posts their proofs — lands its batch and your transaction as one bundle, batch first. The batch is verified and its entries (one record per call) are queued before your call runs. executeCrossChainCall works only in that block: it hashes your call and takes the first queued entry whose hash, destination rollup and expected starting roots all match.
+The composer — the service that orders cross-chain calls and posts their proofs — lands its batch and your transaction as one bundle, batch first. The batch is verified and its entries (one record per call) are queued before your call runs. executeCrossChainCall works only in that block: it hashes your call and takes the first queued entry whose hash, destination rollup and expected starting roots (each chain's state before the call) all match.
 
 ```solidity
 // tx 1, composer: postAndVerifyBatch

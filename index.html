@@ -492,8 +492,8 @@ h1 .l{font-weight:300;color:#dcdcdc}
     if (searchClear) { searchClear.style.display = hasQuery ? "flex" : "none"; }
     searchInput.classList.toggle("has-value", hasQuery);
 
+    var narrowed = hasQuery || activeFilter !== "all";
     if (searchStatus) {
-      var narrowed = hasQuery || activeFilter !== "all";
       searchStatus.classList.toggle("show", narrowed);
       var label = totalWalkthroughs + (totalWalkthroughs === 1 ? " WALKTHROUGH" : " WALKTHROUGHS");
       if (totalVisible > totalWalkthroughs) {
@@ -501,6 +501,10 @@ h1 .l{font-weight:300;color:#dcdcdc}
       }
       searchStatus.textContent = narrowed ? label : "";
     }
+    // "That's all 24" is a total, not a filtered count; hide it while a
+    // query/filter is active so it cannot read as the visible result count.
+    var closer = document.querySelector(".closer");
+    if (closer) { closer.style.display = narrowed ? "none" : ""; }
   }
 
   function clearSearch(keepFocus) {
