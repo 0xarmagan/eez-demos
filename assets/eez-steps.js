@@ -3,7 +3,8 @@
  * Every walkthrough keeps its step state inside its own inline script, so this
  * file never touches that state directly. It reads the step from what the page
  * already renders (#stepLabel, "STEP n OF N") and drives the page through the
- * controls a reader would use (#btnStart, the #dots buttons, #btnNext). That
+ * controls a reader would use (#btnStart, the #dots buttons, or the hidden
+ * #btnNext as a fallback). That
  * keeps the 24 inline step scripts unedited.
  *
  *   #step-2 on arrival   dismiss the lead-in and open step 2

@@ -202,9 +202,11 @@
   .page-tour:hover{color:#fff;border-color:#444;}
   .page-tour-q{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--eez-grad-btn);color:var(--eez-ink-on-grad);font-weight:600;font-size:14px;}
   .page-tour:focus-visible{outline:2px solid var(--eez-green);outline-offset:3px;}
-  a.next-demo{display:none;}
-  a.next-demo.is-final{display:inline-flex;}
-  #stepNav.at-end #btnNext{display:none;}
+  /* One row: the step pills, then Up next. Prev / Play / Next stay in the
+     DOM for the arrow keys, Space and the inline step script, but are not
+     shown; the pills already move between steps. */
+  #btnPrev,#btnPlay,#btnNext{display:none !important;}
+  #stepNav > div:first-child{gap:20px !important;}
 </style>
 </head>
 <body>
@@ -352,14 +354,14 @@
 
   <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
     <button id="btnTourPage" class="btn page-tour" type="button"><span class="page-tour-q" aria-hidden="true">?</span>How this page works</button>
-    <div id="stepNav" style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
+    <div id="stepNav" style="flex:none;display:flex;align-items:center;">
       <div style="display:flex;align-items:center;gap:12px;">
         <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
         <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
         <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
+        <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
         <a id="nextDemo" class="next-demo" href="qs3-who-answered.html"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">Who Answered?</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
       </div>
-      <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
     </div>
   </div>
 
