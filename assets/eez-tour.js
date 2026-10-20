@@ -103,42 +103,27 @@
       steps.push(st);
     }
 
-    add(".hero-sub", 12, "WHAT EEZ IS",
-        "One sentence on what the Ethereum Economic Zone does: a contract calls a contract on another " +
-        "chain and uses the answer in the same transaction. Every walkthrough on this page shows one " +
-        "piece of that in real protocol code.");
-    add(".navlinks", 10, "THE SOURCE, ONE CLICK AWAY",
-        "eez-core-protocol holds the contracts every Solidity walkthrough cites. eez-rollupX is the " +
-        "node, composer, deriver and proof-signer. eez.dev is the live testnet dashboard, and " +
-        "Contribute explains how a walkthrough gets added.");
-    add(".search-box-row", 10, "FIND ONE",
-        "Search all 24 walkthroughs by keyword \u2014 try msg.sender, CREATE2 or Kurtosis. " +
-        "Pressing / jumps here from anywhere on the page.");
-    add(".filter-tabs", 10, "OR BROWSE BY AUDIENCE",
-        "Three tracks: 14 for dapp developers, 4 for rollup operators, 6 for protocol " +
-        "researchers. A filter never lands you on an empty list.");
-    add("#quickstart .phase", 12, "THE QUICKSTART, IN ORDER",
-        "Seven cards, 00 to 06, in four phases: understand one call, see it work on your own machine, " +
-        "learn the gotchas, then build patterns like a flash loan and a token bridge.");
+    add(".search-box-row", 10, "SEARCH",
+        "Find any walkthrough by keyword. Press / to jump here.");
+    add(".filter-tabs", 10, "FILTER BY ROLE",
+        "Dapp developers, rollup operators or protocol researchers.");
+    add("#quickstart .phase", 12, "THE QUICKSTART",
+        "Seven cards, 00 to 06. Read them in order.");
     add("#quickstart .card.soon", 8, "COMING SOON",
-        "A dashed card is not out yet. It has no number and no link, so the sequence never sends you " +
-        "to an empty page.");
-    add("#dapp-developers .sec-head", 12, "REFERENCE \u00b7 AFTER THE QUICKSTART",
-        "Seven short walkthroughs for the questions you hit while building: your address on another " +
-        "rollup, msg.sender across chains, checking a proxy, encoding a call's hash, reading remote state.");
+        "Dashed cards are not out yet.");
+    add("#dapp-developers .sec-head", 12, "REFERENCE",
+        "Short answers to questions you hit while building.");
     add("#rollup-operators .sec-head", 12, "ROLLUP OPERATORS",
-        "Four walkthroughs to run the stack: a disposable devnet with Kurtosis, deploying the protocol, " +
-        "running against Chiado, and sending cross-chain calls through it.");
+        "Run the stack: devnet, deploy, Chiado, test calls.");
     add("#protocol-researchers .sec-head", 12, "PROTOCOL RESEARCHERS",
-        "Six walkthroughs on how it works inside: the four components, why L1 stays the source of " +
-        "truth, how the composer attests a batch, the deriver, address derivation and the rolling hash.");
-    add(".closer", 12, "FOR AGENTS AND CONTRIBUTORS",
-        "Start here gives operators and researchers a reading order. llms.txt hands every walkthrough " +
-        "to an agent as text, and Suggest a demo is how to ask for the next one.");
-    add('#quickstart a.card[href*="qs1-"]', 8, "NOW SEE A WALKTHROUGH",
-        "Dapp developers start with Run Your First Round Trip. Open it and the tour continues inside, " +
-        "showing how a walkthrough page works.",
-        { cta: { label: "Continue in a walkthrough \u203a",
+        "How it works inside, component by component.");
+    add(".closer", 12, "MORE",
+        "A reading order by role, and llms.txt for agents.");
+    add(".navlinks", 10, "THE SOURCE",
+        "The contracts, the node, and the live testnet.");
+    add('#quickstart a.card[href*="qs1-"]', 8, "START HERE",
+        "Open the first walkthrough. The tour continues inside.",
+        { cta: { label: "Open it \u203a",
                  href: "./dapp-developers/qs1-run-your-first-round-trip.html#tour" } });
     return steps;
   }
@@ -151,9 +136,8 @@
       steps.push({
         els: [$("stepLabel")],
         pad: 10,
-        kicker: "TOP RIGHT \u00b7 WHERE YOU ARE",
-        body: "Each walkthrough is a few short steps. The address bar follows along as #step-2, " +
-              "#step-3 and so on, so you can share or bookmark the exact step you are on."
+        kicker: "WHERE YOU ARE",
+        body: "Your step. The URL updates, so you can share it."
       });
     }
 
@@ -162,16 +146,15 @@
       // calculator, so it belongs to this step. Grouping it with the code-panel
       // buttons instead produced one spotlight spanning both columns.
       var diagramEls = [$("stageCol")];
-      var diagramBody = "The mechanism, drawn out. This redraws as you move through the steps, so each " +
-                        "picture matches the code on the right at that moment.";
+      var diagramBody = "What this step shows. It changes as you move.";
       if ($("btnTry")) {
         diagramEls.push($("btnTry"));
-        diagramBody += " TRY IT swaps it for a live calculator you can put your own values into.";
+        diagramBody += " TRY IT lets you put in your own values.";
       }
       steps.push({
         els: diagramEls,
         pad: 10,
-        kicker: "LEFT · WHAT IT DOES",
+        kicker: "LEFT",
         body: diagramBody
       });
     }
@@ -180,9 +163,8 @@
       steps.push({
         els: [$("codeCard")],
         pad: 8,
-        kicker: "RIGHT · THE REAL SOURCE",
-        body: "Not pseudocode. The header names the exact file and line, pinned to a commit — " +
-              "click it to open that line on GitHub."
+        kicker: "THE REAL SOURCE",
+        body: "Real code at a pinned commit. Click the file name to check it."
       });
     }
 
@@ -193,9 +175,9 @@
     for (var i = 0; i < ctrl.length; i++) { if (ctrl[i]) { present.push(ctrl[i]); } }
     if (present.length) {
       var lines = [];
-      if ($("btnFull")) { lines.push("FULL swaps in the whole compilable file — pragma, imports and all."); }
-      if ($("btnTest")) { lines.push("TEST shows a Foundry test you can run that proves this gotcha."); }
-      lines.push("COPY always copies exactly what you are looking at.");
+      if ($("btnFull")) { lines.push("FULL shows the whole file."); }
+      if ($("btnTest")) { lines.push("TEST shows a test you can run."); }
+      lines.push("COPY copies what you see.");
       steps.push({
         els: present,
         pad: 9,
@@ -208,8 +190,8 @@
       steps.push({
         els: [$("narration")],
         pad: 12,
-        kicker: "BOTTOM LEFT · NARRATION",
-        body: "One line per step, saying what just changed and why it matters."
+        kicker: "NARRATION",
+        body: "What just changed, and why."
       });
     }
 
@@ -218,9 +200,8 @@
       steps.push({
         els: [$("stepNav")],
         pad: 14,
-        kicker: "BOTTOM RIGHT · MOVING THROUGH IT",
-        body: (n ? n + " steps. " : "") + "Next and Prev step manually, Play advances on its own. " +
-              "The arrow keys work too, and the step pills show where you are — click one to jump to it."
+        kicker: "MOVE THROUGH IT",
+        body: (n ? n + " steps. " : "") + "Next, Prev, or Play. Arrow keys work too."
       });
     }
 
@@ -228,9 +209,8 @@
       steps.push({
         els: [$("nextDemo")],
         pad: 10,
-        kicker: "WHEN YOU ARE DONE",
-        body: "Up next opens the following walkthrough in the sequence. All examples, top right, " +
-              "takes you back to the full list."
+        kicker: "UP NEXT",
+        body: "The next walkthrough. All examples goes back to the list."
       });
     }
 
