@@ -116,9 +116,6 @@
       steps.push(st);
     }
 
-    add(".hero-cta", 10, "WHERE TO START",
-        "Dapp developers start at 00. Operators and researchers get a reading order on the line below.",
-        { els: [q(".hero-cta"), q(".hero-aside")] });
     add(".search-box-row", 10, "SEARCH",
         "Find any walkthrough by keyword. Press / to jump here.");
     add(".filter-tabs", 10, "FILTER BY ROLE",
