@@ -7,7 +7,7 @@
 <link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
 <link rel="alternate" type="text/markdown" href="qs0-one-call-two-rollups.md" title="This card as markdown, for agents">
-<title>One Call, Two Rollups, One Transaction — EEZ</title>
+<title>One Call, Two Chains, One Transaction — EEZ</title>
 <link rel="canonical" href="https://eez-demos.vercel.app/dapp-developers/qs0-one-call-two-rollups.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -78,6 +78,11 @@
     #stage *{min-width:0;overflow-wrap:anywhere;}
     #stage svg{width:auto !important;height:auto !important;}
     #stage [style*="display:flex"]{flex-wrap:wrap !important;}
+    /* ...except code rows: the gutter and its line stay on one row, and the
+       panel scrolls sideways instead. */
+    #codePanel [style*="display:flex"]{flex-wrap:nowrap !important;}
+    #dots button,#btnNext{min-height:44px !important;min-width:44px !important;}
+    #btnCopy,#btnFull,#btnTest{min-height:44px !important;padding:10px 12px !important;font-size:13px !important;}
     body{overflow-x:hidden;}
     /* Scroll affordance: codePanel already scrolls horizontally (overflow-x:auto)
        when a line is longer than the viewport — this just makes that visible,
@@ -198,10 +203,16 @@
   .page-tour:hover{color:#fff;border-color:#444;}
   .page-tour-q{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--eez-grad-btn);color:var(--eez-ink-on-grad);font-weight:600;font-size:14px;}
   .page-tour:focus-visible{outline:2px solid var(--eez-green);outline-offset:3px;}
-  /* One row: the step pills, then Up next. Prev / Play / Next stay in the
-     DOM for the arrow keys, Space and the inline step script, but are not
-     shown; the pills already move between steps. */
-  #btnPrev,#btnPlay,#btnNext{display:none !important;}
+  /* One row: the step pills, then one way forward. Next step › until the
+     last step, where Up next takes its place, so the row never shows two
+     ways forward at once. Prev / Play stay in the DOM for the arrow keys,
+     Space and the inline step script, but are not shown. */
+  #btnPrev,#btnPlay{display:none !important;}
+  #dots{order:1;}
+  #btnNext{order:2;}
+  #nextDemo{order:3;}
+  #stepNav.at-end #btnNext{display:none !important;}
+  #stepNav:not(.at-end) #nextDemo{display:none !important;}
   #stepNav > div:first-child{gap:20px !important;}
   #dots button{min-width:40px;justify-content:center;}
   #dots button span + span{display:none;}
@@ -216,13 +227,13 @@
     <div style="display:flex;align-items:center;gap:18px;">
       <a class="back hdr-home" href="../index.html" aria-label="EEZ Quickstarts home"><img src="../favicon.svg" alt="" width="16" height="26">Quickstarts</a>
       <div class="hdr-dot" style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-      <div style="font-size:22px;font-weight:600;color:#fff;">One Call, Two Rollups, One Transaction</div>
+      <div style="font-size:22px;font-weight:600;color:#fff;">One Call, Two Chains, One Transaction</div>
       <a class="back hdr-rule" href="qs1-run-your-first-round-trip.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT WALKTHROUGH: Run Your First Round Trip &rarr;</a>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How this page works" aria-label="How this page works" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">STEP 1 OF 3</div>
-      <a class="back hdr-rule" href="../index.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">ALL EXAMPLES →</a>
+      <a class="back hdr-rule" href="../index.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">ALL QUICKSTARTS →</a>
     </div>
   </div>
 
@@ -244,7 +255,7 @@
           <span>target.increment()</span>
         </div>
         <div class="qs0-box" style="width:250px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;">
-          <div class="qs0-tag" style="color:#a98ad0;">PROXY · Counter@L2</div>
+          <div class="qs0-tag" style="color:#a98ad0;">PROXY ON L1 · FOR COUNTER ON L2</div>
           <div class="qs0-main" style="color:#f1e8ff;">fallback()</div>
           <div class="qs0-sub">no functions of its own</div>
         </div>
@@ -258,7 +269,7 @@
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:14px;margin-top:8px;">
-        <div class="qs0-lane" style="width:414px;">L2 · ROLLUP 1</div>
+        <div class="qs0-lane" style="width:414px;">L2 · THE ROLLUP</div>
         <div class="qs0-box" style="width:250px;background:#16120a;border:1.5px dashed #6b5a3a;">
           <div class="qs0-tag" style="color:#b9863a;">Counter</div>
           <div class="qs0-main" style="color:#fff2dc;">increment()</div>
@@ -296,7 +307,7 @@
       </div>
       <div class="qs0-warn">
         <b>ONLY IN THAT BLOCK</b>
-        <div>Send your transaction to the composer&rsquo;s RPC, not a plain L1 RPC. In a block where the rollup wasn&rsquo;t verified, your call reverts <code>ExecutionNotInCurrentBlock</code>. With no matching entry it reverts <code>ExecutionNotFound</code>. Either way the revert comes back through the proxy to your contract. In card 01 the scenario script plays composer.</div>
+        <div>Send your transaction to the composer&rsquo;s RPC, not a plain L1 RPC. In a block where the rollup wasn&rsquo;t verified, your call reverts <code>ExecutionNotInCurrentBlock</code>. With no matching entry it reverts <code>ExecutionNotFound</code>. Either way the revert comes back through the proxy to your contract. In card 01, the scenario script does the composer&rsquo;s job.</div>
       </div>
     </div>
 
@@ -332,7 +343,7 @@
         <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no second transaction from you</div>
         <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no waiting after your call</div>
       </div>
-      <div class="qs0-note">Each entry, <code>returnData</code> included, is hashed into the public input that every proof system listed in the batch must verify; each rollup requires at least its own threshold of them, which can be 0. So the composer can&rsquo;t post an answer those proof systems didn&rsquo;t attest. On today&rsquo;s testnet that is one ECDSA signer; card 01&rsquo;s local run accepts any proof. Counter@L2 runs the same call on L2, keyed by the same call hash.</div>
+      <div class="qs0-note">Each entry, <code>returnData</code> included, is part of what the batch&rsquo;s proofs cover. Each rollup sets a threshold: how many of the listed proof systems must accept the batch. A threshold of 0 accepts any batch. On today&rsquo;s testnet one signing key (ECDSA) signs batches. Card 01&rsquo;s local run accepts any proof. On L2, Counter runs the same call and finds its entry by the same call hash.</div>
       <div class="qs0-note">Further reading: <a class="qs0-link" href="q2-send-a-cross-chain-call.html">How to call a contract on another rollup &rarr;</a></div>
     </div>
 
@@ -366,8 +377,8 @@
   <section id="intro" aria-labelledby="introTitle">
     <div class="intro-inner">
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
-      <h1 class="intro-title" id="introTitle">One Call, Two Rollups, One Transaction</h1>
-      <p class="intro-lede">Call Counter on L2. Get <span class="intro-node-value">1</span> back on L1, in the same transaction.</p>
+      <h1 class="intro-title" id="introTitle">One Call, Two Chains, One Transaction</h1>
+      <p class="intro-lede">Call Counter on L2. Get <span class="intro-node-value">1</span> back on L1, in the same transaction. L1 is the base chain; L2 is a rollup that settles on it.</p>
       <figure class="intro-flow" aria-label="Cross-chain call overview" aria-describedby="introFlowNote">
         <div class="intro-flow-grid">
           <section class="intro-area" aria-labelledby="introL1Title">
@@ -416,7 +427,7 @@
             </div>
           </section>
         </div>
-        <figcaption id="introFlowNote">Send through the composer&rsquo;s RPC: it prepares and posts the L2 result before your L1 call runs.</figcaption>
+        <figcaption id="introFlowNote">Send your transaction to the composer&rsquo;s RPC endpoint. The composer is the service that prepares the L2 result and posts it to L1 before your call runs.</figcaption>
       </figure>
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol Git commit 9a1f815 &mdash; pre-mainnet (test network); interfaces may move.</p>
       <div class="intro-actions">
@@ -431,7 +442,7 @@
       <div style="display:flex;align-items:center;gap:12px;">
         <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
         <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
-        <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
+        <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next step ›</button>
         <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
         <a id="nextDemo" class="next-demo" href="qs1-run-your-first-round-trip.html"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">Run Your First Round Trip</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
       </div>
@@ -452,8 +463,8 @@
   var kickers = ["YOUR CONTRACT CALLS A PROXY.", "THE ANSWER IS ALREADY THERE.", "SAME TRANSACTION."];
   var captions = [
     "CounterAndProxy is your L1 caller contract. You call incrementProxy(); it calls increment() on Counter's L1 proxy and saves the returned value in targetCounter. The proxy's fallback passes the call to the EEZ manager.",
-    "The composer \u2014 the service that orders cross-chain calls and posts their proofs \u2014 lands its batch and your transaction as one bundle, batch first. The batch is verified and its entries (one record per call) are queued before your call runs. executeCrossChainCall works only in that block: it hashes your call and takes the first queued entry whose hash, destination rollup and expected starting roots (each chain's state before the call) all match.",
-    "The manager applies the entry, checks its roots and rolling hash against what the batch committed to, and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, and no second transaction from you."
+    "The composer \u2014 the service that orders cross-chain calls and posts their proofs \u2014 gets its batch and your transaction into one block as one bundle, batch first. The batch is verified and its entries (one record per call) are queued before your call runs. executeCrossChainCall works only in that block: it hashes your call and takes the first queued entry whose hash, destination rollup and expected starting roots (each chain's state before the call) all match.",
+    "The manager applies the entry, checks its roots and rolling hash against what the batch committed to, and returns its returnData. The proxy passes those bytes back, so your contract's next line already has the result from Counter on L2. No callback, and no second transaction from you."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
@@ -684,6 +695,14 @@
       + '<span style="width:12px;flex:none;border-right:1px solid var(--eez-edge);margin-right:11px;"></span>'
       + '<span style="display:inline-block;width:10px;height:20px;background:var(--eez-green);animation:blink 1s step-end infinite;vertical-align:middle;"></span></div>';
     document.getElementById("codePanel").innerHTML = html;
+    // On a page with "$ " commands, a panel without any is sample output:
+    // pasting it into a terminal fails, so it gets no COPY.
+    var bcp = document.getElementById("btnCopy");
+    if (bcp) {
+      var isCmd = function(l){ return typeof l === "string" && l.indexOf("$ ") === 0; };
+      var hasCmd = function(ls){ return Array.isArray(ls) && ls.some(isCmd); };
+      bcp.style.display = ((typeof showFull === "undefined" || !showFull) && codeByStep.some(hasCmd) && !hasCmd(code)) ? "none" : "";
+    }
 
     // Named stepper: the current step shows its kicker name, the others stay
     // compact (number + title tooltip) so seven steps still fit the footer.
@@ -859,14 +878,17 @@
   // after every step change - manual, autoplay and init alike.
   function syncEnds(){
     var p = document.getElementById("btnPrev"), n = document.getElementById("btnNext");
+    var nextHadFocus = document.activeElement === n;   // disabling it below blurs it
     if (p) { p.disabled = (step <= 0); }
     if (n) { n.disabled = (step >= N-1); }
     var nd = document.getElementById("nextDemo");
     if (nd) { nd.classList.toggle("is-final", step >= N-1); }
     var sn = document.getElementById("stepNav");
     if (sn) { sn.classList.toggle("at-end", step >= N-1); }
+    // Next hides on the last step; keep a keyboard user on the way forward.
+    if (nd && step >= N-1 && nextHadFocus) { try { nd.focus({ preventScroll: true }); } catch (e) { nd.focus(); } }
   }
-  function staticBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; syncEnds(); }
+  function staticBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+((typeof introShowing === "function" && introShowing()) ? 0 : (step+1)/N)+")"; syncEnds(); }
   function animateBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; void b.offsetWidth; b.style.transition="transform "+STEP_MS+"ms linear"; b.style.transform="scaleX("+((step+1)/N)+")"; syncEnds(); }
   function schedule(){ clearTimeout(timer); animateBar(); timer = setTimeout(function(){ if(!playing) return; if(step >= N-1){ playing=false; render(); return; } step++; render(); schedule(); }, STEP_MS); }
   function togglePlay(){ if(playing){ clearTimeout(timer); playing=false; staticBar(); render(); return; } if(step >= N-1) step = 0; playing = true; render(); schedule(); }
@@ -912,8 +934,9 @@
     }
     introHidden.length = 0;
     render(); staticBar();
-    var play = document.getElementById("btnPlay");
-    if (play) { play.focus(); }
+    // Play is hidden, so focus the visible way forward.
+    var fwd = document.getElementById(step >= N-1 ? "nextDemo" : "btnNext");
+    if (fwd) { try { fwd.focus({ preventScroll: true }); } catch (e) { fwd.focus(); } }
   }
   if (introEl) {
     hideDemoForIntro();
@@ -1015,7 +1038,8 @@
         btnCopy.textContent = ok ? "COPIED" : "COPY FAILED";
         btnCopy.style.color = ok ? "var(--eez-green)" : "#f85149";
         btnCopy.style.borderColor = ok ? "#2c6b3c" : "#6b2c2c";
-        setTimeout(function(){
+        clearTimeout(btnCopy._reset);
+        btnCopy._reset = setTimeout(function(){
           btnCopy.textContent = "COPY";
           btnCopy.style.color = "var(--muted)";
           btnCopy.style.borderColor = "#2e2e2e";

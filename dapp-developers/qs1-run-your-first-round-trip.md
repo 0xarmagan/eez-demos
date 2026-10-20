@@ -9,21 +9,21 @@ Two scenarios pass on local anvil chains: one call starts on L1 and gets back th
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17
 
-**What this proves:** Both directions pass on two local anvil chains: a call from L1 to L2 and a call from L2 to L1 each get the other side's return value back inside the calling transaction.
+**What this proves:** Both directions pass on local anvil chains, two per scenario: a call from L1 to L2 and a call from L2 to L1 each get the other side's return value back inside the calling transaction.
 
-**What it doesn't:** Real proving or a live node. The script plays composer: it precomputes the return value into an entry, posts that entry before your call, and the batch is accepted by an accept-all proof system.
+**What it doesn't:** It does not use real proofs or a live node. The script does the composer's job: it precomputes the return value into an entry, posts that entry before your call, and the batch is accepted by an accept-all proof system.
 
-### Step 1 — CLONE AT THE PIN.
+### Step 1 — CLONE AT A FIXED COMMIT.
 
-Clone at a fixed commit so your output matches these cards. You need Foundry 1.7.1 with forge, cast and anvil on PATH, Git, jq (recent macOS ships it), and bash 4 or newer (macOS ships 3.2; brew install bash puts bash 5 first on PATH). No Docker.
+Clone at a fixed commit so your output matches these cards. You need Foundry 1.7.1, with forge, cast and anvil on PATH. You also need Git, jq and bash 4 or newer; no Docker. macOS includes bash 3.2, and brew install bash puts bash 5 first on PATH. Step 2 builds and runs it.
 
 ```text
 # needs Foundry 1.7.1 (forge, cast, anvil on PATH),
 # Git, jq, and bash 4+. No Docker.
 # Foundry: https://book.getfoundry.sh/getting-started/installation
-# macOS ships bash 3.2; this puts bash 5 first on PATH:
+# macOS includes bash 3.2; this puts bash 5 first on PATH:
 #   brew install bash
-# jq: recent macOS ships it, or brew/apt install jq
+# jq: recent macOS includes it, or brew/apt install jq
 
 $ git clone https://github.com/eez-association/eez-core-protocol.git
 $ cd eez-core-protocol
@@ -50,7 +50,7 @@ $ bash script/e2e/run/local/parallel.sh counter counterL2
 
 ### Step 3 — WHAT THAT PASS PROVED.
 
-Locally, the scenario script played composer. You'll see what it did in two cards.
+Locally, the scenario script did the composer's job. Card 03 (Who Answered?) shows what it did.
 
 ```text
 # counter:   L1 called L2, got 1 back

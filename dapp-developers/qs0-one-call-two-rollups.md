@@ -1,4 +1,4 @@
-# One Call, Two Rollups, One Transaction
+# One Call, Two Chains, One Transaction
 
 > EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
 
@@ -32,7 +32,7 @@ function _fallback() internal {
 
 ### Step 2 — THE ANSWER IS ALREADY THERE.
 
-The composer — the service that orders cross-chain calls and posts their proofs — lands its batch and your transaction as one bundle, batch first. The batch is verified and its entries (one record per call) are queued before your call runs. executeCrossChainCall works only in that block: it hashes your call and takes the first queued entry whose hash, destination rollup and expected starting roots (each chain's state before the call) all match.
+The composer — the service that orders cross-chain calls and posts their proofs — gets its batch and your transaction into one block as one bundle, batch first. The batch is verified and its entries (one record per call) are queued before your call runs. executeCrossChainCall works only in that block: it hashes your call and takes the first queued entry whose hash, destination rollup and expected starting roots (each chain's state before the call) all match.
 
 ```solidity
 // tx 1, composer: postAndVerifyBatch
@@ -55,7 +55,7 @@ function executeCrossChainCall(
 
 ### Step 3 — SAME TRANSACTION.
 
-The manager applies the entry, checks its roots and rolling hash against what the batch committed to, and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, and no second transaction from you.
+The manager applies the entry, checks its roots and rolling hash against what the batch committed to, and returns its returnData. The proxy passes those bytes back, so your contract's next line already has the result from Counter on L2. No callback, and no second transaction from you.
 
 ```solidity
 // _consumeAndExecuteEntry, entry found

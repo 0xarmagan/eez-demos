@@ -116,9 +116,6 @@
       steps.push(st);
     }
 
-    add(".hero-cta", 10, "WHERE TO START",
-        "Dapp developers start at 00. Operators and researchers get a reading order on the line below.",
-        { els: [q(".hero-cta"), q(".hero-aside")] });
     add(".search-box-row", 10, "SEARCH",
         "Find any walkthrough by keyword. Press / to jump here.");
     add(".filter-tabs", 10, "FILTER BY ROLE",
@@ -170,7 +167,7 @@
       steps.push({
         els: diagramEls,
         pad: 10,
-        kicker: "LEFT",
+        kicker: "THE DIAGRAM",
         body: diagramBody
       });
     }
@@ -193,7 +190,7 @@
       var lines = [];
       if ($("btnFull")) { lines.push("FULL shows the whole file."); }
       if ($("btnTest")) { lines.push("TEST shows a test you can run."); }
-      lines.push("COPY copies what you see.");
+      lines.push("COPY copies the commands or code in the panel, not sample output.");
       steps.push({
         els: present,
         pad: 9,
@@ -217,7 +214,7 @@
         els: [$("stepNav")],
         pad: 14,
         kicker: "MOVE THROUGH IT",
-        body: (n ? n + " steps. " : "") + "Click a step to jump to it. Arrow keys work too. Up next opens the next walkthrough."
+        body: (n ? n + " steps. " : "") + "Next step \u203a moves on; click a number to jump. Arrow keys work too. On the last step, Up next opens the next walkthrough."
       });
     }
 
@@ -314,6 +311,10 @@
       else if (e.key === "Enter" && e.target && e.target.closest && e.target.closest("#tourLayer button")) { return; }
       else if (e.key === "ArrowRight" || e.key === "Enter") { e.stopPropagation(); e.preventDefault(); go(1); }
       else if (e.key === "ArrowLeft") { e.stopPropagation(); e.preventDefault(); go(-1); }
+      // Every other key stays with the tour: the page's own shortcuts (Space
+      // plays, r restarts, / jumps to search) must not act behind the modal.
+      // Not preventDefault, so Space still presses a focused tour button.
+      else { e.stopPropagation(); }
     }
 
     function go(d) {

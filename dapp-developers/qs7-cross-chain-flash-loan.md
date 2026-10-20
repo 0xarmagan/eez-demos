@@ -11,11 +11,11 @@ Borrowed tokens go to an L2 and back before the repayment check runs, all inside
 
 **What this proves:** On two local anvil chains, one L1 transaction borrows 10,000 tokens, sends them to L2 and back, and repays the pool before the repayment check runs.
 
-**What it doesn't:** Real proving or a live node. The script plays composer and posts the entries in a separate transaction first, and the batch is accepted by an accept-all proof system.
+**What it doesn't:** It does not use real proofs or a live node. The script does the composer's job and posts the entries in a separate transaction first, and the batch is accepted by an accept-all proof system.
 
 ### Step 1 — RUN IT.
 
-One L1 transaction borrows 10,000 tokens, sends them to L2 and back, and repays the pool. Locally, the scenario script plays composer and posts the entries in a separate transaction first.
+One L1 transaction borrows 10,000 tokens, sends them to L2 and back, and repays the pool. Locally, the scenario script does the composer's job and posts the entries in a separate transaction first.
 
 ```text
 # needs Git, jq, Foundry 1.7.1 (forge, cast, anvil on PATH)

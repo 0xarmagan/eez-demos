@@ -11,6 +11,7 @@
  *   any step change      the URL becomes #step-n; moving forward adds a
  *                        history entry so Back returns to the previous step
  *   no hash on arrival   nothing happens until the reader starts the page
+ *   junk #step-… hash    dropped on arrival, corrected once a step shows
  */
 (function () {
   "use strict";
@@ -35,7 +36,7 @@
     var cur = current();
     if (!cur) { return; }
     n = Math.max(1, Math.min(cur.total, n));
-    if (n === cur.n) { return; }
+    if (n === cur.n) { sync(); return; }
     applying = true;
     var dot = document.querySelector('#dots button[data-step="' + (n - 1) + '"]');
     if (dot) {
@@ -49,7 +50,21 @@
 
   function fromHash() {
     var m = RE.exec(location.hash);
-    if (m) { go(+m[1]); }
+    if (m) { go(+m[1]); return; }
+    if (/^#step/i.test(location.hash)) {
+      if (introShowing()) { history.replaceState(null, "", location.pathname + location.search); }
+      else { sync(); }
+    }
+  }
+
+  // A COPIED label belongs to the step it was clicked on.
+  function resetCopy() {
+    var b = document.getElementById("btnCopy");
+    if (!b || b.textContent === "COPY") { return; }
+    clearTimeout(b._reset);
+    b.textContent = "COPY";
+    b.style.color = "var(--muted)";
+    b.style.borderColor = "#2e2e2e";
   }
 
   var firstSync = true;
@@ -72,7 +87,8 @@
   }
 
   if (window.MutationObserver) {
-    new MutationObserver(sync).observe(label, { childList: true, characterData: true, subtree: true });
+    new MutationObserver(function () { sync(); resetCopy(); })
+      .observe(label, { childList: true, characterData: true, subtree: true });
   }
   window.addEventListener("hashchange", fromHash);
   window.addEventListener("popstate", fromHash);
@@ -111,9 +127,7 @@
     "/* Autoplay is keyboard-reachable; give it a visible pause. */",
     "body.is-playing #btnPlay{display:inline-flex !important;width:44px !important;min-width:44px !important;height:44px !important;min-height:44px !important;padding:0 !important;font-size:0 !important;align-items:center;justify-content:center;}",
     "body.is-playing #btnPlay::after{content:\"❚❚\";font-size:14px;letter-spacing:0;}",
-    "/* A visible next-step arrow; Up next takes over on the last step. */",
-    "#stepNav #btnNext{display:inline-flex !important;width:44px !important;height:44px !important;min-width:44px !important;padding:0 !important;align-items:center;justify-content:center;font-size:18px !important;border-radius:50% !important;background:#141414 !important;border:1px solid #2a2a2a !important;color:#fff !important;}",
-    "@media (min-width:1121px){#stepNav #btnNext{width:36px !important;height:36px !important;min-width:36px !important;font-size:16px !important;}}",
+    "/* Next step › (styled in each page) hides on the last step, where Up next takes over. */",
     "#stepNav.at-end #btnNext{display:none !important}",
     ".ez-sr{position:absolute !important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}",
     "@media (max-width:1120px){",
@@ -213,7 +227,6 @@
 
   var nextStep = document.getElementById("btnNext");
   if (nextStep) {
-    nextStep.textContent = "→";
     nextStep.setAttribute("aria-label", "Next step");
     nextStep.setAttribute("title", "Next step");
   }

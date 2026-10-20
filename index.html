@@ -49,18 +49,6 @@ h1 .w{font-weight:800}
 h1 .l{font-weight:300;color:#dcdcdc}
 .hero-sub{font-size:18px;line-height:1.55;color:#c9cfda;max-width:640px;margin:-14px 0 32px;text-wrap:pretty}
 @media(max-width:640px){.hero-sub{font-size:15.5px}}
-.hero-cta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0}
-.pill{display:inline-flex;align-items:center;justify-content:space-between;gap:14px;font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.03em;text-decoration:none;border-radius:100px;padding:5px 5px 5px 20px;white-space:nowrap;transition:border-color .2s ease}
-.pill .circ{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex:none;transition:transform .2s ease}
-.pill:hover .circ{transform:translateX(3px)}
-.pill-solid{color:#000;background:#fff;border:1px solid #fff}
-.pill-solid .circ{background:#000;color:#fff}
-.pill .pill-num{font-weight:400;color:#555}
-.hero-aside{display:flex;align-items:center;gap:6px 18px;flex-wrap:wrap;margin:2px 0 4px;font-family:var(--mono);font-size:12px}
-.hero-aside a,.link-btn{color:#9a9a9a;text-decoration:underline;text-decoration-color:#3a3a3a;text-underline-offset:4px;display:inline-block;padding:4px 0}
-.link-btn{background:none;border:0;font:inherit;cursor:pointer}
-.hero-aside a:hover,.link-btn:hover{color:#fff;text-decoration-color:#888}
-@media(max-width:640px){.hero-cta{flex-direction:column;align-items:stretch}.pill{white-space:normal}}
 
 
 /* section */
@@ -93,9 +81,9 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .card:hover .cta .circ{transform:translateX(2px)}
 
 /* quickstart: a section intro (not a step), then one row per phase */
-.qs-intro{margin:0 0 28px;max-width:720px}
-.qs-title{font-size:26px;line-height:1.2;font-weight:600;letter-spacing:-.01em;color:#fff;margin:0}
-@media(max-width:640px){.qs-title{font-size:22px}}
+.qs-intro{margin:0 0 32px;max-width:720px}
+.qs-title{font-size:44px;line-height:1.08;font-weight:800;letter-spacing:-.02em;color:#fff;margin:0;text-wrap:balance}
+@media(max-width:640px){.qs-title{font-size:32px}}
 .phase{display:grid;grid-template-columns:150px 1fr;gap:16px;margin-top:16px}
 .phase-label{font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:.1em;color:var(--muted);margin:0;padding-top:30px}
 @media(max-width:700px){.phase{grid-template-columns:1fr;gap:10px;margin-top:24px}.phase-label{padding-top:0}}
@@ -134,8 +122,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
   .navlinks a{padding:10px 0;min-height:44px;display:inline-flex;align-items:center}
   .search-clear{width:44px;height:44px}
   #btnHelp{width:44px !important;height:44px !important}
-  .hero-aside .link-btn,.hero-aside a,.closer-links a,.back{min-height:44px;display:inline-block;padding:10px 0}
-  .pill{min-height:48px}
+  .closer-links a,.back{min-height:44px;display:inline-block;padding:10px 0}
 }
 </style>
 </head>
@@ -159,13 +146,6 @@ h1 .l{font-weight:300;color:#dcdcdc}
   <p class="hero-sub">The Ethereum Economic Zone lets a contract on Ethereum or a rollup call a contract on another chain and use the answer in the same transaction, with no bridge message and no callback. These walkthroughs show how, with real protocol code cited at a pinned commit.</p>
 
   <div class="search-filter-wrap">
-    <nav class="hero-cta" aria-label="Where to start">
-      <a class="pill pill-solid" href="./dapp-developers/qs0-one-call-two-rollups.html"><span>START THE QUICKSTART <span class="pill-num">· 00</span></span> <span class="circ" aria-hidden="true">→</span></a>
-    </nav>
-    <div class="hero-aside">
-      <button class="link-btn" type="button" id="btnTour">First time here? Take the page tour</button>
-      <a href="start-here.html">Operator or researcher? Your reading order <span aria-hidden="true">→</span></a>
-    </div>
     <div class="search-box-row">
       <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
       <input id="searchInput" class="search-input" type="text" placeholder="Search 24 walkthroughs…" aria-label="Search 24 walkthroughs, for example msg.sender, Kurtosis, deriver, CREATE2" aria-describedby="searchStatus">
@@ -200,7 +180,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <h3 class="phase-label">UNDERSTAND</h3>
       <div class="grid">
         <a class="card" href="./dapp-developers/qs0-one-call-two-rollups.html">
-          <div class="card-head"><h4 class="card-title"><span class="card-num">00</span>One Call, Two Rollups, One Transaction</h4></div>
+          <div class="card-head"><h4 class="card-title"><span class="card-num">00</span>One Call, Two Chains, One Transaction</h4></div>
           <p class="card-hook">Your L1 contract gets an L2 contract's return value back in the same transaction, with no bridge message and no callback.</p>
         </a>
       </div>
@@ -233,7 +213,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
         </a>
         <div class="card soon">
           <div class="card-head"><h4 class="card-title">Deploy Your Own Contract</h4><span class="badge">COMING SOON</span></div>
-          <p class="card-hook">Your own contract, deployed and called across chains with the Remix cross-chain plugin. Not part of the numbered sequence until it ships.</p>
+          <p class="card-hook">Your own contract, deployed and called across chains with the Remix cross-chain plugin. Not part of the numbered sequence until it is released.</p>
         </div>
       </div>
     </div>
@@ -322,7 +302,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
 
       <a class="card" href="./rollup-operators/ro2-deploy-the-protocol.html">
         <div class="card-head"><h3 class="card-title"><span class="card-num">02</span>How to deploy the protocol</h3></div>
-        <p class="card-hook">Learn what lands on L1 and L2, and in what order, once the network is up.</p>
+        <p class="card-hook">Learn what gets deployed on L1 and L2, and in what order, once the network is up.</p>
         <div class="cta">OPEN THE 3-STEP WALKTHROUGH <span class="circ">→</span></div>
       </a>
 
@@ -389,7 +369,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
   </section>
 
   <footer class="closer">
-    <span class="closer-label">THAT'S ALL 24 — MORE COMING AS THE PROTOCOL DOES</span>
+    <span class="closer-label">THAT'S ALL 24 — MORE WILL BE ADDED AS THE PROTOCOL GROWS</span>
     <div class="closer-links">
       <a href="https://github.com/eez-association/eez-core-protocol">Star eez-core-protocol ↗</a>
       <a href="https://github.com/0xarmagan/eez-demos/blob/main/CONTRIBUTING.md">Suggest a demo ↗</a>
@@ -558,10 +538,6 @@ h1 .l{font-weight:300;color:#dcdcdc}
   var btnHelp = document.getElementById("btnHelp");
   if (btnHelp) {
     btnHelp.addEventListener("click", function(){ if (eezTour()) { eezTour().start(); } });
-  }
-  var btnTour = document.getElementById("btnTour");
-  if (btnTour) {
-    btnTour.addEventListener("click", function(){ if (eezTour()) { eezTour().start(); } });
   }
   // Same site-wide key as the walkthroughs, so arriving here after seeing the
   // tour on a walkthrough does not show it a second time.

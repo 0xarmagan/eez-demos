@@ -58,6 +58,11 @@
     #stage *{min-width:0;overflow-wrap:anywhere;}
     #stage svg{width:auto !important;height:auto !important;}
     #stage [style*="display:flex"]{flex-wrap:wrap !important;}
+    /* ...except code rows: the gutter and its line stay on one row, and the
+       panel scrolls sideways instead. */
+    #codePanel [style*="display:flex"]{flex-wrap:nowrap !important;}
+    #dots button,#btnNext{min-height:44px !important;min-width:44px !important;}
+    #btnCopy,#btnFull,#btnTest{min-height:44px !important;padding:10px 12px !important;font-size:13px !important;}
     body{overflow-x:hidden;}
     /* Scroll affordance: codePanel already scrolls horizontally (overflow-x:auto)
        when a line is longer than the viewport — this just makes that visible,
@@ -161,10 +166,16 @@
   .page-tour:hover{color:#fff;border-color:#444;}
   .page-tour-q{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--eez-grad-btn);color:var(--eez-ink-on-grad);font-weight:600;font-size:14px;}
   .page-tour:focus-visible{outline:2px solid var(--eez-green);outline-offset:3px;}
-  /* One row: the step pills, then Up next. Prev / Play / Next stay in the
-     DOM for the arrow keys, Space and the inline step script, but are not
-     shown; the pills already move between steps. */
-  #btnPrev,#btnPlay,#btnNext{display:none !important;}
+  /* One row: the step pills, then one way forward. Next step › until the
+     last step, where Up next takes its place, so the row never shows two
+     ways forward at once. Prev / Play stay in the DOM for the arrow keys,
+     Space and the inline step script, but are not shown. */
+  #btnPrev,#btnPlay{display:none !important;}
+  #dots{order:1;}
+  #btnNext{order:2;}
+  #nextDemo{order:3;}
+  #stepNav.at-end #btnNext{display:none !important;}
+  #stepNav:not(.at-end) #nextDemo{display:none !important;}
   #stepNav > div:first-child{gap:20px !important;}
   #dots button{min-width:40px;justify-content:center;}
   #dots button span + span{display:none;}
@@ -324,7 +335,7 @@
       <div style="display:flex;align-items:center;gap:12px;">
         <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
         <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
-        <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
+        <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next step ›</button>
         <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
         <a id="nextDemo" class="next-demo" href="ro2-deploy-the-protocol.html"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">How to deploy the protocol</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
       </div>
@@ -529,6 +540,14 @@
       + '<span style="width:12px;flex:none;border-right:1px solid var(--eez-edge);margin-right:11px;"></span>'
       + '<span style="display:inline-block;width:10px;height:20px;background:var(--eez-green);animation:blink 1s step-end infinite;vertical-align:middle;"></span></div>';
     document.getElementById("codePanel").innerHTML = html;
+    // On a page with "$ " commands, a panel without any is sample output:
+    // pasting it into a terminal fails, so it gets no COPY.
+    var bcp = document.getElementById("btnCopy");
+    if (bcp) {
+      var isCmd = function(l){ return typeof l === "string" && l.indexOf("$ ") === 0; };
+      var hasCmd = function(ls){ return Array.isArray(ls) && ls.some(isCmd); };
+      bcp.style.display = ((typeof showFull === "undefined" || !showFull) && codeByStep.some(hasCmd) && !hasCmd(code)) ? "none" : "";
+    }
 
     // Named stepper: the current step shows its kicker name, the others stay
     // compact (number + title tooltip) so seven steps still fit the footer.
@@ -704,14 +723,17 @@
   // after every step change - manual, autoplay and init alike.
   function syncEnds(){
     var p = document.getElementById("btnPrev"), n = document.getElementById("btnNext");
+    var nextHadFocus = document.activeElement === n;   // disabling it below blurs it
     if (p) { p.disabled = (step <= 0); }
     if (n) { n.disabled = (step >= N-1); }
     var nd = document.getElementById("nextDemo");
     if (nd) { nd.classList.toggle("is-final", step >= N-1); }
     var sn = document.getElementById("stepNav");
     if (sn) { sn.classList.toggle("at-end", step >= N-1); }
+    // Next hides on the last step; keep a keyboard user on the way forward.
+    if (nd && step >= N-1 && nextHadFocus) { try { nd.focus({ preventScroll: true }); } catch (e) { nd.focus(); } }
   }
-  function staticBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; syncEnds(); }
+  function staticBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+((typeof introShowing === "function" && introShowing()) ? 0 : (step+1)/N)+")"; syncEnds(); }
   function animateBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; void b.offsetWidth; b.style.transition="transform "+STEP_MS+"ms linear"; b.style.transform="scaleX("+((step+1)/N)+")"; syncEnds(); }
   function schedule(){ clearTimeout(timer); animateBar(); timer = setTimeout(function(){ if(!playing) return; if(step >= N-1){ playing=false; render(); return; } step++; render(); schedule(); }, STEP_MS); }
   function togglePlay(){ if(playing){ clearTimeout(timer); playing=false; staticBar(); render(); return; } if(step >= N-1) step = 0; playing = true; render(); schedule(); }
@@ -757,8 +779,9 @@
     }
     introHidden.length = 0;
     render(); staticBar();
-    var play = document.getElementById("btnPlay");
-    if (play) { play.focus(); }
+    // Play is hidden, so focus the visible way forward.
+    var fwd = document.getElementById(step >= N-1 ? "nextDemo" : "btnNext");
+    if (fwd) { try { fwd.focus({ preventScroll: true }); } catch (e) { fwd.focus(); } }
   }
   if (introEl) {
     hideDemoForIntro();
@@ -832,7 +855,8 @@
         btnCopy.textContent = ok ? "COPIED" : "COPY FAILED";
         btnCopy.style.color = ok ? "var(--eez-green)" : "#f85149";
         btnCopy.style.borderColor = ok ? "#2c6b3c" : "#6b2c2c";
-        setTimeout(function(){
+        clearTimeout(btnCopy._reset);
+        btnCopy._reset = setTimeout(function(){
           btnCopy.textContent = "COPY";
           btnCopy.style.color = "var(--muted)";
           btnCopy.style.borderColor = "#2e2e2e";
