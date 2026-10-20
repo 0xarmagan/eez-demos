@@ -8,7 +8,7 @@ web
 
 ## Users
 
-**Primary: dApp developers** who want to write contracts that call across rollups. They arrive knowing Solidity and Foundry but not EEZ, and the job is to get from "what is this?" to "my contract used another rollup's answer in the same transaction" without misreading how it works. The Quickstart track (cards 00–07, in four phases: Understand / See it work / Make it real / Build patterns) is their front door. The dApp reference track (`dapp-developers/q*`) is where they go deeper afterward.
+**Primary: dApp developers** who want to write contracts that call across rollups. They arrive knowing Solidity and Foundry but not EEZ, and the job is to get from "what is this?" to "my contract used another rollup's answer in the same transaction" without misreading how it works. The Quickstart track (cards 00–06, in four phases: Understand / See it work / Make it real / Build patterns) is their front door. The dApp reference track (`dapp-developers/q*`) is where they go deeper afterward.
 
 **Secondary:** rollup operators (standing up and running the stack: devnet, deploy, Chiado, cross-chain traffic) and protocol researchers (how Rollup0 settles and proves). Each gets a reading order on `start-here.html` but not a dedicated quickstart.
 
@@ -60,7 +60,7 @@ What a neighbor can't truthfully copy: every code panel is verbatim source cited
 
 ## Evidence on Hand
 
-- 24 live walkthroughs plus 1 "coming soon": 14+1 for dApp developers (Quickstart 00–07 and reference q1–q8), 4 for rollup operators, 6 for protocol researchers.
+- 24 live walkthroughs plus 1 "coming soon": 14+1 for dApp developers (Quickstart 00–06 and reference q1–q8), 4 for rollup operators, 6 for protocol researchers.
 - `snippets/`: compilable Solidity with runnable Foundry tests.
 - `docs/quickstart-runs.md`: measured runs. A cold card-01 run took 251.66 s (about 4.2 min) on an Apple M4, with solc already cached; solc download time was not measured.
 - `docs/reviews/`: accuracy audits.

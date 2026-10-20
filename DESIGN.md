@@ -157,7 +157,7 @@ There are two surfaces. The **index** (`index.html`, `start-here.html`, `deploy.
 - Geist for prose and Geist Mono for labels, numbers, eyebrows and code.
 - One green signal (`eez-green`) for live state and focus. The gradient is reserved for the primary action and hover accents.
 - Pill-shaped controls, cards with 16px corners, and small 4–5px chips for tool buttons and byte cells.
-- Every page says EEZ is pre-mainnet, in text rather than a badge: the walkthrough intro's verified-against line and the index footer line.
+- Every page says EEZ is pre-mainnet, in text rather than a badge: the walkthrough intro's verified-against line. The index carries no PRE-MAINNET line (owner decision, 2026-10-20).
 
 ## Colors
 
@@ -214,7 +214,7 @@ Use the tokens above for new work.
 - **Body** (400, 18px, 1.55, max 640px): the index hero subline. Ledes on secondary pages use 15.5px.
 - **Body Small** (400, 13.5px, 1.55): card hooks and section notes, in Quiet Ink.
 - **Code** (Geist Mono 400, 19px on a 34px line; 15px/28px reflowed): the code panel, revealed step by step.
-- **Label** (Geist Mono 500, 11.5–12.5px, 0.04–0.16em tracking, uppercase): eyebrows, phase labels, filter chips, CTAs, the index's PRE-MAINNET footer line, card numbers.
+- **Label** (Geist Mono 500, 11.5–12.5px, 0.04–0.16em tracking, uppercase): eyebrows, phase labels, filter chips, CTAs, card numbers.
 
 ### Named Rules
 **The Readout Rule.** Anything that names, counts or points (eyebrows, step numbers, chips, CTAs, back links, citations) is set in Geist Mono. Anything that explains is set in Geist. Don't mix them in the same element.
@@ -239,7 +239,7 @@ The system is flat. Depth comes from tone: canvas (`#0A0A0A`) → screen (`#1616
 
 ### Shadow Vocabulary
 - **Card lift** (`box-shadow: 0 20px 44px -20px rgba(0,0,0,.75)`, with `translateY(-4px)`): card hover only.
-- **Field focus** (`box-shadow: 0 0 0 3px rgba(63,185,80,0.15)`, with a green border): the search input on focus.
+- **Field focus** (`box-shadow: 0 0 0 3px rgba(59,229,126,.16)`, `eez-green` at 16%, with a green border): the search input on focus.
 - **Live pulse** (`0 0 0 0 → 0 0 0 8px`, fading): a looping halo on "live" status dots.
 
 ### Named Rules
@@ -257,8 +257,8 @@ The system is flat. Depth comes from tone: canvas (`#0A0A0A`) → screen (`#1616
 
 ### Buttons
 Quiet until touched. Grey at rest, with one gradient action per stage.
-- **Solid pill:** white fill, black mono label (12.5px, 600, 0.03em), padding 5px 5px 5px 20px, ending in a 30px black circle holding an arrow. The circle slides 3px right on hover. This is the index's primary entry (DAPP DEVELOPERS, the Quickstart).
-- **Outline pill:** the same shape on a transparent fill with an `edge` border. The circle is a `control` fill with an `edge` border. Used for track entries.
+- **Solid pill:** white fill, black mono label (12.5px, 600, 0.03em), padding 5px 5px 5px 20px, ending in a 30px black circle holding an arrow. The circle slides 3px right on hover. This is the index's primary entry, `START THE QUICKSTART · 00`, linking to card 00.
+- **Outline pill:** the same shape on a transparent fill with an `edge` border. The circle is a `control` fill with an `edge` border. Used for track entries: `ROLLUP OPERATORS` and `PROTOCOL RESEARCHERS` beside the solid pill, jumping to their sections (and clearing any active filter or search).
 - **Play / Start (stage primary):** the two-stop gradient fill running edge to edge (`border-box`), canvas-colored text, a 1px transparent border, 12px 28px (Start is 16px 34px at 20px text). It brightens to the hover gradient on hover, also `border-box`. No colored outline: a steel ring around the mint end reads as a stray stroke.
 - **Step buttons (Prev/Next):** `control` fill, `control-edge` border, Soft Ink text, 12px 22px. They lift to `control-hover` on hover and drop to 38% opacity when disabled.
 - **Focus:** every button and link gets a 2px `eez-green` outline with a 2px offset.
@@ -274,7 +274,7 @@ Quiet until touched. Grey at rest, with one gradient action per stage.
 - **Border:** 1px `edge`. On hover a 1px gradient ring fades in around the whole card (a masked `::before` at `inset:-1px`, `border-radius:inherit`, `border-box` gradient), so the card itself must not use `overflow:hidden`.
 - **Internal Padding:** 28px 26px 26px, with a 16px vertical gap.
 - **Anatomy:**
-  - a mono card number (`00`, very quiet `#4D4D4D`, brightening on hover);
+  - a mono card number (`00`, quiet `#808080`, 4.6:1 on `screen`, brightening on hover; it doesn't dim when visited);
   - a Title;
   - a Body Small hook that states the consequence;
   - a mono CTA row pinned to the bottom (`WATCH THE 3-STEP WALKTHROUGH`) with a 26px arrow circle that fills with the gradient on hover.
@@ -287,7 +287,8 @@ Quiet until touched. Grey at rest, with one gradient action per stage.
 
 ### Navigation
 - **Logo:** the full EEZ lockup (mark plus "Ethereum Economic Zone" wordmark) at 46px tall on the index from 641px up, so the wordmark stays legible; the mark alone (36px) on phones. Walkthrough headers carry the mark (26px stage px) plus "Quickstarts" as the link home. Never shrink the lockup below 46px: the wordmark becomes unreadable.
-- **Index header:** the EEZ logo on the left. The index carries its PRE-MAINNET label as a quiet mono line under the footer (`PRE-MAINNET · interfaces may move`); walkthroughs say it in the intro's verified-against line, with no header badge. Mono 12px external links (`eez-core-protocol ↗`, `eez.dev testnet ↗`) in `#9A9A9A` on the right, going white on hover, plus a circular `?` help button. Wraps on narrow screens.
+- **Index header:** the EEZ logo on the left. Walkthroughs say PRE-MAINNET in the intro's verified-against line, with no header badge; the index has no PRE-MAINNET line. Mono 12px external links (`eez-core-protocol ↗`, `eez.dev testnet ↗`) in `#9A9A9A` on the right, going white on hover, plus a circular `?` help button. Wraps on narrow screens.
+- **Index entry row:** under the hero, one solid pill (the Quickstart at 00) and two outline pills (operator and researcher tracks), stacking full-width on phones. Under it, two quiet mono text links: `First time here? Take the quick tour` (a button that opens the page tour; it has no gradient, so the index has no at-rest gradient at all) and `Reading order for operators and researchers`, to `start-here.html`.
 - **Stage header:** the EEZ mark plus `Quickstarts` link home (mono 12px, Slate), title, `NEXT: … →` link (nudges right), the `STEP 1 OF 3` counter and `ALL EXAMPLES →`. The header link stays because it's the only way on while the lead-in hides the bottom bar.
 - **Up-next button:** the main way on to the next walkthrough. It's a pill in the bottom bar right after `‹ Prev ▶ Play Next ›`, behind a hairline divider, because that's where the reader is when step 3 ends. It's an outline pill set entirely in mono: a muted `UP NEXT` kicker, the next title at 15/600, and a 34px `control` arrow circle. The circle fills with the gradient and slides 3px only on hover. On the last step (where `Next ›` disables) it gets `.is-final`: the edge and kicker turn `eez-green`, because that's the live state. There's no fill, glow or pulse. Below 1120px it becomes a full-width row under the step buttons. At the end of a track it reads `TRACK COMPLETE · Back to all examples`.
 
