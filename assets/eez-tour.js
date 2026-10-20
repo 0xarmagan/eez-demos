@@ -122,9 +122,9 @@
     add(".navlinks", 10, "THE SOURCE",
         "The contracts, the node, and the live testnet.");
     add('#quickstart a.card[href*="qs1-"]', 8, "START HERE",
-        "Open the first walkthrough. The tour continues inside.",
+        "Open the first walkthrough. \u201cHow this page works\u201d there explains the page.",
         { cta: { label: "Open it \u203a",
-                 href: "./dapp-developers/qs1-run-your-first-round-trip.html#tour" } });
+                 href: "./dapp-developers/qs1-run-your-first-round-trip.html" } });
     return steps;
   }
 
@@ -201,18 +201,10 @@
         els: [$("stepNav")],
         pad: 14,
         kicker: "MOVE THROUGH IT",
-        body: (n ? n + " steps. " : "") + "Next, Prev, or Play. Arrow keys work too."
+        body: (n ? n + " steps. " : "") + "Next, Prev, or Play. On the last step, Next becomes Up next."
       });
     }
 
-    if ($("nextDemo")) {
-      steps.push({
-        els: [$("nextDemo")],
-        pad: 10,
-        kicker: "UP NEXT",
-        body: "The next walkthrough. All examples goes back to the list."
-      });
-    }
 
     return steps;
   }
@@ -388,14 +380,17 @@
   }
   pulseHelp();
 
-  /* The index tour hands off to a walkthrough with #tour. Open that page's
-     tour once it has wired its own ? button (which dismisses the lead-in
-     first), so the reader lands in the same tour they were following. */
-  if (!isPageMode() && root.location && root.location.hash === "#tour") {
-    root.addEventListener("load", function () {
-      var h = document.getElementById("btnHelp");
-      if (h) { h.click(); }
-    });
+  /* Walkthroughs: the page tour runs only when asked, from the "How this
+     page works" button in the bottom bar. It routes through the page's own ?
+     handler, which dismisses the lead-in first. */
+  if (!isPageMode()) {
+    var pt = document.getElementById("btnTourPage");
+    if (pt) {
+      pt.addEventListener("click", function () {
+        var h = document.getElementById("btnHelp");
+        if (h) { h.click(); } else { start(); }
+      });
+    }
   }
 
   root.EEZTour = {

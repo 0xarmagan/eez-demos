@@ -168,6 +168,16 @@
     a.next-demo{flex-basis:100%;max-width:none;justify-content:space-between;margin-top:6px;}
     .next-demo-t{white-space:normal;}
   }
+  /* Bottom bar: the page tour sits alone on the left, on request. On the
+     right, Up next replaces Next only on the last step, so the row never
+     shows two ways forward at once (the header NEXT link covers the rest). */
+  .page-tour{display:inline-flex;align-items:center;gap:12px;font-family:var(--mono);font-size:15px;letter-spacing:0.04em;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:11px 22px 11px 12px;cursor:pointer;}
+  .page-tour:hover{color:#fff;border-color:#444;}
+  .page-tour-q{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--eez-grad-btn);color:var(--eez-ink-on-grad);font-weight:600;font-size:14px;}
+  .page-tour:focus-visible{outline:2px solid var(--eez-green);outline-offset:3px;}
+  a.next-demo{display:none;}
+  a.next-demo.is-final{display:inline-flex;}
+  #stepNav.at-end #btnNext{display:none;}
 </style>
 </head>
 <body>
@@ -318,13 +328,13 @@
     </div>
   </section>
 
-  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:flex-end;padding:0 48px;gap:48px;">
+  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
+    <button id="btnTourPage" class="btn page-tour" type="button"><span class="page-tour-q" aria-hidden="true">?</span>How this page works</button>
     <div id="stepNav" style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
       <div style="display:flex;align-items:center;gap:12px;">
         <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
         <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
         <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
-        <span class="next-sep" aria-hidden="true"></span>
         <a id="nextDemo" class="next-demo" href="q7-your-cross-chain-address.html"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">Go deeper — Your Cross-Chain Address</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
       </div>
       <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
@@ -745,6 +755,8 @@
     if (n) { n.disabled = (step >= N-1); }
     var nd = document.getElementById("nextDemo");
     if (nd) { nd.classList.toggle("is-final", step >= N-1); }
+    var sn = document.getElementById("stepNav");
+    if (sn) { sn.classList.toggle("at-end", step >= N-1); }
   }
   function staticBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; syncEnds(); }
   function animateBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; void b.offsetWidth; b.style.transition="transform "+STEP_MS+"ms linear"; b.style.transform="scaleX("+((step+1)/N)+")"; syncEnds(); }
