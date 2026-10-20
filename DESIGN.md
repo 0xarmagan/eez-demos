@@ -277,7 +277,7 @@ Quiet until touched. Grey at rest, with one gradient action per stage.
   - a mono card number (`00`, quiet `#808080`, 4.6:1 on `screen`, brightening on hover; it doesn't dim when visited);
   - a Title;
   - a Body Small hook that states the consequence;
-  - a mono CTA row pinned to the bottom (`WATCH THE 3-STEP WALKTHROUGH`) with a 26px arrow circle that fills with the gradient on hover.
+  - a mono CTA row pinned to the bottom (`OPEN THE 3-STEP WALKTHROUGH`) with a 26px arrow circle that fills with the gradient on hover.
   - Visited cards dim their title to `#B8B8B8`.
 
 ### Inputs / Fields

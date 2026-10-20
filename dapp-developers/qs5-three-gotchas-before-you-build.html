@@ -184,10 +184,10 @@
       <a class="back hdr-home" href="../index.html" aria-label="EEZ Quickstarts home"><img src="../favicon.svg" alt="" width="16" height="26">Quickstarts</a>
       <div class="hdr-dot" style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
       <div style="font-size:22px;font-weight:600;color:#fff;">Two Gotchas Before You Build</div>
-      <a class="back hdr-rule" href="qs7-cross-chain-flash-loan.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Cross-Chain Flash Loan &rarr;</a>
+      <a class="back hdr-rule" href="qs7-cross-chain-flash-loan.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT WALKTHROUGH: Cross-Chain Flash Loan &rarr;</a>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
-      <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
+      <button id="btnHelp" type="button" title="How this page works" aria-label="How this page works" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">STEP 1 OF 2</div>
       <a class="back hdr-rule" href="../index.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">ALL EXAMPLES →</a>
     </div>
@@ -273,14 +273,14 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">Two Gotchas Before You Build</h1>
-      <p class="intro-lede">You have watched a call cross and come back. Before you write your own contract, check who calls it and when its entry can be consumed. A same-chain test can miss both gotchas.</p>
+      <p class="intro-lede">You have followed a call across and back. Before you write your own contract, check who calls it and when its entry can be consumed. A same-chain test can miss both gotchas.</p>
       <p class="intro-lede">One gotcha per step, the upstream lines behind it, and a link to the page that covers it in depth.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 &#183; MSG.SENDER IS THE PROXY.</b>Your contract is called by the source's proxy, so an owner check against the source reverts.</li>
         <li><b>02 &#183; AN ENTRY COUNTS ONLY IN ITS BLOCK.</b>A proxy call reverts unless its rollup was verified in the current block.</li>
       </ul>
-      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
+      <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol Git commit 9a1f815 &mdash; pre-mainnet (test network); interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
       </div>

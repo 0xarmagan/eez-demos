@@ -62,16 +62,29 @@
      rects can be used as-is and there is no transform to undo. */
   function isPageMode() { return !$("stage"); }
 
+  /* Below 1120px the stage stops being a scaled 1920x1080 deck and becomes a
+     normal stacked document. The tour must follow that layout: its old
+     stage-space layer was 1920px wide inside a 375px page, which widened the
+     viewport to ~1500px and pushed the card off-screen. */
+  function isNarrowStage() {
+    return !!$("stage") && root.matchMedia && root.matchMedia("(max-width:1120px)").matches;
+  }
+
+  var activePageMode = null;
+  function tourPageMode() {
+    return activePageMode === null ? isPageMode() : activePageMode;
+  }
+
   function rectFor(el) {
-    if (isPageMode()) {
+    if (tourPageMode()) {
       var r = el.getBoundingClientRect();
       return { left: r.left, top: r.top, width: r.width, height: r.height };
     }
     return rectIn($("stage"), el);
   }
 
-  function boundsW() { return isPageMode() ? (root.innerWidth || STAGE_W) : STAGE_W; }
-  function boundsH() { return isPageMode() ? (root.innerHeight || 1080) : 1080; }
+  function boundsW() { return tourPageMode() ? (root.innerWidth || STAGE_W) : STAGE_W; }
+  function boundsH() { return tourPageMode() ? (root.innerHeight || 1080) : 1080; }
 
   /* Smallest rect covering every element given. Used for the button cluster,
      which is several separately-positioned buttons. */
@@ -213,11 +226,15 @@
   }
 
   function start(opts) {
-    var pageMode = isPageMode();
+    if (document.getElementById("tourLayer")) { return; }
+    var pageMode = isPageMode() || isNarrowStage();
+    activePageMode = pageMode;
     var stage = pageMode ? document.body : $("stage");
-    if (!stage) { return; }
+    if (!stage) { activePageMode = null; return; }
+    // buildSteps() picks the walkthrough/index script from the real page type;
+    // the narrow layout only changes where the spotlight is painted.
     var steps = buildSteps();
-    if (!steps.length) { return; }
+    if (!steps.length) { activePageMode = null; return; }
 
     var onDone = (opts && opts.onDone) || function () {};
     var idx = 0;
@@ -225,7 +242,7 @@
     var layer = document.createElement("div");
     layer.id = "tourLayer";
     layer.setAttribute("role", "dialog");
-    layer.setAttribute("aria-label", "How to read this page");
+    layer.setAttribute("aria-label", "How this page works");
     layer.setAttribute("aria-modal", "true");
     var opener = document.activeElement;
     layer.style.cssText = pageMode
@@ -262,6 +279,7 @@
         root.removeEventListener("scroll", onReflow, true);
         root.removeEventListener("resize", onReflow);
       }
+      activePageMode = null;
       markSeen();
       onDone();
       // Hand focus back to whatever opened the tour, or keyboard users land
@@ -335,10 +353,10 @@
         '</div>' +
         '<div style="font-size:17px;line-height:1.5;color:#d8d8d8;">' + st.body + '</div>' +
         '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px;">' +
-          '<button type="button" id="tourSkip" style="font-family:var(--mono);font-size:12px;letter-spacing:0.06em;color:var(--muted);background:none;border:none;padding:0;cursor:pointer;">SKIP</button>' +
+          '<button type="button" id="tourSkip" aria-label="Skip tour" style="font-family:var(--mono);font-size:12px;letter-spacing:0.06em;color:var(--muted);background:none;border:none;padding:10px 8px;min-height:44px;min-width:44px;cursor:pointer;text-align:left;">SKIP</button>' +
           '<div style="display:flex;gap:9px;">' +
-            (idx > 0 ? '<button type="button" id="tourPrev" style="font-family:var(--mono);font-size:12px;letter-spacing:0.06em;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:8px 16px;cursor:pointer;">‹ Back</button>' : '') +
-            '<button type="button" id="tourNext" style="font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:0.06em;color:#0A0A0A;background:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%);border:1px solid #6283BD;border-radius:100px;padding:8px 18px;cursor:pointer;">' +
+            (idx > 0 ? '<button type="button" id="tourPrev" style="font-family:var(--mono);font-size:12px;letter-spacing:0.06em;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:10px 16px;min-height:44px;cursor:pointer;">‹ Back</button>' : '') +
+            '<button type="button" id="tourNext" style="font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:0.06em;color:#0A0A0A;background:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%);border:1px solid #6283BD;border-radius:100px;padding:10px 20px;min-height:44px;cursor:pointer;">' +
               (st.cta ? st.cta.label : (idx === steps.length - 1 ? "Got it" : "Next ›")) + '</button>' +
           '</div>' +
         '</div>';

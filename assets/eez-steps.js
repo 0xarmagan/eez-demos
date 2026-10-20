@@ -8,8 +8,8 @@
  * keeps the 24 inline step scripts unedited.
  *
  *   #step-2 on arrival   dismiss the lead-in and open step 2
- *   any step change      the URL becomes #step-n (replaceState, so stepping
- *                        does not fill the back button with history entries)
+ *   any step change      the URL becomes #step-n; moving forward adds a
+ *                        history entry so Back returns to the previous step
  *   no hash on arrival   nothing happens until the reader starts the page
  */
 (function () {
@@ -52,19 +52,186 @@
     if (m) { go(+m[1]); }
   }
 
+  var firstSync = true;
   function sync() {
     if (applying || introShowing()) { return; }
     var cur = current();
     if (!cur) { return; }
     var want = "#step-" + cur.n;
     if (location.hash !== want) {
-      history.replaceState(null, "", location.pathname + location.search + want);
+      var url = location.pathname + location.search + want;
+      // The first step replaces the current entry; later steps add one so the
+      // phone back gesture goes to the previous step, not out of the demo.
+      if (firstSync && !location.hash && cur.n === 1) {
+        history.replaceState({ step: cur.n }, "", url);
+      } else {
+        history.pushState({ step: cur.n }, "", url);
+      }
     }
+    firstSync = false;
   }
 
   if (window.MutationObserver) {
     new MutationObserver(sync).observe(label, { childList: true, characterData: true, subtree: true });
   }
   window.addEventListener("hashchange", fromHash);
+  window.addEventListener("popstate", fromHash);
   fromHash();
+})();
+
+/* ---------------------------------------------------------------------------
+ * Launch-QA corrections shared by every walkthrough.
+ *
+ * These are deliberately additive: the step engine above and each page's
+ * inline script keep owning step state. This layer only fixes the state the
+ * reader sees around it:
+ *   - the lead-in is an overview, not "step 1 of 3"
+ *   - Up next is a next-walkthrough link, so it appears only after step 3
+ *   - a phone starts the stage at the top, not halfway down the old scroll
+ *   - Space/R autoplay leaves a visible way to pause
+ *   - step pills and COPY meet the 44px touch target
+ *   - step pills have accessible names
+ * ------------------------------------------------------------------------- */
+(function () {
+  "use strict";
+
+  var intro = document.getElementById("intro");
+  var label = document.getElementById("stepLabel");
+  var play = document.getElementById("btnPlay");
+  var dots = document.getElementById("dots");
+  var codePanel = document.getElementById("codePanel");
+  var mq = window.matchMedia ? window.matchMedia("(max-width:1120px)") : { matches: false };
+
+  var st = document.createElement("style");
+  st.id = "eez-qa-fixes";
+  st.textContent = [
+    "/* Up next belongs after the last step, not beside step 1. */",
+    "#nextDemo{display:none !important}",
+    "#stepNav.at-end #nextDemo{display:inline-flex !important}",
+    "/* Autoplay is keyboard-reachable; give it a visible pause. */",
+    "body.is-playing #btnPlay{display:inline-flex !important;width:44px !important;min-width:44px !important;height:44px !important;min-height:44px !important;padding:0 !important;font-size:0 !important;align-items:center;justify-content:center;}",
+    "body.is-playing #btnPlay::after{content:\"❚❚\";font-size:14px;letter-spacing:0;}",
+    "/* A visible next-step arrow; Up next takes over on the last step. */",
+    "#stepNav #btnNext{display:inline-flex !important;width:44px !important;height:44px !important;min-width:44px !important;padding:0 !important;align-items:center;justify-content:center;font-size:18px !important;border-radius:50% !important;background:#141414 !important;border:1px solid #2a2a2a !important;color:#fff !important;}",
+    "@media (min-width:1121px){#stepNav #btnNext{width:36px !important;height:36px !important;min-width:36px !important;font-size:16px !important;}}",
+    "#stepNav.at-end #btnNext{display:none !important}",
+    ".ez-sr{position:absolute !important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}",
+    "@media (max-width:1120px){",
+    "  #dots button{min-width:44px !important;min-height:44px !important;}",
+    "  #btnCopy{height:44px !important;min-width:56px !important;padding:0 10px !important;top:2px !important;display:inline-flex !important;align-items:center;justify-content:center;}",
+    "  #btnHelp{width:44px !important;height:44px !important;}",
+    "  #stepNav > div:first-child{row-gap:12px;}",
+    "  #btnStart{min-height:48px !important;}",
+    "  .stage-wrap a.back{min-height:44px;display:inline-flex;align-items:center;}",
+    "  body.is-playing #btnPlay{position:fixed !important;right:18px !important;bottom:18px !important;width:52px !important;height:52px !important;min-width:52px !important;min-height:52px !important;border-radius:50% !important;z-index:60 !important;box-shadow:0 8px 28px rgba(0,0,0,.5);}",
+    "  /* Long command lines are more useful wrapped than clipped. The old */",
+    "  /* two-axis scroll region also trapped page scroll on touch. */",
+    "  #codePanel{max-height:none !important;height:auto !important;overflow-x:hidden !important;overflow-y:visible !important;}",
+    "  #codePanel > div{white-space:pre-wrap !important;}",
+    "  #codePanel > div > span:last-child{white-space:pre-wrap !important;overflow-wrap:anywhere;}",
+    "  #codePanel::after{display:none !important;}",
+    "  /* Keep file:line and the function name; the old nowrap clipped the */",
+    "  /* function, which is the trust cue readers click to verify. */",
+    "  #srcCite{white-space:normal !important;overflow:visible !important;text-overflow:clip !important;line-height:1.35 !important;}",
+    "  #srcCite a{white-space:normal !important;overflow-wrap:anywhere !important;word-break:break-word !important;}",
+    "}"
+  ].join("\n");
+  document.head.appendChild(st);
+
+  if (label && !label.hasAttribute("aria-live")) {
+    label.setAttribute("aria-live", "polite");
+  }
+
+  /* The lead-in covers the stage but the header still read STEP 1 OF 3.
+     Swap the visible text while the overview is open; the step engine reads
+     the original string, so restore it before the first real step. */
+  var savedLabel = label ? label.textContent : "";
+  function syncIntroLabel() {
+    if (!intro || !label) { return; }
+    if (!intro.hasAttribute("hidden")) {
+      if (label.textContent !== "OVERVIEW") {
+        savedLabel = label.textContent;
+        label.textContent = "OVERVIEW";
+      }
+    } else if (label.textContent === "OVERVIEW") {
+      label.textContent = savedLabel || "STEP 1 OF 3";
+    }
+  }
+  if (intro) {
+    new MutationObserver(syncIntroLabel).observe(intro, { attributes: true, attributeFilter: ["hidden"] });
+    syncIntroLabel();
+  }
+
+  /* On a phone the stage is a normal stacked document. Dismissing the lead-in
+     collapses it above the current scroll position, which used to leave the
+     reader halfway down step 1. Step pills had the same problem. */
+  var scrollQueued = false;
+  function scrollStageTop() {
+    if (!mq.matches || scrollQueued) { return; }
+    scrollQueued = true;
+    setTimeout(function () {
+      scrollQueued = false;
+      window.scrollTo(0, 0);
+    }, 80);
+  }
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (t && t.closest && t.closest("#btnStart, #dots button, #btnNext, #btnPrev")) {
+      scrollStageTop();
+    }
+  }, true);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "ArrowRight" || e.key === "ArrowLeft") { scrollStageTop(); }
+  }, true);
+
+  /* Autoplay can be started with Space or R even though the Play button is
+     not shown. Reflect the real state so there is a visible pause. */
+  if (play) {
+    var syncPlay = function () {
+      document.body.classList.toggle("is-playing", /pause/i.test(play.textContent || ""));
+    };
+    new MutationObserver(syncPlay).observe(play, { childList: true, subtree: true, characterData: true });
+    syncPlay();
+  }
+
+  var nextStep = document.getElementById("btnNext");
+  if (nextStep) {
+    nextStep.textContent = "→";
+    nextStep.setAttribute("aria-label", "Next step");
+    nextStep.setAttribute("title", "Next step");
+  }
+
+  /* Bare "1 2 3" is not an accessible name. */
+  function labelDots() {
+    if (!dots) { return; }
+    var buttons = dots.querySelectorAll("button");
+    for (var i = 0; i < buttons.length; i++) {
+      var title = (buttons[i].getAttribute("title") || "").trim();
+      buttons[i].setAttribute("aria-label", "Step " + (i + 1) + " of " + buttons.length + (title ? ": " + title : ""));
+    }
+    if (!dots.hasAttribute("role")) { dots.setAttribute("role", "group"); }
+    if (!dots.hasAttribute("aria-label")) { dots.setAttribute("aria-label", "Walkthrough steps"); }
+  }
+  if (dots) {
+    new MutationObserver(labelDots).observe(dots, { childList: true, subtree: true });
+    labelDots();
+  }
+
+  if (codePanel) {
+    codePanel.setAttribute("aria-label", "Code panel.");
+  }
+
+  /* Copy feedback is visual on the button; announce it too. */
+  var copyBtn = document.getElementById("btnCopy");
+  if (copyBtn) {
+    var live = document.createElement("span");
+    live.className = "ez-sr";
+    live.setAttribute("role", "status");
+    live.setAttribute("aria-live", "polite");
+    document.body.appendChild(live);
+    new MutationObserver(function () {
+      var text = (copyBtn.textContent || "").trim();
+      if (text && text !== "COPY") { live.textContent = text; }
+    }).observe(copyBtn, { childList: true, subtree: true, characterData: true });
+  }
 })();
