@@ -102,11 +102,6 @@
         body: "Run your first round trip: clone eez-core-protocol at a pinned commit and watch a call " +
               "go to the other chain and come back with its answer, on two local anvil chains." });
     }
-    if (q(".cta-ghost")) {
-      steps.push({ els: [q(".cta-ghost")], pad: 10,
-        kicker: "ROLLUP OPERATORS AND PROTOCOL RESEARCHERS",
-        body: "Start here gives each role a reading order, so you know which walkthroughs to open first." });
-    }
     if (q(".search-box-row")) {
       steps.push({ els: [q(".search-box-row")], pad: 10,
         kicker: "FIND ONE",
