@@ -50,13 +50,6 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .hero-sub{font-size:18px;line-height:1.55;color:#c9cfda;max-width:640px;margin:-14px 0 32px;text-wrap:pretty}
 @media(max-width:640px){.hero-sub{font-size:15.5px}}
 
-/* pill CTAs */
-.pill-row{display:flex;gap:12px;margin-bottom:60px;flex-wrap:wrap}
-.pill{display:inline-flex;align-items:center;gap:11px;background:#fff;color:#000;border-radius:100px;padding:5px 5px 5px 20px;font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.03em;text-decoration:none}
-.pill .circ{width:30px;height:30px;border-radius:50%;background:var(--eez-canvas);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none;transition:transform .2s ease}
-.pill:hover .circ{transform:translateX(3px)}
-.pill.outline{background:transparent;color:#fff;border:1px solid #2e2e2e;padding:5px 5px 5px 20px}
-.pill.outline .circ{background:#141414;border:1px solid #2e2e2e}
 
 /* section */
 .sec{margin-top:8px}
@@ -102,7 +95,7 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .premainnet{margin:18px 0 0;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:#8a8a8a}
 
 /* search and filters */
-.search-filter-wrap{display:flex;flex-direction:column;gap:14px;margin-bottom:44px}
+.search-filter-wrap{display:flex;flex-direction:column;gap:14px;margin-bottom:60px}
 .search-box-row{position:relative;width:100%}
 .search-input{width:100%;background:#090909;border:1px solid #222;border-radius:12px;padding:13px 44px 13px 42px;color:#fff;font-family:var(--sans);font-size:14px;transition:border-color .2s ease,box-shadow .2s ease}
 .search-input:focus{outline:none;border-color:var(--eez-green);box-shadow:0 0 0 3px rgba(63,185,80,0.15)}
@@ -142,20 +135,14 @@ h1 .l{font-weight:300;color:#dcdcdc}
     </div>
     <div class="filter-tabs">
       <button class="filter-btn active" data-filter="all" title="24 walkthroughs, plus card 05, coming soon">ALL (24 + 1 SOON)</button>
-      <button class="filter-btn" data-filter="dapp-developers" title="14 walkthroughs, plus card 05, coming soon">DAPP DEVS (14 + 1 SOON)</button>
-      <button class="filter-btn" data-filter="rollup-operators">ROLLUP OPS (4)</button>
+      <button class="filter-btn" data-filter="dapp-developers" title="14 walkthroughs, plus card 05, coming soon">DAPP DEVELOPERS (14 + 1 SOON)</button>
+      <button class="filter-btn" data-filter="rollup-operators">ROLLUP OPERATORS (4)</button>
       <button class="filter-btn" data-filter="protocol-researchers">PROTOCOL RESEARCHERS (6)</button>
     </div>
   </div>
 
   <div id="emptyState" class="empty-state">
     No walkthroughs found matching your search. Try another keyword or clear filters.
-  </div>
-
-  <div class="pill-row">
-    <a class="pill" href="#quickstart">DAPP DEVELOPERS <span class="circ">→</span></a>
-    <a class="pill outline" href="#rollup-operators">ROLLUP OPERATORS <span class="circ">→</span></a>
-    <a class="pill outline" href="#protocol-researchers">PROTOCOL RESEARCHERS <span class="circ">→</span></a>
   </div>
 
   <!-- ================= DAPP DEVELOPERS: QUICKSTART ================= -->
