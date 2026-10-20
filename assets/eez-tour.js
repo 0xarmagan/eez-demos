@@ -96,12 +96,6 @@
     var steps = [];
     var q = function (sel) { return document.querySelector(sel); };
 
-    if (q(".cta-primary")) {
-      steps.push({ els: [q(".cta-primary")], pad: 10,
-        kicker: "DAPP DEVELOPERS · START HERE",
-        body: "Run your first round trip: clone eez-core-protocol at a pinned commit and watch a call " +
-              "go to the other chain and come back with its answer, on two local anvil chains." });
-    }
     if (q(".search-box-row")) {
       steps.push({ els: [q(".search-box-row")], pad: 10,
         kicker: "FIND ONE",
@@ -120,6 +114,13 @@
         kicker: "THE QUICKSTART, IN ORDER",
         body: "Cards 00 to 06 go from understanding one call, to running it, to building with it. " +
               "Every card is a 3-step walkthrough built on real, cited protocol source." });
+    }
+    var first = q('#quickstart a.card[href*="qs1-"]');
+    if (first) {
+      steps.push({ els: [first], pad: 8,
+        kicker: "DAPP DEVELOPERS · START HERE",
+        body: "Run your first round trip: clone eez-core-protocol at a pinned commit and watch a call " +
+              "go to the other chain and come back with its answer, on two local anvil chains." });
     }
     return steps;
   }

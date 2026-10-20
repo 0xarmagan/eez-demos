@@ -49,13 +49,10 @@ h1 .w{font-weight:800}
 h1 .l{font-weight:300;color:#dcdcdc}
 .hero-sub{font-size:18px;line-height:1.55;color:#c9cfda;max-width:640px;margin:-14px 0 32px;text-wrap:pretty}
 @media(max-width:640px){.hero-sub{font-size:15.5px}}
+.cta-tour{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.03em;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:0;border-radius:100px;padding:12px 22px;cursor:pointer}
+.cta-tour span{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1.5px solid currentColor;font-size:11px}
+.cta-tour:hover{filter:brightness(1.08)}
 .hero-cta{display:flex;align-items:center;gap:12px 22px;flex-wrap:wrap;margin:0 0 6px}
-.cta-primary{display:inline-flex;align-items:center;gap:10px;background:var(--eez-grad-btn);color:var(--eez-ink-on-grad);border-radius:100px;padding:12px 22px;font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.03em;text-decoration:none}
-.cta-primary span{transition:transform .2s ease}
-.cta-primary:hover span{transform:translateX(3px)}
-.cta-tour{display:inline-flex;align-items:center;gap:9px;font-family:var(--mono);font-size:12.5px;letter-spacing:.03em;color:#e6e6e6;background:#141414;border:1px solid #2e2e2e;border-radius:100px;padding:11px 18px;cursor:pointer}
-.cta-tour span{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1px solid #3a3a3a;font-size:11px;color:var(--muted)}
-.cta-tour:hover{border-color:#555;color:#fff}
 
 
 /* section */
@@ -141,7 +138,6 @@ h1 .l{font-weight:300;color:#dcdcdc}
   <div class="search-filter-wrap">
     <div class="hero-cta">
       <button class="cta-tour" type="button" id="btnTour"><span aria-hidden="true">?</span> Take the site tour</button>
-      <a class="cta-primary" href="./dapp-developers/qs1-run-your-first-round-trip.html">Run your first round trip <span aria-hidden="true">→</span></a>
     </div>
     <div class="search-box-row">
       <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
