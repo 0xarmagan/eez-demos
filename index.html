@@ -71,6 +71,10 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .card:visited .card-title{color:#b8b8b8}
 .card:visited .card-num{color:#3a3a3a}
 .card:hover::before{opacity:1}
+.card.soon{border-style:dashed;background:transparent}
+.card.soon:hover{transform:none;background:transparent;border-color:var(--eez-edge);box-shadow:none}
+.card.soon:hover::before{opacity:0}
+.card.soon .card-title{color:#9a9a9a}
 .card:hover .card-num{color:#aaa}
 .card:hover .cta{color:#fff}
 .card:hover .cta .circ{background:var(--grad) border-box;border-color:transparent;color:#000}
@@ -144,8 +148,8 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <span class="search-shortcut">/</span>
     </div>
     <div class="filter-tabs">
-      <button class="filter-btn active" aria-pressed="true" data-filter="all" title="24 walkthroughs, plus card 05, coming soon">ALL (24 + 1 SOON)</button>
-      <button class="filter-btn" aria-pressed="false" data-filter="dapp-developers" title="14 walkthroughs, plus card 05, coming soon">DAPP DEVELOPERS (14 + 1 SOON)</button>
+      <button class="filter-btn active" aria-pressed="true" data-filter="all">ALL (24)</button>
+      <button class="filter-btn" aria-pressed="false" data-filter="dapp-developers">DAPP DEVELOPERS (14)</button>
       <button class="filter-btn" aria-pressed="false" data-filter="rollup-operators">ROLLUP OPERATORS (4)</button>
       <button class="filter-btn" aria-pressed="false" data-filter="protocol-researchers">PROTOCOL RESEARCHERS (6)</button>
     </div>
@@ -200,10 +204,10 @@ h1 .l{font-weight:300;color:#dcdcdc}
           <div class="card-head"><h3 class="card-title"><span class="card-num">04</span>Two Gotchas Before You Build</h3></div>
           <p class="card-hook">Two cross-chain gotchas to check before you build: msg.sender is the source's proxy, and a state-changing proxy call needs an entry verified in the same block.</p>
         </a>
-        <a class="card" href="./dapp-developers/qs6-deploy-your-own-contract.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">05</span>Deploy Your Own Contract</h3><span class="badge">COMING SOON</span></div>
-          <p class="card-hook">Your own contract, deployed and called across chains with the Remix cross-chain plugin.</p>
-        </a>
+        <div class="card soon" aria-disabled="true">
+          <div class="card-head"><h3 class="card-title">Deploy Your Own Contract</h3><span class="badge">COMING SOON</span></div>
+          <p class="card-hook">Your own contract, deployed and called across chains with the Remix cross-chain plugin. Not part of the numbered sequence until it ships.</p>
+        </div>
       </div>
     </div>
 
@@ -211,11 +215,11 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <h3 class="phase-label">BUILD PATTERNS</h3>
       <div class="grid">
         <a class="card" href="./dapp-developers/qs7-cross-chain-flash-loan.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">06</span>Cross-Chain Flash Loan</h3></div>
+          <div class="card-head"><h3 class="card-title"><span class="card-num">05</span>Cross-Chain Flash Loan</h3></div>
           <p class="card-hook">Borrowed tokens go to an L2 and back before the repayment check runs, all inside one L1 transaction.</p>
         </a>
         <a class="card" href="./dapp-developers/qs8-bridge-tokens-both-ways.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">07</span>Bridge Tokens Both Ways</h3></div>
+          <div class="card-head"><h3 class="card-title"><span class="card-num">06</span>Bridge Tokens Both Ways</h3></div>
           <p class="card-hook">Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair of chains, then run the test that sends an ERC-20 through the Bridge.sol test fixture and back.</p>
         </a>
       </div>

@@ -44,12 +44,12 @@ What a neighbor can't truthfully copy: every code panel is verbatim source cited
   - whether to keep the hero phrase "as naturally as a same-chain call";
   - the unmeasured "DEPLOY A CONTRACT · ~15 MIN" pill;
   - rewrapping pr1–4 and pr6, which overflow their panels and keep the CI geometry job red;
-  - card 05 (Remix cross-chain plugin), which is "coming soon".
+  - the Deploy Your Own Contract card (Remix cross-chain plugin), which is "coming soon" and unnumbered.
 
 ## Brand Commitments
 
 - Branded as EEZ (Ethereum Economic Zone), with the EEZ logo, under the title "EEZ Quickstarts".
-- **Every page says EEZ is pre-mainnet**: walkthroughs in the intro slide's "Verified against … — pre-mainnet; interfaces may move." line, the index in its footer line, card 05 in its text. There is no header badge. Capability claims are design intent, not shipped behavior.
+- **Every page says EEZ is pre-mainnet**: walkthroughs in the intro slide's "Verified against … — pre-mainnet; interfaces may move." line, the index in its footer line, the Deploy Your Own Contract card in its text. There is no header badge. Capability claims are design intent, not shipped behavior.
 - **Honesty rules (binding):**
   - no card or caption implies something works, or takes less time, than it does;
   - stated timings name the hardware they were measured on;
