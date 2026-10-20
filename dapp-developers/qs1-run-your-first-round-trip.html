@@ -166,7 +166,7 @@
       <a class="back hdr-home" href="../index.html" aria-label="EEZ Quickstarts home"><img src="../favicon.svg" alt="" width="16" height="26">Quickstarts</a>
       <div class="hdr-dot" style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
       <div style="font-size:22px;font-weight:600;color:#fff;">Run Your First Round Trip</div>
-      <a class="back hdr-rule" href="qs2-read-your-side-of-it.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Follow One Call There and Back &rarr;</a>
+      <a class="back hdr-rule" href="qs2-read-your-side-of-it.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Follow One Call There and Back &rarr;</a>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
@@ -336,7 +336,7 @@
         <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
         <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
         <span class="next-sep" aria-hidden="true"></span>
-        <a id="nextDemo" class="next-demo" href="qs2-read-your-side-of-it.html#skip-intro"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">Follow One Call There and Back</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
+        <a id="nextDemo" class="next-demo" href="qs2-read-your-side-of-it.html"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">Follow One Call There and Back</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
       </div>
       <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
     </div>
@@ -749,7 +749,7 @@
   // ---- Lead-in slide -------------------------------------------------
   // Slide zero is a separate overlay inside the stage, NOT step 0: N,
   // step, the dots and every *ByStep array are untouched. Dismissal
-  // lasts for this page view only - nothing is written to localStorage.
+  // lasts for this page view only - nothing is saved to browser storage.
   var introEl = document.getElementById("intro");
   var introHidden = [];   // [element, its own inline display] while covered
   function introShowing(){ return !!introEl && !introEl.hasAttribute("hidden"); }
@@ -764,11 +764,6 @@
   }
   function dismissIntro(){
     if (!introShowing()) { return; }
-    // One orientation per session: remember the dismissal so the next
-    // walkthrough opens straight at step 1 (same end state as a NEXT-link
-    // arrival). sessionStorage so a fresh visit gets the lead-in again;
-    // guarded because storage access can throw (private windows, blocked).
-    try { window.sessionStorage.setItem("eez-demos:intro-dismissed:v1", "1"); } catch (e) { /* no-op */ }
     introEl.setAttribute("hidden", "");
     for (var i = 0; i < introHidden.length; i++) {
       // Restore the recorded inline value, not "" - stageCol and the
@@ -786,20 +781,7 @@
     // A real <button>, so Enter and Space activate it natively; the
     // keydown handler below stays off the keyboard while it is up.
     if (btnStart) { btnStart.addEventListener("click", dismissIntro); }
-    // Arriving via a NEXT link (bottom-bar <a class="back">, see the other
-    // 14 walkthroughs) means the reader already opted in to this track by
-    // clicking through the previous page - skip straight to step 1 instead
-    // of making them dismiss the lead-in again. Reusing dismissIntro keeps
-    // this in sync with the Start button's own end state. A reload of this
-    // exact URL (marker still in the address bar) legitimately skips the
-    // intro again; a reload of the bare URL carries no marker and still
-    // shows it.
-    if (window.location.hash === "#skip-intro") { dismissIntro(); }
-    // Already dismissed a lead-in this session — the reader is oriented,
-    // skip this one too. A cold arrival (shared link, new tab) still gets it.
-    try {
-      if (window.sessionStorage.getItem("eez-demos:intro-dismissed:v1") === "1") { dismissIntro(); }
-    } catch (e) { /* treat as a cold arrival */ }
+    // Every visit starts with this page's intro, including NEXT-link arrivals.
   }
 
   // The pin is read out of whichever citation link the page has, deferred so it

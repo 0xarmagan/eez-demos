@@ -7,7 +7,7 @@
 <link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
 <link rel="alternate" type="text/markdown" href="qs5-three-gotchas-before-you-build.md" title="This card as markdown, for agents">
-<title>Three Gotchas Before You Build — EEZ</title>
+<title>Two Gotchas Before You Build — EEZ</title>
 <link rel="canonical" href="https://eez-demos.vercel.app/dapp-developers/qs5-three-gotchas-before-you-build.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -90,9 +90,9 @@
   .intro-title{font-size:56px;font-weight:600;line-height:1.14;color:#fff;margin:20px 0 0;max-width:1380px;text-wrap:pretty;}
   .intro-lede{font-size:25px;line-height:1.5;color:#d8d8d8;margin:26px 0 0;max-width:1280px;text-wrap:pretty;}
   .intro-learn-label{font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:var(--muted);margin-top:54px;}
-  /* Three across, one per demo step - a full-width index, not cards
+  /* Two across, one per demo step - a full-width index, not cards
      in a void: a hairline rule per column, no box, no fill. */
-  .intro-learn{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px;}
+  .intro-learn{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:36px;}
   .intro-learn li{border-top:1px solid var(--eez-edge);padding-top:16px;font-size:19px;line-height:1.5;color:#d8d8d8;text-wrap:pretty;}
   .intro-learn b{display:block;font-family:var(--mono);font-size:14px;font-weight:400;letter-spacing:0.12em;color:var(--eez-green);margin-bottom:11px;}
   .intro-actions{margin-top:54px;}
@@ -169,12 +169,12 @@
     <div style="display:flex;align-items:center;gap:18px;">
       <a class="back hdr-home" href="../index.html" aria-label="EEZ Quickstarts home"><img src="../favicon.svg" alt="" width="16" height="26">Quickstarts</a>
       <div class="hdr-dot" style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-      <div style="font-size:22px;font-weight:600;color:#fff;">Three Gotchas Before You Build</div>
-      <a class="back hdr-rule" href="qs7-cross-chain-flash-loan.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Cross-Chain Flash Loan &rarr;</a>
+      <div style="font-size:22px;font-weight:600;color:#fff;">Two Gotchas Before You Build</div>
+      <a class="back hdr-rule" href="qs7-cross-chain-flash-loan.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Cross-Chain Flash Loan &rarr;</a>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
-      <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">STEP 1 OF 3</div>
+      <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">STEP 1 OF 2</div>
       <a class="back hdr-rule" href="../index.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">ALL EXAMPLES →</a>
     </div>
   </div>
@@ -184,7 +184,7 @@
 
     <!-- Step 1: the proxy is the caller your contract sees. -->
     <div id="s1" style="display:flex;flex-direction:column;gap:26px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">GOTCHA 1 OF 3 &#183; WHO CALLS YOU</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">GOTCHA 1 OF 2 &#183; WHO CALLS YOU</div>
       <div style="display:flex;align-items:center;gap:14px;">
         <div style="width:300px;background:#141b2b;border:1.5px solid #7c83ff;border-radius:9px;padding:16px 18px;">
           <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.1em;color:var(--label);">ON THE OTHER CHAIN</div>
@@ -212,7 +212,7 @@
 
     <!-- Step 2: entries are gated to the block they were posted in. -->
     <div id="s2" style="display:none;flex-direction:column;gap:26px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">GOTCHA 2 OF 3 &#183; WHEN IT COUNTS</div>
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">GOTCHA 2 OF 2 &#183; WHEN IT COUNTS</div>
       <div class="pair-row" style="display:flex;align-items:stretch;gap:18px;">
         <div style="flex:1;background:rgba(63,185,80,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:18px 22px;">
           <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--eez-green);">L1 BLOCK N</div>
@@ -229,29 +229,6 @@
       <a class="back" href="q8-read-a-remote-contracts-state.html" style="font-size:14px;color:var(--eez-green);">SEE ALSO: the block gate for reads, in How to read a remote contract's state &rarr;</a>
     </div>
 
-    <!-- Step 3: on L2, with USE_GAS_LEFT on, the manager's sampled gasleft() is in the hash. -->
-    <div id="s3" style="display:none;flex-direction:column;gap:26px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">GOTCHA 3 OF 3 &#183; WHAT GETS HASHED</div>
-      <div class="pair-row" style="display:flex;align-items:stretch;gap:18px;">
-        <div style="flex:1;background:#141414;border:1.5px solid #2e2e2e;border-radius:10px;padding:18px 22px;">
-          <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">CALL LEAVING L1</div>
-          <div style="font-family:var(--mono);font-size:17px;color:#d8d8d8;margin-top:12px;">callGas = ZERO_CALL_GAS</div>
-          <div style="font-size:15px;color:var(--muted);margin-top:10px;">The hash never depends on gas.</div>
-        </div>
-        <div style="flex:1;background:rgba(124,131,255,0.07);border:1.5px solid #7c83ff;border-radius:10px;padding:18px 22px;">
-          <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--label);">CALL LEAVING L2</div>
-          <div style="font-family:var(--mono);font-size:17px;color:#eef1ff;margin-top:12px;">callGas = gasleft()</div>
-          <div style="font-size:15px;color:#a9b0d6;margin-top:10px;">With <span style="font-family:var(--mono);">USE_GAS_LEFT</span> on (the intended production mode, off in every current deployment): the <span style="font-family:var(--mono);">gasleft()</span> the L2 manager samples after its proxy checks and any value transfer. Otherwise 0.</div>
-        </div>
-      </div>
-      <div style="background:rgba(63,185,80,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:18px 24px;max-width:960px;">
-        <div style="font-family:var(--mono);font-size:18px;color:#7ee08c;">target.increment{gas: PROXY_CALL_GAS}();</div>
-        <div style="font-size:16px;color:#a9b6ac;margin-top:12px;">Attach a fixed amount at the call site, so whoever builds the entry can reproduce the gas the manager samples.</div>
-      </div>
-      <a class="back" href="q5-encode-a-calls-content-hash.html" style="font-size:14px;color:var(--eez-green);">DEEP DIVE: How to encode a call's content hash &rarr;</a>
-    </div>
-
-  
     <!-- Narration sits directly under the diagram it describes (audit fix 04):
          same #kicker/#caption ids, so render() is untouched. -->
     <div id="narration" style="margin-top:40px;border-top:1px solid #1a1a1a;padding-top:26px;max-width:1010px;" aria-live="polite" aria-atomic="true">
@@ -276,19 +253,18 @@
   <!-- ===== LEAD-IN SLIDE - shown before the walkthrough begins =====
        This is a lead-in, NOT step 0. N, step, stepLabel, the dots,
        kickers, captions and codeByStep are all untouched, so the
-       counter still reads STEP 1 OF 3 and there are still three dots.
+       counter still reads STEP 1 OF 2 and there are still two dots.
        Inserted as the 4th child of #stage; see the CSS note. -->
   <section id="intro" aria-labelledby="introTitle">
     <div class="intro-inner">
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
-      <h1 class="intro-title" id="introTitle">Three Gotchas Before You Build</h1>
-      <p class="intro-lede">You have watched a call cross and come back. Before you write your own contract, three things behave differently from a same-chain call. A test that never leaves one chain hides all three. Cross-chain, two of them revert, and the third matters once an L2 turns on USE_GAS_LEFT.</p>
+      <h1 class="intro-title" id="introTitle">Two Gotchas Before You Build</h1>
+      <p class="intro-lede">You have watched a call cross and come back. Before you write your own contract, check who calls it and when its entry can be consumed. A same-chain test can miss both gotchas.</p>
       <p class="intro-lede">One gotcha per step, the upstream lines behind it, and a link to the page that covers it in depth.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
         <li><b>01 &#183; MSG.SENDER IS THE PROXY.</b>Your contract is called by the source's proxy, so an owner check against the source reverts.</li>
         <li><b>02 &#183; AN ENTRY COUNTS ONLY IN ITS BLOCK.</b>A proxy call reverts unless its rollup was verified in the current block.</li>
-        <li><b>03 &#183; ON L2, GAS CAN BE PART OF THE CALL.</b>With <span style="font-family:var(--mono);">USE_GAS_LEFT</span> on (off in every current deployment), a call leaving L2 hashes the <span style="font-family:var(--mono);">gasleft()</span> the L2 manager samples after its proxy checks and any value transfer, so call sites attach a fixed amount.</li>
       </ul>
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
@@ -304,7 +280,7 @@
         <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
         <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
         <span class="next-sep" aria-hidden="true"></span>
-        <a id="nextDemo" class="next-demo" href="qs7-cross-chain-flash-loan.html#skip-intro"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">Cross-Chain Flash Loan</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
+        <a id="nextDemo" class="next-demo" href="qs7-cross-chain-flash-loan.html"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">Cross-Chain Flash Loan</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
       </div>
       <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
     </div>
@@ -316,14 +292,16 @@
 <script src="../assets/eez-tour.js"></script>
 <script>
 (function(){
-  var N = 3, STEP_MS = 3200;
+  var N = 2, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["MSG.SENDER IS THE PROXY.", "AN ENTRY COUNTS ONLY IN ITS BLOCK.", "ON L2, GAS CAN BE PART OF THE CALL."];
+  var kickers = [
+    "MSG.SENDER IS THE PROXY.",
+    "AN ENTRY COUNTS ONLY IN ITS BLOCK."
+  ];
   var captions = [
     "Cross-chain, your contract is called by the source's proxy, not the source. Check msg.sender against the proxy address, or an owner check reverts every time.",
-    "Every proxy call checks that its rollup was verified in the current block. An entry posted in block N is dead in block N+1, and the call reverts with ExecutionNotInCurrentBlock.",
-    "If an L2 deploys its manager with USE_GAS_LEFT on (the intended production mode, off in every current deployment), the gas left when the manager hashes the call goes into the hash. That is why call sites attach a fixed amount."
+    "Every proxy call checks that its rollup was verified in the current block. An entry posted in block N is dead in block N+1, and the call reverts with ExecutionNotInCurrentBlock."
   ];
 
   // Each step is a verbatim upstream excerpt at the pin (check-excerpts.py).
@@ -335,7 +313,7 @@
       "// the source's proxy make your call:",
       "fallback() external payable {",
       "  // sender is EEZ, sig is executeOnBehalf",
-      "  // decodes destination, callGas, data",
+      "  // decodes the destination and call data",
       "  \u22ef",
       "  ? destination.call{value: msg.value}(data)",
       "  \u22ef",
@@ -359,37 +337,22 @@
       "// of reach.",
       "// L2: lastLoadBlock != block.number reverts",
       "// too (EEZL2.sol:791)."
-    ],
-    [
-      "// quoting CounterContracts.sol:4-5",
-      "/// L2 folds the gas left after its pre-hash",
-      "/// checks into the outgoing call hash, so these",
-      "/// sites attach a fixed amount",
-      "uint256 constant PROXY_CALL_GAS = 5_000_000;",
-      "",
-      "function incrementProxy() external {",
-      "  // :63 attaches it: targetCounter =",
-      "  //   target.increment{gas: PROXY_CALL_GAS}();",
-      "  \u22ef",
-      "",
-      "// With EEZL2's USE_GAS_LEFT on (intended for",
-      "// production, off in every current deployment),",
-      "// callGas = the L2 manager's gasleft() after its",
-      "// proxy checks and value transfer (EEZL2.sol:282),",
-      "// not the gas you forward. L1 uses ZERO_CALL_GAS."
     ]
   ];
   var hlByStep = [
-    [7],
-    [2,6],
-    [4]
+    [
+      7
+    ],
+    [
+      2,
+      6
+    ]
   ];
   // Each step cites a different file, so the citation follows the step.
   // Written as literal anchors so verify-citations.py sees and pins them.
   var citeByStep = [
     '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L67" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:67 · fallback ↗</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L1578" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:1578 · _requireVerifiedThisBlock ↗</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/test/mocks/CounterContracts.sol#L7" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/test/mocks/CounterContracts.sol:7 · PROXY_CALL_GAS ↗</a>'
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L1578" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:1578 · _requireVerifiedThisBlock ↗</a>'
   ];
 
   // No compilable snippet: every step is a verbatim upstream excerpt.
@@ -397,7 +360,7 @@
   var showFull = false;
   function currentLines(){ return showFull ? fullSnippet : (codeByStep[step] || []); }
 
-  var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
+  var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2') };
 
   
   // Single-pass tokenizer: strings and comments are consumed before identifiers,
@@ -502,7 +465,6 @@
 
     els.s1.style.display = step === 0 ? "flex" : "none";
     els.s2.style.display = step === 1 ? "flex" : "none";
-    els.s3.style.display = step === 2 ? "flex" : "none";
 
     var code = currentLines();
     var hl = showFull ? [] : (hlByStep[step] || []);
@@ -732,7 +694,7 @@
   // ---- Lead-in slide -------------------------------------------------
   // Slide zero is a separate overlay inside the stage, NOT step 0: N,
   // step, the dots and every *ByStep array are untouched. Dismissal
-  // lasts for this page view only - nothing is written to localStorage.
+  // lasts for this page view only - nothing is saved to browser storage.
   var introEl = document.getElementById("intro");
   var introHidden = [];   // [element, its own inline display] while covered
   function introShowing(){ return !!introEl && !introEl.hasAttribute("hidden"); }
@@ -747,11 +709,6 @@
   }
   function dismissIntro(){
     if (!introShowing()) { return; }
-    // One orientation per session: remember the dismissal so the next
-    // walkthrough opens straight at step 1 (same end state as a NEXT-link
-    // arrival). sessionStorage so a fresh visit gets the lead-in again;
-    // guarded because storage access can throw (private windows, blocked).
-    try { window.sessionStorage.setItem("eez-demos:intro-dismissed:v1", "1"); } catch (e) { /* no-op */ }
     introEl.setAttribute("hidden", "");
     for (var i = 0; i < introHidden.length; i++) {
       // Restore the recorded inline value, not "" - stageCol and the
@@ -769,20 +726,7 @@
     // A real <button>, so Enter and Space activate it natively; the
     // keydown handler below stays off the keyboard while it is up.
     if (btnStart) { btnStart.addEventListener("click", dismissIntro); }
-    // Arriving via a NEXT link (bottom-bar <a class="back">, see the other
-    // 14 walkthroughs) means the reader already opted in to this track by
-    // clicking through the previous page - skip straight to step 1 instead
-    // of making them dismiss the lead-in again. Reusing dismissIntro keeps
-    // this in sync with the Start button's own end state. A reload of this
-    // exact URL (marker still in the address bar) legitimately skips the
-    // intro again; a reload of the bare URL carries no marker and still
-    // shows it.
-    if (window.location.hash === "#skip-intro") { dismissIntro(); }
-    // Already dismissed a lead-in this session — the reader is oriented,
-    // skip this one too. A cold arrival (shared link, new tab) still gets it.
-    try {
-      if (window.sessionStorage.getItem("eez-demos:intro-dismissed:v1") === "1") { dismissIntro(); }
-    } catch (e) { /* treat as a cold arrival */ }
+    // Every visit starts with this page's intro, including NEXT-link arrivals.
   }
 
   // The pin is read out of whichever citation link the page has, deferred so it

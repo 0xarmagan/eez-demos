@@ -154,6 +154,47 @@
     a.next-demo{flex-basis:100%;max-width:none;justify-content:space-between;margin-top:6px;}
     .next-demo-t{white-space:normal;}
   }
+
+  /* Keep caller, target proxy and manager in the same order in every step.
+     The target proxy and remote Counter share one color and explicit labels. */
+  .answer-path,.answer-target-row{display:grid;grid-template-columns:minmax(0,1fr) 46px minmax(0,1fr) 46px minmax(0,1fr);align-items:center;}
+  .answer-node{padding:14px 18px;border:1px solid var(--eez-edge);border-radius:10px;background:var(--eez-screen);min-width:0;}
+  .answer-node.target,.answer-target{border-color:#6283BD;background:rgba(98,131,189,.08);}
+  .answer-label{font-family:var(--mono);font-size:12px;letter-spacing:.09em;color:var(--muted);line-height:1.5;}
+  .answer-name{font-family:var(--mono);font-size:19px;color:#fff;margin-top:6px;}
+  .answer-node.target .answer-name,.answer-target .answer-name,.answer-target-value{color:#9ba6d6;}
+  .answer-arrow{text-align:center;font-family:var(--mono);font-size:25px;color:var(--muted);}
+  .answer-target-row{margin-top:10px;}
+  .answer-target{grid-column:3;padding:10px 18px;border:1px solid #6283BD;border-radius:10px;}
+  .answer-target .answer-name{font-size:16px;margin-top:4px;}
+  .answer-step{margin-top:22px;flex-direction:column;gap:14px;}
+  .answer-panel{padding:18px 22px;border:1px solid var(--eez-edge);border-radius:10px;background:var(--eez-screen);}
+  .answer-fields{margin:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px 24px;}
+  .answer-fields dt{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--muted);}
+  .answer-fields dd{font-family:var(--mono);font-size:17px;color:#d8d8d8;margin:5px 0 0;}
+  .answer-fields dd.answer-target-value{color:#9ba6d6;}
+  .answer-key{margin-top:18px;border-top:1px solid var(--eez-edge);padding-top:14px;font-family:var(--mono);font-size:17px;color:#d8d8d8;}
+  .answer-key strong,.answer-good{color:var(--eez-green);font-weight:500;}
+  .answer-note{font-size:16px;line-height:1.5;color:var(--muted);}
+  .answer-compare{display:grid;grid-template-columns:minmax(0,1fr) 60px minmax(0,1fr);align-items:center;gap:12px;}
+  .answer-compare .answer-name{font-size:20px;}
+  .answer-equals{font-family:var(--mono);font-size:30px;text-align:center;color:var(--eez-green);}
+  .answer-result{display:grid;grid-template-columns:minmax(0,1.6fr) 60px minmax(0,1fr);align-items:center;gap:12px;}
+  .answer-entry{margin:14px 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px 18px;font-family:var(--mono);font-size:16px;}
+  .answer-entry dt{color:var(--muted);}
+  .answer-entry dd{margin:0;color:#d8d8d8;}
+  .answer-entry dd.answer-good{color:var(--eez-green);}
+  .answer-links{font-size:15px;line-height:1.5;color:var(--muted);}
+  .answer-links a{color:#d8d8d8;text-decoration:none;border-bottom:1px dotted var(--muted);}
+  @media (max-width:1120px){
+    .answer-path,.answer-target-row,.answer-fields,.answer-compare,.answer-result{grid-template-columns:minmax(0,1fr);}
+    .answer-arrow{transform:rotate(90deg);padding:6px 0;}
+    .answer-target{grid-column:1;}
+    .answer-compare .answer-name{font-size:17px;}
+    .answer-entry{grid-template-columns:minmax(0,1fr);gap:6px;}
+    .answer-entry dd{margin-bottom:8px;}
+    .answer-panel{padding:16px;}
+  }
 </style>
 </head>
 <body>
@@ -166,7 +207,7 @@
       <a class="back hdr-home" href="../index.html" aria-label="EEZ Quickstarts home"><img src="../favicon.svg" alt="" width="16" height="26">Quickstarts</a>
       <div class="hdr-dot" style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
       <div style="font-size:22px;font-weight:600;color:#fff;">Who Answered?</div>
-      <a class="back hdr-rule" href="qs5-three-gotchas-before-you-build.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Three Gotchas Before You Build &rarr;</a>
+      <a class="back hdr-rule" href="qs5-three-gotchas-before-you-build.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Two Gotchas Before You Build &rarr;</a>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
@@ -175,87 +216,70 @@
     </div>
   </div>
 
-  <!-- ===== DIAGRAM — the L1 entry, the L2 entry, and the hash both carry. ===== -->
+  <!-- ===== DIAGRAM: identify the call, match its hash, then read its entry. ===== -->
   <div id="stageCol" style="position:absolute;left:48px;top:140px;width:1112px;height:712px;display:flex;flex-direction:column;justify-content:center;gap:0;">
-
-
-
-    <!-- STEP 1: the L1 entry already holds the answer when the call runs -->
-    <div id="s1" style="display:flex;flex-direction:column;gap:30px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">L1 · ENTRY POSTED, THEN YOUR CALL</div>
-      <div style="display:flex;align-items:stretch;gap:0;">
-        <div style="flex:0 1 430px;background:rgba(59,229,126,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:20px 22px;animation:riseIn .4s ease both;">
-          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#7ee08c;">L1 ENTRY · ExecutionEntry</div>
-          <div style="display:flex;justify-content:space-between;gap:12px;margin-top:16px;font-family:var(--mono);font-size:16px;"><span style="color:var(--muted);">success</span><span style="color:#eef3f8;">true</span></div>
-          <div style="display:flex;justify-content:space-between;gap:12px;margin-top:10px;font-family:var(--mono);font-size:16px;"><span style="color:var(--muted);">returnData</span><span style="color:var(--eez-green);">abi.encode(1)</span></div>
-          <div style="font-size:15px;color:var(--muted);margin-top:16px;">posted by the composer · locally, the script</div>
-        </div>
-        <div style="flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;width:150px;">
-          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">answer read</div>
-          <div style="font-size:28px;line-height:1;color:var(--eez-green);">→</div>
-        </div>
-        <div style="flex:0 1 430px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:20px 22px;">
-          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">L1 · YOUR CALL</div>
-          <div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">incrementProxy()</div>
-          <div style="font-family:var(--mono);font-size:16px;color:var(--muted);margin-top:8px;">CounterAndProxy → proxy</div>
-          <div style="display:flex;align-items:center;gap:12px;margin-top:12px;"><span style="font-family:var(--mono);font-size:16px;color:var(--muted);">gets back</span><span style="font-family:var(--mono);font-size:19px;color:var(--eez-green);">1</span><span style="width:6px;height:6px;border-radius:50%;background:var(--eez-green);animation:pulse 1.8s ease-in-out infinite;"></span></div>
-        </div>
+    <div class="answer-path" aria-label="L1 call path: caller, Counter proxy, EEZ manager">
+      <div class="answer-node">
+        <div class="answer-label">L1 · YOUR CONTRACT</div>
+        <div class="answer-name">CounterAndProxy</div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">The scenario comment says it plainly: the entry is loaded with a precomputed return of <span style="font-family:var(--mono);">uint256(1)</span>, and the call consumes it.</div>
+      <span class="answer-arrow" aria-hidden="true">&rarr;</span>
+      <div class="answer-node target">
+        <div class="answer-label">L1 · TARGET'S PROXY</div>
+        <div class="answer-name">Counter proxy</div>
+      </div>
+      <span class="answer-arrow" aria-hidden="true">&rarr;</span>
+      <div class="answer-node">
+        <div class="answer-label">L1 · MANAGER</div>
+        <div class="answer-name">EEZ</div>
+      </div>
     </div>
-
-    <!-- STEP 2: the L2 entry carries the call that really runs -->
-    <div id="s2" style="display:none;flex-direction:column;gap:30px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">L2 · THE CALL THAT RUNS</div>
-      <div style="display:flex;align-items:stretch;gap:0;">
-        <div style="flex:0 1 430px;background:rgba(59,229,126,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:20px 22px;animation:riseIn .4s ease both;">
-          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#7ee08c;">L2 ENTRY · incomingCalls[0]</div>
-          <div style="display:flex;justify-content:space-between;gap:12px;margin-top:16px;font-family:var(--mono);font-size:16px;"><span style="color:var(--muted);">from</span><span style="color:#eef3f8;">CounterAndProxy · L1</span></div>
-          <div style="display:flex;justify-content:space-between;gap:12px;margin-top:10px;font-family:var(--mono);font-size:16px;"><span style="color:var(--muted);">to</span><span style="color:#eef3f8;">Counter · L2</span></div>
-          <div style="display:flex;justify-content:space-between;gap:12px;margin-top:10px;font-family:var(--mono);font-size:16px;"><span style="color:var(--muted);">data</span><span style="color:var(--eez-green);">increment()</span></div>
-        </div>
-        <div style="flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;width:150px;">
-          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">delivered</div>
-          <div style="font-size:28px;line-height:1;color:var(--eez-green);">→</div>
-        </div>
-        <div style="flex:0 1 430px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:20px 22px;">
-          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">L2 · Counter</div>
-          <div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">increment()</div>
-          <div style="display:flex;align-items:center;gap:12px;margin-top:12px;"><span style="font-family:var(--mono);font-size:16px;color:var(--muted);">counter</span><span style="font-family:var(--mono);font-size:19px;color:var(--muted);">0</span><span style="font-size:20px;color:var(--eez-green);">→</span><span style="font-family:var(--mono);font-size:19px;color:var(--eez-green);">1</span></div>
-          <div style="font-size:15px;color:var(--muted);margin-top:16px;">sent as the L2 system address · locally, the script</div>
-        </div>
-      </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">The same call your L1 contract made in step 1, here as the call L2 actually executes.</div>
-    </div>
-
-    <!-- STEP 3: both entries carry the same proxyEntryHash, from one helper -->
-    <div id="s3" style="display:none;flex-direction:column;gap:30px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">ONE CALL HASH, BOTH SIDES</div>
-      <div style="display:flex;align-items:stretch;gap:0;">
-        <div style="flex:0 1 380px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:20px 22px;">
-          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">L1 ENTRY</div>
-          <div style="font-family:var(--mono);font-size:16px;color:var(--eez-green);margin-top:16px;">proxyEntryHash</div>
-          <div style="font-family:var(--mono);font-size:15px;color:var(--muted);margin-top:10px;">returnData · abi.encode(1)</div>
-        </div>
-        <div style="flex:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:250px;">
-          <div style="font-size:22px;line-height:1;color:var(--eez-green);">←&nbsp;&nbsp;=&nbsp;&nbsp;→</div>
-          <div style="font-family:var(--mono);font-size:13px;color:#eef3f8;background:rgba(59,229,126,0.06);border:1.5px solid var(--eez-green);border-radius:8px;padding:8px 12px;white-space:nowrap;animation:riseIn .4s ease both;">_callHash(counterL2, cap)</div>
-        </div>
-        <div style="flex:0 1 380px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:20px 22px;">
-          <div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">L2 ENTRY</div>
-          <div style="font-family:var(--mono);font-size:16px;color:var(--eez-green);margin-top:16px;">proxyEntryHash</div>
-          <div style="font-family:var(--mono);font-size:15px;color:var(--muted);margin-top:10px;">incomingCalls · increment()</div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;font-size:16px;color:var(--muted);">
-        <span style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;">DEEP DIVE</span>
-        <a href="q5-encode-a-calls-content-hash.html" style="color:#eef3f8;text-decoration:none;border-bottom:1px dotted var(--muted);">How the call hash is encoded</a>
-        <span>·</span>
-        <a href="../protocol-researchers/pr6-the-rolling-hash.html" style="color:#eef3f8;text-decoration:none;border-bottom:1px dotted var(--muted);">The rolling hash</a>
+    <div class="answer-target-row">
+      <div class="answer-target">
+        <div class="answer-label">THE PROXY REPRESENTS · L2 TARGET</div>
+        <div class="answer-name">Counter · increment()</div>
       </div>
     </div>
 
-  
+    <div id="s1" class="answer-step" style="display:flex;">
+      <div class="answer-panel">
+        <dl class="answer-fields">
+          <div><dt>CALLER</dt><dd>CounterAndProxy on L1</dd></div>
+          <div><dt>TARGET</dt><dd class="answer-target-value">Counter on L2</dd></div>
+          <div><dt>CALL DATA</dt><dd>increment()</dd></div>
+          <div><dt>VALUE</dt><dd>0</dd></div>
+        </dl>
+        <div class="answer-key">Call inputs &rarr; <strong>proxyEntryHash</strong></div>
+      </div>
+      <div class="answer-note">The entry stores this call's hash. <code>success</code> and <code>returnData</code> are separate fields.</div>
+    </div>
+
+    <div id="s2" class="answer-step" style="display:none;">
+      <div class="answer-compare">
+        <div class="answer-panel"><div class="answer-label">HASH OF THE CURRENT CALL</div><div class="answer-name">crossChainCallHash</div></div>
+        <div class="answer-equals" aria-label="must equal">=</div>
+        <div class="answer-panel"><div class="answer-label">HASH IN THE STORED ENTRY</div><div class="answer-name">proxyEntryHash</div></div>
+      </div>
+      <div class="answer-note">Different hash? Skip this entry. The destination rollup and current roots must match too. No matching entry means <code>ExecutionNotFound</code>.</div>
+    </div>
+
+    <div id="s3" class="answer-step" style="display:none;">
+      <div class="answer-result">
+        <div class="answer-panel">
+          <div class="answer-label">MATCHED L1 ENTRY · ALREADY POSTED</div>
+          <dl class="answer-entry">
+            <dt>proxyEntryHash</dt><dd>the matching call hash</dd>
+            <dt>success</dt><dd class="answer-good">true</dd>
+            <dt>returnData</dt><dd class="answer-good">abi.encode(uint256(1))</dd>
+          </dl>
+        </div>
+        <span class="answer-arrow" aria-hidden="true">&rarr;</span>
+        <div class="answer-panel"><div class="answer-label">BACK THROUGH THE PROXY</div><div class="answer-name">targetCounter = <span class="answer-good">1</span></div><div class="answer-note">Saved by CounterAndProxy on L1</div></div>
+      </div>
+      <div class="answer-note">If <code>success</code> is false, the same <code>returnData</code> carries the revert payload.</div>
+      <div class="answer-links">More: <a href="q5-encode-a-calls-content-hash.html">Call hash fields</a> &middot; <a href="../protocol-researchers/pr6-the-rolling-hash.html">Rolling hash verification</a></div>
+    </div>
+
     <!-- Narration sits directly under the diagram it describes (audit fix 04):
          same #kicker/#caption ids, so render() is untouched. -->
     <div id="narration" style="margin-top:40px;border-top:1px solid #1a1a1a;padding-top:26px;max-width:1010px;" aria-live="polite" aria-atomic="true">
@@ -271,7 +295,7 @@
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L94&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:94 · ExecutionEntry ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L94" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:94 · ExecutionEntry ↗</a></div>
+      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L90&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:90 · _callHash ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L90" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:90 · _callHash ↗</a></div>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
     <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
@@ -286,13 +310,13 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">Who Answered?</h1>
-      <p class="intro-lede">In your round trip, CounterAndProxy on L1 got 1 back from Counter on L2. The L1 call didn't wait for L2: its answer was already written into an entry.</p>
-      <p class="intro-lede">On a real network the composer writes that entry and its L2 twin. Locally, the scenario script plays composer, so you can read exactly what it wrote.</p>
+      <p class="intro-lede">CounterAndProxy calls Counter's proxy on L1. How does EEZ find the stored answer that belongs to this call?</p>
+      <p class="intro-lede">Follow the call hash: compute it, compare it with an entry, then read success and returnData. The composer prepares the entry before your call; locally, the scenario script does that work.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
-        <li><b>01 · THE ANSWER, WRITTEN DOWN FIRST</b>The L1 entry holds the return value, 1, before your call runs.</li>
-        <li><b>02 · THE REAL CALL, ON L2</b>The L2 entry holds the call that actually runs Counter.increment().</li>
-        <li><b>03 · ONE HASH, ONE CALL</b>Both entries carry the same call hash, built by one helper. It names the call, not its answer.</li>
+        <li><b>01 · COMPUTE THE CALL HASH</b>proxyEntryHash identifies the cross-chain request, using its call inputs.</li>
+        <li><b>02 · FIND THE MATCHING ENTRY</b>EEZ compares the current call's hash with the stored proxyEntryHash.</li>
+        <li><b>03 · READ THE RESULT</b>The matched entry holds success and returnData: true and an encoded 1 in this example.</li>
       </ul>
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
@@ -308,7 +332,7 @@
         <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
         <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
         <span class="next-sep" aria-hidden="true"></span>
-        <a id="nextDemo" class="next-demo" href="qs5-three-gotchas-before-you-build.html#skip-intro"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">Three Gotchas Before You Build</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
+        <a id="nextDemo" class="next-demo" href="qs5-three-gotchas-before-you-build.html"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">Two Gotchas Before You Build</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
       </div>
       <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
     </div>
@@ -323,73 +347,119 @@
   var N = 3, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["THE ANSWER, WRITTEN DOWN FIRST.", "THE REAL CALL, ON L2.", "ONE HASH, ONE CALL."];
+  var kickers = [
+    "COMPUTE THE CALL HASH.",
+    "MATCH THE CALL TO ITS ENTRY.",
+    "READ SUCCESS AND RETURN DATA."
+  ];
   var captions = [
-    "Before your call runs, the L1 entry already holds its answer: success, and a return value of 1. On a real network the composer builds this entry. Locally, the scenario script plays composer.",
-    "The L2 entry holds the call that really runs: CounterAndProxy on L1 calling increment() on Counter on L2. Locally, the script delivers it too, as the L2 system address.",
-    "Both entries carry the same proxyEntryHash, built by one helper, _callHash. That shared hash says both entries are the same call, and L2 checks it against the call it actually runs. It does not tie the answers: rollup 1's proof systems attest that when they verify the batch. Locally the proof system accepts anything, and the script writes 1 on both sides."
+    "proxyEntryHash is the hash of the cross-chain request stored in an entry. The scenario computes it with _callHash(counterL2, counterAndProxy), using the caller on L1, the target Counter on L2 and the other call inputs. It identifies the request, not the returned value.",
+    "EEZ computes crossChainCallHash from the call forwarded by the proxy. _entryMatches compares it with entry.proxyEntryHash and rejects a different hash. The destination rollup and every starting root must match too. The queue scan takes the first full match or reverts with ExecutionNotFound.",
+    "The entry was posted before the call. Here success is true and returnData encodes 1. After validating the entry, EEZ returns those bytes through the proxy; CounterAndProxy decodes and saves 1. The call hash identifies the request; batch verification covers the result. Local tests use permissive proofs."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
   // so the panel never dumps the full function ungrouped.
   var codeByStep = [
     [
-      "// _l1Entries: the entry posted on L1",
+      "// Scenario: compute the entry's call hash",
+      "bytes32 proxyEntryHash = _callHash(counterL2, counterAndProxy);",
+      "",
+      "// _callHash(counterL2, counterAndProxy)",
+      "return",
+      "  crossChainCallHash(",
+      "    false, counterAndProxy, MAINNET_ROLLUP_ID, counterL2, L2_ROLLUP_ID, 0, _incrementCallData()",
+      "  );",
+      "",
+      "// _incrementCallData(): increment()",
+      "return abi.encodeWithSelector(Counter.increment.selector);"
+    ],
+    [
+      "// EEZ hashes the call received from the proxy",
+      "bytes32 crossChainCallHash = computeCrossChainCallHash(",
+      "  NOT_STATIC_CALL, sourceAddress, MAINNET_ROLLUP_ID, destAddress, destRid, msg.value, ZERO_CALL_GAS, callData",
+      ");",
+      "",
+      "// _entryMatches: reject a different call",
+      "if (entry.proxyEntryHash != crossChainCallHash) return false;",
+      "if (entry.destinationRollupId != destRid) return false;",
+      "// \u22ef live starting-root checks must also pass",
+      "return true;"
+    ],
+    [
+      "// Scenario: the L1 entry already posted",
       "entries[0] = ExecutionEntry({",
       "  rollupUpdates: deltas,",
       "  proxyEntryHash: proxyEntryHash,",
       "  destinationRollupId: L2_ROLLUP_ID,",
-      "  ⋯",
+      "  // \u22ef calls and rollingHash",
       "  success: true,",
       "  returnData: abi.encode(uint256(1))",
-      "});"
-    ],
-    [
-      "// _l2Entries: the entry loaded on L2",
-      "calls[0] = CrossChainCall({",
-      "  ⋯",
-      "  sourceAddress: counterAndProxy,",
-      "  sourceRollupId: MAINNET_ROLLUP_ID,",
-      "  targetAddress: counterL2,",
-      "  value: 0,",
-      "  data: _incrementCallData()",
       "});",
-      "⋯",
-      "entries[0] = L2ExecutionEntry({",
-      "  ⋯",
-      "  incomingCalls: calls,",
-      "  ⋯",
-      "});"
-    ],
-    [
-      "// Both entries set the same field",
-      "// from one helper:",
-      "// _callHash(counterL2, counterAndProxy)",
-      "// _l1Entries",
-      "entries[0] = ExecutionEntry({",
-      "  ⋯",
-      "  proxyEntryHash: proxyEntryHash,",
-      "  ⋯",
-      "});",
-      "// _l2Entries",
-      "entries[0] = L2ExecutionEntry({",
-      "  proxyEntryHash: proxyEntryHash,",
-      "  ⋯",
-      "});"
+      "",
+      "// EEZ: load the matched entry's result",
+      "bytes memory returnData = entry.returnData;",
+      "// \u22ef _executeEntry validates before returning",
+      "return returnData;"
     ]
   ];
   var hlByStep = [
-    [6,7],
-    [3,5,7,12],
-    [2,6,11]
+    [
+      1,
+      5,
+      6,
+      10
+    ],
+    [
+      1,
+      2,
+      6,
+      7
+    ],
+    [
+      3,
+      6,
+      7,
+      11,
+      13
+    ]
   ];
-  // All three steps excerpt the same scenario file, but at different lines,
-  // so each step links to the line its panel starts from. Written as literal
-  // anchors so verify-citations.py sees and pins them.
+  // The calculation, comparison and stored result link to their exact source.
   var citeByStep = [
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L94" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:94 · ExecutionEntry ↗</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L118" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:118 · CrossChainCall ↗</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L64" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:64 · _callHash ↗</a>'
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L90" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:90 · _callHash ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L1313" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:1313 · proxyEntryHash ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L94" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:94 · ExecutionEntry ↗</a>'
+  ];
+  // Display wrapping preserves upstream lines for COPY and excerpt checks.
+  var wrapByStep = [
+    {
+      "1": [
+        "_callHash("
+      ],
+      "6": [
+        "counterL2",
+        "0,"
+      ],
+      "10": [
+        "Counter.increment.selector"
+      ]
+    },
+    {
+      "1": [
+        "computeCrossChainCallHash"
+      ],
+      "2": [
+        "MAINNET_ROLLUP_ID",
+        "msg.value"
+      ],
+      "6": [
+        "return false;"
+      ],
+      "7": [
+        "return false;"
+      ]
+    },
+    {}
   ];
 
   // No snippet behind this page: the panels are upstream excerpts, so there is
@@ -401,6 +471,21 @@
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
 
   
+  // Split one panel line into display rows before each marker; continuation
+  // rows keep the line's indent plus four spaces.
+  function wrapRows(line, markers) {
+    if (!markers || !markers.length) { return [line]; }
+    var indent = (line.match(/^ */)[0]) + "    ", rows = [], pos = 0;
+    for (var w = 0; w < markers.length; w++) {
+      var at = line.indexOf(markers[w], pos + 1);
+      if (at <= pos) { continue; }
+      rows.push((pos ? indent : "") + line.slice(pos, at).replace(/\s+$/, ""));
+      pos = at;
+    }
+    rows.push((pos ? indent : "") + line.slice(pos));
+    return rows;
+  }
+
   // Single-pass tokenizer: strings and comments are consumed before identifiers,
   // so keywords inside a string literal are never colorized and the highlighter
   // never re-scans its own injected markup.
@@ -509,6 +594,7 @@
     var code = currentLines();
     var hl = showFull ? [] : (hlByStep[step] || []);
     var dm = showFull ? {} : ((typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {});
+    var wr = showFull ? {} : (wrapByStep[step] || {});
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
@@ -520,11 +606,14 @@
       else if (lit) { bg = "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 var(--eez-green);"; }
       var mark = (d === "del") ? "-" : ((d === "add") ? "+" : " ");
       var mcol = (d === "del") ? "#f85149" : ((d === "add") ? "var(--eez-green)" : "#3a3a3a");
-      html += '<div style="display:flex;align-items:stretch;padding:1px 16px;white-space:nowrap;' + bg + '">'
-        + '<span style="width:26px;flex:none;text-align:right;padding-right:8px;color:#3a3a3a;user-select:none;">' + (i+1) + '</span>'
-        + '<span style="width:12px;flex:none;text-align:center;color:' + mcol + ';user-select:none;border-right:1px solid var(--eez-edge);margin-right:11px;">' + mark + '</span>'
-        + '<span style="white-space:pre;' + ((lit || d) ? "color:#eef3f8;" : "color:var(--muted);") + '">'
-        + highlightCode(t) + '</span></div>';
+      var rows = wrapRows(t, wr[i]);
+      for (var r = 0; r < rows.length; r++) {
+        html += '<div style="display:flex;align-items:stretch;padding:1px 16px;white-space:nowrap;' + bg + '">'
+          + '<span style="width:26px;flex:none;text-align:right;padding-right:8px;color:#3a3a3a;user-select:none;">' + (r ? "" : (i+1)) + '</span>'
+          + '<span style="width:12px;flex:none;text-align:center;color:' + mcol + ';user-select:none;border-right:1px solid var(--eez-edge);margin-right:11px;">' + (r ? " " : mark) + '</span>'
+          + '<span style="white-space:pre;' + ((lit || d) ? "color:#eef3f8;" : "color:var(--muted);") + '">'
+          + highlightCode(rows[r]) + '</span></div>';
+      }
     }
     html += '<div style="display:flex;align-items:stretch;padding:1px 16px;">'
       + '<span style="width:26px;flex:none;"></span>'
@@ -734,7 +823,7 @@
   // ---- Lead-in slide -------------------------------------------------
   // Slide zero is a separate overlay inside the stage, NOT step 0: N,
   // step, the dots and every *ByStep array are untouched. Dismissal
-  // lasts for this page view only - nothing is written to localStorage.
+  // lasts for this page view only - nothing is saved to browser storage.
   var introEl = document.getElementById("intro");
   var introHidden = [];   // [element, its own inline display] while covered
   function introShowing(){ return !!introEl && !introEl.hasAttribute("hidden"); }
@@ -749,11 +838,6 @@
   }
   function dismissIntro(){
     if (!introShowing()) { return; }
-    // One orientation per session: remember the dismissal so the next
-    // walkthrough opens straight at step 1 (same end state as a NEXT-link
-    // arrival). sessionStorage so a fresh visit gets the lead-in again;
-    // guarded because storage access can throw (private windows, blocked).
-    try { window.sessionStorage.setItem("eez-demos:intro-dismissed:v1", "1"); } catch (e) { /* no-op */ }
     introEl.setAttribute("hidden", "");
     for (var i = 0; i < introHidden.length; i++) {
       // Restore the recorded inline value, not "" - stageCol and the
@@ -771,20 +855,7 @@
     // A real <button>, so Enter and Space activate it natively; the
     // keydown handler below stays off the keyboard while it is up.
     if (btnStart) { btnStart.addEventListener("click", dismissIntro); }
-    // Arriving via a NEXT link (bottom-bar <a class="back">, see the other
-    // 14 walkthroughs) means the reader already opted in to this track by
-    // clicking through the previous page - skip straight to step 1 instead
-    // of making them dismiss the lead-in again. Reusing dismissIntro keeps
-    // this in sync with the Start button's own end state. A reload of this
-    // exact URL (marker still in the address bar) legitimately skips the
-    // intro again; a reload of the bare URL carries no marker and still
-    // shows it.
-    if (window.location.hash === "#skip-intro") { dismissIntro(); }
-    // Already dismissed a lead-in this session — the reader is oriented,
-    // skip this one too. A cold arrival (shared link, new tab) still gets it.
-    try {
-      if (window.sessionStorage.getItem("eez-demos:intro-dismissed:v1") === "1") { dismissIntro(); }
-    } catch (e) { /* treat as a cold arrival */ }
+    // Every visit starts with this page's intro, including NEXT-link arrivals.
   }
 
   // The pin is read out of whichever citation link the page has, deferred so it

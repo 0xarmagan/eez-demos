@@ -2,75 +2,72 @@
 
 > EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
 
-The L1 call never waited for L2: its answer was already in an entry, and locally you can read the entry the scenario script wrote as composer.
+Follow the call hash from its calculation to the matching entry, then read the success flag and the return data that gives your contract 1.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/qs3-who-answered.html
-- Source: `eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:94 · ExecutionEntry`
+- Source: `eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:90 · _callHash`
 - Pinned at commit: `9a1f815`
-- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L94
+- Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L90
 
-### Step 1 — THE ANSWER, WRITTEN DOWN FIRST.
+### Step 1 — COMPUTE THE CALL HASH.
 
-Before your call runs, the L1 entry already holds its answer: success, and a return value of 1. On a real network the composer builds this entry. Locally, the scenario script plays composer.
+proxyEntryHash is the hash of the cross-chain request stored in an entry. The scenario computes it with _callHash(counterL2, counterAndProxy), using the caller on L1, the target Counter on L2 and the other call inputs. It identifies the request, not the returned value.
 
 ```solidity
-// _l1Entries: the entry posted on L1
+// Scenario: compute the entry's call hash
+bytes32 proxyEntryHash = _callHash(counterL2, counterAndProxy);
+
+// _callHash(counterL2, counterAndProxy)
+return
+  crossChainCallHash(
+    false, counterAndProxy, MAINNET_ROLLUP_ID, counterL2, L2_ROLLUP_ID, 0, _incrementCallData()
+  );
+
+// _incrementCallData(): increment()
+return abi.encodeWithSelector(Counter.increment.selector);
+```
+
+### Step 2 — MATCH THE CALL TO ITS ENTRY.
+
+EEZ computes crossChainCallHash from the call forwarded by the proxy. _entryMatches compares it with entry.proxyEntryHash and rejects a different hash. The destination rollup and every starting root must match too. The queue scan takes the first full match or reverts with ExecutionNotFound.
+
+```solidity
+// EEZ hashes the call received from the proxy
+bytes32 crossChainCallHash = computeCrossChainCallHash(
+  NOT_STATIC_CALL, sourceAddress, MAINNET_ROLLUP_ID, destAddress, destRid, msg.value, ZERO_CALL_GAS, callData
+);
+
+// _entryMatches: reject a different call
+if (entry.proxyEntryHash != crossChainCallHash) return false;
+if (entry.destinationRollupId != destRid) return false;
+// ⋯ live starting-root checks must also pass
+return true;
+```
+
+### Step 3 — READ SUCCESS AND RETURN DATA.
+
+The entry was posted before the call. Here success is true and returnData encodes 1. After validating the entry, EEZ returns those bytes through the proxy; CounterAndProxy decodes and saves 1. The call hash identifies the request; batch verification covers the result. Local tests use permissive proofs.
+
+```solidity
+// Scenario: the L1 entry already posted
 entries[0] = ExecutionEntry({
   rollupUpdates: deltas,
   proxyEntryHash: proxyEntryHash,
   destinationRollupId: L2_ROLLUP_ID,
-  ⋯
+  // ⋯ calls and rollingHash
   success: true,
   returnData: abi.encode(uint256(1))
 });
-```
 
-### Step 2 — THE REAL CALL, ON L2.
-
-The L2 entry holds the call that really runs: CounterAndProxy on L1 calling increment() on Counter on L2. Locally, the script delivers it too, as the L2 system address.
-
-```solidity
-// _l2Entries: the entry loaded on L2
-calls[0] = CrossChainCall({
-  ⋯
-  sourceAddress: counterAndProxy,
-  sourceRollupId: MAINNET_ROLLUP_ID,
-  targetAddress: counterL2,
-  value: 0,
-  data: _incrementCallData()
-});
-⋯
-entries[0] = L2ExecutionEntry({
-  ⋯
-  incomingCalls: calls,
-  ⋯
-});
-```
-
-### Step 3 — ONE HASH, ONE CALL.
-
-Both entries carry the same proxyEntryHash, built by one helper, _callHash. That shared hash says both entries are the same call, and L2 checks it against the call it actually runs. It does not tie the answers: rollup 1's proof systems attest that when they verify the batch. Locally the proof system accepts anything, and the script writes 1 on both sides.
-
-```solidity
-// Both entries set the same field
-// from one helper:
-// _callHash(counterL2, counterAndProxy)
-// _l1Entries
-entries[0] = ExecutionEntry({
-  ⋯
-  proxyEntryHash: proxyEntryHash,
-  ⋯
-});
-// _l2Entries
-entries[0] = L2ExecutionEntry({
-  proxyEntryHash: proxyEntryHash,
-  ⋯
-});
+// EEZ: load the matched entry's result
+bytes memory returnData = entry.returnData;
+// ⋯ _executeEntry validates before returning
+return returnData;
 ```
 
 ## Next
 
-[Three Gotchas Before You Build](qs5-three-gotchas-before-you-build.md)
+[Two Gotchas Before You Build](qs5-three-gotchas-before-you-build.md)
 
 ---
 

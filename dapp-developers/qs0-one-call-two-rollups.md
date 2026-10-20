@@ -11,19 +11,18 @@ Your L1 contract gets an L2 contract's return value back in the same transaction
 
 ### Step 1 — YOUR CONTRACT CALLS A PROXY.
 
-Your contract calls the proxy for Counter@L2 like any other contract. The proxy has no functions of its own, so its fallback hands your calldata and your contract's address to the EEZ manager.
+CounterAndProxy is your L1 caller contract. You call incrementProxy(); it calls increment() on Counter's L1 proxy and saves the returned value in targetCounter. The proxy's fallback passes the call to the EEZ manager.
 
 ```solidity
 fallback() external payable {
     // ⋯ manager + self-probe branches
     _fallback();
 }
-
 function _fallback() internal {
-    // ⋯ static-context probe
+    // ⋯ static probe; normal call path:
+    // Call the EEZ manager
     (success, result) =
-        // EEZ.call → executeCrossChainCall(
-        //     msg.sender, msg.data)
+        EEZ.call{value: msg.value}(abi.encodeCall(IEEZ.executeCrossChainCall, (msg.sender, msg.data)));
     if (success) {
         result = abi.decode(result, (bytes));
     }

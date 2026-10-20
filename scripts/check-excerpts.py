@@ -37,13 +37,12 @@ EXCERPTS = {
     },
     "qs3-who-answered.html": {
         0: ["script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol"],
-        1: ["script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol"],
-        2: ["script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol"],
+        1: ["src/EEZ.sol"],
+        2: ["script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol", "src/EEZ.sol"],
     },
     "qs5-three-gotchas-before-you-build.html": {
         0: ["src/base/CrossChainProxy.sol", "src/EEZ.sol"],
         1: ["src/EEZ.sol"],
-        2: ["test/mocks/CounterContracts.sol"],
     },
     "qs7-cross-chain-flash-loan.html": {
         1: ["src/periphery/defiMock/FlashLoan.sol", "src/periphery/defiMock/FlashLoanBridgeExecutor.sol"],
