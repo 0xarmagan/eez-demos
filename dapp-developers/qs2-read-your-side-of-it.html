@@ -7,7 +7,7 @@
 <link rel="alternate" type="text/markdown" href="../llms.txt" title="llms.txt — agent-readable index">
 <link rel="alternate" type="text/markdown" href="../llms-full.txt" title="llms-full.txt — every walkthrough inlined">
 <link rel="alternate" type="text/markdown" href="qs2-read-your-side-of-it.md" title="This card as markdown, for agents">
-<title>Read Your Side of It — EEZ</title>
+<title>Follow One Call There and Back — EEZ</title>
 <link rel="canonical" href="https://eez-demos.vercel.app/dapp-developers/qs2-read-your-side-of-it.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -133,7 +133,69 @@
   }
   .hdr-home{display:inline-flex;align-items:center;gap:10px;}
   .hdr-home img{display:block;height:26px;width:auto;flex:none;}
-.pre-fit #stage{visibility:hidden;}</style>
+.pre-fit #stage{visibility:hidden;}
+  /* Up-next button: DESIGN.md's outline pill, beside the step controls
+     because that is where the reader is when step 3 ends. Grey at rest; the
+     arrow circle takes the gradient on hover only. syncEnds() adds .is-final
+     on the last step, where Next › goes dead, and that is the live state, so
+     the edge and kicker take the green signal there. */
+  .next-sep{width:1px;height:34px;background:var(--eez-edge);margin:0 8px;flex:none;}
+  a.next-demo{display:inline-flex;align-items:center;gap:16px;max-width:560px;padding:6px 6px 6px 22px;border:1px solid var(--eez-edge);border-radius:100px;background:transparent;color:#d8d8d8;text-decoration:none;font-family:var(--mono);transition:border-color .15s ease,color .15s ease,background .15s ease;}
+  a.next-demo:hover{background:#141414;color:#fff;}
+  .next-demo-text{display:flex;flex-direction:column;min-width:0;line-height:1.3;}
+  .next-demo-k{font-size:11px;letter-spacing:0.14em;color:var(--muted);}
+  .next-demo-t{font-size:15px;font-weight:600;letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .next-demo-arr{flex:none;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#141414;border:1px solid var(--eez-edge);color:#d8d8d8;font-size:16px;transition:transform .15s ease;}
+  a.next-demo:hover .next-demo-arr{background:var(--eez-grad-btn) border-box;border-color:transparent;color:var(--eez-ink-on-grad);transform:translateX(3px);}
+  a.next-demo.is-final{border-color:var(--eez-green);color:#fff;}
+  a.next-demo.is-final .next-demo-k{color:var(--eez-green);}
+  @media (max-width:1120px){
+    .next-sep{display:none;}
+    a.next-demo{flex-basis:100%;max-width:none;justify-content:space-between;margin-top:6px;}
+    .next-demo-t{white-space:normal;}
+  }
+  /* Five steps, so five learn columns on the stage; the stacked layout keeps
+     its single column (the min-width guard leaves the shared 1120px rule alone). */
+  @media (min-width:1121px){ .intro-learn{grid-template-columns:repeat(5,minmax(0,1fr));gap:28px;} }
+
+  /* Step 1: the two application contracts side by side, real source, chain
+     labels on top. Your contract on the left, the remote Counter on the right. */
+  .src-pair{display:grid;grid-template-columns:600px 488px;gap:24px;align-items:start;}
+  .src-card{background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;overflow:hidden;}
+  .src-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--eez-edge);background:var(--eez-chrome);}
+  .src-chain{font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);}
+  .src-name{font-size:19px;font-weight:600;color:#eef3f8;}
+  .src-code{margin:0;padding:12px 16px;font-family:var(--mono);font-size:14px;line-height:22px;color:var(--muted);white-space:pre-wrap;}
+  .src-code b{font-weight:400;color:#eef3f8;}
+  .src-code i{font-style:normal;color:var(--eez-green);}
+
+  /* Steps 2-5: one call-path figure. render() puts .on on the nodes and arrows
+     a step is about and shows the [data-v] spans listed for that step. Green is
+     the one light: the live node and the value being traced. */
+  .flow{display:flex;flex-direction:column;gap:12px;}
+  .lane-label{font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);}
+  .lane{display:grid;grid-template-columns:280px 90px 280px 90px 280px;align-items:center;}
+  .node{background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:13px 18px;transition:border-color .2s ease,background .2s ease;}
+  .node.on{background:rgba(59,229,126,0.06);border-color:var(--eez-green);}
+  .node-k{font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);}
+  .node.on .node-k{color:#7ee08c;}
+  .node-n{font-size:20px;font-weight:600;color:#eef3f8;margin-top:7px;}
+  .node-s{font-family:var(--mono);font-size:13px;color:var(--muted);margin-top:5px;overflow-wrap:anywhere;}
+  .node-s i, .flow-note i{font-style:normal;color:var(--eez-green);}
+  .arrow{display:flex;flex-direction:column;align-items:center;gap:5px;color:#3a3a3a;transition:color .2s ease;}
+  .arrow.on{color:var(--eez-green);}
+  .arrow-g{font-size:24px;line-height:1;}
+  .arrow-l{font-family:var(--mono);font-size:12px;color:var(--muted);white-space:nowrap;}
+  .arrow.on .arrow-l{color:#7ee08c;}
+  .flow-note{grid-column:1 / span 3;align-self:center;padding-right:24px;font-family:var(--mono);font-size:14px;line-height:1.55;color:var(--muted);}
+  @media (max-width:1120px){
+    .src-pair, .lane{grid-template-columns:minmax(0,1fr) !important;gap:10px;}
+    .lane > .spacer{display:none;}
+    .arrow{flex-direction:row;justify-content:center;}
+    .arrow-g{transform:rotate(90deg);}
+    .flow-note{grid-column:auto;padding-right:0;}
+  }
+</style>
 </head>
 <body>
 <div role="main" class="stage-wrap" style="position:fixed;inset:0;background:var(--eez-canvas);display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
@@ -144,12 +206,12 @@
     <div style="display:flex;align-items:center;gap:18px;">
       <a class="back hdr-home" href="../index.html" aria-label="EEZ Quickstarts home"><img src="../favicon.svg" alt="" width="16" height="26">Quickstarts</a>
       <div class="hdr-dot" style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
-      <div style="font-size:22px;font-weight:600;color:#fff;">Read Your Side of It</div>
-      <a class="back hdr-rule" href="qs3-who-answered.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Who Answered? &rarr;</a>
+      <div style="font-size:22px;font-weight:600;color:#fff;">Follow One Call There and Back</div>
+      <a class="back hdr-rule" href="qs3-who-answered.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Who Answered? &rarr;</a>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
-      <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">STEP 1 OF 3</div>
+      <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">STEP 1 OF 5</div>
       <a class="back hdr-rule" href="../index.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">ALL EXAMPLES →</a>
     </div>
   </div>
@@ -159,52 +221,76 @@
 
 
 
-    <!-- STEP 1: Counter on L2, a plain contract -->
-    <div id="s1" style="display:flex;flex-direction:column;gap:34px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">L2 · DEPLOYED BY THE SCENARIO</div>
-      <div style="display:flex;align-items:center;">
-        <div style="flex:0 0 366px;background:rgba(59,229,126,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:20px 22px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#7ee08c;">ROLLUP L2</div><div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">Counter</div><div style="font-family:var(--mono);font-size:16px;color:var(--muted);margin-top:6px;">counter = 0</div></div>
-        <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:9px;width:250px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">increment()</div><div style="font-size:28px;line-height:1;color:var(--eez-green);">→</div></div>
-        <div style="flex:0 0 366px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:20px 22px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">RETURNS</div><div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">counter + 1</div><div style="font-family:var(--mono);font-size:16px;color:var(--muted);margin-top:6px;">uint256</div></div>
+    <!-- STEP 1: setup. Your contract on L1 on the left, the remote Counter on
+         L2 on the right, both verbatim from test/mocks/CounterContracts.sol. -->
+    <div id="s1" style="display:flex;flex-direction:column;gap:20px;">
+      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">SETUP · TWO CONTRACTS, TWO CHAINS</div>
+      <div class="src-pair">
+        <div class="src-card">
+          <div class="src-head"><span class="src-name">CounterAndProxy</span><span class="src-chain">L1 · YOUR CONTRACT · cap</span></div>
+<pre class="src-code">contract CounterAndProxy {
+    <b>Counter public target;</b>
+    uint256 public targetCounter;
+    uint256 public counter;
+
+    constructor(Counter _target) {
+        <b>target = _target;</b>
+    }
+
+    function incrementProxy() external {
+        targetCounter = target.increment{gas: PROXY_CALL_GAS}();
+        counter++;
+    }
+}</pre>
+        </div>
+        <div class="src-card">
+          <div class="src-head"><span class="src-name">Counter</span><span class="src-chain">L2 · REMOTE CONTRACT · counterL2</span></div>
+<pre class="src-code">contract Counter is ICounterView {
+    uint256 public counter;
+
+    <b>function increment() external returns (uint256) {</b>
+        counter++;
+        return counter;
+    }
+}</pre>
+        </div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">No EEZ import, no EEZ base contract, no special hook. The scenario deploys this same <span style="font-family:var(--mono);">Counter</span> on L2 (<span style="font-family:var(--mono);">E2ECounter.s.sol:157</span>).</div>
+      <div style="font-size:16px;line-height:1.5;color:var(--muted);max-width:1060px;">Counter is deployed on L2 only. On L1, <span style="font-family:var(--mono);color:#d8d8d8;">target</span> holds <span style="font-family:var(--mono);color:var(--eez-green);">counterProxy</span>, a CrossChainProxy the L1 manager deployed to stand in for Counter@L2. Neither contract imports anything from EEZ.</div>
     </div>
 
-    <!-- STEP 2: CounterAndProxy on L1, an ordinary call -->
-    <div id="s2" style="display:none;flex-direction:column;gap:34px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">L1 · YOUR CONTRACT</div>
-      <div style="display:flex;align-items:center;">
-        <div style="flex:0 0 366px;background:rgba(59,229,126,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:20px 22px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:#7ee08c;">ROLLUP L1</div><div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">CounterAndProxy</div><div style="font-family:var(--mono);font-size:16px;color:var(--muted);margin-top:6px;">incrementProxy()</div></div>
-        <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:9px;width:250px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">target.increment()</div><div style="font-size:28px;line-height:1;color:var(--eez-green);">→</div></div>
-        <div style="flex:0 0 366px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:20px 22px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">TARGET</div><div style="font-size:21px;font-weight:600;color:#eef3f8;margin-top:12px;">target</div><div style="font-family:var(--mono);font-size:16px;color:var(--muted);margin-top:6px;">just an address</div></div>
+    <!-- STEPS 2-5: the call path, one figure. render() puts .on on what the
+         step is about and shows the [data-v] spans listed for that step. The
+         L1 and L2 lanes are not joined by an arrow on purpose: L1 never calls
+         out to L2 mid-transaction; it reads an entry posted before the call. -->
+    <div id="flow" class="flow" style="display:none;">
+      <div class="lane-label">L1 · ONE TRANSACTION: YOURS</div>
+      <div class="lane">
+        <div class="node" id="n-cap"><div class="node-k">YOUR CONTRACT</div><div class="node-n">CounterAndProxy</div><div class="node-s"><span data-v="1,2,3">cap · incrementProxy()</span><span data-v="4"><i>targetCounter = 1</i> · counter = 1</span></div></div>
+        <div class="arrow" id="a-cap"><span class="arrow-l" data-v="1,2,3">increment()</span><span class="arrow-g" data-v="1,2,3">&rarr;</span><span class="arrow-g" data-v="4">&larr;</span><span class="arrow-l" data-v="4">bytes &rarr; 1</span></div>
+        <div class="node" id="n-proxy"><div class="node-k">LOCAL PROXY</div><div class="node-n">CrossChainProxy</div><div class="node-s">counterProxy, stands in for Counter@L2</div></div>
+        <div class="arrow" id="a-proxy"><span class="arrow-l" data-v="1,2,3">forwards</span><span class="arrow-g" data-v="1,2,3">&rarr;</span><span class="arrow-g" data-v="4">&larr;</span><span class="arrow-l" data-v="4">bytes</span></div>
+        <div class="node" id="n-mgr"><div class="node-k">L1 MANAGER</div><div class="node-n">EEZ</div><div class="node-s">executeCrossChainCall(<i>cap</i>, <i>increment()</i>)</div></div>
       </div>
-      <div style="display:flex;align-items:center;gap:16px;">
-        <div style="font-family:var(--mono);font-size:13px;color:#5e9e6b;width:92px;flex:none;">returns</div>
-        <div style="font-family:var(--mono);font-size:19px;color:var(--eez-green);">1</div>
-        <div style="width:6px;height:6px;border-radius:50%;background:var(--eez-green);animation:pulse 1.8s ease-in-out infinite;"></div>
-        <div style="font-family:var(--mono);font-size:13px;color:#7ee08c;">targetCounter = 1 · counter = 1</div>
+      <div class="lane">
+        <div class="flow-note">
+          <span data-v="1"><i>increment()</i>, from cap to counterProxy: an ordinary call, still on L1.</span>
+          <span data-v="2">The same call, passed on as data: who called, <i>cap</i>, and what, <i>increment()</i>.</span>
+          <span data-v="3">On L2, Counter stores counter = 1 and returns <i>1</i>. On L1, the entry posted before your call already holds that <i>1</i>, as bytes.</span>
+          <span data-v="4">The entry's bytes go back up, manager to proxy to cap. Solidity decodes them, and cap stores <i>targetCounter = 1</i>.</span>
+        </div>
+        <div class="spacer"></div>
+        <div class="node" id="n-entry"><div class="node-k">L1 ENTRY · POSTED FIRST</div><div class="node-n">returnData</div><div class="node-s"><i>abi.encode(uint256(1))</i></div></div>
       </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">Across chains, that <span style="font-family:var(--mono);">1</span> comes from the execution entry posted before your transaction ran. Locally, the scenario script plays composer. Card 03 shows who answered.</div>
+      <div class="lane-label">L2 · RUNS THE CALL ITSELF</div>
+      <div class="lane">
+        <div class="spacer"></div>
+        <div class="spacer"></div>
+        <div class="node" id="n-mgr2"><div class="node-k">L2 MANAGER</div><div class="node-n">EEZL2</div><div class="node-s">executeIncomingCrossChainCall</div></div>
+        <div class="arrow" id="a-l2"><span class="arrow-l">increment()</span><span class="arrow-g">&rarr;</span></div>
+        <div class="node" id="n-counter"><div class="node-k">REMOTE CONTRACT</div><div class="node-n">Counter</div><div class="node-s"><span data-v="1,2">counterL2 · increment()</span><span data-v="3,4">counter 0 &rarr; <i>1</i> · returns <i>1</i></span></div></div>
+      </div>
     </div>
 
-    <!-- STEP 3: same call site, two targets -->
-    <div id="s3" style="display:none;flex-direction:column;gap:30px;">
-      <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);">SAME CALL SITE · TWO VALUES OF target</div>
-      <div style="display:flex;align-items:center;">
-        <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);width:200px;flex:none;">IN THE TEST</div>
-        <div style="flex:0 0 260px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:14px 18px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">YOUR CONTRACT</div><div style="font-size:19px;font-weight:600;color:#eef3f8;margin-top:8px;">CounterAndProxy</div></div>
-        <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:9px;width:200px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">target.increment()</div><div style="font-size:28px;line-height:1;color:var(--eez-green);">→</div></div>
-        <div style="flex:0 0 260px;background:rgba(59,229,126,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:14px 18px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">SAME CHAIN</div><div style="font-size:19px;font-weight:600;color:#eef3f8;margin-top:8px;">new Counter()</div></div>
-      </div>
-      <div style="display:flex;align-items:center;">
-        <div style="font-family:var(--mono);font-size:13px;letter-spacing:0.1em;color:var(--muted);width:200px;flex:none;">IN THE SCENARIO</div>
-        <div style="flex:0 0 260px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:10px;padding:14px 18px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">YOUR CONTRACT</div><div style="font-size:19px;font-weight:600;color:#eef3f8;margin-top:8px;">CounterAndProxy</div></div>
-        <div style="flex:none;display:flex;flex-direction:column;align-items:center;gap:9px;width:200px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.05em;color:var(--muted);white-space:nowrap;">target.increment()</div><div style="font-size:28px;line-height:1;color:var(--eez-green);">→</div></div>
-        <div style="flex:0 0 260px;background:rgba(59,229,126,0.06);border:1.5px solid var(--eez-green);border-radius:10px;padding:14px 18px;"><div style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--label);">PROXY ON L1 → L2</div><div style="font-size:19px;font-weight:600;color:#eef3f8;margin-top:8px;">Counter on L2</div></div>
-      </div>
-      <div style="font-size:16px;color:var(--muted);max-width:900px;">The scenario passes Counter's proxy on L1 to the constructor (<span style="font-family:var(--mono);">E2ECounter.s.sol:176</span>). The proxy forwards the call to the manager. <a href="q7-your-cross-chain-address.html" style="color:var(--eez-green);text-decoration:none;border-bottom:1px dotted var(--eez-green);">How that proxy address is made: Your Cross-Chain Address &rarr;</a></div>
-    </div>
-  
     <!-- Narration sits directly under the diagram it describes (audit fix 04):
          same #kicker/#caption ids, so render() is untouched. -->
     <div id="narration" style="margin-top:40px;border-top:1px solid #1a1a1a;padding-top:26px;max-width:1010px;" aria-live="polite" aria-atomic="true">
@@ -220,7 +306,7 @@
         <span aria-hidden="true" style="width:8px;height:8px;flex:none;background:#A8F3CE;transform:rotate(45deg);"></span>
         <span id="pinLabel" style="font-family:var(--mono);font-size:11px;line-height:11px;letter-spacing:0.09em;color:#A8F3CE;white-space:nowrap;">PINNED</span>
       </div>
-      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/test/mocks/CounterContracts.sol#L16&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/test/mocks/CounterContracts.sol:16 · Counter ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/test/mocks/CounterContracts.sol#L16" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/test/mocks/CounterContracts.sol:16 · Counter ↗</a></div>
+      <div id="srcCite" data-demo-cite="<a href=&quot;https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L157&quot; target=&quot;_blank&quot; style=&quot;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);&quot; title=&quot;View source on GitHub&quot;>eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:157 · DeployL2 ↗</a>" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L157" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:157 · DeployL2 ↗</a></div>
       <button id="btnTest" type="button" title="Show the runnable Foundry test behind this page" style="position:absolute;top:12px;right:64px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">TEST</button>
       <button id="btnFull" type="button" title="Show the full compilable file" style="position:absolute;top:12px;right:114px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">FULL</button>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
@@ -231,19 +317,21 @@
   <!-- ===== LEAD-IN SLIDE - shown before the walkthrough begins =====
        This is a lead-in, NOT step 0. N, step, stepLabel, the dots,
        kickers, captions and codeByStep are all untouched, so the
-       counter still reads STEP 1 OF 3 and there are still three dots.
+       counter still reads STEP 1 OF 5 and there are still five steps.
        Inserted as the 4th child of #stage; see the CSS note. -->
   <section id="intro" aria-labelledby="introTitle">
     <div class="intro-inner">
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
-      <h1 class="intro-title" id="introTitle">Read Your Side of It</h1>
-      <p class="intro-lede">Card 01 ran one call from L1 into L2 and back. These are the two contracts it ran, copied verbatim from the protocol repo.</p>
-      <p class="intro-lede">Neither one imports anything from EEZ. Your side is an ordinary Solidity call that uses its return value.</p>
+      <h1 class="intro-title" id="introTitle">Follow One Call There and Back</h1>
+      <p class="intro-lede">Card 01 ran one call from L1 into L2 and back. This is that call, contract by contract: CounterAndProxy on L1, the proxy and the manager it goes through, Counter on L2, and the value 1 coming back.</p>
+      <p class="intro-lede">This is the local run. The scenario script plays composer: it posts the answer in the L1 entry and runs the call on L2. On a real network the composer builds both entries, and L1 accepts its entry only inside a verified batch.</p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
-        <li><b>01 · THE CONTRACT ON L2</b>Counter is a plain contract whose increment() returns the new count.</li>
-        <li><b>02 · YOUR CONTRACT ON L1</b>CounterAndProxy calls it and uses the answer on the next line.</li>
-        <li><b>03 · POINT IT ANYWHERE</b>Only the address in target is cross-chain. A test runs the same code against a local Counter.</li>
+        <li><b>01 · SET UP ONCE</b>Counter lives on L2. On L1, a proxy stands in for it and becomes your contract's target.</li>
+        <li><b>02 · AN ORDINARY CALL</b>Your contract calls target.increment() and stores what comes back.</li>
+        <li><b>03 · THE PROXY HANDS IT ON</b>The proxy's fallback calls executeCrossChainCall on the L1 manager.</li>
+        <li><b>04 · POSTED FIRST</b>Counter runs on L2. Its answer, 1, is already in the L1 entry.</li>
+        <li><b>05 · BACK IN YOUR CONTRACT</b>The 1 comes back through manager and proxy into targetCounter.</li>
       </ul>
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
@@ -258,6 +346,8 @@
         <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
         <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
         <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
+        <span class="next-sep" aria-hidden="true"></span>
+        <a id="nextDemo" class="next-demo" href="qs3-who-answered.html"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">Who Answered?</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
       </div>
       <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
     </div>
@@ -269,67 +359,139 @@
 <script src="../assets/eez-tour.js"></script>
 <script>
 (function(){
-  var N = 3, STEP_MS = 3200;
+  var N = 5, STEP_MS = 3200;
   var step = 0, playing = false, timer = null;
 
-  var kickers = ["THE CONTRACT ON L2.", "YOUR CONTRACT ON L1.", "POINT IT ANYWHERE."];
+  var kickers = ["SET UP ONCE.", "AN ORDINARY CALL.", "THE PROXY HANDS IT ON.", "THE ANSWER WAS POSTED FIRST.", "BACK IN YOUR CONTRACT."];
   var captions = [
-    "Counter is plain Solidity. In the card 01 run it lives on L2, and increment() returns the new count.",
-    "incrementProxy() calls target.increment() like any other contract and uses the return value on the next line. The fixed gas amount is the one extra; Three Gotchas explains when it matters.",
-    "The only cross-chain part is which address target holds. The scenario passes Counter's proxy on L1. The TEST tab passes a local Counter, and the same code passes."
+    "Counter is deployed on L2 only. On L1, the scenario asks the L1 manager for Counter's proxy, then builds CounterAndProxy with that proxy as its target. Neither contract imports anything from EEZ.",
+    "incrementProxy() calls target.increment() like any other contract call. target is counterProxy, a contract on L1, so that is where the call goes. The TEST tab runs this same contract against a local Counter.",
+    "CrossChainProxy has no increment(). Its fallback checks that this isn't a static call, then calls executeCrossChainCall on the L1 manager with who called it, CounterAndProxy, and the exact calldata, increment().",
+    "L1 never calls out to L2 mid-transaction. Counter runs on L2, from the L2 entry: it stores counter = 1 and returns 1. The L1 entry, posted before your call, already holds that 1. Locally, the scenario script plays composer and writes both.",
+    "The manager returns the entry's returnData, the proxy unwraps it and returns the bytes, and Solidity decodes the uint256 that increment() declares. targetCounter is now 1. CounterAndProxy's own counter++ is a separate write on L1."
   ];
 
   // Progressive code reveal: each step shows only the lines relevant so far,
-  // so the panel never dumps the full function ungrouped.
+  // so the panel never dumps the full function ungrouped. Every step is a
+  // verbatim upstream excerpt (check-excerpts.py, whitespace-trimmed), so
+  // indentation here is chosen to fit the 662px panel.
   var codeByStep = [
     [
-      "contract Counter is ICounterView {",
-      "    uint256 public counter;",
+      "// DeployL2, broadcast on L2:",
+      "Counter counterL2 = new Counter();",
       "",
-      "    function increment() external returns (uint256) {",
-      "        counter++;",
-      "        return counter;",
-      "    }",
-      "}"
-    ],
-    [
-      "uint256 constant PROXY_CALL_GAS = 5_000_000;",
+      "// Deploy, broadcast on L1: the L1 manager",
+      "// creates Counter@L2's proxy if it is missing",
+      "address counterProxy = getOrCreateProxy(IEEZ(address(rollups)), counterL2Addr, L2_ROLLUP_ID);",
       "",
-      "contract CounterAndProxy {",
-      "    Counter public target;",
-      "    uint256 public targetCounter;",
-      "    uint256 public counter;",
-      "",
-      "    // ⋯ constructor: step 3",
-      "",
-      "    function incrementProxy() external {",
-      "        targetCounter = target.increment{gas: PROXY_CALL_GAS}();",
-      "        counter++;",
-      "    }",
-      "}"
+      "// your contract gets the proxy as its target",
+      "CounterAndProxy cap = new CounterAndProxy(Counter(counterProxy));"
     ],
     [
       "contract CounterAndProxy {",
-      "    Counter public target;",
-      "    // ⋯",
+      "  Counter public target;",
+      "  uint256 public targetCounter;",
+      "  uint256 public counter;",
       "",
-      "    constructor(Counter _target) {",
-      "        target = _target;",
-      "    }",
+      "  constructor(Counter _target) {",
+      "    target = _target;",
+      "  }",
       "",
-      "    // ⋯ incrementProxy() as in step 2",
+      "  function incrementProxy() external {",
+      "    targetCounter = target.increment{gas: PROXY_CALL_GAS}();",
+      "    counter++;",
+      "  }",
+      "}"
+    ],
+    [
+      "fallback() external payable {",
+      "  // \u22ef manager and self-probe branches",
+      "  _fallback();",
+      "}",
+      "function _fallback() internal {",
+      "  // \u22ef probe: is this call a STATICCALL?",
+      "  if (!success) {",
+      "    // \u22ef read path: staticCrossChainCall",
+      "  } else {",
+      "    (success, result) =",
+      "      EEZ.call{value: msg.value}(abi.encodeCall(IEEZ.executeCrossChainCall, (msg.sender, msg.data)));",
+      "  }",
+      "  // \u22ef step 5: decode it, return it",
+      "}"
+    ],
+    [
+      "// on L2: Counter, run by the L2 entry's call",
+      "function increment() external returns (uint256) {",
+      "  counter++;",
+      "  return counter;",
+      "}",
+      "",
+      "// on L1: the entry posted before your call,",
+      "// by the batch (E2ECounter.s.sol, _l1Entries)",
+      "entries[0] = ExecutionEntry({",
+      "  \u22ef",
+      "  success: true,",
+      "  returnData: abi.encode(uint256(1))",
+      "});"
+    ],
+    [
+      "// EEZ, the L1 manager (_consumeAndExecuteEntry)",
+      "bytes memory returnData = entry.returnData;",
+      "// \u22ef _executeEntry checks roots + rolling hash",
+      "return returnData;",
+      "// CrossChainProxy (_fallback)",
+      "result = abi.decode(result, (bytes));",
+      "// \u22ef return(result) hands the bytes back",
+      "// CounterAndProxy: Solidity decodes the uint256",
+      "function incrementProxy() external {",
+      "  targetCounter = target.increment{gas: PROXY_CALL_GAS}();",
+      "  counter++;",
       "}"
     ]
   ];
-  var citeByStep = [
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/test/mocks/CounterContracts.sol#L16" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/test/mocks/CounterContracts.sol:16 · Counter ↗</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/test/mocks/CounterContracts.sol#L62" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/test/mocks/CounterContracts.sol:62 · incrementProxy ↗</a>',
-    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/test/mocks/CounterContracts.sol#L58" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/test/mocks/CounterContracts.sol:58 · constructor ↗</a>'
-  ];
   var hlByStep = [
-    [3, 4, 5],
-    [9, 10, 11],
-    [1, 4, 5]
+    [1, 5, 8],
+    [1, 10],
+    [2, 9, 10],
+    [2, 3, 11],
+    [3, 5, 9]
+  ];
+  // Display-only wrapping: a real statement longer than the panel is split
+  // before each listed marker and shown on continuation rows. The string in
+  // codeByStep stays the verbatim upstream line, so check-excerpts.py and
+  // COPY both see the real statement, not a reflowed one.
+  var wrapByStep = [
+    { 5: ["IEEZ(", "L2_ROLLUP_ID"], 8: ["new CounterAndProxy"] },
+    { 10: ["target.increment"] },
+    { 10: ["IEEZ.executeCrossChainCall", "(msg.sender"] },
+    {},
+    { 9: ["target.increment"] }
+  ];
+  // The traced values, shown beside the statement they belong to. Rendered
+  // as chips outside the code text, so nothing here is presented as source.
+  var noteByStep = [
+    {},
+    { 1: "= counterProxy, on L1" },
+    { 9: "cap, increment()" },
+    { 2: "stored: 1", 3: "returns 1", 11: "the same 1" },
+    { 3: "abi.encode(1)", 9: "= 1", 10: "counter = 1, on L1" }
+  ];
+  // The call path for steps 2-5: which nodes and arrows are live.
+  var FLOW_ON = [
+    [],
+    ["n-cap", "a-cap"],
+    ["n-proxy", "a-proxy", "n-mgr"],
+    ["n-mgr", "n-entry", "n-mgr2", "a-l2", "n-counter"],
+    ["n-entry", "n-mgr", "a-proxy", "a-cap", "n-cap"]
+  ];
+  // Each step cites the file its panel starts from. Literal anchors, so
+  // verify-citations.py sees and pins them.
+  var citeByStep = [
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L157" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:157 · DeployL2 ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/test/mocks/CounterContracts.sol#L62" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/test/mocks/CounterContracts.sol:62 · incrementProxy ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L129" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/base/CrossChainProxy.sol:129 · executeCrossChainCall ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/test/mocks/CounterContracts.sol#L19" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/test/mocks/CounterContracts.sol:19 · increment ↗</a>',
+    '<a href="https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L968" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">eez-core-protocol/src/EEZ.sol:968 · returnData ↗</a>'
   ];
 
   // Verbatim copy of snippets/qs2-counter-and-proxy.sol. check-panel-drift.py
@@ -408,7 +570,22 @@
   var showFull = false;
   function currentLines(){ return showFull ? fullSnippet : (showTest ? testSnippet : (codeByStep[step] || [])); }
 
-  var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
+  var els = { s1: document.getElementById('s1'), flow: document.getElementById('flow') };
+
+  // Split one panel line into display rows before each marker; continuation
+  // rows keep the line's indent plus four spaces.
+  function wrapRows(line, markers) {
+    if (!markers || !markers.length) { return [line]; }
+    var indent = (line.match(/^ */)[0]) + "    ", rows = [], pos = 0;
+    for (var w = 0; w < markers.length; w++) {
+      var at = line.indexOf(markers[w], pos + 1);
+      if (at <= pos) { continue; }
+      rows.push((pos ? indent : "") + line.slice(pos, at).replace(/\s+$/, ""));
+      pos = at;
+    }
+    rows.push((pos ? indent : "") + line.slice(pos));
+    return rows;
+  }
 
   
   // Single-pass tokenizer: strings and comments are consumed before identifiers,
@@ -512,12 +689,22 @@
     if (cite && !showFull && !showTest) { cite.innerHTML = citeByStep[step] || cite.getAttribute("data-demo-cite"); }
 
     els.s1.style.display = step === 0 ? "flex" : "none";
-    els.s2.style.display = step === 1 ? "flex" : "none";
-    els.s3.style.display = step === 2 ? "flex" : "none";
+    els.flow.style.display = step === 0 ? "none" : "flex";
+    if (step > 0) {
+      var on = FLOW_ON[step] || [];
+      var parts = els.flow.querySelectorAll(".node, .arrow");
+      for (var p = 0; p < parts.length; p++) { parts[p].classList.toggle("on", on.indexOf(parts[p].id) !== -1); }
+      var vs = els.flow.querySelectorAll("[data-v]");
+      for (var v = 0; v < vs.length; v++) {
+        vs[v].style.display = vs[v].getAttribute("data-v").split(",").indexOf(String(step)) !== -1 ? "" : "none";
+      }
+    }
 
     var code = currentLines();
     var hl = (showFull || showTest) ? [] : (hlByStep[step] || []);
     var dm = showFull ? {} : ((typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {});
+    var wr = (showFull || showTest) ? {} : (wrapByStep[step] || {});
+    var nt = (showFull || showTest) ? {} : (noteByStep[step] || {});
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
@@ -529,11 +716,16 @@
       else if (lit) { bg = "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 var(--eez-green);"; }
       var mark = (d === "del") ? "-" : ((d === "add") ? "+" : " ");
       var mcol = (d === "del") ? "#f85149" : ((d === "add") ? "var(--eez-green)" : "#3a3a3a");
-      html += '<div style="display:flex;align-items:stretch;padding:1px 16px;white-space:nowrap;' + bg + '">'
-        + '<span style="width:26px;flex:none;text-align:right;padding-right:8px;color:#3a3a3a;user-select:none;">' + (i+1) + '</span>'
-        + '<span style="width:12px;flex:none;text-align:center;color:' + mcol + ';user-select:none;border-right:1px solid var(--eez-edge);margin-right:11px;">' + mark + '</span>'
-        + '<span style="white-space:pre;' + ((lit || d) ? "color:#eef3f8;" : "color:var(--muted);") + '">'
-        + highlightCode(t) + '</span></div>';
+      var rows = wrapRows(t, wr[i]);
+      for (var r = 0; r < rows.length; r++) {
+        html += '<div style="display:flex;align-items:stretch;padding:1px 16px;white-space:nowrap;' + bg + '">'
+          + '<span style="width:26px;flex:none;text-align:right;padding-right:8px;color:#3a3a3a;user-select:none;">' + (r ? "" : (i+1)) + '</span>'
+          + '<span style="width:12px;flex:none;text-align:center;color:' + mcol + ';user-select:none;border-right:1px solid var(--eez-edge);margin-right:11px;">' + (r ? " " : mark) + '</span>'
+          + '<span style="white-space:pre;' + ((lit || d) ? "color:#eef3f8;" : "color:var(--muted);") + '">'
+          + highlightCode(rows[r]) + '</span>'
+          + ((!r && nt[i]) ? '<span style="flex:none;align-self:center;margin-left:14px;font-family:var(--mono);font-size:13px;line-height:20px;color:var(--eez-green);border:1px solid #2c6b3c;border-radius:4px;padding:0 7px;white-space:nowrap;user-select:none;">' + hlEsc(nt[i]) + '</span>' : '')
+          + '</div>';
+      }
     }
     html += '<div style="display:flex;align-items:stretch;padding:1px 16px;">'
       + '<span style="width:26px;flex:none;"></span>'
@@ -717,6 +909,8 @@
     var p = document.getElementById("btnPrev"), n = document.getElementById("btnNext");
     if (p) { p.disabled = (step <= 0); }
     if (n) { n.disabled = (step >= N-1); }
+    var nd = document.getElementById("nextDemo");
+    if (nd) { nd.classList.toggle("is-final", step >= N-1); }
   }
   function staticBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; syncEnds(); }
   function animateBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; void b.offsetWidth; b.style.transition="transform "+STEP_MS+"ms linear"; b.style.transform="scaleX("+((step+1)/N)+")"; syncEnds(); }
@@ -741,7 +935,7 @@
   // ---- Lead-in slide -------------------------------------------------
   // Slide zero is a separate overlay inside the stage, NOT step 0: N,
   // step, the dots and every *ByStep array are untouched. Dismissal
-  // lasts for this page view only - nothing is written to localStorage.
+  // lasts for this page view only - nothing is saved to browser storage.
   var introEl = document.getElementById("intro");
   var introHidden = [];   // [element, its own inline display] while covered
   function introShowing(){ return !!introEl && !introEl.hasAttribute("hidden"); }
@@ -756,11 +950,6 @@
   }
   function dismissIntro(){
     if (!introShowing()) { return; }
-    // One orientation per session: remember the dismissal so the next
-    // walkthrough opens straight at step 1 (same end state as a NEXT-link
-    // arrival). sessionStorage so a fresh visit gets the lead-in again;
-    // guarded because storage access can throw (private windows, blocked).
-    try { window.sessionStorage.setItem("eez-demos:intro-dismissed:v1", "1"); } catch (e) { /* no-op */ }
     introEl.setAttribute("hidden", "");
     for (var i = 0; i < introHidden.length; i++) {
       // Restore the recorded inline value, not "" - stageCol and the
@@ -778,20 +967,7 @@
     // A real <button>, so Enter and Space activate it natively; the
     // keydown handler below stays off the keyboard while it is up.
     if (btnStart) { btnStart.addEventListener("click", dismissIntro); }
-    // Arriving via a NEXT link (bottom-bar <a class="back">, see the other
-    // 14 walkthroughs) means the reader already opted in to this track by
-    // clicking through the previous page - skip straight to step 1 instead
-    // of making them dismiss the lead-in again. Reusing dismissIntro keeps
-    // this in sync with the Start button's own end state. A reload of this
-    // exact URL (marker still in the address bar) legitimately skips the
-    // intro again; a reload of the bare URL carries no marker and still
-    // shows it.
-    if (window.location.hash === "#skip-intro") { dismissIntro(); }
-    // Already dismissed a lead-in this session — the reader is oriented,
-    // skip this one too. A cold arrival (shared link, new tab) still gets it.
-    try {
-      if (window.sessionStorage.getItem("eez-demos:intro-dismissed:v1") === "1") { dismissIntro(); }
-    } catch (e) { /* treat as a cold arrival */ }
+    // Every visit starts with this page's intro, including NEXT-link arrivals.
   }
 
   // The pin is read out of whichever citation link the page has, deferred so it

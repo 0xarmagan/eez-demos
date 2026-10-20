@@ -20,9 +20,9 @@ Writing contracts that call across rollups.
 
 - [One Call, Two Rollups, One Transaction](https://eez-demos.vercel.app/dapp-developers/qs0-one-call-two-rollups.html): Your L1 contract gets an L2 contract's return value back in the same transaction, with no bridge message and no callback. Markdown: https://eez-demos.vercel.app/dapp-developers/qs0-one-call-two-rollups.md
 - [Run Your First Round Trip](https://eez-demos.vercel.app/dapp-developers/qs1-run-your-first-round-trip.html): Two scenarios pass on local anvil chains: one call starts on L1 and gets back the value L2's execution produces, and one makes the same call from L2. Locally, that value is precomputed in the entry. Markdown: https://eez-demos.vercel.app/dapp-developers/qs1-run-your-first-round-trip.md
-- [Read Your Side of It](https://eez-demos.vercel.app/dapp-developers/qs2-read-your-side-of-it.html): Neither contract imports anything from EEZ: your side is an ordinary Solidity call that uses its return value. Markdown: https://eez-demos.vercel.app/dapp-developers/qs2-read-your-side-of-it.md
-- [Who Answered?](https://eez-demos.vercel.app/dapp-developers/qs3-who-answered.html): The L1 call never waited for L2: its answer was already in an entry, and locally you can read the entry the scenario script wrote as composer. Markdown: https://eez-demos.vercel.app/dapp-developers/qs3-who-answered.md
-- [Three Gotchas Before You Build](https://eez-demos.vercel.app/dapp-developers/qs5-three-gotchas-before-you-build.html): Three things behave differently from a same-chain call: a test that never leaves one chain hides all three. Cross-chain, two of them revert, and the third matters once an L2 turns on USE_GAS_LEFT. Markdown: https://eez-demos.vercel.app/dapp-developers/qs5-three-gotchas-before-you-build.md
+- [Follow One Call There and Back](https://eez-demos.vercel.app/dapp-developers/qs2-read-your-side-of-it.html): Your contract makes an ordinary call to a proxy, the proxy hands it to the L1 manager, and the 1 that Counter returns on L2 comes back as data that was posted before your call. Markdown: https://eez-demos.vercel.app/dapp-developers/qs2-read-your-side-of-it.md
+- [Who Answered?](https://eez-demos.vercel.app/dapp-developers/qs3-who-answered.html): Follow the call hash from its calculation to the matching entry, then read the success flag and the return data that gives your contract 1. Markdown: https://eez-demos.vercel.app/dapp-developers/qs3-who-answered.md
+- [Two Gotchas Before You Build](https://eez-demos.vercel.app/dapp-developers/qs5-three-gotchas-before-you-build.html): Two cross-chain gotchas to check before you build: msg.sender is the source's proxy, and a state-changing proxy call needs an entry verified in the same block. Markdown: https://eez-demos.vercel.app/dapp-developers/qs5-three-gotchas-before-you-build.md
 - [Cross-Chain Flash Loan](https://eez-demos.vercel.app/dapp-developers/qs7-cross-chain-flash-loan.html): Borrowed tokens go to an L2 and back before the repayment check runs, all inside one L1 transaction. Markdown: https://eez-demos.vercel.app/dapp-developers/qs7-cross-chain-flash-loan.md
 - [Bridge Tokens Both Ways](https://eez-demos.vercel.app/dapp-developers/qs8-bridge-tokens-both-ways.html): Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair of chains, then run the test that sends an ERC-20 through the Bridge.sol test fixture and back. Markdown: https://eez-demos.vercel.app/dapp-developers/qs8-bridge-tokens-both-ways.md
 - [How to get your contract's address on another rollup](https://eez-demos.vercel.app/dapp-developers/q7-your-cross-chain-address.html): Learn how to read it, or deploy it.
@@ -57,7 +57,7 @@ How RollupX actually settles and proves.
 
 Real files, not fragments: pragma, imports and a contract wrapper, all building under solc 0.8.28. Each mirrors the upstream function its walkthrough cites.
 
-- [snippets/qs2-counter-and-proxy.sol](https://eez-demos.vercel.app/snippets/qs2-counter-and-proxy.sol): full source behind Read Your Side of It
+- [snippets/qs2-counter-and-proxy.sol](https://eez-demos.vercel.app/snippets/qs2-counter-and-proxy.sol): full source behind Follow One Call There and Back
 - [snippets/q7-create-proxy.sol](https://eez-demos.vercel.app/snippets/q7-create-proxy.sol): full source behind How to get your contract's address on another rollup
 - [snippets/q2-cross-chain-call.sol](https://eez-demos.vercel.app/snippets/q2-cross-chain-call.sol): full source behind How to call a contract on another rollup
 - [snippets/q3-msg-sender.sol](https://eez-demos.vercel.app/snippets/q3-msg-sender.sol): full source behind How to handle msg.sender across chains
@@ -71,7 +71,7 @@ Real files, not fragments: pragma, imports and a contract wrapper, all building 
 
 Foundry tests with no forge-std and no submodules, so they drop into an existing suite. `cd snippets && forge test`.
 
-- [snippets/test/QS2CounterAndProxy.t.sol](https://eez-demos.vercel.app/snippets/test/QS2CounterAndProxy.t.sol): proves the behaviour in Read Your Side of It
+- [snippets/test/QS2CounterAndProxy.t.sol](https://eez-demos.vercel.app/snippets/test/QS2CounterAndProxy.t.sol): proves the behaviour in Follow One Call There and Back
 - [snippets/test/Q2CrossChainCall.t.sol](https://eez-demos.vercel.app/snippets/test/Q2CrossChainCall.t.sol): proves the behaviour in How to call a contract on another rollup
 - [snippets/test/Q3MsgSender.t.sol](https://eez-demos.vercel.app/snippets/test/Q3MsgSender.t.sol): proves the behaviour in How to handle msg.sender across chains
 - [snippets/test/Q6ManagerDirect.t.sol](https://eez-demos.vercel.app/snippets/test/Q6ManagerDirect.t.sol): proves the behaviour in How the guard makes sure only proxy calls reach execution

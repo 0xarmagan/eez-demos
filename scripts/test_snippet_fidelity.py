@@ -22,6 +22,9 @@ import os
 import re
 import subprocess
 import sys
+import shutil
+import tempfile
+from pathlib import Path
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CHECKER = os.path.join("scripts", "check-snippet-fidelity.py")
@@ -35,10 +38,30 @@ GOOD = 'STATIC_CHECK_SELECTOR = bytes4(keccak256("staticCheck()"))'
 BAD = 'STATIC_CHECK_SELECTOR = bytes4(keccak256("staticProbe()"))'
 
 
-def run_checker():
-    return subprocess.run(
-        [sys.executable, CHECKER],
-        cwd=REPO_ROOT, capture_output=True, text=True)
+def run_checker(snippet_text=None):
+    # Copy only the inputs the checker needs; never copy keys or Git metadata.
+    with tempfile.TemporaryDirectory(prefix="eez-fidelity-") as directory:
+        root = Path(directory)
+        (root / "scripts").mkdir()
+        for filename in ("check-snippet-fidelity.py", "citation-pins.json"):
+            shutil.copyfile(Path(REPO_ROOT) / "scripts" / filename,
+                            root / "scripts" / filename)
+        for source in (Path(REPO_ROOT) / "snippets").rglob("*.sol"):
+            target = root / source.relative_to(REPO_ROOT)
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(source, target)
+        cache = Path(REPO_ROOT) / ".citation-cache"
+        if cache.is_dir():
+            (root / ".citation-cache").mkdir()
+            for source in cache.iterdir():
+                if source.is_file() and not source.is_symlink():
+                    shutil.copyfile(source, root / ".citation-cache" / source.name)
+        if snippet_text is not None:
+            (root / "snippets" / "q2-cross-chain-call.sol").write_text(
+                snippet_text, encoding="utf-8")
+        return subprocess.run(
+            [sys.executable, "-B", CHECKER],
+            cwd=root, capture_output=True, text=True)
 
 
 def drift_lines(out):
@@ -53,26 +76,18 @@ def test_detects_a_drifted_constant(tmp_path=None):
     assert GOOD in good, (
         f"fixture drifted: {SNIPPET} no longer contains {GOOD!r} - "
         "if upstream changed, update this test with it")
-    try:
-        with open(SNIPPET, "w", encoding="utf-8") as fh:
-            fh.write(good.replace(GOOD, BAD))
-        r = run_checker()
-        assert r.returncode != 0, (
-            "checker exited 0 with a known-drifted constant in the tree\n"
-            f"stdout:\n{r.stdout}\nstderr:\n{r.stderr}")
-        assert NAME in r.stdout, (
-            f"checker failed but never named the constant\nstdout:\n{r.stdout}")
-        named = [ln for ln in drift_lines(r.stdout) if NAME in ln]
-        assert named, (
-            f"{NAME} appears in the output but not on a DRIFT line - "
-            f"the checker failed for some other reason\nstdout:\n{r.stdout}")
-        assert "staticProbe" in named[0] and "staticCheck" in named[0], (
-            f"drift line names neither the got nor the want value: {named[0]!r}")
-    finally:
-        with open(SNIPPET, "w", encoding="utf-8") as fh:
-            fh.write(good)
-    with open(SNIPPET, encoding="utf-8") as fh:
-        assert fh.read() == good, f"failed to restore {SNIPPET}"
+    r = run_checker(good.replace(GOOD, BAD))
+    assert r.returncode != 0, (
+        "checker exited 0 with a known-drifted constant in the tree\n"
+        f"stdout:\n{r.stdout}\nstderr:\n{r.stderr}")
+    assert NAME in r.stdout, (
+        f"checker failed but never named the constant\nstdout:\n{r.stdout}")
+    named = [ln for ln in drift_lines(r.stdout) if NAME in ln]
+    assert named, (
+        f"{NAME} appears in the output but not on a DRIFT line - "
+        f"the checker failed for some other reason\nstdout:\n{r.stdout}")
+    assert "staticProbe" in named[0] and "staticCheck" in named[0], (
+        f"drift line names neither the got nor the want value: {named[0]!r}")
 
 
 def test_clean_tree_reports_no_drift_on_that_constant(tmp_path=None):
@@ -105,23 +120,15 @@ def test_stand_in_marker_silences_a_declaration(tmp_path=None):
         "    /// @stand-in test probe, not a real divergence\n"
         f"    bytes4 private constant {BAD};")
     assert marked != good, "fixture drifted: could not place the @stand-in marker"
-    try:
-        with open(SNIPPET, "w", encoding="utf-8") as fh:
-            fh.write(marked)
-        r = run_checker()
-        named = [ln for ln in drift_lines(r.stdout) if NAME in ln]
-        assert not named, (
-            "a marked stand-in was still reported as drift:\n" + "\n".join(named))
-        skipped = [ln for ln in r.stdout.splitlines()
-                   if NAME in ln and "@stand-in" in ln]
-        assert skipped, (
-            "the marked declaration vanished from the report instead of being "
-            f"listed as skipped\nstdout:\n{r.stdout}")
-    finally:
-        with open(SNIPPET, "w", encoding="utf-8") as fh:
-            fh.write(good)
-    with open(SNIPPET, encoding="utf-8") as fh:
-        assert fh.read() == good, f"failed to restore {SNIPPET}"
+    r = run_checker(marked)
+    named = [ln for ln in drift_lines(r.stdout) if NAME in ln]
+    assert not named, (
+        "a marked stand-in was still reported as drift:\n" + "\n".join(named))
+    skipped = [ln for ln in r.stdout.splitlines()
+               if NAME in ln and "@stand-in" in ln]
+    assert skipped, (
+        "the marked declaration vanished from the report instead of being "
+        f"listed as skipped\nstdout:\n{r.stdout}")
 
 
 TESTS = [

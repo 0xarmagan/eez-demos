@@ -12,7 +12,9 @@ if ! command -v forge >/dev/null 2>&1; then
 forge not found.
 
 Install Foundry, then re-run:
-  curl -L https://foundry.paradigm.xyz | bash && foundryup
+  Download Foundry v1.7.1 for your OS from the official release page:
+  https://github.com/foundry-rs/foundry/releases/tag/v1.7.1
+  Verify the release checksums/attestations before installing.
 
 Nothing else is needed — the snippets have no forge-std and no submodules.
 MSG
@@ -20,6 +22,8 @@ MSG
 fi
 
 cd "$SNIPPETS"
+RUN_LOG="$(mktemp)" || exit 1
+trap 'rm -f "$RUN_LOG"' EXIT
 
 pass=0
 fail=0
@@ -27,15 +31,14 @@ fail=0
 step() {
   local n="$1" title="$2" note="$3" pattern="$4"
   printf '\n\033[1m%s · %s\033[0m\n%s\n' "$n" "$title" "$note"
-  if forge test --match-test "$pattern" "${VERBOSITY:--vv}" >/tmp/eez-starter-$$.log 2>&1; then
+  if forge test --match-test "$pattern" "${VERBOSITY:--vv}" >"$RUN_LOG" 2>&1; then
     printf '   \033[32mpass\033[0m\n'
     pass=$((pass + 1))
   else
     printf '   \033[31mfail\033[0m — output below\n'
-    sed 's/^/   /' /tmp/eez-starter-$$.log
+    sed 's/^/   /' "$RUN_LOG"
     fail=$((fail + 1))
   fi
-  rm -f /tmp/eez-starter-$$.log
 }
 
 printf '\033[1mEEZ starter\033[0m — three functions, then the one surprise.\n'

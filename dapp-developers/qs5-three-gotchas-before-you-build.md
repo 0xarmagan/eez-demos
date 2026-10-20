@@ -1,8 +1,8 @@
-# Three Gotchas Before You Build
+# Two Gotchas Before You Build
 
 > EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
 
-Three things behave differently from a same-chain call: a test that never leaves one chain hides all three. Cross-chain, two of them revert, and the third matters once an L2 turns on USE_GAS_LEFT.
+Two cross-chain gotchas to check before you build: msg.sender is the source's proxy, and a state-changing proxy call needs an entry verified in the same block.
 
 - Page: https://eez-demos.vercel.app/dapp-developers/qs5-three-gotchas-before-you-build.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:67 · fallback`
@@ -19,7 +19,7 @@ Cross-chain, your contract is called by the source's proxy, not the source. Chec
 // the source's proxy make your call:
 fallback() external payable {
   // sender is EEZ, sig is executeOnBehalf
-  // decodes destination, callGas, data
+  // decodes the destination and call data
   ⋯
   ? destination.call{value: msg.value}(data)
   ⋯
@@ -48,29 +48,6 @@ revert ExecutionNotInCurrentBlock(rollupId);
 // of reach.
 // L2: lastLoadBlock != block.number reverts
 // too (EEZL2.sol:791).
-```
-
-### Step 3 — ON L2, GAS CAN BE PART OF THE CALL.
-
-If an L2 deploys its manager with USE_GAS_LEFT on (the intended production mode, off in every current deployment), the gas left when the manager hashes the call goes into the hash. That is why call sites attach a fixed amount.
-
-```solidity
-// quoting CounterContracts.sol:4-5
-/// L2 folds the gas left after its pre-hash
-/// checks into the outgoing call hash, so these
-/// sites attach a fixed amount
-uint256 constant PROXY_CALL_GAS = 5_000_000;
-
-function incrementProxy() external {
-  // :63 attaches it: targetCounter =
-  //   target.increment{gas: PROXY_CALL_GAS}();
-  ⋯
-
-// With EEZL2's USE_GAS_LEFT on (intended for
-// production, off in every current deployment),
-// callGas = the L2 manager's gasleft() after its
-// proxy checks and value transfer (EEZL2.sol:282),
-// not the gas you forward. L1 uses ZERO_CALL_GAS.
 ```
 
 ## Next

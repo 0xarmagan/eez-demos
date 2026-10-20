@@ -17,57 +17,88 @@
 #
 # See CONTRIBUTING.md's "Audit, before merge" section for what remains manual.
 set -uo pipefail
+export PYTHONDONTWRITEBYTECODE=1
 cd "$(dirname "$0")/.."
 FAIL=0
 # Enumerate from git, not the filesystem, so the audit checks what actually
 # ships. Globbing the disk made this fail locally on an untracked scaffold file
 # that CI never sees, which is a difference that only ever wastes time.
 if git rev-parse --git-dir >/dev/null 2>&1; then
-  HTML_FILES=$(git ls-files 'index.html' 'dapp-developers/*.html' 'rollup-operators/*.html' 'protocol-researchers/*.html')
+  HTML_FILES=()
+  while IFS= read -r -d '' f; do
+    HTML_FILES+=("$f")
+  done < <(git ls-files -z 'index.html' 'dapp-developers/*.html' 'rollup-operators/*.html' 'protocol-researchers/*.html')
 else
-  HTML_FILES="index.html dapp-developers/*.html rollup-operators/*.html protocol-researchers/*.html"
+  shopt -s nullglob
+  HTML_FILES=(index.html dapp-developers/*.html rollup-operators/*.html protocol-researchers/*.html)
 fi
 
 echo "== Internal links resolve =="
-for f in $HTML_FILES; do
-  dir=$(dirname "$f")
-  for href in $(grep -oE 'href="[^"]*\.html"' "$f" | sed 's/href="//;s/"//'); do
-    case "$href" in http*) continue ;; esac
-    resolved=$(python3 -c "import os; print(os.path.normpath(os.path.join('$dir', '$href')))" 2>/dev/null)
-    if [ ! -f "$resolved" ]; then
-      echo "  BROKEN: $f -> $href"
-      FAIL=1
-    fi
-  done
-done
+python3 -B - "${HTML_FILES[@]}" <<'PY_LINKS' || FAIL=1
+from html.parser import HTMLParser
+from pathlib import Path
+from urllib.parse import unquote, urlsplit
+import sys
+
+class Links(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.hrefs = []
+    def handle_starttag(self, tag, attrs):
+        self.hrefs.extend(value for key, value in attrs if key == "href" and value)
+
+root = Path.cwd().resolve()
+failed = False
+for filename in sys.argv[1:]:
+    page = Path(filename)
+    parser = Links()
+    parser.feed(page.read_text(encoding="utf-8"))
+    for href in parser.hrefs:
+        try:
+            url = urlsplit(href)
+            if url.scheme or url.netloc or not url.path.endswith(".html"):
+                continue
+            decoded = unquote(url.path)
+            target = ((root / decoded.lstrip("/")) if decoded.startswith("/")
+                      else (page.parent / decoded)).resolve()
+            if root not in target.parents or not target.is_file():
+                raise ValueError("missing target or path outside repository")
+        except (ValueError, OSError) as exc:
+            print(f"  BROKEN: {filename!r} -> {href!r}: {exc}")
+            failed = True
+sys.exit(int(failed))
+PY_LINKS
 
 echo "== JS syntax valid =="
-for f in $HTML_FILES; do
-  node -e "
-    const fs = require('fs');
-    const src = fs.readFileSync('$f', 'utf8');
-    const m = src.match(/<script>([\s\S]*?)<\/script>/);
-    if (m) new Function(m[1]);
-  " 2>/tmp/eez-audit-js-err.$$ || { echo "  JS ERROR in $f:"; sed 's/^/    /' /tmp/eez-audit-js-err.$$; FAIL=1; }
-  rm -f /tmp/eez-audit-js-err.$$
+for f in "${HTML_FILES[@]}"; do
+  node - "$f" <<'JS_SYNTAX' || FAIL=1
+const fs = require("fs");
+const vm = require("vm");
+const filename = process.argv[2];
+const src = fs.readFileSync(filename, "utf8");
+// Compile inline classic scripts without executing their contents.
+for (const match of src.matchAll(/<script>([\s\S]*?)<\/script>/g)) {
+  new vm.Script(match[1], { filename });
+}
+JS_SYNTAX
 done
 
 echo "== No leftover scaffold TODOs =="
-hits=$(grep -l "TODO" $HTML_FILES 2>/dev/null || true)
+hits=$(grep -l "TODO" "${HTML_FILES[@]}" 2>/dev/null || true)
 if [ -n "$hits" ]; then
   echo "$hits" | sed 's/^/  /'
   FAIL=1
 fi
 
 echo "== No marketing-flavored language =="
-hits=$(grep -rniE "trustless|seamless|revolutionary|next-gen|blazing|effortless|magic(al)?" $HTML_FILES 2>/dev/null || true)
+hits=$(grep -rniE "trustless|seamless|revolutionary|next-gen|blazing|effortless|magic(al)?" "${HTML_FILES[@]}" 2>/dev/null || true)
 if [ -n "$hits" ]; then
   echo "$hits" | sed 's/^/  /'
   FAIL=1
 fi
 
 echo "== Contract-layer citations use the eez-core-protocol/ path =="
-hits=$(grep -nE '>[A-Za-z]+\.sol:[0-9]' $HTML_FILES 2>/dev/null | grep -v "eez-core-protocol/" || true)
+hits=$(grep -nE '>[A-Za-z]+\.sol:[0-9]' "${HTML_FILES[@]}" 2>/dev/null | grep -v "eez-core-protocol/" || true)
 if [ -n "$hits" ]; then
   echo "$hits" | sed 's/^/  /'
   FAIL=1
@@ -81,8 +112,8 @@ echo "== Infra-layer .rs citations (the authoritative one, not diagram shorthand
 # demo's single authoritative citation — small in-diagram "file.rs:N" badges
 # are an intentional shorthand that points back at that one, not a citation
 # of their own, so they're not checked here.
-hits=$( { grep -nE 'letter-spacing:0.02em;">[^<]*\.rs' $HTML_FILES; \
-          grep -nE 'loc: "[^"]*\.rs' $HTML_FILES; } 2>/dev/null | grep -v "crates/" || true)
+hits=$( { grep -nE 'letter-spacing:0.02em;">[^<]*\.rs' "${HTML_FILES[@]}"; \
+          grep -nE 'loc: "[^"]*\.rs' "${HTML_FILES[@]}"; } 2>/dev/null | grep -v "crates/" || true)
 if [ -n "$hits" ]; then
   echo "$hits" | sed 's/^/  /'
   FAIL=1
@@ -94,7 +125,7 @@ echo "== Every page carries the PRE-MAINNET label =="
 # while README.md went on claiming "every page says so". The pages make
 # capability claims about a protocol that has not shipped; the label is the
 # frame those claims are read in.
-for f in $HTML_FILES; do
+for f in "${HTML_FILES[@]}"; do
   case "$f" in *q1-compute-your-cross-chain-address.html) continue ;; esac
   if ! grep -qi "PRE-MAINNET" "$f"; then
     echo "  MISSING: $f"
@@ -107,7 +138,7 @@ echo "== Generated files are current =="
 # A stale generated file is how STATIC_CHECK_GAS=5000 kept shipping after the
 # snippet was fixed: llms-full.txt is what agents read, and nothing compared it
 # to its sources. --check compares without writing, so staleness FAILS here
-# rather than being silently repaired by the section below.
+# without rewriting the generated files.
 python3 scripts/build-llms.py --check 2>&1 | sed 's/^/  /'
 if [ "${PIPESTATUS[0]}" -ne 0 ]; then
   FAIL=1
@@ -118,8 +149,8 @@ echo "== Every walkthrough reaches llms-full.txt with its code =="
 # ro2 and ro4 shipped a title, a source line and zero steps because they build
 # codeByStep from .slice() and the extractor only read string literals — and
 # the build still exited 0. This runs the gate that catches a page whose panels
-# are built a way build-llms.py cannot read. It regenerates llms.txt and
-# llms-full.txt as a side effect, which is what build-llms.py is for.
+# are built a way build-llms.py cannot read. The export is built in memory;
+# neither this test nor the audit rewrites generated files.
 python3 scripts/test_build_llms.py 2>&1 | sed 's/^/  /'
 if [ "${PIPESTATUS[0]}" -ne 0 ]; then
   FAIL=1

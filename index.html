@@ -186,12 +186,12 @@ h1 .l{font-weight:300;color:#dcdcdc}
           <p class="card-hook">Two scenarios pass on local anvil chains: one call starts on L1 and gets back the value L2's execution produces, and one makes the same call from L2. Locally, that value is precomputed in the entry.</p>
         </a>
         <a class="card" href="./dapp-developers/qs2-read-your-side-of-it.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">02</span>Read Your Side of It</h3></div>
-          <p class="card-hook">Neither contract imports anything from EEZ: your side is an ordinary Solidity call that uses its return value.</p>
+          <div class="card-head"><h3 class="card-title"><span class="card-num">02</span>Follow One Call There and Back</h3></div>
+          <p class="card-hook">Your contract makes an ordinary call to a proxy, the proxy hands it to the L1 manager, and the 1 that Counter returns on L2 comes back as data that was posted before your call.</p>
         </a>
         <a class="card" href="./dapp-developers/qs3-who-answered.html">
           <div class="card-head"><h3 class="card-title"><span class="card-num">03</span>Who Answered?</h3></div>
-          <p class="card-hook">The L1 call never waited for L2: its answer was already in an entry, and locally you can read the entry the scenario script wrote as composer.</p>
+          <p class="card-hook">Follow the call hash from its calculation to the matching entry, then read the success flag and the return data that gives your contract 1.</p>
         </a>
       </div>
     </div>
@@ -200,8 +200,8 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <h3 class="phase-label">MAKE IT REAL</h3>
       <div class="grid">
         <a class="card" href="./dapp-developers/qs5-three-gotchas-before-you-build.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">04</span>Three Gotchas Before You Build</h3></div>
-          <p class="card-hook">Three things behave differently from a same-chain call: a test that never leaves one chain hides all three. Cross-chain, two of them revert, and the third matters once an L2 turns on USE_GAS_LEFT.</p>
+          <div class="card-head"><h3 class="card-title"><span class="card-num">04</span>Two Gotchas Before You Build</h3></div>
+          <p class="card-hook">Two cross-chain gotchas to check before you build: msg.sender is the source's proxy, and a state-changing proxy call needs an entry verified in the same block.</p>
         </a>
         <a class="card" href="./dapp-developers/qs6-deploy-your-own-contract.html">
           <div class="card-head"><h3 class="card-title"><span class="card-num">05</span>Deploy Your Own Contract</h3><span class="badge">COMING SOON</span></div>

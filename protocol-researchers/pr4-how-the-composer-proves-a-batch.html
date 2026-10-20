@@ -140,7 +140,28 @@
   }
   .hdr-home{display:inline-flex;align-items:center;gap:10px;}
   .hdr-home img{display:block;height:26px;width:auto;flex:none;}
-.pre-fit #stage{visibility:hidden;}</style>
+.pre-fit #stage{visibility:hidden;}
+  /* Up-next button: DESIGN.md's outline pill, beside the step controls
+     because that is where the reader is when step 3 ends. Grey at rest; the
+     arrow circle takes the gradient on hover only. syncEnds() adds .is-final
+     on the last step, where Next › goes dead, and that is the live state, so
+     the edge and kicker take the green signal there. */
+  .next-sep{width:1px;height:34px;background:var(--eez-edge);margin:0 8px;flex:none;}
+  a.next-demo{display:inline-flex;align-items:center;gap:16px;max-width:560px;padding:6px 6px 6px 22px;border:1px solid var(--eez-edge);border-radius:100px;background:transparent;color:#d8d8d8;text-decoration:none;font-family:var(--mono);transition:border-color .15s ease,color .15s ease,background .15s ease;}
+  a.next-demo:hover{background:#141414;color:#fff;}
+  .next-demo-text{display:flex;flex-direction:column;min-width:0;line-height:1.3;}
+  .next-demo-k{font-size:11px;letter-spacing:0.14em;color:var(--muted);}
+  .next-demo-t{font-size:15px;font-weight:600;letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .next-demo-arr{flex:none;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#141414;border:1px solid var(--eez-edge);color:#d8d8d8;font-size:16px;transition:transform .15s ease;}
+  a.next-demo:hover .next-demo-arr{background:var(--eez-grad-btn) border-box;border-color:transparent;color:var(--eez-ink-on-grad);transform:translateX(3px);}
+  a.next-demo.is-final{border-color:var(--eez-green);color:#fff;}
+  a.next-demo.is-final .next-demo-k{color:var(--eez-green);}
+  @media (max-width:1120px){
+    .next-sep{display:none;}
+    a.next-demo{flex-basis:100%;max-width:none;justify-content:space-between;margin-top:6px;}
+    .next-demo-t{white-space:normal;}
+  }
+</style>
 </head>
 <body>
 <div role="main" class="stage-wrap" style="position:fixed;inset:0;background:var(--eez-canvas);display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
@@ -156,7 +177,7 @@
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
       <div id="stepLabel" style="font-family:var(--mono);font-size:20px;color:var(--muted);letter-spacing:0.06em;">STEP 1 OF 3</div>
-      <a class="back hdr-rule" href="pr3-the-deriver.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: How the deriver rebuilds L2 from L1 →</a>
+      <a class="back hdr-rule" href="pr3-the-deriver.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: How the deriver rebuilds L2 from L1 →</a>
     </div>
   </div>
 
@@ -276,7 +297,7 @@
       <div id="srcCite" style="font-family:var(--mono);font-size:13px;color:var(--muted);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:0.02em;"><a href="https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-control-rpc/proto/prove.proto" target="_blank" style="color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--muted);" title="View source on GitHub">crates/eez-control-rpc/proto/prove.proto · prove.v1.Prover ↗</a></div>
       <button id="btnCopy" type="button" title="Copy this snippet to the clipboard" style="position:absolute;top:12px;right:14px;z-index:3;background:#1a1a1a;border:1px solid #2e2e2e;border-radius:5px;color:var(--muted);font-family:var(--mono);font-size:11px;line-height:14px;letter-spacing:0.06em;padding:3px 8px;cursor:pointer;">COPY</button>
     </div>
-    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:19px;line-height:34px;background:var(--eez-screen);"></div>
+    <div id="codePanel" style="height:calc(712px - 49px);overflow-x:auto;overflow-y:auto;padding:20px 0;font-family:var(--mono);font-size:15px;line-height:26px;background:var(--eez-screen);"></div>
   </div>
 
   <!-- ===== LEAD-IN SLIDE - shown before the walkthrough begins =====
@@ -313,6 +334,8 @@
         <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
         <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
         <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
+        <span class="next-sep" aria-hidden="true"></span>
+        <a id="nextDemo" class="next-demo" href="pr3-the-deriver.html"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">How the deriver rebuilds L2 from L1</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
       </div>
       <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
     </div>
@@ -711,6 +734,8 @@
     var p = document.getElementById("btnPrev"), n = document.getElementById("btnNext");
     if (p) { p.disabled = (step <= 0); }
     if (n) { n.disabled = (step >= N-1); }
+    var nd = document.getElementById("nextDemo");
+    if (nd) { nd.classList.toggle("is-final", step >= N-1); }
   }
   function staticBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; syncEnds(); }
   function animateBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; void b.offsetWidth; b.style.transition="transform "+STEP_MS+"ms linear"; b.style.transform="scaleX("+((step+1)/N)+")"; syncEnds(); }
@@ -735,7 +760,7 @@
   // ---- Lead-in slide -------------------------------------------------
   // Slide zero is a separate overlay inside the stage, NOT step 0: N,
   // step, the dots and every *ByStep array are untouched. Dismissal
-  // lasts for this page view only - nothing is written to localStorage.
+  // lasts for this page view only - nothing is saved to browser storage.
   var introEl = document.getElementById("intro");
   var introHidden = [];   // [element, its own inline display] while covered
   function introShowing(){ return !!introEl && !introEl.hasAttribute("hidden"); }
@@ -750,11 +775,6 @@
   }
   function dismissIntro(){
     if (!introShowing()) { return; }
-    // One orientation per session: remember the dismissal so the next
-    // walkthrough opens straight at step 1 (same end state as a NEXT-link
-    // arrival). sessionStorage so a fresh visit gets the lead-in again;
-    // guarded because storage access can throw (private windows, blocked).
-    try { window.sessionStorage.setItem("eez-demos:intro-dismissed:v1", "1"); } catch (e) { /* no-op */ }
     introEl.setAttribute("hidden", "");
     for (var i = 0; i < introHidden.length; i++) {
       // Restore the recorded inline value, not "" - stageCol and the
@@ -772,20 +792,7 @@
     // A real <button>, so Enter and Space activate it natively; the
     // keydown handler below stays off the keyboard while it is up.
     if (btnStart) { btnStart.addEventListener("click", dismissIntro); }
-    // Arriving via a NEXT link (bottom-bar <a class="back">, see the other
-    // 14 walkthroughs) means the reader already opted in to this track by
-    // clicking through the previous page - skip straight to step 1 instead
-    // of making them dismiss the lead-in again. Reusing dismissIntro keeps
-    // this in sync with the Start button's own end state. A reload of this
-    // exact URL (marker still in the address bar) legitimately skips the
-    // intro again; a reload of the bare URL carries no marker and still
-    // shows it.
-    if (window.location.hash === "#skip-intro") { dismissIntro(); }
-    // Already dismissed a lead-in this session — the reader is oriented,
-    // skip this one too. A cold arrival (shared link, new tab) still gets it.
-    try {
-      if (window.sessionStorage.getItem("eez-demos:intro-dismissed:v1") === "1") { dismissIntro(); }
-    } catch (e) { /* treat as a cold arrival */ }
+    // Every visit starts with this page's intro, including NEXT-link arrivals.
   }
 
   // The pin is read out of whichever citation link the page has, deferred so it

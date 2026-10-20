@@ -85,50 +85,67 @@
     #codePanel{position:relative;}
     #codePanel::after{content:"";position:absolute;top:0;right:0;bottom:0;width:28px;background:linear-gradient(to right,transparent,#050505);pointer-events:none;}
   }
-  /* ============================================================
-     LEAD-IN SLIDE  (see docs/founding-design.md - the settled format is two
-     layers: card -> 3-step walkthrough. The orientation copy that
-     used to sit ABOVE the stage now renders as a slide INSIDE it,
-     so the page still never scrolls and there is no second column
-     and no explanatory figure.)
-
-     It is a <section>, and it is inserted as the FOURTH child of
-     #stage, on purpose: the shared <1120px block above addresses
-     #stage > div:first-child / :nth-child(2) / :nth-child(3) /
-     :last-child, and a non-div in slot 4 leaves all four of those
-     resolving to exactly the same elements as before.
-
-     No new colours - every value is a :root custom property or a
-     literal already used elsewhere on this page.
-     ============================================================ */
+  /* Keep the intro as a section: the mobile layout addresses the stage's
+     direct div children by position. This overview is separate from the steps. */
   #intro{position:absolute;left:0;top:97px;right:0;bottom:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:0 96px;font-family:var(--sans);}
   #intro[hidden]{display:none;}
-  /* riseIn is the page's existing entrance keyframe, and the
-     prefers-reduced-motion block above already neutralises it. */
   .intro-inner{width:100%;max-width:1500px;animation:riseIn .4s ease both;}
   .intro-eyebrow{font-family:var(--mono);font-size:16px;letter-spacing:0.16em;color:var(--eez-green);}
   .intro-title{font-size:56px;font-weight:600;line-height:1.14;color:#fff;margin:20px 0 0;max-width:1380px;text-wrap:pretty;}
-  .intro-lede{font-size:25px;line-height:1.5;color:#d8d8d8;margin:26px 0 0;max-width:1280px;text-wrap:pretty;}
-  .intro-learn-label{font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:var(--muted);margin-top:54px;}
-  /* Three across, one per demo step - a full-width index, not cards
-     in a void: a hairline rule per column, no box, no fill. */
-  .intro-learn{list-style:none;margin:18px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px;}
-  .intro-learn li{border-top:1px solid var(--eez-edge);padding-top:16px;font-size:19px;line-height:1.5;color:#d8d8d8;text-wrap:pretty;}
-  .intro-learn b{display:block;font-family:var(--mono);font-size:14px;font-weight:400;letter-spacing:0.12em;color:var(--eez-green);margin-bottom:11px;}
-  .intro-actions{margin-top:54px;}
-  /* Same gradient treatment as .btn-play, one size up for the stage;
-     it carries class="btn-play" so it inherits that hover rule and
-     the shared button:focus-visible green ring. */
+  .intro-lede{font-size:25px;line-height:1.5;color:#d8d8d8;margin:22px 0 0;max-width:1280px;text-wrap:pretty;}
+  .intro-flow{margin:36px 0 0;}
+  .intro-flow-grid{display:grid;grid-template-columns:minmax(0,3.1fr) minmax(0,1fr) minmax(0,1.2fr);align-items:stretch;}
+  .intro-area{display:flex;flex-direction:column;min-width:0;padding:24px;border:1px solid var(--eez-edge);border-radius:16px;background:rgba(255,255,255,.02);}
+  .intro-area-title{margin:0 0 20px;font-family:var(--mono);font-size:14px;font-weight:500;line-height:21px;letter-spacing:.12em;color:#d8d8d8;}
+  .intro-area-grid{flex:1;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.7fr) minmax(0,1.2fr);align-items:stretch;}
+  .intro-area-l2 .intro-area-grid{grid-template-columns:minmax(0,1fr);}
+  .intro-node{padding:22px;border:1px solid var(--eez-edge);border-radius:12px;background:var(--eez-screen);min-width:0;}
+  .intro-node-chain{font-family:var(--mono);font-size:13px;letter-spacing:.1em;color:var(--muted);}
+  .intro-node-name{font-family:var(--mono);font-size:25px;font-weight:500;color:#fff;margin-top:18px;}
+  .intro-node-detail{font-size:18px;line-height:1.5;color:var(--muted);margin-top:10px;}
+  .intro-node-detail code{font-family:var(--mono);font-size:17px;color:#d8d8d8;}
+  .intro-node-value{color:var(--eez-green);font-family:var(--mono);}
+  .intro-connector{display:flex;flex-direction:column;justify-content:center;gap:24px;padding:0 14px;text-align:center;color:#6283BD;}
+  .intro-cross{padding-top:41px;}
+  .intro-direction{display:flex;flex-direction:column;gap:14px;}
+  .intro-connector-label{font-family:var(--mono);font-size:15px;line-height:1.5;color:#d8d8d8;}
+  .intro-response-label{color:var(--eez-green);}
+  .intro-arrow{display:block;position:relative;height:2px;background:currentColor;}
+  .intro-arrow::after{content:"";position:absolute;right:0;top:-5px;width:10px;height:10px;border-top:2px solid currentColor;border-right:2px solid currentColor;transform:rotate(45deg);}
+  /* Cross the connector's 14px inset and each area's 24px padding + border
+     so both directions connect the actual contracts through the L1/L2 edges. */
+  .intro-cross .intro-arrow{z-index:1;margin-left:-39px;margin-right:-39px;}
+  .intro-arrow-return{color:var(--eez-green);}
+  .intro-arrow-return::after{right:auto;left:0;transform:rotate(-135deg);}
+  .intro-flow figcaption{font-size:18px;line-height:1.5;color:var(--muted);margin-top:24px;max-width:1250px;text-wrap:pretty;}
+  .intro-actions{margin-top:30px;}
   #btnStart{font-size:20px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:16px 34px;cursor:pointer;}
 
   @media (max-width:1120px){
     #intro{position:static !important;padding:28px 20px 36px;}
     .intro-title{font-size:30px;margin-top:14px;}
     .intro-lede{font-size:17px;margin-top:16px;}
-    .intro-learn-label{margin-top:34px;}
-    .intro-learn{grid-template-columns:minmax(0,1fr);gap:20px;}
-    .intro-learn li{font-size:16px;}
-    .intro-actions{margin-top:32px;}
+    .intro-flow{margin-top:28px;}
+    .intro-flow-grid,.intro-area-grid{grid-template-columns:minmax(0,1fr);}
+    .intro-area{padding:16px;}
+    .intro-area-title{margin-bottom:16px;}
+    .intro-node{padding:20px;}
+    .intro-node-name{font-size:22px;margin-top:10px;}
+    .intro-node-detail{font-size:16px;margin-top:6px;}
+    .intro-connector{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-height:96px;gap:20px;padding:16px 0;}
+    .intro-direction{align-items:center;justify-content:center;gap:12px;}
+    .intro-direction-return{flex-direction:column-reverse;}
+    .intro-arrow{width:2px;height:28px;}
+    .intro-arrow::after{right:-5px;top:auto;bottom:0;transform:rotate(135deg);}
+    .intro-arrow-return::after{right:auto;left:-5px;top:0;bottom:auto;transform:rotate(-45deg);}
+    /* On the stacked layout, cross the lower L1 border and upper L2 border.
+       Keep the L2 heading beside the two vertical paths. */
+    .intro-area-l2 .intro-area-title{padding-left:48px;}
+    .intro-cross{position:relative;display:flex;align-items:flex-start;gap:10px;padding:16px 0 16px 70px;}
+    .intro-cross .intro-arrow{position:absolute;left:27px;top:-17px;bottom:-54px;height:auto;margin:0;}
+    .intro-cross .intro-arrow-return{left:45px;}
+    .intro-flow figcaption{font-size:16px;margin-top:20px;}
+    .intro-actions{margin-top:28px;}
     #btnStart{font-size:16px;padding:13px 24px;width:100%;}
   }
 </style>
@@ -153,7 +170,28 @@
   }
   .hdr-home{display:inline-flex;align-items:center;gap:10px;}
   .hdr-home img{display:block;height:26px;width:auto;flex:none;}
-.pre-fit #stage{visibility:hidden;}</style>
+.pre-fit #stage{visibility:hidden;}
+  /* Up-next button: DESIGN.md's outline pill, beside the step controls
+     because that is where the reader is when step 3 ends. Grey at rest; the
+     arrow circle takes the gradient on hover only. syncEnds() adds .is-final
+     on the last step, where Next › goes dead, and that is the live state, so
+     the edge and kicker take the green signal there. */
+  .next-sep{width:1px;height:34px;background:var(--eez-edge);margin:0 8px;flex:none;}
+  a.next-demo{display:inline-flex;align-items:center;gap:16px;max-width:560px;padding:6px 6px 6px 22px;border:1px solid var(--eez-edge);border-radius:100px;background:transparent;color:#d8d8d8;text-decoration:none;font-family:var(--mono);transition:border-color .15s ease,color .15s ease,background .15s ease;}
+  a.next-demo:hover{background:#141414;color:#fff;}
+  .next-demo-text{display:flex;flex-direction:column;min-width:0;line-height:1.3;}
+  .next-demo-k{font-size:11px;letter-spacing:0.14em;color:var(--muted);}
+  .next-demo-t{font-size:15px;font-weight:600;letter-spacing:0.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .next-demo-arr{flex:none;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;background:#141414;border:1px solid var(--eez-edge);color:#d8d8d8;font-size:16px;transition:transform .15s ease;}
+  a.next-demo:hover .next-demo-arr{background:var(--eez-grad-btn) border-box;border-color:transparent;color:var(--eez-ink-on-grad);transform:translateX(3px);}
+  a.next-demo.is-final{border-color:var(--eez-green);color:#fff;}
+  a.next-demo.is-final .next-demo-k{color:var(--eez-green);}
+  @media (max-width:1120px){
+    .next-sep{display:none;}
+    a.next-demo{flex-basis:100%;max-width:none;justify-content:space-between;margin-top:6px;}
+    .next-demo-t{white-space:normal;}
+  }
+</style>
 </head>
 <body>
 <div role="main" class="stage-wrap" style="position:fixed;inset:0;background:var(--eez-canvas);display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:var(--sans);">
@@ -165,7 +203,7 @@
       <a class="back hdr-home" href="../index.html" aria-label="EEZ Quickstarts home"><img src="../favicon.svg" alt="" width="16" height="26">Quickstarts</a>
       <div class="hdr-dot" style="width:5px;height:5px;border-radius:50%;background:#2a2a2a;"></div>
       <div style="font-size:22px;font-weight:600;color:#fff;">One Call, Two Rollups, One Transaction</div>
-      <a class="back hdr-rule" href="qs1-run-your-first-round-trip.html#skip-intro" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Run Your First Round Trip &rarr;</a>
+      <a class="back hdr-rule" href="qs1-run-your-first-round-trip.html" style="border-left:1px solid #2a2a2a;padding-left:22px;">NEXT: Run Your First Round Trip &rarr;</a>
       </div>
     <div style="display:flex;align-items:center;gap:22px;">
       <button id="btnHelp" type="button" title="How to read this page" aria-label="How to read this page" style="width:26px;height:26px;flex:none;background:#141414;border:1px solid #2a2a2a;border-radius:50%;color:var(--muted);font-family:var(--mono);font-size:13px;line-height:1;cursor:pointer;padding:0;">?</button>
@@ -185,11 +223,11 @@
         <div class="qs0-box" style="width:270px;background:#141b2b;border:1.5px solid #7c83ff;">
           <div class="qs0-tag" style="color:var(--label);">YOUR CONTRACT</div>
           <div class="qs0-main" style="color:#eef1ff;">CounterAndProxy</div>
-          <div class="qs0-sub">target.increment{gas: &hellip;}()</div>
+          <div class="qs0-sub">You call incrementProxy()</div>
         </div>
         <div class="qs0-arrow">
           <svg width="130" height="20" viewBox="0 0 130 20"><defs><marker id="qa1" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#7c83ff"></path></marker></defs><line x1="2" y1="10" x2="120" y2="10" stroke="#7c83ff" stroke-width="2.5" stroke-dasharray="6 6" marker-end="url(#qa1)" style="animation:dashMove 1s linear infinite;"></line></svg>
-          <span>plain CALL</span>
+          <span>target.increment()</span>
         </div>
         <div class="qs0-box" style="width:250px;background:rgba(180,120,240,0.06);border:1.5px dashed #b478f0;">
           <div class="qs0-tag" style="color:#a98ad0;">PROXY · Counter@L2</div>
@@ -211,9 +249,9 @@
           <div class="qs0-tag" style="color:#b9863a;">Counter</div>
           <div class="qs0-main" style="color:#fff2dc;">increment()</div>
         </div>
-        <div class="qs0-note" style="max-width:400px;">The proxy on L1 stands in for this contract. Its address is derived from Counter&rsquo;s address and rollup ID.</div>
+        <div class="qs0-note" style="max-width:400px;">Counter is the L2 contract. Its increment() function adds one to its stored number and returns it: starting at 0, the result is 1.</div>
       </div>
-      <div class="qs0-note">To your contract it is an ordinary call to an address.</div>
+      <div class="qs0-note"><code>CounterAndProxy</code> is the caller contract, separate from the proxy. Its <code>incrementProxy()</code> function saves the result in <code>targetCounter</code> and also increments its own local <code>counter</code>.</div>
     </div>
 
     <!-- STEP 2: the answer is already there -->
@@ -281,7 +319,7 @@
         <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no waiting after your call</div>
       </div>
       <div class="qs0-note">Each entry, <code>returnData</code> included, is hashed into the public input that every proof system listed in the batch must verify; each rollup requires at least its own threshold of them, which can be 0. So the composer can&rsquo;t post an answer those proof systems didn&rsquo;t attest. On today&rsquo;s testnet that is one ECDSA signer; card 01&rsquo;s local run accepts any proof. Counter@L2 runs the same call on L2, keyed by the same call hash.</div>
-      <div class="qs0-note">Further reading: <a class="qs0-link" href="q2-send-a-cross-chain-call.html#skip-intro">How to call a contract on another rollup &rarr;</a></div>
+      <div class="qs0-note">Further reading: <a class="qs0-link" href="q2-send-a-cross-chain-call.html">How to call a contract on another rollup &rarr;</a></div>
     </div>
 
   
@@ -315,14 +353,57 @@
     <div class="intro-inner">
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">One Call, Two Rollups, One Transaction</h1>
-      <p class="intro-lede">Your contract on L1 calls a contract on L2 and gets its return value back in the same transaction. No bridge message, no callback, no second transaction from you.</p>
-      <p class="intro-lede">It works because you send your transaction to the composer&rsquo;s RPC. The composer is the service that builds execution entries: precomputed results of cross-chain calls. It simulates your transaction, then lands postAndVerifyBatch and your transaction in the same block, batch first. So the answer is posted and verified before your call looks it up. Sent through a plain L1 RPC instead, your call reverts, usually with <code>ExecutionNotInCurrentBlock</code>. This card is one picture and no install; card 01 runs it.</p>
-      <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
-      <ul class="intro-learn">
-        <li><b>01 · YOUR CONTRACT CALLS A PROXY</b>A proxy on L1 stands in for the L2 contract. Calling it is an ordinary call.</li>
-        <li><b>02 · THE ANSWER IS ALREADY THERE</b>The composer posts the entry just before your transaction, in the same bundle. The manager finds it by your call&rsquo;s hash.</li>
-        <li><b>03 · SAME TRANSACTION</b>The entry&rsquo;s return data comes straight back to your contract.</li>
-      </ul>
+      <p class="intro-lede">Call Counter on L2. Get <span class="intro-node-value">1</span> back on L1, in the same transaction.</p>
+      <figure class="intro-flow" aria-label="Cross-chain call overview" aria-describedby="introFlowNote">
+        <div class="intro-flow-grid">
+          <section class="intro-area" aria-labelledby="introL1Title">
+            <h2 class="intro-area-title" id="introL1Title">L1</h2>
+            <div class="intro-area-grid">
+              <div class="intro-node">
+                <div class="intro-node-chain">YOUR CONTRACT</div>
+                <div class="intro-node-name">CounterAndProxy</div>
+                <div class="intro-node-detail">You call <code>incrementProxy()</code></div>
+              </div>
+              <div class="intro-connector">
+                <div class="intro-direction">
+                  <span class="intro-connector-label">increment()</span>
+                  <span class="intro-arrow" aria-hidden="true"></span>
+                </div>
+                <div class="intro-direction intro-direction-return">
+                  <span class="intro-arrow intro-arrow-return" aria-hidden="true"></span>
+                  <span class="intro-connector-label intro-response-label">returns 1</span>
+                </div>
+              </div>
+              <div class="intro-node">
+                <div class="intro-node-chain">PROXY</div>
+                <div class="intro-node-name">Counter proxy</div>
+                <div class="intro-node-detail">Represents Counter on L2</div>
+              </div>
+            </div>
+          </section>
+          <div class="intro-connector intro-cross">
+            <div class="intro-direction">
+              <span class="intro-connector-label">Cross-chain call</span>
+              <span class="intro-arrow" aria-hidden="true"></span>
+            </div>
+            <div class="intro-direction intro-direction-return">
+              <span class="intro-arrow intro-arrow-return" aria-hidden="true"></span>
+              <span class="intro-connector-label intro-response-label">returns 1</span>
+            </div>
+          </div>
+          <section class="intro-area intro-area-l2" aria-labelledby="introL2Title">
+            <h2 class="intro-area-title" id="introL2Title">L2</h2>
+            <div class="intro-area-grid">
+              <div class="intro-node">
+                <div class="intro-node-chain">CONTRACT</div>
+                <div class="intro-node-name">Counter</div>
+                <div class="intro-node-detail"><code>increment()</code> &nbsp; <span class="intro-node-value">0 &rarr; 1</span><br>Adds 1 and returns it</div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <figcaption id="introFlowNote">Send through the composer&rsquo;s RPC: it prepares and posts the L2 result before your L1 call runs.</figcaption>
+      </figure>
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
@@ -336,6 +417,8 @@
         <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
         <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
         <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
+        <span class="next-sep" aria-hidden="true"></span>
+        <a id="nextDemo" class="next-demo" href="qs1-run-your-first-round-trip.html"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">Run Your First Round Trip</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
       </div>
       <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
     </div>
@@ -352,7 +435,7 @@
 
   var kickers = ["YOUR CONTRACT CALLS A PROXY.", "THE ANSWER IS ALREADY THERE.", "SAME TRANSACTION."];
   var captions = [
-    "Your contract calls the proxy for Counter@L2 like any other contract. The proxy has no functions of its own, so its fallback hands your calldata and your contract's address to the EEZ manager.",
+    "CounterAndProxy is your L1 caller contract. You call incrementProxy(); it calls increment() on Counter's L1 proxy and saves the returned value in targetCounter. The proxy's fallback passes the call to the EEZ manager.",
     "The composer lands its postAndVerifyBatch and your transaction as one bundle, batch first, so the batch is verified and its entries queued before your call runs. executeCrossChainCall works only in that block: it hashes your call and takes the first queued entry whose hash, destination rollup and expected starting roots all match.",
     "The manager applies the entry, checks its roots and rolling hash against what the batch committed to, and returns its returnData. The proxy passes those bytes back, so your contract's next line already has Counter@L2's result. No callback, and no second transaction from you."
   ];
@@ -365,12 +448,11 @@
       "    // \u22ef manager + self-probe branches",
       "    _fallback();",
       "}",
-      "",
       "function _fallback() internal {",
-      "    // \u22ef static-context probe",
+      "    // \u22ef static probe; normal call path:",
+      "    // Call the EEZ manager",
       "    (success, result) =",
-      "        // EEZ.call \u2192 executeCrossChainCall(",
-      "        //     msg.sender, msg.data)",
+      "        EEZ.call{value: msg.value}(abi.encodeCall(IEEZ.executeCrossChainCall, (msg.sender, msg.data)));",
       "    if (success) {",
       "        result = abi.decode(result, (bytes));",
       "    }",
@@ -412,9 +494,16 @@
     ]
   ];
   var hlByStep = [
-    [0,2,7,8,9],
+    [0,2,7,8],
     [2,4,6,10,12,15],
     [1,8]
+  ];
+
+  // Wrap only the display. COPY and exports retain the verbatim source line.
+  var wrapByStep = [
+    { 8: ["IEEZ.executeCrossChainCall", "(msg.sender"] },
+    {},
+    {}
   ];
 
   // Upstream excerpts only, no compilable snippet: no FULL mode.
@@ -430,6 +519,21 @@
   var els = { s1: document.getElementById('s1'), s2: document.getElementById('s2'), s3: document.getElementById('s3') };
 
   
+  // Split one panel line into display rows before each marker; continuation
+  // rows keep the line's indent plus four spaces.
+  function wrapRows(line, markers) {
+    if (!markers || !markers.length) { return [line]; }
+    var indent = (line.match(/^ */)[0]) + "    ", rows = [], pos = 0;
+    for (var w = 0; w < markers.length; w++) {
+      var at = line.indexOf(markers[w], pos + 1);
+      if (at <= pos) { continue; }
+      rows.push((pos ? indent : "") + line.slice(pos, at).replace(/\s+$/, ""));
+      pos = at;
+    }
+    rows.push((pos ? indent : "") + line.slice(pos));
+    return rows;
+  }
+
   // Single-pass tokenizer: strings and comments are consumed before identifiers,
   // so keywords inside a string literal are never colorized and the highlighter
   // never re-scans its own injected markup.
@@ -538,6 +642,7 @@
     var code = currentLines();
     var hl = showFull ? [] : (hlByStep[step] || []);
     var dm = showFull ? {} : ((typeof diffByStep !== "undefined" && diffByStep && diffByStep[step]) ? diffByStep[step] : {});
+    var wr = showFull ? {} : (wrapByStep[step] || {});
     var html = "";
     for(var i=0;i<code.length;i++){
       var lit = hl.indexOf(i) !== -1;
@@ -549,11 +654,14 @@
       else if (lit) { bg = "background:rgba(63,185,80,0.10);box-shadow:inset 3px 0 0 var(--eez-green);"; }
       var mark = (d === "del") ? "-" : ((d === "add") ? "+" : " ");
       var mcol = (d === "del") ? "#f85149" : ((d === "add") ? "var(--eez-green)" : "#3a3a3a");
-      html += '<div style="display:flex;align-items:stretch;padding:1px 16px;white-space:nowrap;' + bg + '">'
-        + '<span style="width:26px;flex:none;text-align:right;padding-right:8px;color:#3a3a3a;user-select:none;">' + (i+1) + '</span>'
-        + '<span style="width:12px;flex:none;text-align:center;color:' + mcol + ';user-select:none;border-right:1px solid var(--eez-edge);margin-right:11px;">' + mark + '</span>'
-        + '<span style="white-space:pre;' + ((lit || d) ? "color:#eef3f8;" : "color:var(--muted);") + '">'
-        + highlightCode(t) + '</span></div>';
+      var rows = wrapRows(t, wr[i]);
+      for (var r = 0; r < rows.length; r++) {
+        html += '<div style="display:flex;align-items:stretch;padding:1px 16px;white-space:nowrap;' + bg + '">'
+          + '<span style="width:26px;flex:none;text-align:right;padding-right:8px;color:#3a3a3a;user-select:none;">' + (r ? "" : (i+1)) + '</span>'
+          + '<span style="width:12px;flex:none;text-align:center;color:' + mcol + ';user-select:none;border-right:1px solid var(--eez-edge);margin-right:11px;">' + (r ? " " : mark) + '</span>'
+          + '<span style="white-space:pre;' + ((lit || d) ? "color:#eef3f8;" : "color:var(--muted);") + '">'
+          + highlightCode(rows[r]) + '</span></div>';
+      }
     }
     html += '<div style="display:flex;align-items:stretch;padding:1px 16px;">'
       + '<span style="width:26px;flex:none;"></span>'
@@ -737,6 +845,8 @@
     var p = document.getElementById("btnPrev"), n = document.getElementById("btnNext");
     if (p) { p.disabled = (step <= 0); }
     if (n) { n.disabled = (step >= N-1); }
+    var nd = document.getElementById("nextDemo");
+    if (nd) { nd.classList.toggle("is-final", step >= N-1); }
   }
   function staticBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; syncEnds(); }
   function animateBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; void b.offsetWidth; b.style.transition="transform "+STEP_MS+"ms linear"; b.style.transform="scaleX("+((step+1)/N)+")"; syncEnds(); }
@@ -761,7 +871,7 @@
   // ---- Lead-in slide -------------------------------------------------
   // Slide zero is a separate overlay inside the stage, NOT step 0: N,
   // step, the dots and every *ByStep array are untouched. Dismissal
-  // lasts for this page view only - nothing is written to localStorage.
+  // lasts for this page view only - nothing is saved to browser storage.
   var introEl = document.getElementById("intro");
   var introHidden = [];   // [element, its own inline display] while covered
   function introShowing(){ return !!introEl && !introEl.hasAttribute("hidden"); }
@@ -776,11 +886,6 @@
   }
   function dismissIntro(){
     if (!introShowing()) { return; }
-    // One orientation per session: remember the dismissal so the next
-    // walkthrough opens straight at step 1 (same end state as a NEXT-link
-    // arrival). sessionStorage so a fresh visit gets the lead-in again;
-    // guarded because storage access can throw (private windows, blocked).
-    try { window.sessionStorage.setItem("eez-demos:intro-dismissed:v1", "1"); } catch (e) { /* no-op */ }
     introEl.setAttribute("hidden", "");
     for (var i = 0; i < introHidden.length; i++) {
       // Restore the recorded inline value, not "" - stageCol and the
@@ -798,20 +903,7 @@
     // A real <button>, so Enter and Space activate it natively; the
     // keydown handler below stays off the keyboard while it is up.
     if (btnStart) { btnStart.addEventListener("click", dismissIntro); }
-    // Arriving via a NEXT link (bottom-bar <a class="back">, see the other
-    // 14 walkthroughs) means the reader already opted in to this track by
-    // clicking through the previous page - skip straight to step 1 instead
-    // of making them dismiss the lead-in again. Reusing dismissIntro keeps
-    // this in sync with the Start button's own end state. A reload of this
-    // exact URL (marker still in the address bar) legitimately skips the
-    // intro again; a reload of the bare URL carries no marker and still
-    // shows it.
-    if (window.location.hash === "#skip-intro") { dismissIntro(); }
-    // Already dismissed a lead-in this session — the reader is oriented,
-    // skip this one too. A cold arrival (shared link, new tab) still gets it.
-    try {
-      if (window.sessionStorage.getItem("eez-demos:intro-dismissed:v1") === "1") { dismissIntro(); }
-    } catch (e) { /* treat as a cold arrival */ }
+    // Every visit starts with this page's intro, including NEXT-link arrivals.
   }
 
   // The pin is read out of whichever citation link the page has, deferred so it
