@@ -162,6 +162,23 @@
     syncIntroLabel();
   }
 
+  /* A fast double-click on the next-step arrow used to run twice: from step 1
+     it skipped step 2, and from step 2 the second click landed on the UP NEXT
+     link that appears where the arrow was, leaving the walkthrough. Treat any
+     step-advance click within 450ms of the previous one as the same gesture. */
+  var lastStepAdvance = 0;
+  document.addEventListener("click", function (e) {
+    var t = e.target;
+    if (!t || !t.closest || !t.closest("#btnNext, #dots button, #nextDemo")) { return; }
+    var now = Date.now();
+    if (now - lastStepAdvance < 450) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      return;
+    }
+    lastStepAdvance = now;
+  }, true);
+
   /* On a phone the stage is a normal stacked document. Dismissing the lead-in
      collapses it above the current scroll position, which used to leave the
      reader halfway down step 1. Step pills had the same problem. */
