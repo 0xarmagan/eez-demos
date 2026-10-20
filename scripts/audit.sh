@@ -127,6 +127,9 @@ echo "== Every page carries the PRE-MAINNET label =="
 # frame those claims are read in.
 for f in "${HTML_FILES[@]}"; do
   case "$f" in *q1-compute-your-cross-chain-address.html) continue ;; esac
+  # index.html is exempt by owner decision (2026-10-20): the landing page
+  # links to walkthroughs, and every walkthrough carries the label itself.
+  case "$f" in index.html|./index.html) continue ;; esac
   if ! grep -qi "PRE-MAINNET" "$f"; then
     echo "  MISSING: $f"
     FAIL=1

@@ -296,6 +296,7 @@ def collect():
                 "lang": lang_for(cite_path, track),
                 "snippet": snips.get(name), "test": tests.get(name),
                 "next": next_of(src),
+                "proves": proves_of(src),
             })
     if missing_from_grid:
         print("NOTE: pages absent from index.html's card grid, appended after "
@@ -326,9 +327,16 @@ def count_word(n):
 
 HEAD_TMPL = """# EEZ Quickstarts
 
-> %s interactive walkthroughs of the Ethereum Economic Zone, each built on real
-> protocol source cited at a pinned commit rather than on pseudocode. Covers writing
-> contracts that call across rollups, running the stack, and how RollupX settles and proves.
+> The Ethereum Economic Zone lets a contract on Ethereum or a rollup call a contract on
+> another chain and use the answer in the same transaction, with no bridge message and no
+> callback. %s interactive walkthroughs show how, each built on real protocol source cited
+> at a pinned commit rather than on pseudocode. Covers writing contracts that call across
+> rollups, running the stack, and how RollupX settles and proves.
+
+New here? Dapp developers start with
+[Run Your First Round Trip](BASE_URL/dapp-developers/qs1-run-your-first-round-trip.html).
+Rollup operators and protocol researchers get a reading order on
+[Start here](BASE_URL/start-here.html).
 
 Every code panel on this site is rendered from JavaScript at runtime, so fetching a page
 gives you the shell and not the content. These files hand over the content directly: each
@@ -343,7 +351,7 @@ a commit SHA, so a link tells you exactly which revision a claim was true of.
 
 
 def head_for(pages):
-    return HEAD_TMPL % count_word(len(pages))
+    return (HEAD_TMPL % count_word(len(pages))).replace("BASE_URL", BASE)
 
 
 def build_index(pages):
@@ -394,6 +402,18 @@ def build_index(pages):
     return "\n".join(out).rstrip() + "\n"
 
 
+def proves_of(src):
+    """The intro's "What this proves / what it doesn't" pair, if the page has
+    one. It lives in the lead-in markup, not in the step arrays, so it is read
+    here or an agent reading the export would get a different story."""
+    out = []
+    for key in ("proves", "doesnt"):
+        m = re.search(r'<p id="%s"><b>[^<]*</b>(.*?)</p>' % key, src, re.S)
+        if m:
+            out.append(re.sub(r"\s+", " ", re.sub(r"<[^>]+>", "", m.group(1))).strip())
+    return tuple(out) if len(out) == 2 else None
+
+
 def page_body(p):
     """Everything under a walkthrough's title: links, steps, source, tests.
     Shared by llms-full.txt and the per-card markdown mirrors, so the two can
@@ -407,6 +427,9 @@ def page_body(p):
     if p["cite_url"]:
         out.append("- Verify: %s" % p["cite_url"])
     out.append("")
+    if p.get("proves"):
+        out.append("**What this proves:** %s\n" % p["proves"][0])
+        out.append("**What it doesn't:** %s\n" % p["proves"][1])
     for i, lines in enumerate(p["steps"]):
         kick = p["kickers"][i] if i < len(p["kickers"]) else "Step %d" % (i + 1)
         cap = p["captions"][i] if i < len(p["captions"]) else ""

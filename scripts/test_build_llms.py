@@ -53,6 +53,22 @@ def test_quickstart_entry_card_does_not_title_qs0():
         "qs0 titled %r in index_cards()" % title
 
 
+RUNNABLE = ("qs1-run-your-first-round-trip", "qs7-cross-chain-flash-loan",
+            "qs8-bridge-tokens-both-ways")
+
+
+def test_runnable_quickstarts_export_what_they_prove():
+    """The three runnable dapp pages state what a local pass proves and what
+    it does not. The export must carry both lines, or an agent reads a
+    stronger claim than a human does."""
+    builder = _build_llms()
+    pages = {pg["rel"].split("/")[-1][:-5]: pg for pg in builder.collect()}
+    missing = [s for s in RUNNABLE if not (pages.get(s) or {}).get("proves")]
+    assert missing == [], "no proves/doesn't pair parsed for: %s" % missing
+    text = builder.build_full(builder.collect())
+    assert text.count("**What it doesn't:**") >= len(RUNNABLE)
+
+
 def test_every_walkthrough_emits_at_least_one_code_block():
     builder = _build_llms()
     text = builder.build_full(builder.collect())

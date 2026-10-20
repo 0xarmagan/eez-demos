@@ -49,14 +49,11 @@ h1 .w{font-weight:800}
 h1 .l{font-weight:300;color:#dcdcdc}
 .hero-sub{font-size:18px;line-height:1.55;color:#c9cfda;max-width:640px;margin:-14px 0 32px;text-wrap:pretty}
 @media(max-width:640px){.hero-sub{font-size:15.5px}}
+.cta-tour{display:inline-flex;align-items:center;gap:10px;font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.03em;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn);border:0;border-radius:100px;padding:12px 22px;cursor:pointer}
+.cta-tour .cta-q{font-weight:400;opacity:.78}
+.cta-tour:hover{filter:brightness(1.08)}
+.hero-cta{display:flex;align-items:center;gap:12px 22px;flex-wrap:wrap;margin:0 0 6px}
 
-/* pill CTAs */
-.pill-row{display:flex;gap:12px;margin-bottom:60px;flex-wrap:wrap}
-.pill{display:inline-flex;align-items:center;gap:11px;background:#fff;color:#000;border-radius:100px;padding:5px 5px 5px 20px;font-family:var(--mono);font-size:12.5px;font-weight:600;letter-spacing:.03em;text-decoration:none}
-.pill .circ{width:30px;height:30px;border-radius:50%;background:var(--eez-canvas);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex:none;transition:transform .2s ease}
-.pill:hover .circ{transform:translateX(3px)}
-.pill.outline{background:transparent;color:#fff;border:1px solid #2e2e2e;padding:5px 5px 5px 20px}
-.pill.outline .circ{background:#141414;border:1px solid #2e2e2e}
 
 /* section */
 .sec{margin-top:8px}
@@ -72,6 +69,10 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .card:visited .card-title{color:#b8b8b8}
 .card:visited .card-num{color:#3a3a3a}
 .card:hover::before{opacity:1}
+.card.soon{border-style:dashed;background:transparent}
+.card.soon:hover{transform:none;background:transparent;border-color:var(--eez-edge);box-shadow:none}
+.card.soon:hover::before{opacity:0}
+.card.soon .card-title{color:#9a9a9a}
 .card:hover .card-num{color:#aaa}
 .card:hover .cta{color:#fff}
 .card:hover .cta .circ{background:var(--grad) border-box;border-color:transparent;color:#000}
@@ -99,10 +100,9 @@ h1 .l{font-weight:300;color:#dcdcdc}
 .closer-links{display:flex;gap:18px;flex-wrap:wrap}
 .closer-links a{color:#9a9a9a;text-decoration:none;display:inline-block;padding:4px 0}
 .closer-links a:hover{color:#fff}
-.premainnet{margin:18px 0 0;font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:#8a8a8a}
 
 /* search and filters */
-.search-filter-wrap{display:flex;flex-direction:column;gap:14px;margin-bottom:44px}
+.search-filter-wrap{display:flex;flex-direction:column;gap:14px;margin-bottom:60px}
 .search-box-row{position:relative;width:100%}
 .search-input{width:100%;background:#090909;border:1px solid #222;border-radius:12px;padding:13px 44px 13px 42px;color:#fff;font-family:var(--sans);font-size:14px;transition:border-color .2s ease,box-shadow .2s ease}
 .search-input:focus{outline:none;border-color:var(--eez-green);box-shadow:0 0 0 3px rgba(63,185,80,0.15)}
@@ -132,30 +132,27 @@ h1 .l{font-weight:300;color:#dcdcdc}
   </div>
 
   <h1><span class="w">Learn</span> <span class="l">how EEZ</span><br><span class="w">actually</span> <span class="l">works</span></h1>
-  <p class="hero-sub">We walk you through how a contract calls another rollup and uses the answer in the same transaction, with no callback. Every step shows real protocol code cited at a pinned commit.</p>
+  <p class="hero-sub">The Ethereum Economic Zone lets a contract on Ethereum or a rollup call a contract on another chain and use the answer in the same transaction, with no bridge message and no callback. These walkthroughs show how, with real protocol code cited at a pinned commit.</p>
 
   <div class="search-filter-wrap">
+    <div class="hero-cta">
+      <button class="cta-tour" type="button" id="btnTour"><span class="cta-q">First Time Here?</span> Take quick tour <span aria-hidden="true">→</span></button>
+    </div>
     <div class="search-box-row">
       <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
       <input id="searchInput" class="search-input" type="text" placeholder="Search 24 walkthroughs (e.g., msg.sender, Kurtosis, deriver, CREATE2)..." aria-label="Search walkthroughs">
       <span class="search-shortcut">/</span>
     </div>
     <div class="filter-tabs">
-      <button class="filter-btn active" data-filter="all" title="24 walkthroughs, plus card 05, coming soon">ALL (24 + 1 SOON)</button>
-      <button class="filter-btn" data-filter="dapp-developers" title="14 walkthroughs, plus card 05, coming soon">DAPP DEVS (14 + 1 SOON)</button>
-      <button class="filter-btn" data-filter="rollup-operators">ROLLUP OPS (4)</button>
-      <button class="filter-btn" data-filter="protocol-researchers">PROTOCOL RESEARCHERS (6)</button>
+      <button class="filter-btn active" aria-pressed="true" data-filter="all">ALL (24)</button>
+      <button class="filter-btn" aria-pressed="false" data-filter="dapp-developers">DAPP DEVELOPERS (14)</button>
+      <button class="filter-btn" aria-pressed="false" data-filter="rollup-operators">ROLLUP OPERATORS (4)</button>
+      <button class="filter-btn" aria-pressed="false" data-filter="protocol-researchers">PROTOCOL RESEARCHERS (6)</button>
     </div>
   </div>
 
   <div id="emptyState" class="empty-state">
     No walkthroughs found matching your search. Try another keyword or clear filters.
-  </div>
-
-  <div class="pill-row">
-    <a class="pill" href="#quickstart">DAPP DEVELOPERS <span class="circ">→</span></a>
-    <a class="pill outline" href="#rollup-operators">ROLLUP OPERATORS <span class="circ">→</span></a>
-    <a class="pill outline" href="#protocol-researchers">PROTOCOL RESEARCHERS <span class="circ">→</span></a>
   </div>
 
   <!-- ================= DAPP DEVELOPERS: QUICKSTART ================= -->
@@ -203,10 +200,10 @@ h1 .l{font-weight:300;color:#dcdcdc}
           <div class="card-head"><h3 class="card-title"><span class="card-num">04</span>Two Gotchas Before You Build</h3></div>
           <p class="card-hook">Two cross-chain gotchas to check before you build: msg.sender is the source's proxy, and a state-changing proxy call needs an entry verified in the same block.</p>
         </a>
-        <a class="card" href="./dapp-developers/qs6-deploy-your-own-contract.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">05</span>Deploy Your Own Contract</h3><span class="badge">COMING SOON</span></div>
-          <p class="card-hook">Your own contract, deployed and called across chains with the Remix cross-chain plugin.</p>
-        </a>
+        <div class="card soon" aria-disabled="true">
+          <div class="card-head"><h3 class="card-title">Deploy Your Own Contract</h3><span class="badge">COMING SOON</span></div>
+          <p class="card-hook">Your own contract, deployed and called across chains with the Remix cross-chain plugin. Not part of the numbered sequence until it ships.</p>
+        </div>
       </div>
     </div>
 
@@ -214,11 +211,11 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <h3 class="phase-label">BUILD PATTERNS</h3>
       <div class="grid">
         <a class="card" href="./dapp-developers/qs7-cross-chain-flash-loan.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">06</span>Cross-Chain Flash Loan</h3></div>
+          <div class="card-head"><h3 class="card-title"><span class="card-num">05</span>Cross-Chain Flash Loan</h3></div>
           <p class="card-hook">Borrowed tokens go to an L2 and back before the repayment check runs, all inside one L1 transaction.</p>
         </a>
         <a class="card" href="./dapp-developers/qs8-bridge-tokens-both-ways.html">
-          <div class="card-head"><h3 class="card-title"><span class="card-num">07</span>Bridge Tokens Both Ways</h3></div>
+          <div class="card-head"><h3 class="card-title"><span class="card-num">06</span>Bridge Tokens Both Ways</h3></div>
           <p class="card-hook">Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair of chains, then run the test that sends an ERC-20 through the Bridge.sol test fixture and back.</p>
         </a>
       </div>
@@ -368,7 +365,6 @@ h1 .l{font-weight:300;color:#dcdcdc}
       <a href="llms.txt" title="Agent-readable index of all 24 walkthroughs, their code and their citations">llms.txt ↗</a>
     </div>
   </footer>
-  <p class="premainnet">PRE-MAINNET · interfaces may move</p>
 
 </div>
 <script src="assets/eez-tour.js"></script>
@@ -426,8 +422,9 @@ h1 .l{font-weight:300;color:#dcdcdc}
 
   filterBtns.forEach(function(btn) {
     btn.addEventListener("click", function() {
-      filterBtns.forEach(function(b) { b.classList.remove("active"); });
+      filterBtns.forEach(function(b) { b.classList.remove("active"); b.setAttribute("aria-pressed", "false"); });
       btn.classList.add("active");
+      btn.setAttribute("aria-pressed", "true");
       activeFilter = btn.getAttribute("data-filter");
       filterCards();
     });
@@ -444,6 +441,10 @@ h1 .l{font-weight:300;color:#dcdcdc}
   var btnHelp = document.getElementById("btnHelp");
   if (btnHelp) {
     btnHelp.addEventListener("click", function(){ if (eezTour()) { eezTour().start(); } });
+  }
+  var btnTour = document.getElementById("btnTour");
+  if (btnTour) {
+    btnTour.addEventListener("click", function(){ if (eezTour()) { eezTour().start(); } });
   }
   // Same site-wide key as the walkthroughs, so arriving here after seeing the
   // tour on a walkthrough does not show it a second time.

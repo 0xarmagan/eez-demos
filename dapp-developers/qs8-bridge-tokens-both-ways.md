@@ -9,6 +9,10 @@ Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair 
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17
 
+**What this proves:** ETH crosses in both directions on local anvil chains, and an ERC-20 makes the lock, mint, burn and release round trip through the Bridge.sol test fixture.
+
+**What it doesn't:** Real proving, a live node, or a production bridge: Bridge.sol is a test fixture. The scenarios use an accept-all proof system with the script playing composer, and the token test uses a mock proof system.
+
 ### Step 1 — RUN IT.
 
 The scenarios move ETH across: bridge from L1 to L2, bridgeL2 from L2 to L1, with the script playing composer. The test then runs Bridge.sol's token round trip: lock and mint, burn and release.

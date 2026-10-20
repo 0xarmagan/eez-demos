@@ -95,32 +95,36 @@
   function buildIndexSteps() {
     var steps = [];
     var q = function (sel) { return document.querySelector(sel); };
+    function add(sel, pad, kicker, body, extra) {
+      var el = q(sel);
+      if (!el) { return; }
+      var st = { els: [el], pad: pad, kicker: kicker, body: body };
+      if (extra) { for (var k in extra) { st[k] = extra[k]; } }
+      steps.push(st);
+    }
 
-    if (q(".search-box-row")) {
-      steps.push({ els: [q(".search-box-row")], pad: 10,
-        kicker: "FIND ONE",
-        body: "Search all 24 walkthroughs by keyword \u2014 try msg.sender, CREATE2 or Kurtosis. " +
-              "Pressing / jumps here from anywhere on the page." });
-    }
-    if (q(".filter-tabs")) {
-      steps.push({ els: [q(".filter-tabs")], pad: 10,
-        kicker: "OR BROWSE BY AUDIENCE",
-        body: "Three tracks: 14 for dapp developers, 4 for rollup operators, 6 for protocol " +
-              "researchers. A filter never lands you on an empty list." });
-    }
-    var firstTime = q(".sec-head");
-    if (firstTime) {
-      steps.push({ els: [firstTime], pad: 12,
-        kicker: "NOT SURE WHERE TO START",
-        body: "Dapp developers start here, with the Quickstart from card 00. Rollup operators and " +
-              "protocol researchers each get a reading order on Start here." });
-    }
-    if (q(".card")) {
-      steps.push({ els: [q(".card")], pad: 8,
-        kicker: "WHAT A CARD IS",
-        body: "Every card is a 3-step walkthrough built on real, cited protocol source \u2014 not " +
-              "pseudocode. The line under the title tells you what you will come away knowing." });
-    }
+    add(".search-box-row", 10, "SEARCH",
+        "Find any walkthrough by keyword. Press / to jump here.");
+    add(".filter-tabs", 10, "FILTER BY ROLE",
+        "Dapp developers, rollup operators or protocol researchers.");
+    add("#quickstart .phase", 12, "THE QUICKSTART",
+        "Seven cards, 00 to 06. Read them in order.");
+    add("#quickstart .card.soon", 8, "COMING SOON",
+        "Dashed cards are not out yet.");
+    add("#dapp-developers .sec-head", 12, "REFERENCE",
+        "Short answers to questions you hit while building.");
+    add("#rollup-operators .sec-head", 12, "ROLLUP OPERATORS",
+        "Run the stack: devnet, deploy, Chiado, test calls.");
+    add("#protocol-researchers .sec-head", 12, "PROTOCOL RESEARCHERS",
+        "How it works inside, component by component.");
+    add(".closer", 12, "MORE",
+        "llms.txt gives agents every walkthrough as text.");
+    add(".navlinks", 10, "THE SOURCE",
+        "The contracts, the node, and the live testnet.");
+    add('#quickstart a.card[href*="qs1-"]', 8, "START HERE",
+        "Open the first walkthrough. \u201cHow this page works\u201d there explains the page.",
+        { cta: { label: "Open it \u203a",
+                 href: "./dapp-developers/qs1-run-your-first-round-trip.html" } });
     return steps;
   }
 
@@ -128,21 +132,29 @@
     if (isPageMode()) { return buildIndexSteps(); }
     var steps = [];
 
+    if ($("stepLabel")) {
+      steps.push({
+        els: [$("stepLabel")],
+        pad: 10,
+        kicker: "WHERE YOU ARE",
+        body: "Your step. The URL updates, so you can share it."
+      });
+    }
+
     if ($("stageCol")) {
       // TRY IT sits on the stage column and swaps the diagram out for a live
       // calculator, so it belongs to this step. Grouping it with the code-panel
       // buttons instead produced one spotlight spanning both columns.
       var diagramEls = [$("stageCol")];
-      var diagramBody = "The mechanism, drawn out. This redraws as you move through the steps, so each " +
-                        "picture matches the code on the right at that moment.";
+      var diagramBody = "What this step shows. It changes as you move.";
       if ($("btnTry")) {
         diagramEls.push($("btnTry"));
-        diagramBody += " TRY IT swaps it for a live calculator you can put your own values into.";
+        diagramBody += " TRY IT lets you put in your own values.";
       }
       steps.push({
         els: diagramEls,
         pad: 10,
-        kicker: "LEFT · WHAT IT DOES",
+        kicker: "LEFT",
         body: diagramBody
       });
     }
@@ -151,9 +163,8 @@
       steps.push({
         els: [$("codeCard")],
         pad: 8,
-        kicker: "RIGHT · THE REAL SOURCE",
-        body: "Not pseudocode. The header names the exact file and line, pinned to a commit — " +
-              "click it to open that line on GitHub."
+        kicker: "THE REAL SOURCE",
+        body: "Real code at a pinned commit. Click the file name to check it."
       });
     }
 
@@ -164,9 +175,9 @@
     for (var i = 0; i < ctrl.length; i++) { if (ctrl[i]) { present.push(ctrl[i]); } }
     if (present.length) {
       var lines = [];
-      if ($("btnFull")) { lines.push("FULL swaps in the whole compilable file — pragma, imports and all."); }
-      if ($("btnTest")) { lines.push("TEST shows a Foundry test you can run that proves this gotcha."); }
-      lines.push("COPY always copies exactly what you are looking at.");
+      if ($("btnFull")) { lines.push("FULL shows the whole file."); }
+      if ($("btnTest")) { lines.push("TEST shows a test you can run."); }
+      lines.push("COPY copies what you see.");
       steps.push({
         els: present,
         pad: 9,
@@ -179,8 +190,8 @@
       steps.push({
         els: [$("narration")],
         pad: 12,
-        kicker: "BOTTOM LEFT · NARRATION",
-        body: "One line per step, saying what just changed and why it matters."
+        kicker: "NARRATION",
+        body: "What just changed, and why."
       });
     }
 
@@ -189,11 +200,11 @@
       steps.push({
         els: [$("stepNav")],
         pad: 14,
-        kicker: "BOTTOM RIGHT · MOVING THROUGH IT",
-        body: (n ? n + " steps. " : "") + "Next and Prev step manually, Play advances on its own. " +
-              "The arrow keys work too, and the step pills show where you are — click one to jump to it."
+        kicker: "MOVE THROUGH IT",
+        body: (n ? n + " steps. " : "") + "Next, Prev, or Play. On the last step, Next becomes Up next."
       });
     }
+
 
     return steps;
   }
@@ -257,6 +268,12 @@
     }
 
     function go(d) {
+      if (d > 0 && steps[idx] && steps[idx].cta) {
+        var href = steps[idx].cta.href;
+        close();
+        root.location.href = href;
+        return;
+      }
       idx += d;
       if (idx >= steps.length) { close(); return; }
       if (idx < 0) { idx = 0; }
@@ -292,7 +309,7 @@
           '<div style="display:flex;gap:9px;">' +
             (idx > 0 ? '<button type="button" id="tourPrev" style="font-family:var(--mono);font-size:12px;letter-spacing:0.06em;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:8px 16px;cursor:pointer;">‹ Back</button>' : '') +
             '<button type="button" id="tourNext" style="font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:0.06em;color:#0A0A0A;background:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%);border:1px solid #6283BD;border-radius:100px;padding:8px 18px;cursor:pointer;">' +
-              (idx === steps.length - 1 ? "Got it" : "Next ›") + '</button>' +
+              (st.cta ? st.cta.label : (idx === steps.length - 1 ? "Got it" : "Next ›")) + '</button>' +
           '</div>' +
         '</div>';
 
@@ -362,6 +379,19 @@
     btn.style.animation = "eezHelpPulse 1.6s ease-out 3";
   }
   pulseHelp();
+
+  /* Walkthroughs: the page tour runs only when asked, from the "How this
+     page works" button in the bottom bar. It routes through the page's own ?
+     handler, which dismisses the lead-in first. */
+  if (!isPageMode()) {
+    var pt = document.getElementById("btnTourPage");
+    if (pt) {
+      pt.addEventListener("click", function () {
+        var h = document.getElementById("btnHelp");
+        if (h) { h.click(); } else { start(); }
+      });
+    }
+  }
 
   root.EEZTour = {
     start: start,

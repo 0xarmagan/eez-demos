@@ -2,13 +2,13 @@
 
 Short, step-by-step walkthroughs of how EEZ works. Each step pairs a diagram with real protocol code cited at a pinned commit. Live at **[eez-demos.vercel.app](https://eez-demos.vercel.app)**.
 
-EEZ is pre-mainnet, and every page says so. Read capability claims as design intent, not shipped behavior.
+EEZ is pre-mainnet, and every walkthrough says so. Read capability claims as design intent, not shipped behavior.
 
 ## What's on the site
 
 | Track | Pages | For |
 |---|---|---|
-| **dApp Quickstart** | Cards 00–07 (`dapp-developers/qs*`), card 05 coming soon | A contract calls another rollup and uses the answer in the same transaction: run it locally, learn the gotchas, then a flash loan and a token bridge |
+| **dApp Quickstart** | Cards 00–06 (`dapp-developers/qs*`); Deploy Your Own Contract is coming soon and sits outside the numbering | A contract calls another rollup and uses the answer in the same transaction: run it locally, learn the gotchas, then a flash loan and a token bridge |
 | **dApp reference** | `dapp-developers/q2`–`q8` | Proxy addresses, `msg.sender`, content hashes, remote reads |
 | **Rollup operators** | `rollup-operators/ro1`–`ro4` | Devnet, deployment, Chiado, cross-chain traffic |
 | **Protocol researchers** | `protocol-researchers/pr1`–`pr6` | How Rollup0 settles and proves |

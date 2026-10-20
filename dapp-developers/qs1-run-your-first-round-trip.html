@@ -96,6 +96,17 @@
   .intro-learn li{border-top:1px solid var(--eez-edge);padding-top:16px;font-size:19px;line-height:1.5;color:#d8d8d8;text-wrap:pretty;}
   .intro-learn b{display:block;font-family:var(--mono);font-size:14px;font-weight:400;letter-spacing:0.12em;color:var(--eez-green);margin-bottom:11px;}
   .intro-actions{margin-top:54px;}
+  .intro-actions{display:flex;align-items:center;gap:20px 32px;flex-wrap:wrap;position:relative;}
+  .proves-pop summary{list-style:none;cursor:pointer;font-family:var(--mono);font-size:17px;letter-spacing:0.04em;color:#d8d8d8;padding:10px 0;border-bottom:1px dashed #4a4a4a;}
+  .proves-pop summary::-webkit-details-marker{display:none;}
+  .proves-pop summary::after{content:" +";color:var(--eez-green);}
+  .proves-pop[open] summary::after{content:" \2212";}
+  .proves-pop summary:hover{color:#fff;}
+  .proves-pop summary:focus-visible{outline:2px solid var(--eez-green);outline-offset:4px;}
+  .intro-proves{position:absolute;left:0;bottom:calc(100% + 18px);width:min(1180px,100%);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:36px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:16px;padding:28px 32px;box-shadow:0 24px 60px -20px rgba(0,0,0,.85);z-index:5;}
+  .intro-proves p{margin:0;font-size:19px;line-height:1.5;color:#d8d8d8;text-wrap:pretty;}
+  .intro-proves b{display:block;font-family:var(--mono);font-size:14px;font-weight:400;letter-spacing:0.12em;color:var(--eez-green);margin-bottom:11px;}
+  .intro-proves #doesnt b{color:var(--muted);}
   /* Same gradient treatment as .btn-play, one size up for the stage;
      it carries class="btn-play" so it inherits that hover rule and
      the shared button:focus-visible green ring. */
@@ -109,6 +120,9 @@
     .intro-learn{grid-template-columns:minmax(0,1fr);gap:20px;}
     .intro-learn li{font-size:16px;}
     .intro-actions{margin-top:32px;}
+    .proves-pop summary{font-size:14px;}
+    .intro-proves{position:static;grid-template-columns:minmax(0,1fr);gap:18px;padding:18px;margin-top:12px;box-shadow:none;}
+    .intro-proves p{font-size:16px;}
     #btnStart{font-size:16px;padding:13px 24px;width:100%;}
   }
 </style>
@@ -154,6 +168,16 @@
     a.next-demo{flex-basis:100%;max-width:none;justify-content:space-between;margin-top:6px;}
     .next-demo-t{white-space:normal;}
   }
+  /* Bottom bar: the page tour sits alone on the left, on request. On the
+     right, Up next replaces Next only on the last step, so the row never
+     shows two ways forward at once (the header NEXT link covers the rest). */
+  .page-tour{display:inline-flex;align-items:center;gap:12px;font-family:var(--mono);font-size:15px;letter-spacing:0.04em;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:11px 22px 11px 12px;cursor:pointer;}
+  .page-tour:hover{color:#fff;border-color:#444;}
+  .page-tour-q{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--eez-grad-btn);color:var(--eez-ink-on-grad);font-weight:600;font-size:14px;}
+  .page-tour:focus-visible{outline:2px solid var(--eez-green);outline-offset:3px;}
+  a.next-demo{display:none;}
+  a.next-demo.is-final{display:inline-flex;}
+  #stepNav.at-end #btnNext{display:none;}
 </style>
 </head>
 <body>
@@ -314,7 +338,7 @@
       <div class="intro-eyebrow">DAPP DEVELOPERS</div>
       <h1 class="intro-title" id="introTitle">Run Your First Round Trip</h1>
       <p class="intro-lede">Clone eez-core-protocol at a pinned commit, build it, and run two scenarios on local anvil chains: a call that starts on L1 and gets back the value L2's execution produces, and the same call the other way round. Locally, the script precomputes that value into the entry.</p>
-      <p class="intro-lede">You need Foundry 1.7.1 (<code style="font-family:var(--mono);">forge</code>, <code style="font-family:var(--mono);">cast</code> and <code style="font-family:var(--mono);">anvil</code> on PATH; <a href="https://book.getfoundry.sh/getting-started/installation" target="_blank" style="color:#d8d8d8;">install guide</a>), Git, jq, and bash 4 or newer. Recent macOS already has jq; elsewhere, <code style="font-family:var(--mono);">brew install jq</code> or <code style="font-family:var(--mono);">apt install jq</code>. macOS ships bash 3.2; <code style="font-family:var(--mono);">brew install bash</code> puts bash 5 first on PATH. No Docker. It took about 5 minutes on an Apple M4 with Foundry 1.7.1, first-time solc download not included, and the first build is most of it.</p>
+      <p class="intro-lede">Needs Foundry 1.7.1 (<a href="https://book.getfoundry.sh/getting-started/installation" target="_blank" style="color:#d8d8d8;">install guide</a>), Git, jq and bash 4+. No Docker. About 5 minutes on an Apple M4, not counting a first-time solc download.</p>
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Try it live: the Counter Demo on <a href="https://eez.dev/dashboard/#/counter-demo" target="_blank" rel="noopener" style="color:#d8d8d8;">eez.dev ↗</a></p>
       <div class="intro-learn-label">WHAT YOU'LL LEARN</div>
       <ul class="intro-learn">
@@ -325,17 +349,24 @@
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol @ 9a1f815 &mdash; pre-mainnet; interfaces may move.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
+        <details class="proves-pop">
+          <summary>What this proves, and what it doesn't</summary>
+          <div class="intro-proves">
+            <p id="proves"><b>WHAT THIS PROVES</b>Both directions pass on two local anvil chains: a call from L1 to L2 and a call from L2 to L1 each get the other side's return value back inside the calling transaction.</p>
+            <p id="doesnt"><b>WHAT IT DOESN'T</b>Real proving or a live node. The script plays composer: it precomputes the return value into an entry, posts that entry before your call, and the batch is accepted by an accept-all proof system.</p>
+          </div>
+        </details>
       </div>
     </div>
   </section>
 
-  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:flex-end;padding:0 48px;gap:48px;">
+  <div style="position:absolute;left:0;top:884px;width:1920px;height:196px;border-top:1px solid #1a1a1a;display:flex;align-items:center;justify-content:space-between;padding:0 48px;gap:48px;">
+    <button id="btnTourPage" class="btn page-tour" type="button"><span class="page-tour-q" aria-hidden="true">?</span>How this page works</button>
     <div id="stepNav" style="flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:18px;">
       <div style="display:flex;align-items:center;gap:12px;">
         <button id="btnPrev" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">‹ Prev</button>
         <button id="btnPlay" class="btn-play" style="font-size:16px;font-weight:600;color:var(--eez-ink-on-grad);background:var(--eez-grad-btn) border-box;border:1px solid transparent;border-radius:100px;padding:12px 28px;cursor:pointer;min-width:120px;">▶ Play</button>
         <button id="btnNext" class="btn" style="font-size:16px;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:12px 22px;cursor:pointer;">Next ›</button>
-        <span class="next-sep" aria-hidden="true"></span>
         <a id="nextDemo" class="next-demo" href="qs2-read-your-side-of-it.html"><span class="next-demo-text"><span class="next-demo-k">UP NEXT</span><span class="next-demo-t">Follow One Call There and Back</span></span><span class="next-demo-arr" aria-hidden="true">&rarr;</span></a>
       </div>
       <div id="dots" style="display:flex;align-items:center;gap:7px;"></div>
@@ -345,7 +376,9 @@
 </div>
 </div>
 
+<noscript><p style="max-width:640px;margin:24px auto;padding:0 16px;font-family:system-ui,sans-serif;font-size:16px;line-height:1.6;color:#c9cfda">This walkthrough builds its panels with JavaScript. Without it, <a href="qs1-run-your-first-round-trip.md">read this walkthrough as text</a> or open the <a href="../llms.txt">index of all walkthroughs</a>.</p></noscript>
 <script src="../assets/eez-tour.js"></script>
+<script src="../assets/eez-steps.js" defer></script>
 <script>
 (function(){
   var N = 3, STEP_MS = 3200;
@@ -725,6 +758,8 @@
     if (n) { n.disabled = (step >= N-1); }
     var nd = document.getElementById("nextDemo");
     if (nd) { nd.classList.toggle("is-final", step >= N-1); }
+    var sn = document.getElementById("stepNav");
+    if (sn) { sn.classList.toggle("at-end", step >= N-1); }
   }
   function staticBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; syncEnds(); }
   function animateBar(){ var b=document.getElementById("timebar"); b.style.transition="none"; b.style.transform="scaleX("+(step/N)+")"; void b.offsetWidth; b.style.transition="transform "+STEP_MS+"ms linear"; b.style.transform="scaleX("+((step+1)/N)+")"; syncEnds(); }
