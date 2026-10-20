@@ -95,39 +95,67 @@
   function buildIndexSteps() {
     var steps = [];
     var q = function (sel) { return document.querySelector(sel); };
+    function add(sel, pad, kicker, body, extra) {
+      var el = q(sel);
+      if (!el) { return; }
+      var st = { els: [el], pad: pad, kicker: kicker, body: body };
+      if (extra) { for (var k in extra) { st[k] = extra[k]; } }
+      steps.push(st);
+    }
 
-    if (q(".search-box-row")) {
-      steps.push({ els: [q(".search-box-row")], pad: 10,
-        kicker: "FIND ONE",
-        body: "Search all 24 walkthroughs by keyword \u2014 try msg.sender, CREATE2 or Kurtosis. " +
-              "Pressing / jumps here from anywhere on the page." });
-    }
-    if (q(".filter-tabs")) {
-      steps.push({ els: [q(".filter-tabs")], pad: 10,
-        kicker: "OR BROWSE BY AUDIENCE",
-        body: "Three tracks: 14 for dapp developers, 4 for rollup operators, 6 for protocol " +
-              "researchers. A filter never lands you on an empty list." });
-    }
-    var qs = q("#quickstart .phase");
-    if (qs) {
-      steps.push({ els: [qs], pad: 12,
-        kicker: "THE QUICKSTART, IN ORDER",
-        body: "Cards 00 to 06 go from understanding one call, to running it, to building with it. " +
-              "Every card is a 3-step walkthrough built on real, cited protocol source." });
-    }
-    var first = q('#quickstart a.card[href*="qs1-"]');
-    if (first) {
-      steps.push({ els: [first], pad: 8,
-        kicker: "DAPP DEVELOPERS · START HERE",
-        body: "Run your first round trip: clone eez-core-protocol at a pinned commit and watch a call " +
-              "go to the other chain and come back with its answer, on two local anvil chains." });
-    }
+    add(".hero-sub", 12, "WHAT EEZ IS",
+        "One sentence on what the Ethereum Economic Zone does: a contract calls a contract on another " +
+        "chain and uses the answer in the same transaction. Every walkthrough on this page shows one " +
+        "piece of that in real protocol code.");
+    add(".navlinks", 10, "THE SOURCE, ONE CLICK AWAY",
+        "eez-core-protocol holds the contracts every Solidity walkthrough cites. eez-rollupX is the " +
+        "node, composer, deriver and proof-signer. eez.dev is the live testnet dashboard, and " +
+        "Contribute explains how a walkthrough gets added.");
+    add(".search-box-row", 10, "FIND ONE",
+        "Search all 24 walkthroughs by keyword \u2014 try msg.sender, CREATE2 or Kurtosis. " +
+        "Pressing / jumps here from anywhere on the page.");
+    add(".filter-tabs", 10, "OR BROWSE BY AUDIENCE",
+        "Three tracks: 14 for dapp developers, 4 for rollup operators, 6 for protocol " +
+        "researchers. A filter never lands you on an empty list.");
+    add("#quickstart .phase", 12, "THE QUICKSTART, IN ORDER",
+        "Seven cards, 00 to 06, in four phases: understand one call, see it work on your own machine, " +
+        "learn the gotchas, then build patterns like a flash loan and a token bridge.");
+    add("#quickstart .card.soon", 8, "COMING SOON",
+        "A dashed card is not out yet. It has no number and no link, so the sequence never sends you " +
+        "to an empty page.");
+    add("#dapp-developers .sec-head", 12, "REFERENCE \u00b7 AFTER THE QUICKSTART",
+        "Seven short walkthroughs for the questions you hit while building: your address on another " +
+        "rollup, msg.sender across chains, checking a proxy, encoding a call's hash, reading remote state.");
+    add("#rollup-operators .sec-head", 12, "ROLLUP OPERATORS",
+        "Four walkthroughs to run the stack: a disposable devnet with Kurtosis, deploying the protocol, " +
+        "running against Chiado, and sending cross-chain calls through it.");
+    add("#protocol-researchers .sec-head", 12, "PROTOCOL RESEARCHERS",
+        "Six walkthroughs on how it works inside: the four components, why L1 stays the source of " +
+        "truth, how the composer attests a batch, the deriver, address derivation and the rolling hash.");
+    add(".closer", 12, "FOR AGENTS AND CONTRIBUTORS",
+        "Start here gives operators and researchers a reading order. llms.txt hands every walkthrough " +
+        "to an agent as text, and Suggest a demo is how to ask for the next one.");
+    add('#quickstart a.card[href*="qs1-"]', 8, "NOW SEE A WALKTHROUGH",
+        "Dapp developers start with Run Your First Round Trip. Open it and the tour continues inside, " +
+        "showing how a walkthrough page works.",
+        { cta: { label: "Continue in a walkthrough \u203a",
+                 href: "./dapp-developers/qs1-run-your-first-round-trip.html#tour" } });
     return steps;
   }
 
   function buildSteps() {
     if (isPageMode()) { return buildIndexSteps(); }
     var steps = [];
+
+    if ($("stepLabel")) {
+      steps.push({
+        els: [$("stepLabel")],
+        pad: 10,
+        kicker: "TOP RIGHT \u00b7 WHERE YOU ARE",
+        body: "Each walkthrough is a few short steps. The address bar follows along as #step-2, " +
+              "#step-3 and so on, so you can share or bookmark the exact step you are on."
+      });
+    }
 
     if ($("stageCol")) {
       // TRY IT sits on the stage column and swaps the diagram out for a live
@@ -196,6 +224,16 @@
       });
     }
 
+    if ($("nextDemo")) {
+      steps.push({
+        els: [$("nextDemo")],
+        pad: 10,
+        kicker: "WHEN YOU ARE DONE",
+        body: "Up next opens the following walkthrough in the sequence. All examples, top right, " +
+              "takes you back to the full list."
+      });
+    }
+
     return steps;
   }
 
@@ -258,6 +296,12 @@
     }
 
     function go(d) {
+      if (d > 0 && steps[idx] && steps[idx].cta) {
+        var href = steps[idx].cta.href;
+        close();
+        root.location.href = href;
+        return;
+      }
       idx += d;
       if (idx >= steps.length) { close(); return; }
       if (idx < 0) { idx = 0; }
@@ -293,7 +337,7 @@
           '<div style="display:flex;gap:9px;">' +
             (idx > 0 ? '<button type="button" id="tourPrev" style="font-family:var(--mono);font-size:12px;letter-spacing:0.06em;color:#d8d8d8;background:#141414;border:1px solid #2a2a2a;border-radius:100px;padding:8px 16px;cursor:pointer;">‹ Back</button>' : '') +
             '<button type="button" id="tourNext" style="font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:0.06em;color:#0A0A0A;background:linear-gradient(90deg,#8AE5AC 0%,#6283BD 100%);border:1px solid #6283BD;border-radius:100px;padding:8px 18px;cursor:pointer;">' +
-              (idx === steps.length - 1 ? "Got it" : "Next ›") + '</button>' +
+              (st.cta ? st.cta.label : (idx === steps.length - 1 ? "Got it" : "Next ›")) + '</button>' +
           '</div>' +
         '</div>';
 
@@ -363,6 +407,16 @@
     btn.style.animation = "eezHelpPulse 1.6s ease-out 3";
   }
   pulseHelp();
+
+  /* The index tour hands off to a walkthrough with #tour. Open that page's
+     tour once it has wired its own ? button (which dismisses the lead-in
+     first), so the reader lands in the same tour they were following. */
+  if (!isPageMode() && root.location && root.location.hash === "#tour") {
+    root.addEventListener("load", function () {
+      var h = document.getElementById("btnHelp");
+      if (h) { h.click(); }
+    });
+  }
 
   root.EEZTour = {
     start: start,
