@@ -755,13 +755,13 @@
       + '<span style="width:12px;flex:none;border-right:1px solid var(--eez-edge);margin-right:11px;"></span>'
       + '<span style="display:inline-block;width:10px;height:20px;background:var(--eez-green);animation:blink 1s step-end infinite;vertical-align:middle;"></span></div>';
     document.getElementById("codePanel").innerHTML = html;
-    // On a page with "$ " commands, a panel without any is sample output:
-    // pasting it into a terminal fails, so it gets no COPY.
+    // Only explicitly marked output panels disable COPY. Other steps may
+    // contain Solidity or configuration even when this page also has commands.
     var bcp = document.getElementById("btnCopy");
     if (bcp) {
-      var isCmd = function(l){ return typeof l === "string" && l.indexOf("$ ") === 0; };
-      var hasCmd = function(ls){ return Array.isArray(ls) && ls.some(isCmd); };
-      bcp.style.display = ((typeof showFull === "undefined" || !showFull) && codeByStep.some(hasCmd) && !hasCmd(code)) ? "none" : "";
+      bcp.hidden = typeof outputOnlyByStep !== "undefined" && !!outputOnlyByStep[step]
+        && !(typeof showFull !== "undefined" && showFull)
+        && !(typeof showTest !== "undefined" && showTest);
     }
 
     // Named stepper: the current step shows its kicker name, the others stay
@@ -1102,6 +1102,7 @@
   var btnCopy = document.getElementById("btnCopy");
   if (btnCopy) {
     btnCopy.addEventListener("click", function(){
+      if (btnCopy.hidden) { return; }
       // Drop the `del` lines: on screen they carry a "-" and a red gutter, but
       // the clipboard has no gutters, so copying them ships the mistake welded
       // to the fix.

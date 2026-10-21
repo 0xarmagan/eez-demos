@@ -355,7 +355,7 @@
         <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no second transaction from you</div>
         <div style="font-family:var(--mono);font-size:14px;color:#8fe7b4;background:rgba(59,229,126,0.08);border:1px solid rgba(59,229,126,0.34);border-radius:6px;padding:6px 11px;">no waiting after your call</div>
       </div>
-      <div class="qs0-note">Each entry, <code>returnData</code> included, is part of what the batch&rsquo;s proofs cover. Each rollup sets a threshold: how many of the listed proof systems must accept the batch. A threshold of 0 accepts any batch. On today&rsquo;s testnet one signing key (ECDSA) signs batches. Card 01&rsquo;s local run accepts any proof. On L2, Counter runs the same call and finds its entry by the same call hash.</div>
+      <div class="qs0-note">Each entry, <code>returnData</code> included, is covered by the batch&rsquo;s proofs. Each rollup sets a minimum proof-system count. Zero removes that minimum, not verification: EEZ still requires a nonempty allowed selection, and every submitted proof must pass. Today&rsquo;s testnet uses one ECDSA signing key. Card 01&rsquo;s local run accepts any proof. On L2, Counter runs the same call and finds its entry by the same call hash.</div>
       <div class="qs0-note">Further reading: <a class="qs0-link" href="q2-send-a-cross-chain-call.html">How to call a contract on another rollup &rarr;</a></div>
     </div>
 
@@ -707,13 +707,13 @@
       + '<span style="width:12px;flex:none;border-right:1px solid var(--eez-edge);margin-right:11px;"></span>'
       + '<span style="display:inline-block;width:10px;height:20px;background:var(--eez-green);animation:blink 1s step-end infinite;vertical-align:middle;"></span></div>';
     document.getElementById("codePanel").innerHTML = html;
-    // On a page with "$ " commands, a panel without any is sample output:
-    // pasting it into a terminal fails, so it gets no COPY.
+    // Only explicitly marked output panels disable COPY. Other steps may
+    // contain Solidity or configuration even when this page also has commands.
     var bcp = document.getElementById("btnCopy");
     if (bcp) {
-      var isCmd = function(l){ return typeof l === "string" && l.indexOf("$ ") === 0; };
-      var hasCmd = function(ls){ return Array.isArray(ls) && ls.some(isCmd); };
-      bcp.style.display = ((typeof showFull === "undefined" || !showFull) && codeByStep.some(hasCmd) && !hasCmd(code)) ? "none" : "";
+      bcp.hidden = typeof outputOnlyByStep !== "undefined" && !!outputOnlyByStep[step]
+        && !(typeof showFull !== "undefined" && showFull)
+        && !(typeof showTest !== "undefined" && showTest);
     }
 
     // Named stepper: the current step shows its kicker name, the others stay
@@ -1033,6 +1033,7 @@
   var btnCopy = document.getElementById("btnCopy");
   if (btnCopy) {
     btnCopy.addEventListener("click", function(){
+      if (btnCopy.hidden) { return; }
       // Run panels mix "$ " commands with comments and sample output; copy
       // only the commands (with their "\" continuation lines), prompt
       // stripped, so a paste into a terminal runs.

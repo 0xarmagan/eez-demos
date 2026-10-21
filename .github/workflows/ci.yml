@@ -137,6 +137,9 @@ jobs:
       - name: Code panel geometry
         run: NODE_PATH="$PWD/node_modules" node scripts/check-panel-geometry.cjs
 
+      - name: Walkthrough navigation and copy safeguards
+        run: NODE_PATH="$PWD/node_modules" node scripts/check-walkthrough-controls.cjs
+
   solidity:
     name: Snippets compile and tests pass
     runs-on: ubuntu-latest
