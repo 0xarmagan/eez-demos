@@ -98,8 +98,8 @@ async function main() {
     }
     checked++;
     for (let i = 0; i < steps; i++) {
-      // Step through the pills: Prev / Play / Next are hidden, so a click on
-      // #btnNext would throw "not visible".
+      // Numbered jumps must work without the forward button's double-click
+      // delay. Keep the short interval so swallowed jumps fail this check.
       if (i > 0) await page.click(`#dots button[data-step="${i}"]`);
       await new Promise((r) => setTimeout(r, 120));
       // Prove the click actually advanced the deck before trusting the

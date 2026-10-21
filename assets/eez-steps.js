@@ -134,6 +134,8 @@
     "body.is-playing #btnPlay::after{content:\"❚❚\";font-size:14px;letter-spacing:0;}",
     "/* Next step › (styled in each page) hides on the last step, where Up next takes over. */",
     "#stepNav.at-end #btnNext{display:none !important}",
+    "/* Output-only panels stay non-copyable at every viewport width. */",
+    "#btnCopy[hidden]{display:none !important}",
     ".ez-sr{position:absolute !important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}",
     "@media (max-width:1120px){",
     "  #dots button{min-width:44px !important;min-height:44px !important;}",
@@ -183,22 +185,25 @@
 
   /* A fast double-click on the next-step arrow used to run twice: from step 1
      it skipped step 2, and from step 2 the second click landed on the UP NEXT
-     link that appears where the arrow was, leaving the walkthrough. Treat any
-     step-advance click within 450ms of the previous one as the same gesture. */
-  var lastStepAdvance = 0;
+     link that appears where the arrow was, leaving the walkthrough. Guard
+     repeated pointer clicks on that forward control, not numbered jumps or
+     keyboard activation. A numbered jump starts a separate interaction. */
+  var lastNextClick = 0;
   document.addEventListener("click", function (e) {
     var t = e.target;
-    if (!t || !t.closest || !t.closest("#btnNext, #dots button, #nextDemo")) { return; }
+    var control = t && t.closest && t.closest("#btnNext, #dots button, #nextDemo");
+    if (!control) { return; }
     // Hash/back-forward navigation clicks a step control programmatically.
     // That is not a user gesture, so it must not arm the double-click guard.
-    if (document.documentElement.hasAttribute("data-eez-applying")) { return; }
+    if (document.documentElement.hasAttribute("data-eez-applying") || e.detail === 0) { return; }
+    if (control.closest("#dots")) { lastNextClick = 0; return; }
     var now = Date.now();
-    if (now - lastStepAdvance < 450) {
+    if (now - lastNextClick < 450) {
       e.preventDefault();
       e.stopImmediatePropagation();
       return;
     }
-    lastStepAdvance = now;
+    lastNextClick = control.id === "btnNext" ? now : 0;
   }, true);
 
   /* On a phone the stage is a normal stacked document. Dismissing the lead-in
