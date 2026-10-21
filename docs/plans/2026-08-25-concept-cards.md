@@ -732,7 +732,7 @@ Expected: `Structure, citations, panel drift` and `Snippets compile and tests pa
 Merging rebuilds GitHub Pages in about a minute and triggers the Vercel deploy. Confirm both:
 
 ```bash
-for u in https://eez-demos.vercel.app https://0xarmagan.github.io/eez-demos; do
+for u in https://eez-association.github.io/eez-demos https://0xarmagan.github.io/eez-demos; do
   for p in /llms.txt /dapp-developers/q7-your-cross-chain-address.html \
            /protocol-researchers/pr5-how-the-address-is-derived.html \
            /dapp-developers/q1-compute-your-cross-chain-address.html; do

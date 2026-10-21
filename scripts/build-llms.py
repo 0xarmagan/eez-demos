@@ -32,7 +32,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # https://0xarmagan.github.io/eez-demos and is deliberately still enabled, so an
 # agent ingesting llms.txt cites whichever host is written here. README.md names
 # Vercel as the live site, and every page's rel=canonical points at it.
-BASE = "https://eez-demos.vercel.app"
+BASE = "https://eez-association.github.io/eez-demos"
 
 TRACKS = [
     ("dapp-developers", "Dapp developers",
@@ -392,12 +392,12 @@ def build_index(pages):
                "citations, snippets and tests in one document\n" % BASE)
 
     out.append("## Optional\n")
-    out.append("- [Repository](https://github.com/0xarmagan/eez-demos): source of this site")
+    out.append("- [Repository](https://github.com/eez-association/eez-demos): source of this site")
     out.append("- [eez-core-protocol](https://github.com/eez-association/eez-core-protocol): "
                "the contracts every Solidity walkthrough cites")
     out.append("- [eez-rollupX](https://github.com/eez-association/eez-rollupX): "
                "the node, composer, deriver and proof-signer")
-    out.append("- [CONTRIBUTING](https://github.com/0xarmagan/eez-demos/blob/main/CONTRIBUTING.md): "
+    out.append("- [CONTRIBUTING](https://github.com/eez-association/eez-demos/blob/main/CONTRIBUTING.md): "
                "how a walkthrough gets added and audited")
     return "\n".join(out).rstrip() + "\n"
 

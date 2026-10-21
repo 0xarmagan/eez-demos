@@ -14,7 +14,7 @@ web
 
 ## Product Purpose
 
-EEZ Quickstarts (eez-demos.vercel.app) teaches how EEZ actually works through short, step-by-step walkthroughs. Each one pairs a diagram, real verbatim code and a one-sentence caption on a fixed stage. The core idea it teaches: a contract can call another rollup and use the answer in the same transaction, with no callback and no second transaction.
+EEZ Quickstarts (eez-association.github.io/eez-demos) teaches how EEZ actually works through short, step-by-step walkthroughs. Each one pairs a diagram, real verbatim code and a one-sentence caption on a fixed stage. The core idea it teaches: a contract can call another rollup and use the answer in the same transaction, with no callback and no second transaction.
 
 Success means a developer runs a cross-rollup round trip on their own machine, understands why it worked (the answer was already in an execution entry), and avoids the gotchas before writing production code.
 
@@ -35,7 +35,7 @@ What a neighbor can't truthfully copy: every code panel is verbatim source cited
 
 ## Capabilities and Constraints
 
-- **Stack:** static HTML/CSS/JS, no build step, no dependencies. It's served from the repo root and deployed on Vercel from `main` (git-linked). CI (`.github/workflows/ci.yml`) runs `scripts/audit.sh`, citation verification, panel-drift, snippet-fidelity and a geometry job.
+- **Stack:** static HTML/CSS/JS, no build step, no dependencies. It's served from the repo root and deployed on GitHub Pages from `main`. CI (`.github/workflows/ci.yml`) runs `scripts/audit.sh`, citation verification, panel-drift, snippet-fidelity and a geometry job.
 - **Walkthrough format is fixed** (CONTRIBUTING.md): a 1920×1080 stage (diagram, code, caption, Prev/Play/Next), progressive `codeByStep` reveal, real data in diagrams, the `NEXT:` link chain, and the `scaleStage()` mobile floor. `pr5` is the template, and `scripts/new-demo.sh` scaffolds new pages from it.
 - **Card format:** an action-oriented title and a one-sentence hook that states the consequence, not the mechanism. No code on cards.
 - **Sources:** contracts come from `eez-core-protocol` and infra from `eez-rollupX`, both pinned by SHA. Pinned commits drift from upstream `main`, so check against the pin.
