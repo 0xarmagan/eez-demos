@@ -1,7 +1,7 @@
 # Quickstart entry, honesty block, deep links
 
 Base: `main` @ `d9974f1` (merge of #39). Branch: `feat/quickstart-entry`.
-Source: external UX review of eez-demos.vercel.app, 2026-10-20, re-checked against the live site.
+Source: external UX review of eez-association.github.io/eez-demos, 2026-10-20, re-checked against the live site.
 
 | # | Commit | Review findings | Status |
 |---|---|---|---|

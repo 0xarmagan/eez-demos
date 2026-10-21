@@ -4,7 +4,7 @@
 
 Your L1 contract gets an L2 contract's return value back in the same transaction, with no bridge message and no callback.
 
-- Page: https://eez-demos.vercel.app/dapp-developers/qs0-one-call-two-rollups.html
+- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs0-one-call-two-rollups.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:113 · _fallback`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113
@@ -79,4 +79,4 @@ return returnData;
 
 ---
 
-Whole site for agents: https://eez-demos.vercel.app/llms.txt
+Whole site for agents: https://eez-association.github.io/eez-demos/llms.txt

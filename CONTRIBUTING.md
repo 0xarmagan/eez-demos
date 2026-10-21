@@ -5,7 +5,7 @@ Single maintainer right now, no enforced branch protection — the checklist and
 ## Run it locally
 
 ```bash
-git clone git@github.com:0xarmagan/eez-demos.git
+git clone git@github.com:eez-association/eez-demos.git
 cd eez-demos
 npx serve .          # or: python3 -m http.server 8000
 ```
@@ -64,6 +64,13 @@ generated from them, so rebuild or CI will fail:
 ```bash
 python3 scripts/build-llms.py           # rebuild both
 python3 scripts/build-llms.py --check   # report only
+```
+
+Added a page or changed a title or hook on the index? Each page's link-preview
+image (`assets/og/`) and its `og:` tags come from the index card:
+
+```bash
+NODE_PATH=<npx playwright install>/node_modules node scripts/build-og.cjs
 ```
 
 - [ ] `scripts/audit.sh` passes

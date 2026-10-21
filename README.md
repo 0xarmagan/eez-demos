@@ -1,6 +1,6 @@
 # EEZ Quickstarts
 
-Step-by-step walkthroughs of how EEZ works, each pairing a diagram with real protocol code cited at a pinned commit. Live at **[eez-demos.vercel.app](https://eez-demos.vercel.app)**.
+Step-by-step walkthroughs of how EEZ works, each pairing a diagram with real protocol code cited at a pinned commit. Live at **[eez-association.github.io/eez-demos](https://eez-association.github.io/eez-demos)**.
 
 EEZ is pre-mainnet, and every walkthrough says so.
 
@@ -18,11 +18,11 @@ Agents can read everything as plain text in [`llms.txt`](llms.txt) and [`llms-fu
 ## Run locally
 
 ```bash
-git clone https://github.com/0xarmagan/eez-demos.git && cd eez-demos
+git clone https://github.com/eez-association/eez-demos.git && cd eez-demos
 npx serve .        # or: python3 -m http.server 8000
 ```
 
-No build step. Serve the folder rather than opening files from disk. Pushing to `main` deploys to Vercel.
+No build step. Serve the folder rather than opening files from disk. Pushing to `main` deploys to GitHub Pages.
 
 ## Contribute
 

@@ -3,13 +3,13 @@
 > **For agentic workers:** REQUIRED SUB-SKILL: use `superpowers:subagent-driven-development` (recommended) or `superpowers:executing-plans`, one task at a time. Steps use `- [ ]` for tracking.
 > **Domain skill:** every reviewing task MUST be executed with `agent-mesh/eez-agent/skills/eez-protocol-dev/SKILL.md` loaded, plus the reference file its task names. That skill's review format, priority order and stale-name table are the rubric this plan scores against.
 
-**Goal:** Establish whether every technical claim, code panel and command on eez-demos.vercel.app is true of the protocol as it exists today, and produce a per-page verdict a publisher can act on.
+**Goal:** Establish whether every technical claim, code panel and command on eez-association.github.io/eez-demos is true of the protocol as it exists today, and produce a per-page verdict a publisher can act on.
 
 **Architecture:** The repo's automated layer (citations, panel drift, panel geometry, links, JS syntax) already passes and is *not* re-litigated here except where it is provably lossy. This plan targets only what tooling cannot check: whether the cited line is the *right* line, whether narration is true, whether trust claims are honest, and what a dapp developer needs that is missing. Findings are collected per page, then synthesised into one scorecard.
 
 **Tech stack:** static HTML + JS panels; Python audit scripts (`scripts/`); Foundry for the runnable tests; GitHub API for upstream verification.
 
-**Spec / source of truth:** the live site (`https://eez-demos.vercel.app`) and its generated `llms-full.txt`. **Not** the local working tree — see Global Constraints.
+**Spec / source of truth:** the live site (`https://eez-association.github.io/eez-demos`) and its generated `llms-full.txt`. **Not** the local working tree — see Global Constraints.
 
 ---
 
@@ -113,7 +113,7 @@ The skill's first priority is anything that teaches a security-relevant falsehoo
 - [ ] **Step 1: Extract every trust-bearing string**
 
 ```bash
-cd /tmp && curl -s https://eez-demos.vercel.app/llms-full.txt > llms-full.txt
+cd /tmp && curl -s https://eez-association.github.io/eez-demos/llms-full.txt > llms-full.txt
 grep -n -i -E "prove|prover|proof|attest|trust|verif|secure|final|atomic|guarantee" llms-full.txt | grep -v "^.*Verify: https" > trust-hits.txt
 wc -l trust-hits.txt
 ```
@@ -127,8 +127,8 @@ wc -l trust-hits.txt
 - [ ] **Step 3: Verify the badge is actually on all 15 live pages**
 
 ```bash
-for p in $(curl -s https://eez-demos.vercel.app/llms.txt | grep -oE 'https://[^)]*\.html' | sed 's|.*/eez-demos/||;s|.*vercel.app/||'); do
-  printf '%-62s ' "$p"; curl -s "https://eez-demos.vercel.app/$p" | grep -c "PRE-MAINNET"
+for p in $(curl -s https://eez-association.github.io/eez-demos/llms.txt | grep -oE 'https://[^)]*\.html' | sed 's|.*/eez-demos/||;s|.*vercel.app/||'); do
+  printf '%-62s ' "$p"; curl -s "https://eez-association.github.io/eez-demos/$p" | grep -c "PRE-MAINNET"
 done
 ```
 
@@ -463,7 +463,7 @@ Expected: the `q2` "read-only lookup" hit from Task 3, and ideally nothing else.
 
 - [ ] **Step 2: Check the site's own coinages.** For each noun the site introduces that upstream does not use, decide: adopt upstream's word, or keep and define it once. Fragmented vocabulary across 15 pages is a real cost.
 
-- [ ] **Step 3: Canonical host.** `llms-full.txt` points every `Page:` line at `https://0xarmagan.github.io/eez-demos/...` while the site serves from `eez-demos.vercel.app`. Confirm which host is canonical, check the pages' `<link rel="canonical">` agree with it, and fix `build-llms.py`'s base URL if not. An LLM ingesting `llms.txt` will cite whichever host is written there.
+- [ ] **Step 3: Canonical host.** `llms-full.txt` points every `Page:` line at `https://0xarmagan.github.io/eez-demos/...` while the site serves from `eez-association.github.io/eez-demos`. Confirm which host is canonical, check the pages' `<link rel="canonical">` agree with it, and fix `build-llms.py`'s base URL if not. An LLM ingesting `llms.txt` will cite whichever host is written there.
 
 - [ ] **Step 4: Commit.**
 
