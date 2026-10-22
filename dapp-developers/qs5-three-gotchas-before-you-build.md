@@ -1,10 +1,10 @@
 # Two Gotchas Before You Build
 
-> EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
+> Every code block is cited at a pinned commit; interfaces may move after it.
 
 Two cross-chain gotchas to check before you build: msg.sender is the source's proxy, and a state-changing proxy call needs an entry verified in the same block.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs5-three-gotchas-before-you-build.html
+- Page: https://build.eez.io/dapp-developers/qs5-three-gotchas-before-you-build.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:67 · fallback`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L67
@@ -56,4 +56,4 @@ revert ExecutionNotInCurrentBlock(rollupId);
 
 ---
 
-Whole site for agents: https://eez-association.github.io/eez-demos/llms.txt
+Whole site for agents: https://build.eez.io/llms.txt

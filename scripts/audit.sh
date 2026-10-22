@@ -119,18 +119,18 @@ if [ -n "$hits" ]; then
   FAIL=1
 fi
 
-echo "== Every page carries the PRE-MAINNET label =="
-# Added by 47922e6 to close a DevRel review gap, then deleted from all 15 pages
-# by 81a211f — a syntax-highlighting commit — and nothing noticed for four days,
-# while README.md went on claiming "every page says so". The pages make
-# capability claims about a protocol that has not shipped; the label is the
-# frame those claims are read in.
+echo "== Every page carries its verified-against pin line =="
+# Was a PRE-MAINNET label check (47922e6). EEZ-X is now live on Ethereum
+# mainnet, so the frame every claim is read in is the pinned commit instead:
+# each page must still say which commit it was verified against.
 for f in "${HTML_FILES[@]}"; do
   case "$f" in *q1-compute-your-cross-chain-address.html) continue ;; esac
+  # qs6 is a coming-soon stub with no code to pin yet.
+  case "$f" in *qs6-deploy-your-own-contract.html) continue ;; esac
   # index.html is exempt by owner decision (2026-10-20): the landing page
   # links to walkthroughs, and every walkthrough carries the label itself.
   case "$f" in index.html|./index.html) continue ;; esac
-  if ! grep -qi "PRE-MAINNET" "$f"; then
+  if ! grep -q "Verified against" "$f"; then
     echo "  MISSING: $f"
     FAIL=1
   fi

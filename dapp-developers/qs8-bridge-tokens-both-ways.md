@@ -1,10 +1,10 @@
 # Bridge Tokens Both Ways
 
-> EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
+> Every code block is cited at a pinned commit; interfaces may move after it.
 
 Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair of chains, then run the test that sends an ERC-20 through the Bridge.sol test fixture and back.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs8-bridge-tokens-both-ways.html
+- Page: https://build.eez.io/dapp-developers/qs8-bridge-tokens-both-ways.html
 - Source: `eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17
@@ -87,8 +87,8 @@ emit TokensReleased(originalToken, to, amount);
 
 ## Next
 
-[How to get your contract's address on another rollup](https://eez-association.github.io/eez-demos/dapp-developers/q7-your-cross-chain-address.html), in the Reference track.
+[How to get your contract's address on another rollup](https://build.eez.io/dapp-developers/q7-your-cross-chain-address.html), in the Reference track.
 
 ---
 
-Whole site for agents: https://eez-association.github.io/eez-demos/llms.txt
+Whole site for agents: https://build.eez.io/llms.txt

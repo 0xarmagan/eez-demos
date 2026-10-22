@@ -1,10 +1,10 @@
 # Follow One Call There and Back
 
-> EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
+> Every code block is cited at a pinned commit; interfaces may move after it.
 
 Your contract makes an ordinary call to a proxy, the proxy hands it to the L1 manager, and the 1 that Counter returns on L2 comes back as data that was posted before your call.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs2-read-your-side-of-it.html
+- Page: https://build.eez.io/dapp-developers/qs2-read-your-side-of-it.html
 - Source: `eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:157 · DeployL2`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L157
@@ -186,4 +186,4 @@ contract QS2CounterAndProxyTest {
 
 ---
 
-Whole site for agents: https://eez-association.github.io/eez-demos/llms.txt
+Whole site for agents: https://build.eez.io/llms.txt

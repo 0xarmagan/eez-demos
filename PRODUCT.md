@@ -14,7 +14,7 @@ web
 
 ## Product Purpose
 
-EEZ Quickstarts (eez-association.github.io/eez-demos) teaches how EEZ actually works through short, step-by-step walkthroughs. Each one pairs a diagram, real verbatim code and a one-sentence caption on a fixed stage. The core idea it teaches: a contract can call another rollup and use the answer in the same transaction, with no callback and no second transaction.
+EEZ Quickstarts (build.eez.io) teaches how EEZ actually works through short, step-by-step walkthroughs. Each one pairs a diagram, real verbatim code and a one-sentence caption on a fixed stage. The core idea it teaches: a contract can call another rollup and use the answer in the same transaction, with no callback and no second transaction.
 
 Success means a developer runs a cross-rollup round trip on their own machine, understands why it worked (the answer was already in an execution entry), and avoids the gotchas before writing production code.
 
@@ -49,7 +49,7 @@ What a neighbor can't truthfully copy: every code panel is verbatim source cited
 ## Brand Commitments
 
 - Branded as EEZ (Ethereum Economic Zone), with the EEZ logo, under the title "EEZ Quickstarts".
-- **Every walkthrough says EEZ is pre-mainnet**: walkthroughs in the intro slide's "Verified against … — pre-mainnet; interfaces may move." line, the Deploy Your Own Contract card in its text. The index is the exception (owner decision, 2026-10-20): it carries no label of its own. There is no header badge. Capability claims are design intent, not shipped behavior.
+- **Every walkthrough says which commit it was verified against**: the intro slide's "Verified against … ; interfaces may move." line. EEZ-X is live on Ethereum mainnet, so no page carries a PRE-MAINNET label (owner decision, 2026-10-22).
 - **Honesty rules (binding):**
   - no card or caption implies something works, or takes less time, than it does;
   - stated timings name the hardware they were measured on;
@@ -71,7 +71,7 @@ What a neighbor can't truthfully copy: every code panel is verbatim source cited
 1. **Source over story.** Every claim traces to a pinned line of real code. If it can't be cited, it gets labeled, not smoothed over.
 2. **Run it, then explain it.** Get the developer to a working round trip early, then show why it worked.
 3. **Consequences first.** Lead with what breaks or changes for the developer (msg.sender is a proxy, a field order silently changes the hash), not with protocol internals.
-4. **Pre-mainnet honesty.** Undersell rather than overclaim on timing, proving and readiness.
+4. **Honesty.** Undersell rather than overclaim on timing, proving and readiness.
 5. **One format, many topics.** The fixed walkthrough stage and card grammar are what make 24 pages read as one site. Extend them; don't fork them.
 
 ## Accessibility & Inclusion

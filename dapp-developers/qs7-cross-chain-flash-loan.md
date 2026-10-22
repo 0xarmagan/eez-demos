@@ -1,10 +1,10 @@
 # Cross-Chain Flash Loan
 
-> EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
+> Every code block is cited at a pinned commit; interfaces may move after it.
 
 Borrowed tokens go to an L2 and back before the repayment check runs, all inside one L1 transaction.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs7-cross-chain-flash-loan.html
+- Page: https://build.eez.io/dapp-developers/qs7-cross-chain-flash-loan.html
 - Source: `eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17
@@ -78,4 +78,4 @@ IERC20(_token).safeTransfer(msg.sender, amount);
 
 ---
 
-Whole site for agents: https://eez-association.github.io/eez-demos/llms.txt
+Whole site for agents: https://build.eez.io/llms.txt

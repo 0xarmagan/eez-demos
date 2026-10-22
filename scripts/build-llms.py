@@ -28,11 +28,10 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# The canonical host. GitHub Pages serves the same content at
-# https://0xarmagan.github.io/eez-demos and is deliberately still enabled, so an
-# agent ingesting llms.txt cites whichever host is written here. README.md names
-# Vercel as the live site, and every page's rel=canonical points at it.
-BASE = "https://eez-association.github.io/eez-demos"
+# The canonical host: GitHub Pages under the build.eez.io custom domain (CNAME).
+# An agent ingesting llms.txt cites whichever host is written here, so it must
+# match README.md and every page's rel=canonical.
+BASE = "https://build.eez.io"
 
 TRACKS = [
     ("dapp-developers", "Dapp developers",
@@ -343,10 +342,10 @@ gives you the shell and not the content. These files hand over the content direc
 walkthrough's narration and code, the full compilable Solidity behind the Solidity ones,
 and the runnable Foundry tests.
 
-Two things worth knowing before you use any of it. EEZ is pre-mainnet, so treat
-capability claims as design intent rather than shipped behaviour; the proof system in the
-public source is dev-grade ECDSA, not production ZK. And every citation here is pinned to
-a commit SHA, so a link tells you exactly which revision a claim was true of.
+Two things worth knowing before you use any of it. The proof system in the public
+source is dev-grade ECDSA, not production ZK. And every citation here is pinned to a
+commit SHA, so a link tells you exactly which revision a claim was true of; interfaces
+may move after it.
 """
 
 
@@ -481,8 +480,8 @@ def build_mirror(p, pages):
     carries, plus a Next link, so an agent can walk the track card by card
     without driving the page."""
     out = ["# %s\n" % p["title"],
-           "> EEZ is pre-mainnet: read capability claims as design intent, not "
-           "shipped behaviour. Every code block is cited at a pinned commit.\n"]
+           "> Every code block is cited at a pinned commit; interfaces may move "
+           "after it.\n"]
     if p["hook"]:
         out.append("%s\n" % p["hook"])
     out.extend(page_body(p))

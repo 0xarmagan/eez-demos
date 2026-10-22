@@ -1,4 +1,4 @@
-/* "Use with your agent" for the dApp Quickstart cards.
+/* "Use with your agent" for the dApp track pages.
  *
  * Adds a secondary button next to the intro's Start button. It opens a dialog
  * that hands the reader the agent skill built from these cards
@@ -15,7 +15,7 @@
 
   var NAME = "eez-dapp-quickstart";
   // Update only after reviewing SKILL.md. CI checks the digest against the file.
-  var SKILL_SHA256 = "cb0e301d1f2a7cff525037e9c62582ff8ae43eaf832487fe8ec5ba391e367364";
+  var SKILL_SHA256 = "a555e83480c94917973568d4408940f074ac2b0039e9d97fc93e437011a6d05b";
   var here = document.currentScript ? document.currentScript.src : location.href;
   var url = new URL("../skills/" + NAME + "/SKILL.md", here).href;
   var destination = ".claude/skills/" + NAME + "/SKILL.md";
@@ -54,8 +54,8 @@
   d.setAttribute("aria-labelledby", "skillTitle");
   d.innerHTML =
     '<button class="x" type="button" aria-label="Close">CLOSE</button>' +
-    '<h2 id="skillTitle">Use these cards with your agent</h2>' +
-    "<p>One instruction file covers cards 00&ndash;04 and examples at eez-core-protocol @ 9a1f815. Review it before giving it to an agent: an agent may use these instructions to run tools. Copying this text does not execute its commands.</p>" +
+    '<h2 id="skillTitle">Use these walkthroughs with your agent</h2>' +
+    "<p>One instruction file covers the dApp track, local examples at eez-core-protocol @ 9a1f815, and separately versioned composer RPC guidance. Review it before giving it to an agent: an agent may use these instructions to run tools. Copying this text does not execute its commands.</p>" +
     '<span class="k">REVIEW, THEN SAVE IN YOUR PROJECT</span>' +
     '<p>For Claude Code, save the reviewed text at this path. If a file already exists, compare it first. For another agent, attach the reviewed file using that agent&rsquo;s instructions feature.</p>' +
     '<div class="row"><code id="skillDestination"></code></div>' +
