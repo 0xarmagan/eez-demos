@@ -1,6 +1,6 @@
 # Bridge Tokens Both Ways
 
-> EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
+> Every code block is cited at a pinned commit; interfaces may move after it.
 
 Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair of chains, then run the test that sends an ERC-20 through the Bridge.sol test fixture and back.
 

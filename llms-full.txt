@@ -16,10 +16,10 @@ gives you the shell and not the content. This file is the whole thing in one doc
 walkthrough's narration and code, the full compilable Solidity behind the Solidity ones,
 and the runnable Foundry tests.
 
-Two things worth knowing before you use any of it. EEZ is pre-mainnet, so treat
-capability claims as design intent rather than shipped behaviour; the proof system in the
-public source is dev-grade ECDSA, not production ZK. And every citation here is pinned to
-a commit SHA, so a link tells you exactly which revision a claim was true of.
+Two things worth knowing before you use any of it. The proof system in the public
+source is dev-grade ECDSA, not production ZK. And every citation here is pinned to a
+commit SHA, so a link tells you exactly which revision a claim was true of; interfaces
+may move after it.
 
 ---
 
