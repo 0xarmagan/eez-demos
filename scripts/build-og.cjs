@@ -55,7 +55,7 @@ function pages() {
   list.push(
     { file: "index.html", title: "Learn how EEZ actually works", hook: SITE_DESC, kicker: "EEZ QUICKSTARTS", image: "assets/og/index.png", site: true },
     { file: "start-here.html", title: "Start here", hook: decode((/<meta name="description" content="([^"]*)"/.exec(read("start-here.html")) || [, SITE_DESC])[1]), kicker: "EEZ QUICKSTARTS", image: "assets/og/start-here.png" },
-    { file: "deploy.html", title: "Deploy on the EEZ testnet", hook: decode((/<meta name="description" content="([^"]*)"/.exec(read("deploy.html")) || [, SITE_DESC])[1]), kicker: "EEZ QUICKSTARTS", image: "assets/og/deploy.png" },
+    { file: "deploy.html", title: "Deploy on EEZ-X mainnet", hook: decode((/<meta name="description" content="([^"]*)"/.exec(read("deploy.html")) || [, SITE_DESC])[1]), kicker: "EEZ QUICKSTARTS", image: "assets/og/deploy.png" },
   );
   return list;
 }

@@ -1647,7 +1647,7 @@ if (!proxyInfo.isProxy)
 
 ### Step 3 — ON BOTH PROXY ENTRY POINTS
 
-Both proxy entry points open with this check. It checks who is calling, not where the call goes: at 9a1f815 a second check, EEZDestinationForbidden (EEZBase.sol:404), also stops a cross-chain call from targeting the manager itself. The eez.dev testnet (855fe06) predates that check.
+Both proxy entry points open with this check. It checks who is calling, not where the call goes: at 9a1f815 a second check, EEZDestinationForbidden (EEZBase.sol:404), also stops a cross-chain call from targeting the manager itself. The EEZ-X mainnet deployment (855fe06) predates that check.
 
 ```solidity
 function _validateProxyAndGetDestinationInfo()
