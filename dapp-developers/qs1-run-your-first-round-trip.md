@@ -1,6 +1,6 @@
 # Run Your First Round Trip
 
-> EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
+> Every code block is cited at a pinned commit; interfaces may move after it.
 
 Two scenarios pass on local anvil chains: one call starts on L1 and gets back the value L2's execution produces, and one makes the same call from L2. Locally, that value is precomputed in the entry.
 

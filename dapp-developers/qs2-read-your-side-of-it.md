@@ -1,6 +1,6 @@
 # Follow One Call There and Back
 
-> EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
+> Every code block is cited at a pinned commit; interfaces may move after it.
 
 Your contract makes an ordinary call to a proxy, the proxy hands it to the L1 manager, and the 1 that Counter returns on L2 comes back as data that was posted before your call.
 

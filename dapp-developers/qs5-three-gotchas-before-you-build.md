@@ -1,6 +1,6 @@
 # Two Gotchas Before You Build
 
-> EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
+> Every code block is cited at a pinned commit; interfaces may move after it.
 
 Two cross-chain gotchas to check before you build: msg.sender is the source's proxy, and a state-changing proxy call needs an entry verified in the same block.
 

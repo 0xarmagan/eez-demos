@@ -18,12 +18,12 @@ No build step, no dependencies — but serve it rather than opening `index.html`
 scripts/new-demo.sh <dapp-developers|rollup-operators|protocol-researchers> <slug> "<Title>"
 ```
 
-Scaffolds a structurally-correct file from the `pr5` template (stage, code panel, the pre-mainnet note in the intro, mobile floor — all pre-wired), with topic-specific content (diagram, `codeByStep`, citation, captions) marked `TODO`. Doesn't touch `index.html` or the `NEXT:` chain — that's manual.
+Scaffolds a structurally-correct file from the `pr5` template (stage, code panel, the verified-against note in the intro, mobile floor — all pre-wired), with topic-specific content (diagram, `codeByStep`, citation, captions) marked `TODO`. Doesn't touch `index.html` or the `NEXT:` chain — that's manual.
 
 ## Format
 
 - **Card** on `index.html`: action-oriented title, one-sentence hook stating the *consequence* (not the mechanic — "reorder the fields and you get a silently different hash," not "eight fields in order"). No code on the card. CTA is always `OPEN THE 3-STEP WALKTHROUGH →`.
-- **Walkthrough**: copy `protocol-researchers/pr5-how-the-address-is-derived.html` as the template. Keep the fixed 1920×1080 stage (diagram left / code right / caption bottom / Prev-Play-Next), progressive `codeByStep` reveal, real data in the diagram (never placeholder boxes), the intro's pre-mainnet note ("Verified against … — pre-mainnet; interfaces may move."), the `NEXT:` link chain, and `scaleStage()`'s mobile floor — don't redesign these.
+- **Walkthrough**: copy `protocol-researchers/pr5-how-the-address-is-derived.html` as the template. Keep the fixed 1920×1080 stage (diagram left / code right / caption bottom / Prev-Play-Next), progressive `codeByStep` reveal, real data in the diagram (never placeholder boxes), the intro's verified-against note ("Verified against … ; interfaces may move."), the `NEXT:` link chain, and `scaleStage()`'s mobile floor — don't redesign these.
 - Links: back/index links are `../index.html`. A `NEXT:` link into a different audience folder needs that folder in its path (`../rollup-operators/ro1-....html`); same-folder links just need the filename.
 
 ## Source of truth

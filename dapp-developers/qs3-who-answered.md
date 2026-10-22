@@ -1,6 +1,6 @@
 # Who Answered?
 
-> EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
+> Every code block is cited at a pinned commit; interfaces may move after it.
 
 Follow the call hash from its calculation to the matching entry, then read the success flag and the return data that gives your contract 1.
 

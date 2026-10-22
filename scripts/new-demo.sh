@@ -9,7 +9,7 @@
 #   title     display title, e.g. "My New Topic"
 #
 # This gets you a structurally-correct file (fixed stage, terminal code
-# panel, pre-mainnet intro note, favicon, mobile scaleStage floor) with every
+# panel, verified-against intro note, favicon, mobile scaleStage floor) with every
 # piece of real content — diagram, code, citation, kickers, captions —
 # replaced with an obvious TODO. It does NOT wire the file into
 # index.html or the NEXT: chain — that's still a manual step, see
@@ -99,7 +99,7 @@ sub(r'<ul class="intro-learn">.*?</ul>',
     '        <li><b>03 · TODO STEP 3</b>TODO: what step 3 teaches.</li>\n'
     '      </ul>')
 sub(r'(<p style="margin:12px 0 0;font-family:var\(--mono\);font-size:12\.5px;[^>]*>)Verified against[^<]*(</p>)',
-    r'\1TODO: Verified against &lt;repo&gt; @ &lt;pinned sha&gt; &mdash; pre-mainnet; interfaces may move.\2')
+    r'\1TODO: Verified against &lt;repo&gt; @ &lt;pinned sha&gt; ; interfaces may move.\2')
 
 # --- TRY IT calculator (pr5-specific salt calculator): remove button, panel, JS
 sub(r'    <!-- TRY IT: live salt calculator.*?(?=\n\n    <!-- STEP 1:)', '')

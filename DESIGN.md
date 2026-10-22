@@ -157,7 +157,7 @@ There are two surfaces. The **index** (`index.html`, `start-here.html`, `deploy.
 - Geist for prose and Geist Mono for labels, numbers, eyebrows and code.
 - One green signal (`eez-green`) for live state and focus. The gradient is reserved for the primary action and hover accents.
 - Pill-shaped controls, cards with 16px corners, and small 4–5px chips for tool buttons and byte cells.
-- Every page says EEZ is pre-mainnet, in text rather than a badge: the walkthrough intro's verified-against line. The index carries no PRE-MAINNET line (owner decision, 2026-10-20).
+- Every walkthrough names the commit it was verified against, in the intro's verified-against line. No page carries a PRE-MAINNET label: EEZ-X is live on Ethereum mainnet (owner decision, 2026-10-22).
 
 ## Colors
 
@@ -287,7 +287,7 @@ Quiet until touched. Grey at rest, with one gradient action per stage.
 
 ### Navigation
 - **Logo:** the full EEZ lockup (mark plus "Ethereum Economic Zone" wordmark) at 46px tall on the index from 641px up, so the wordmark stays legible; the mark alone (36px) on phones. Walkthrough headers carry the mark (26px stage px) plus "Quickstarts" as the link home. Never shrink the lockup below 46px: the wordmark becomes unreadable.
-- **Index header:** the EEZ logo on the left. Walkthroughs say PRE-MAINNET in the intro's verified-against line, with no header badge; the index has no PRE-MAINNET line. Mono 12px external links (`eez-core-protocol ↗`, `EEZ-X mainnet ↗`) in `#9A9A9A` on the right, going white on hover, plus a circular `?` help button. Wraps on narrow screens.
+- **Index header:** the EEZ logo on the left. No header badge. Mono 12px external links (`eez-core-protocol ↗`, `EEZ-X mainnet ↗`) in `#9A9A9A` on the right, going white on hover, plus a circular `?` help button. Wraps on narrow screens.
 - **Index entry:** no buttons under the hero. The Quickstart section heading, `Start with the basics` (Geist 800, 44px, 32px on phones), is the way in, with card 00 right under it. The page tour opens from the `?` button; operators and researchers filter with the chips.
 - **Page tour:** a modal dialog (`aria-modal`). Focus moves to Next on each step, Tab cycles inside the card, Esc or a click on the dim area closes it, every other key stays with the tour (the page's Space, r and / shortcuts don't act behind it), a second ? doesn't open a second tour, and focus returns to the button that opened it. On the index the card is 430px beside its target; under 640px it docks as a bottom sheet 16px from the edges, with the target scrolled near the top.
 - **Stage header:** the EEZ mark plus `Quickstarts` link home (mono 12px, Slate), title, `NEXT WALKTHROUGH: … →` link (nudges right), the `STEP 1 OF 3` counter (hidden on the lead-in, where no step has started) and `ALL QUICKSTARTS →`. The header link stays because it's the only way on while the lead-in hides the bottom bar.
@@ -296,7 +296,7 @@ Quiet until touched. Grey at rest, with one gradient action per stage.
 ### Walkthrough Stage (signature component)
 The site's core component.
 - **Diagram (left):** real values, with byte cells as 4px mono chips and field labels in Lavender. Arrows and nodes are drawn in the gradient stops.
-- **Code panel (right):** `screen` fill, Geist Mono at 19/34, lines revealed per step through `codeByStep`. FULL and COPY tool chips sit top-right. A citation line under it, such as `Verified against eez-core-protocol @ 9a1f815 — pre-mainnet; interfaces may move.`, is set as a tiny mono note.
+- **Code panel (right):** `screen` fill, Geist Mono at 19/34, lines revealed per step through `codeByStep`. FULL and COPY tool chips sit top-right. A citation line under it, such as `Verified against eez-core-protocol @ 9a1f815; interfaces may move.`, is set as a tiny mono note.
 - **Caption:** a single sentence across the bottom in Soft Ink, next to Prev / Play / Next.
 - **Intro slide:** a green mono eyebrow (track name), Stage Title, Stage Lede, and three "what you'll learn" columns. Each column has a hairline top rule, a green mono step label and Soft Ink body, with no boxes and no fills.
 - **Motion:**
@@ -308,7 +308,7 @@ The site's core component.
 ## Do's and Don'ts
 
 ### Do:
-- **Do** start every new walkthrough from the `pr5` template (`scripts/new-demo.sh`) and keep the 1920×1080 stage, the `codeByStep` reveal, the intro's verified-against line (it carries "pre-mainnet"), the `NEXT:` chain and the 1120px reflow.
+- **Do** start every new walkthrough from the `pr5` template (`scripts/new-demo.sh`) and keep the 1920×1080 stage, the `codeByStep` reveal, the intro's verified-against line, the `NEXT:` chain and the 1120px reflow.
 - **Do** use the `:root` custom properties (`--eez-green`, `--eez-screen`, `--eez-edge`, `--eez-grad-btn`, `--muted`, `--label`) rather than literal hex.
 - **Do** set every label, number, chip, CTA and citation in Geist Mono, and every explanation in Geist.
 - **Do** give every interactive element the 2px `eez-green` focus ring with a 2px offset, and a hit area of at least 24px on every device.
@@ -321,5 +321,5 @@ The site's core component.
 - **Don't** add shadows at rest, glows, or glassy blur to cards or panels. Depth is tonal.
 - **Don't** color body text, warnings or decoration green. Green means live or focused.
 - **Don't** put code on index cards. Cards carry a title, a consequence hook and a CTA.
-- **Don't** make the pre-mainnet note or COMING SOON louder, such as red or amber banners, or drop them. The walkthrough header carries no PRE-MAINNET badge; the note lives in the intro line and the index footer.
+- **Don't** make the verified-against note or COMING SOON louder, such as red or amber banners, or drop them. No page carries a PRE-MAINNET badge or label.
 - **Don't** copy the drift values listed under Colors (the 180° card gradient, `rgba(63,185,80)` green, `#0b0b0b`/`#1f1f1f` page overrides).

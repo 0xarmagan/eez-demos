@@ -1,6 +1,6 @@
 # One Call, Two Chains, One Transaction
 
-> EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
+> Every code block is cited at a pinned commit; interfaces may move after it.
 
 Your L1 contract gets an L2 contract's return value back in the same transaction, with no bridge message and no callback.
 

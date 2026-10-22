@@ -1,6 +1,6 @@
 # Cross-Chain Flash Loan
 
-> EEZ is pre-mainnet: read capability claims as design intent, not shipped behaviour. Every code block is cited at a pinned commit.
+> Every code block is cited at a pinned commit; interfaces may move after it.
 
 Borrowed tokens go to an L2 and back before the repayment check runs, all inside one L1 transaction.
 
