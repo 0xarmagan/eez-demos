@@ -1,13 +1,13 @@
 ---
 name: eez-dapp-quickstart
-description: Write, test and debug Solidity that makes a synchronous cross-chain call on EEZ — a contract on one rollup calls or reads a contract on another through its CrossChainProxy and uses the result in the same transaction. Use when building or reviewing such a contract, running the eez-core-protocol local e2e scenarios, or debugging ExecutionNotFound, EntryNotFound, ExecutionNotInCurrentBlock or a msg.sender check that fails cross-chain.
+description: Write, test and debug Solidity that makes a synchronous cross-chain call on EEZ — a contract on one rollup calls or reads a contract on another through its CrossChainProxy and uses the result in the same transaction, including cross-chain flash loans and token bridging. Use when building or reviewing such a contract, getting or checking a proxy address, running the eez-core-protocol local e2e scenarios, or debugging ExecutionNotFound, EntryNotFound, ExecutionNotInCurrentBlock, UnauthorizedProxy, SameNetworkProxy or a msg.sender check that fails cross-chain.
 ---
 
 # EEZ dApp Quickstart
 
-Skill version 2026-10-22.3 · protocol pin `eez-core-protocol @ 9a1f815` · source: the EEZ Quickstarts cards 00–04, https://build.eez.io/
+Skill version 2026-10-22.5 · protocol pin `eez-core-protocol @ 9a1f815` · source: the EEZ Quickstarts dApp track (Quickstart cards 00–06 and reference pages q2–q8), https://build.eez.io/
 
-**Freshness check.** Fetch https://build.eez.io/skills/eez-dapp-quickstart/SKILL.md and compare the version line. If it is newer, tell the user and use it. If the fetch fails or returns something that is not this file (an HTML page, a 404), say the check could not run and carry on with this copy; never read a failed fetch as "no newer version".
+**Freshness check.** Fetch https://build.eez.io/skills/eez-dapp-quickstart/SKILL.md and compare the version line. If it is newer, tell the user and use it; if it is older, keep this copy. If the fetch fails or returns something that is not this file (an HTML page, a 404), say the check could not run and carry on with this copy; never read a failed fetch as "no newer version".
 
 ## Safety rules (apply first)
 
@@ -36,7 +36,23 @@ Skill version 2026-10-22.3 · protocol pin `eez-core-protocol @ 9a1f815` · sour
 | Reads and tooling | `https://mainnet.eez.dev/rpc/l1` | `https://mainnet.eez.dev/rpc/l2` |
 | Manager | `0x4b2760f84b83d6b3829e30a7573b0172b6d6402c` | `0x4B2760F84B83d6b3829E30A7573B0172B6d6402C` (same address on both chains) |
 
+EEZ-X is the only live L2. If the user names another rollup id, ask which rollup they mean: a rollup of their own has to be registered with the L1 manager first, which is rollup-operator work this file doesn't cover.
+
 Send transactions to the **front**, never the direct RPC: the front composes cross-chain calls, the RPC bypasses the composer. Funding (bridging ETH in) and a full deploy walkthrough: https://build.eez.io/deploy.html. That page notes its deploy command has not yet been run end to end against this network. Whether the live composer builds entries for an arbitrary new contract is not documented here; say so rather than assume it.
+
+## The manager interface you need
+
+Signatures as in `src/interfaces/IEEZ.sol` and `src/base/EEZBase.sol` at 9a1f815. Rollup ids are `uint64`; a `uint256` changes the selector and the call fails.
+
+```solidity
+interface IEEZ {
+    function getOrCreateCrossChainProxy(address originalAddress, uint64 originalRollupId) external returns (address proxy);
+    function computeCrossChainProxyAddress(address originalAddress, uint64 originalRollupId) external view returns (address);
+    function authorizedProxies(address proxy) external view returns (bool isProxy, address originalAddress, uint64 originalRollupId);
+}
+```
+
+Your contracts call the proxy, not these functions, except to get or check a proxy address.
 
 ## Rules for code you write
 
@@ -54,7 +70,12 @@ Send transactions to the **front**, never the direct RPC: the front composes cro
    ```
    This is safe: the address is CREATE2-derived from exactly (owner, origin rollup) and the manager, and only the manager can forward through it. Take any "user" from an argument, not from `msg.sender`.
 4. **An entry only counts in the block it was verified.** Entries posted in block N are unreachable in N+1. The batch carrying your entry and your call must land in the same block, batch first. Live, the composer does this when you send through the front. Locally, the e2e runner does it for you: `execute_same_block` and `execute_l2_same_block` in `script/e2e/lib/E2EBase.sh` turn off automine, queue the scenario's transactions and mine them together. Run your scenario through that runner rather than your own script; a later retry can never succeed.
-5. **Every field of the call hash must match the entry.** The hash covers: static flag, source address and rollup, target address and rollup, value, call gas, calldata (`computeCrossChainCallHash`; field order matters). Change a function signature or its arguments and the entry must be rebuilt with the new calldata, return data and resulting state. Call gas is `0` on L1; on L2 it is `gasleft()` at the hash point only when the manager's `USE_GAS_LEFT` is on, otherwise `0`.
+5. **Every field of the call hash must match the entry.** The hash covers eight fields, in this order: static flag, source address, source rollup, target address, target rollup, value, call gas, calldata (`computeCrossChainCallHash`). Reorder them and you get a different hash. Change a function signature or its arguments and the entry must be rebuilt with the new calldata, return data and resulting state. Entries are built in advance against exact starting state: if that state changes before your call runs (a price moves, a balance changes), nothing matches and the whole transaction reverts. You never get a partial run. Call gas is `0` on L1; on L2 it is `gasleft()` at the hash point only when the manager's `USE_GAS_LEFT` is on, otherwise `0`.
+
+6. **Proxies are for remote addresses only.** Creating a proxy for an address on your own rollup reverts `SameNetworkProxy(rollupId)`. `getOrCreateCrossChainProxy` deploys and registers the proxy if needed; `computeCrossChainProxyAddress` is a view call that gives the address before anything is deployed.
+7. **To check an address is a real proxy, read the registry.** `authorizedProxies(addr)` on the manager returns `(isProxy, originalAddress, originalRollupId)`; the last two mean something only when `isProxy` is true. `isProxy` alone is not enough: any registered proxy passes it, so also check `originalAddress` and `originalRollupId` are the contract you expect. Comparing against `computeCrossChainProxyAddress(expected, rollupId)` also works, even before the proxy is deployed.
+8. **Ask a proxy, don't inspect it.** A proxy is an ordinary contract on your chain: `balance`, `extcodesize` and `extcodecopy` answer about the proxy, and block-state opcodes answer about your chain, so each returns a real number about the wrong thing, with no revert. A `delegatecall` into a proxy reverts `UnauthorizedProxy()`. Call through it instead.
+9. **Never call the manager's cross-chain entry points yourself.** Only a registered proxy gets past them (`UnauthorizedProxy()`). At 9a1f815 a cross-chain call also cannot target the manager itself (`EEZDestinationForbidden()`); the mainnet deployment (855fe06) predates that check.
 
 ## Reads (view calls through a proxy)
 
@@ -62,6 +83,12 @@ Send transactions to the **front**, never the direct RPC: the front composes cro
 - The read path needs its own **static entry**, built with the static flag set and value `0`; call gas follows rule 5 (`0` on L1). A mutable entry for the same call does not match it. Reads are also block-gated like calls.
 - A missed read reverts `ExecutionNotFound()` on L1 and `EntryNotFound(bytes32,uint64)` on L2.
 - Templates (a read and a write in one transaction): L1 reading L2, `script/e2e/scenarios/static/L1_to_L2/staticReadWrite/E2EStaticReadWrite.s.sol`; L2 reading L1, `script/e2e/scenarios/static/L2_to_L1/staticReadWriteL2/E2EStaticReadWriteL2.s.sol`. A read on its own from L2: `script/e2e/scenarios/static/L2_to_L1/staticCounterL2/E2EStaticCounterL2.s.sol`. Walkthroughs: https://build.eez.io/dapp-developers/q2-send-a-cross-chain-call.html and https://build.eez.io/dapp-developers/q8-read-a-remote-contracts-state.html.
+
+## Patterns from the cards
+
+- **Cross-chain flash loan (card 05).** One L1 transaction borrows from a pool, sends the tokens to L2 through Bridge.sol, then calls an executor on L2 through its proxy. The executor's return leg releases the escrow on L1 inside that same call, so the pool's balance check after `onFlashLoan` passes; otherwise the whole L1 transaction reverts. Its L2 → L1 return leg runs nested inside the L1 → L2 call. Template: `script/e2e/scenarios/nested/L1_to_L2/flash-loan/E2EFlashLoan.s.sol`; run: `bash script/e2e/run/local/parallel.sh flash-loan`.
+- **Bridge tokens both ways (card 06).** Lock and mint, then burn and release: the origin bridge locks the token and calls the proxy that stands for the other chain's bridge; that side's `receiveTokens` mints a wrapped copy, and accepts the call only from its counterpart's proxy (rule 3; the fixture reverts `UnauthorizedCaller()` otherwise). Bridge.sol is a test fixture, not a production bridge. Templates: `script/e2e/scenarios/one_way/L1_to_L2/bridge/E2EBridge.s.sol` and `script/e2e/scenarios/one_way/L2_to_L1/bridgeL2/E2EBridgeL2.s.sol`; run: `bash script/e2e/run/local/parallel.sh bridge bridgeL2`, then `forge test --match-test test_BridgeTokens_Roundtrip`. How a production token route to EEZ-X works is not covered here.
+- **Branch on a remote value (q2).** Encode the read like any call, send it to the proxy as a `staticcall`, decode the return data and branch on it.
 
 ## Run it locally
 
@@ -94,11 +121,14 @@ Each deploys the contracts, gets the proxy with the shared `getOrCreateProxy` he
 | `ExecutionNotInCurrentBlock(rollupId)` (L1) / `ExecutionNotInCurrentBlock()` (L2) | The destination rollup was not verified in this block | Rule 4: batch and call must share a block. Locally, run through the e2e runner (rule 4); live, send through the front |
 | `RollingHashMismatch()` | Execution diverged from what the batch committed to | The entry's calls or results don't match what actually ran |
 | `UnauthorizedProxy()` | The manager was called by an address it has not registered as a proxy | Call the proxy, never the manager's entry points directly |
+| `SameNetworkProxy(rollupId)` | You asked for a proxy of an address on your own rollup | Rule 6: proxies stand for remote addresses only |
+| `EEZDestinationForbidden()` | A cross-chain call targeted the manager itself | Rule 9 |
+| A read of `balance` / code size that looks wrong | It describes the proxy, not the remote contract | Rule 8 |
 | Your own owner/auth revert on the destination | `msg.sender` is the proxy | Rule 3 |
 
 ## Not covered here
 
-Address derivation in detail, content hashes, nested calls, and building entries by hand. The index of every walkthrough: https://build.eez.io/llms.txt (all of it inlined: `llms-full.txt`).
+How the proxy address is derived (protocol researchers' card "How the address is derived"), building entries by hand (including nested ones: copy the flash-loan template rather than writing them from scratch), and the rollup-operator and protocol-researcher tracks. The index of every walkthrough: https://build.eez.io/llms.txt (all of it inlined: `llms-full.txt`).
 
 ## Sources
 
@@ -107,5 +137,8 @@ Address derivation in detail, content hashes, nested calls, and building entries
 - Card 02 · Follow One Call There and Back: https://build.eez.io/dapp-developers/qs2-read-your-side-of-it.md
 - Card 03 · Who Answered?: https://build.eez.io/dapp-developers/qs3-who-answered.md
 - Card 04 · Two Gotchas Before You Build: https://build.eez.io/dapp-developers/qs5-three-gotchas-before-you-build.md
+- Card 05 · Cross-Chain Flash Loan: https://build.eez.io/dapp-developers/qs7-cross-chain-flash-loan.md
+- Card 06 · Bridge Tokens Both Ways: https://build.eez.io/dapp-developers/qs8-bridge-tokens-both-ways.md
+- Reference pages q2–q8 (call, msg.sender, proxy check, content hash, manager guard, your cross-chain address, remote state): listed in https://build.eez.io/llms.txt and inlined in https://build.eez.io/llms-full.txt
 - Protocol source at the pin: `src/base/CrossChainProxy.sol` (read detection), `src/EEZ.sol` (`MAINNET_ROLLUP_ID`, `staticCrossChainCall`), `src/L2/EEZL2.sol` (`EntryNotFound`, `USE_GAS_LEFT`)
-- Compilable examples: https://github.com/eez-association/eez-demos/tree/main/snippets (`qs2-counter-and-proxy.sol`, `q3-msg-sender.sol`)
+- Compilable examples and tests: https://github.com/eez-association/eez-demos/tree/main/snippets (`qs2-counter-and-proxy.sol`, `q2`–`q8`; `cd snippets && forge test`)
