@@ -126,16 +126,14 @@ and workflow-dispatch permissions; the validation workflow remains read-only.
 No artifact download or local dependency installation is needed for that flow.
 
 The site-safety browser check intercepts all HTTP requests and serves tracked
-fixtures, including the agent skill, without contacting a live RPC. It checks
-unexpected requests, wallet access, hostile text inputs, verified skill COPY,
-clipboard errors and the separate mainnet broadcast command. It never executes
+fixtures without contacting a live RPC. It checks unexpected requests (no page
+fetches the agent skill), wallet access, hostile text inputs, clipboard writes
+and the separate mainnet broadcast command. It never executes
 displayed commands. Existing geometry and navigation assertions remain enabled.
 
-The agent skill is reviewed text, not a shell installer. After a deliberate
-SKILL.md change, review the diff and update SKILL_SHA256 in assets/eez-skill.js
-to the file's SHA-256 digest; CI rejects drift. This detects an unexpected file
-response, not compromise of the entire website. Updates require review and
-approval rather than automatic adoption of instructions from a mutable URL.
+The agent skill (skills/eez-dapp-quickstart/SKILL.md) is reviewed text, not a
+shell installer, and no page links to it. Updates require review and approval
+rather than automatic adoption of instructions from a mutable URL.
 
 The mainnet playground guide previews before an explicit, chain-bound broadcast
 and calls for small integration experiments using real ETH. It does not certify

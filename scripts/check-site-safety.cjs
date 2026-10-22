@@ -5,7 +5,6 @@
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const { createHash } = require("node:crypto");
 const { execFileSync } = require("node:child_process");
 const puppeteer = require("puppeteer");
 
@@ -15,9 +14,6 @@ const skillPath = "skills/eez-dapp-quickstart/SKILL.md";
 const skill = fs.readFileSync(path.join(root, skillPath));
 const read = (file) => fs.readFileSync(path.join(root, file), "utf8");
 const tracked = new Set(execFileSync("git", ["ls-files", "-z"], { cwd: root, encoding: "utf8" }).split("\0").filter(Boolean));
-const digest = /var SKILL_SHA256 = "([a-f0-9]{64})"/.exec(read("assets/eez-skill.js"));
-assert.ok(digest, "The skill must have a reviewed SHA-256 digest");
-assert.equal(createHash("sha256").update(skill).digest("hex"), digest[1], "Review SKILL.md before updating its digest");
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const payload = '<img src=x onerror="window.injected=true">';
 
@@ -100,55 +96,11 @@ async function browsing(browser) {
       await page.evaluate(() => document.querySelectorAll("#dots button").forEach((button) => button.click()));
     }
     await delay(50);
-    assert.equal(state.skillRequests, 0, "Skill must not fetch until requested");
+    assert.equal(state.skillRequests, 0, "No page may fetch the agent skill");
     assert.deepEqual(await page.evaluate(() => window.copied), [], "Browsing must not write the clipboard");
     await clean(page, state);
   }
   console.log(`Browsing boundaries pass for ${pages.length} pages, including hostile URL/search/calculator inputs.`);
-}
-
-async function agentSkill(browser) {
-  const file = "dapp-developers/qs1-run-your-first-round-trip.html";
-  for (const width of [1280, 390]) {
-    const { page, state } = await open(browser, file, { width, skillDelay: 150 });
-    await page.click(".skill-open");
-    assert.equal(await page.$eval('[data-copy="file"]', (button) => button.disabled), true);
-    await page.waitForFunction(() => !document.querySelector('[data-copy="file"]').disabled);
-    // The browser checks bytes before making the reviewed text available.
-    await page.click('[data-copy="file"]');
-    await page.waitForFunction(() => window.copied.length === 1);
-    assert.equal(await page.evaluate(() => window.copied[0]), skill.toString("utf8"));
-    assert.equal(await page.$eval("#skillDestination", (el) => el.textContent), ".claude/skills/eez-dapp-quickstart/SKILL.md");
-    assert.equal(await page.$eval("#skillDialog", (el) => el.textContent.includes("curl ")), false);
-    const bounds = await page.$eval("#skillDialog", (el) => {
-      const r = el.getBoundingClientRect();
-      return { left: r.left, right: r.right, scroll: el.scrollWidth, client: el.clientWidth };
-    });
-    assert.ok(bounds.left >= 0 && bounds.right <= width && bounds.scroll <= bounds.client, "Skill dialog must fit mobile and desktop");
-    await page.evaluate(() => { window.rejectCopy = true; });
-    await page.click('[data-copy="file"]');
-    await page.waitForFunction(() => document.querySelector('[data-copy="file"]').textContent === "COPY FAILED");
-    assert.equal(await page.evaluate(() => window.copied.length), 1);
-    await page.keyboard.press("Escape");
-    assert.equal(await page.evaluate(() => document.activeElement.className), "skill-open");
-    await clean(page, state);
-  }
-  for (const skillMode of ["tampered", "html", "missing", "redirect"]) {
-    const { page, state } = await open(browser, file, { skillMode });
-    await page.click(".skill-open");
-    await page.waitForFunction(() => document.querySelector("#skillStatus").textContent.startsWith("Could not verify"));
-    assert.equal(await page.$eval('[data-copy="file"]', (button) => button.disabled), true);
-    await page.$eval('[data-copy="file"]', (button) => button.click());
-    assert.deepEqual(await page.evaluate(() => window.copied), []);
-    await clean(page, state);
-  }
-  const { page, state } = await open(browser, file, { clipboardMissing: true });
-  await page.click(".skill-open");
-  await page.waitForFunction(() => !document.querySelector('[data-copy="file"]').disabled);
-  await page.click('[data-copy="file"]');
-  assert.equal(await page.$eval('[data-copy="file"]', (button) => button.textContent), "COPY FAILED");
-  await clean(page, state);
-  console.log("Agent skill copy rejects changed files, HTML errors and redirects; clipboard failures stay visible.");
 }
 
 async function deployment(browser) {
@@ -178,7 +130,7 @@ async function deployment(browser) {
 
 async function main() {
   const browser = await puppeteer.launch(); // Chromium's sandbox stays enabled.
-  try { await browsing(browser); await agentSkill(browser); await deployment(browser); }
+  try { await browsing(browser); await deployment(browser); }
   finally { await browser.close(); }
 }
 main().catch((error) => { console.error(error); process.exitCode = 1; });
