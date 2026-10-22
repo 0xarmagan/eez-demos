@@ -1,4 +1,4 @@
-/* "Use with your agent" for the dApp Quickstart cards.
+/* "Use with your agent" for the dApp track pages.
  *
  * Adds a secondary button next to the intro's Start button. It opens a dialog
  * that hands the reader the agent skill built from these cards
@@ -52,8 +52,8 @@
   d.setAttribute("aria-labelledby", "skillTitle");
   d.innerHTML =
     '<button class="x" type="button" aria-label="Close">CLOSE</button>' +
-    '<h2 id="skillTitle">Use these cards with your agent</h2>' +
-    "<p>One skill covers cards 00&ndash;04: how a cross-chain call works, the rules for code that makes one, a local run and a table of reverts. It is a single text file, pinned to eez-core-protocol @ 9a1f815. Nothing runs when you install it.</p>" +
+    '<h2 id="skillTitle">Use these walkthroughs with your agent</h2>' +
+    "<p>One skill covers the whole dApp track, from the Quickstart cards to the reference pages: how a cross-chain call or read works, the rules for code that makes one, flash-loan and bridge patterns, a local run and a table of reverts. It is a single text file, pinned to eez-core-protocol @ 9a1f815. Nothing runs when you install it.</p>" +
     '<span class="k">CLAUDE CODE &middot; RUN IN YOUR PROJECT</span>' +
     '<div class="row"><code id="skillInstall"></code><button type="button" data-copy="install">COPY</button></div>' +
     '<span class="k">ANY OTHER AGENT</span>' +
