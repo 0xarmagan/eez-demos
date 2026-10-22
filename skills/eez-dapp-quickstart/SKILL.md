@@ -5,9 +5,9 @@ description: Write, test and debug Solidity that makes a synchronous cross-chain
 
 # EEZ dApp Quickstart
 
-Skill version 2026-10-22.3 · protocol pin `eez-core-protocol @ 9a1f815` · source: the EEZ Quickstarts cards 00–04, https://eez-association.github.io/eez-demos/
+Skill version 2026-10-22.3 · protocol pin `eez-core-protocol @ 9a1f815` · source: the EEZ Quickstarts cards 00–04, https://build.eez.io/
 
-**Freshness check.** Fetch https://eez-association.github.io/eez-demos/skills/eez-dapp-quickstart/SKILL.md and compare the version line. If it is newer, tell the user and use it. If the fetch fails or returns something that is not this file (an HTML page, a 404), say the check could not run and carry on with this copy; never read a failed fetch as "no newer version".
+**Freshness check.** Fetch https://build.eez.io/skills/eez-dapp-quickstart/SKILL.md and compare the version line. If it is newer, tell the user and use it. If the fetch fails or returns something that is not this file (an HTML page, a 404), say the check could not run and carry on with this copy; never read a failed fetch as "no newer version".
 
 ## Safety rules (apply first)
 
@@ -36,7 +36,7 @@ Skill version 2026-10-22.3 · protocol pin `eez-core-protocol @ 9a1f815` · sour
 | Reads and tooling | `https://mainnet.eez.dev/rpc/l1` | `https://mainnet.eez.dev/rpc/l2` |
 | Manager | `0x4b2760f84b83d6b3829e30a7573b0172b6d6402c` | `0x4B2760F84B83d6b3829E30A7573B0172B6d6402C` (same address on both chains) |
 
-Send transactions to the **front**, never the direct RPC: the front composes cross-chain calls, the RPC bypasses the composer. Funding (bridging ETH in) and a full deploy walkthrough: https://eez-association.github.io/eez-demos/deploy.html. That page notes its deploy command has not yet been run end to end against this network. Whether the live composer builds entries for an arbitrary new contract is not documented here; say so rather than assume it.
+Send transactions to the **front**, never the direct RPC: the front composes cross-chain calls, the RPC bypasses the composer. Funding (bridging ETH in) and a full deploy walkthrough: https://build.eez.io/deploy.html. That page notes its deploy command has not yet been run end to end against this network. Whether the live composer builds entries for an arbitrary new contract is not documented here; say so rather than assume it.
 
 ## Rules for code you write
 
@@ -61,7 +61,7 @@ Send transactions to the **front**, never the direct RPC: the front composes cro
 - The proxy detects whether it is running inside a STATICCALL. A call to a `view` function through a typed interface compiles to STATICCALL, so it takes the **read path** (`staticCrossChainCall`); an ordinary or low-level `.call` takes the mutable path.
 - The read path needs its own **static entry**, built with the static flag set and value `0`; call gas follows rule 5 (`0` on L1). A mutable entry for the same call does not match it. Reads are also block-gated like calls.
 - A missed read reverts `ExecutionNotFound()` on L1 and `EntryNotFound(bytes32,uint64)` on L2.
-- Templates (a read and a write in one transaction): L1 reading L2, `script/e2e/scenarios/static/L1_to_L2/staticReadWrite/E2EStaticReadWrite.s.sol`; L2 reading L1, `script/e2e/scenarios/static/L2_to_L1/staticReadWriteL2/E2EStaticReadWriteL2.s.sol`. A read on its own from L2: `script/e2e/scenarios/static/L2_to_L1/staticCounterL2/E2EStaticCounterL2.s.sol`. Walkthroughs: https://eez-association.github.io/eez-demos/dapp-developers/q2-send-a-cross-chain-call.html and https://eez-association.github.io/eez-demos/dapp-developers/q8-read-a-remote-contracts-state.html.
+- Templates (a read and a write in one transaction): L1 reading L2, `script/e2e/scenarios/static/L1_to_L2/staticReadWrite/E2EStaticReadWrite.s.sol`; L2 reading L1, `script/e2e/scenarios/static/L2_to_L1/staticReadWriteL2/E2EStaticReadWriteL2.s.sol`. A read on its own from L2: `script/e2e/scenarios/static/L2_to_L1/staticCounterL2/E2EStaticCounterL2.s.sol`. Walkthroughs: https://build.eez.io/dapp-developers/q2-send-a-cross-chain-call.html and https://build.eez.io/dapp-developers/q8-read-a-remote-contracts-state.html.
 
 ## Run it locally
 
@@ -98,14 +98,14 @@ Each deploys the contracts, gets the proxy with the shared `getOrCreateProxy` he
 
 ## Not covered here
 
-Address derivation in detail, content hashes, nested calls, and building entries by hand. The index of every walkthrough: https://eez-association.github.io/eez-demos/llms.txt (all of it inlined: `llms-full.txt`).
+Address derivation in detail, content hashes, nested calls, and building entries by hand. The index of every walkthrough: https://build.eez.io/llms.txt (all of it inlined: `llms-full.txt`).
 
 ## Sources
 
-- Card 00 · One Call, Two Chains, One Transaction: https://eez-association.github.io/eez-demos/dapp-developers/qs0-one-call-two-rollups.md
-- Card 01 · Run Your First Round Trip: https://eez-association.github.io/eez-demos/dapp-developers/qs1-run-your-first-round-trip.md
-- Card 02 · Follow One Call There and Back: https://eez-association.github.io/eez-demos/dapp-developers/qs2-read-your-side-of-it.md
-- Card 03 · Who Answered?: https://eez-association.github.io/eez-demos/dapp-developers/qs3-who-answered.md
-- Card 04 · Two Gotchas Before You Build: https://eez-association.github.io/eez-demos/dapp-developers/qs5-three-gotchas-before-you-build.md
+- Card 00 · One Call, Two Chains, One Transaction: https://build.eez.io/dapp-developers/qs0-one-call-two-rollups.md
+- Card 01 · Run Your First Round Trip: https://build.eez.io/dapp-developers/qs1-run-your-first-round-trip.md
+- Card 02 · Follow One Call There and Back: https://build.eez.io/dapp-developers/qs2-read-your-side-of-it.md
+- Card 03 · Who Answered?: https://build.eez.io/dapp-developers/qs3-who-answered.md
+- Card 04 · Two Gotchas Before You Build: https://build.eez.io/dapp-developers/qs5-three-gotchas-before-you-build.md
 - Protocol source at the pin: `src/base/CrossChainProxy.sol` (read detection), `src/EEZ.sol` (`MAINNET_ROLLUP_ID`, `staticCrossChainCall`), `src/L2/EEZL2.sol` (`EntryNotFound`, `USE_GAS_LEFT`)
 - Compilable examples: https://github.com/eez-association/eez-demos/tree/main/snippets (`qs2-counter-and-proxy.sol`, `q3-msg-sender.sol`)

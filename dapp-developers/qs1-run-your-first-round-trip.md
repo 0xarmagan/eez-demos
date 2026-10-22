@@ -4,7 +4,7 @@
 
 Two scenarios pass on local anvil chains: one call starts on L1 and gets back the value L2's execution produces, and one makes the same call from L2. Locally, that value is precomputed in the entry.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs1-run-your-first-round-trip.html
+- Page: https://build.eez.io/dapp-developers/qs1-run-your-first-round-trip.html
 - Source: `eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17
@@ -68,4 +68,4 @@ Locally, the scenario script did the composer's job. Card 03 (Who Answered?) sho
 
 ---
 
-Whole site for agents: https://eez-association.github.io/eez-demos/llms.txt
+Whole site for agents: https://build.eez.io/llms.txt

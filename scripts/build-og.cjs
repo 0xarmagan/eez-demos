@@ -14,7 +14,7 @@ const fs = require("fs");
 const path = require("path");
 
 const ROOT = path.resolve(__dirname, "..");
-const BASE = "https://eez-association.github.io/eez-demos";
+const BASE = "https://build.eez.io";
 const OUT = path.join(ROOT, "assets", "og");
 const TRACKS = {
   "dapp-developers": "DAPP DEVELOPERS",
@@ -123,7 +123,7 @@ p{margin-top:22px;font-size:26px;line-height:1.4;color:#b8bfcc;max-width:980px;
 <div class="kicker">${attr(p.kicker)}${p.steps ? " · " + p.steps + " STEPS" : ""}</div>
 <h1>${attr(p.title)}</h1>
 <p>${attr(short(p.hook))}</p>
-<div class="foot"><span>eez-association.github.io/eez-demos</span><span class="dots">${dots}</span></div>
+<div class="foot"><span>build.eez.io</span><span class="dots">${dots}</span></div>
 </body></html>`;
 }
 

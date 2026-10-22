@@ -14,7 +14,7 @@ web
 
 ## Product Purpose
 
-EEZ Quickstarts (eez-association.github.io/eez-demos) teaches how EEZ actually works through short, step-by-step walkthroughs. Each one pairs a diagram, real verbatim code and a one-sentence caption on a fixed stage. The core idea it teaches: a contract can call another rollup and use the answer in the same transaction, with no callback and no second transaction.
+EEZ Quickstarts (build.eez.io) teaches how EEZ actually works through short, step-by-step walkthroughs. Each one pairs a diagram, real verbatim code and a one-sentence caption on a fixed stage. The core idea it teaches: a contract can call another rollup and use the answer in the same transaction, with no callback and no second transaction.
 
 Success means a developer runs a cross-rollup round trip on their own machine, understands why it worked (the answer was already in an execution entry), and avoids the gotchas before writing production code.
 

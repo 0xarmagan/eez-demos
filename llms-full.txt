@@ -7,9 +7,9 @@
 > rollups, running the stack, and how RollupX settles and proves.
 
 New here? Dapp developers start with
-[Run Your First Round Trip](https://eez-association.github.io/eez-demos/dapp-developers/qs1-run-your-first-round-trip.html).
+[Run Your First Round Trip](https://build.eez.io/dapp-developers/qs1-run-your-first-round-trip.html).
 Rollup operators and protocol researchers get a reading order on
-[Start here](https://eez-association.github.io/eez-demos/start-here.html).
+[Start here](https://build.eez.io/start-here.html).
 
 Every code panel on this site is rendered from JavaScript at runtime, so fetching a page
 gives you the shell and not the content. This file is the whole thing in one document: each
@@ -31,7 +31,7 @@ Writing contracts that call across rollups.
 
 Your L1 contract gets an L2 contract's return value back in the same transaction, with no bridge message and no callback.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs0-one-call-two-rollups.html
+- Page: https://build.eez.io/dapp-developers/qs0-one-call-two-rollups.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:113 · _fallback`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113
@@ -104,7 +104,7 @@ return returnData;
 
 Two scenarios pass on local anvil chains: one call starts on L1 and gets back the value L2's execution produces, and one makes the same call from L2. Locally, that value is precomputed in the entry.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs1-run-your-first-round-trip.html
+- Page: https://build.eez.io/dapp-developers/qs1-run-your-first-round-trip.html
 - Source: `eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17
@@ -166,7 +166,7 @@ Locally, the scenario script did the composer's job. Card 03 (Who Answered?) sho
 
 Your contract makes an ordinary call to a proxy, the proxy hands it to the L1 manager, and the 1 that Counter returns on L2 comes back as data that was posted before your call.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs2-read-your-side-of-it.html
+- Page: https://build.eez.io/dapp-developers/qs2-read-your-side-of-it.html
 - Source: `eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:157 · DeployL2`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L157
@@ -346,7 +346,7 @@ contract QS2CounterAndProxyTest {
 
 Follow the call hash from its calculation to the matching entry, then read the success flag and the return data that gives your contract 1.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs3-who-answered.html
+- Page: https://build.eez.io/dapp-developers/qs3-who-answered.html
 - Source: `eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:90 · _callHash`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L90
@@ -411,7 +411,7 @@ return returnData;
 
 Two cross-chain gotchas to check before you build: msg.sender is the source's proxy, and a state-changing proxy call needs an entry verified in the same block.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs5-three-gotchas-before-you-build.html
+- Page: https://build.eez.io/dapp-developers/qs5-three-gotchas-before-you-build.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:67 · fallback`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L67
@@ -461,7 +461,7 @@ revert ExecutionNotInCurrentBlock(rollupId);
 
 Borrowed tokens go to an L2 and back before the repayment check runs, all inside one L1 transaction.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs7-cross-chain-flash-loan.html
+- Page: https://build.eez.io/dapp-developers/qs7-cross-chain-flash-loan.html
 - Source: `eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17
@@ -533,7 +533,7 @@ IERC20(_token).safeTransfer(msg.sender, amount);
 
 Run one ETH scenario per direction, L1 to L2 and L2 to L1, each on its own pair of chains, then run the test that sends an ERC-20 through the Bridge.sol test fixture and back.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs8-bridge-tokens-both-ways.html
+- Page: https://build.eez.io/dapp-developers/qs8-bridge-tokens-both-ways.html
 - Source: `eez-core-protocol/script/e2e/run/local/parallel.sh:17 · parallel.sh`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/run/local/parallel.sh#L17
@@ -618,7 +618,7 @@ emit TokensReleased(originalToken, to, amount);
 
 Learn how to read it, or deploy it.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/q7-your-cross-chain-address.html
+- Page: https://build.eez.io/dapp-developers/q7-your-cross-chain-address.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:204 · createCrossChainProxy`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L204
@@ -791,7 +791,7 @@ function computeCrossChainProxyAddress(
 
 Learn how to encode a read like any normal call, send it to the proxy as a staticcall so it stays read-only, then decode the answer and branch on it.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/q2-send-a-cross-chain-call.html
+- Page: https://build.eez.io/dapp-developers/q2-send-a-cross-chain-call.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:113 · _fallback`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113
@@ -1316,7 +1316,7 @@ contract Q2CrossChainCallTest {
 
 Learn how to whitelist the proxy instead of the address you expected.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/q3-fix-the-msg-sender-gotcha.html
+- Page: https://build.eez.io/dapp-developers/q3-fix-the-msg-sender-gotcha.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:67 · fallback`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L67
@@ -1521,7 +1521,7 @@ contract Q3MsgSenderTest {
 
 Learn how to read the on-chain registry instead of guessing.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/q4-check-if-an-address-is-a-proxy.html
+- Page: https://build.eez.io/dapp-developers/q4-check-if-an-address-is-a-proxy.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:85 · authorizedProxies`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L85
@@ -1614,7 +1614,7 @@ if (isProxy) {
 
 Learn how UnauthorizedProxy() rejects any caller of the cross-chain entry points that isn't a registered proxy.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/q6-why-you-cant-call-the-manager-directly.html
+- Page: https://build.eez.io/dapp-developers/q6-why-you-cant-call-the-manager-directly.html
 - Source: `eez-core-protocol/src/EEZ.sol:855 · executeCrossChainCall`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/EEZ.sol#L855
@@ -1793,7 +1793,7 @@ contract Q6ManagerDirectTest {
 
 Learn how to hash eight fields in the one order that works.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/q5-encode-a-calls-content-hash.html
+- Page: https://build.eez.io/dapp-developers/q5-encode-a-calls-content-hash.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:285`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L285
@@ -1971,7 +1971,7 @@ contract Q5ContentHashTest {
 
 Learn why balance and code size answer about the proxy — a real number about the wrong contract, with no revert.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/q8-read-a-remote-contracts-state.html
+- Page: https://build.eez.io/dapp-developers/q8-read-a-remote-contracts-state.html
 - Source: `eez-core-protocol/src/base/CrossChainProxy.sol:113 · _fallback`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/CrossChainProxy.sol#L113
@@ -2500,7 +2500,7 @@ Standing the stack up and driving it.
 
 Learn how to bring up the node, proof-signer and the L1 in a disposable network.
 
-- Page: https://eez-association.github.io/eez-demos/rollup-operators/ro1-run-the-devnet-with-kurtosis.html
+- Page: https://build.eez.io/rollup-operators/ro1-run-the-devnet-with-kurtosis.html
 - Source: `testing/kurtosis/README.md`
 - Pinned at commit: `2c19e36`
 - Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/testing/kurtosis/README.md
@@ -2564,7 +2564,7 @@ $ source testing/kurtosis/ports.sh
 
 Learn what gets deployed on L1 and L2, and in what order, once the network is up.
 
-- Page: https://eez-association.github.io/eez-demos/rollup-operators/ro2-deploy-the-protocol.html
+- Page: https://build.eez.io/rollup-operators/ro2-deploy-the-protocol.html
 - Source: `Makefile:50-64 · scripts/deploy.sh`
 - Pinned at commit: `2c19e36`
 - Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/Makefile#L50-L64
@@ -2632,7 +2632,7 @@ deploy-protocol:
 
 Learn what changes when the L1 underneath you is Chiado rather than a disposable devnet.
 
-- Page: https://eez-association.github.io/eez-demos/rollup-operators/ro3-run-a-real-chiado-l2.html
+- Page: https://build.eez.io/rollup-operators/ro3-run-a-real-chiado-l2.html
 - Source: `docs/runbooks/chiado-quickstart.md`
 - Pinned at commit: `2c19e36`
 - Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/docs/runbooks/chiado-quickstart.md
@@ -2702,7 +2702,7 @@ $ docker compose logs --tail=100 \
 
 Learn how to drive traffic through the stack you just brought up, and how to tell that it worked.
 
-- Page: https://eez-association.github.io/eez-demos/rollup-operators/ro4-send-and-test-cross-chain-calls.html
+- Page: https://build.eez.io/rollup-operators/ro4-send-and-test-cross-chain-calls.html
 - Source: `README.md · scripts/xchain-test.sh`
 - Pinned at commit: `2c19e36`
 - Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/README.md
@@ -2772,7 +2772,7 @@ How RollupX actually settles and proves.
 
 Learn how sequencer, composer, proof-signer and deriver each fit.
 
-- Page: https://eez-association.github.io/eez-demos/protocol-researchers/pr1-the-four-components-of-rollup0.html
+- Page: https://build.eez.io/protocol-researchers/pr1-the-four-components-of-rollup0.html
 - Source: `crates/eez-driver/src/sequencer.rs:1068 · crates/eez-composer/src/composer.rs:1339 · crates/eez-proof-signer/src/attest.rs:52 / :136 · crates/eez-deriver/src/deriver.rs:55`
 - Pinned at commit: `2c19e36`
 - Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-driver/src/sequencer.rs#L1068
@@ -2845,7 +2845,7 @@ where
 
 Learn why the L2 block is added immediately, and what happens to it if L1 never confirms it.
 
-- Page: https://eez-association.github.io/eez-demos/protocol-researchers/pr2-commit-first-repair-if-needed.html
+- Page: https://build.eez.io/protocol-researchers/pr2-commit-first-repair-if-needed.html
 - Source: `crates/eez-composer/src/optimistic.rs`
 - Pinned at commit: `2c19e36`
 - Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-composer/src/optimistic.rs
@@ -2935,7 +2935,7 @@ pub fn forget_finalized(
 
 Learn what is actually checked before a batch is accepted, and by whom.
 
-- Page: https://eez-association.github.io/eez-demos/protocol-researchers/pr4-how-the-composer-proves-a-batch.html
+- Page: https://build.eez.io/protocol-researchers/pr4-how-the-composer-proves-a-batch.html
 - Source: `crates/eez-control-rpc/proto/prove.proto · prove.v1.Prover`
 - Pinned at commit: `2c19e36`
 - Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-control-rpc/proto/prove.proto
@@ -3011,7 +3011,7 @@ const MAX_ENCODING_MESSAGE_BYTES: usize = 1024;
 
 Learn how the whole chain is reconstructed from L1 data alone.
 
-- Page: https://eez-association.github.io/eez-demos/protocol-researchers/pr3-the-deriver.html
+- Page: https://build.eez.io/protocol-researchers/pr3-the-deriver.html
 - Source: `crates/eez-deriver/src/deriver.rs · Deriver<L2>`
 - Pinned at commit: `2c19e36`
 - Verify: https://github.com/eez-association/eez-rollupX/blob/2c19e36bed2720c00f89841ccfca47ec7c921e06/crates/eez-deriver/src/deriver.rs
@@ -3084,7 +3084,7 @@ match anchor {
 
 Learn how two values become a salt and a CREATE2 address.
 
-- Page: https://eez-association.github.io/eez-demos/protocol-researchers/pr5-how-the-address-is-derived.html
+- Page: https://build.eez.io/protocol-researchers/pr5-how-the-address-is-derived.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:250 · computeCrossChainProxyAddress`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L250
@@ -3195,7 +3195,7 @@ function computeCrossChainProxyAddress(
 
 Learn how one bytes32 commits to a whole execution tree — and why no call index is folded in.
 
-- Page: https://eez-association.github.io/eez-demos/protocol-researchers/pr6-the-rolling-hash.html
+- Page: https://build.eez.io/protocol-researchers/pr6-the-rolling-hash.html
 - Source: `eez-core-protocol/src/base/EEZBase.sol:391 · _rollingHashEntryBegin`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/src/base/EEZBase.sol#L391
