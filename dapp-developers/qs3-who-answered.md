@@ -4,7 +4,7 @@
 
 Follow the call hash from its calculation to the matching entry, then read the success flag and the return data that gives your contract 1.
 
-- Page: https://eez-association.github.io/eez-demos/dapp-developers/qs3-who-answered.html
+- Page: https://build.eez.io/dapp-developers/qs3-who-answered.html
 - Source: `eez-core-protocol/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol:90 · _callHash`
 - Pinned at commit: `9a1f815`
 - Verify: https://github.com/eez-association/eez-core-protocol/blob/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f/script/e2e/scenarios/one_way/L1_to_L2/counter/E2ECounter.s.sol#L90
@@ -71,4 +71,4 @@ return returnData;
 
 ---
 
-Whole site for agents: https://eez-association.github.io/eez-demos/llms.txt
+Whole site for agents: https://build.eez.io/llms.txt

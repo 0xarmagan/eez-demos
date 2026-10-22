@@ -74,7 +74,7 @@ esc_title = title.replace("\\", "\\\\")
 # --- identity: title, canonical, header, lead-in ------------------------
 sub(r'<title>.*?</title>', f"<title>{esc_title} — EEZ</title>")
 sub(r'<link rel="canonical" href="[^"]*">',
-    f'<link rel="canonical" href="https://eez-association.github.io/eez-demos/{audience}/{slug}.html">')
+    f'<link rel="canonical" href="https://build.eez.io/{audience}/{slug}.html">')
 lit('<div style="font-size:22px;font-weight:600;color:#fff;">How the Address Is Derived</div>',
     f'<div style="font-size:22px;font-weight:600;color:#fff;">{title}</div>')
 lit('<h1 class="intro-title" id="introTitle">How the address is derived</h1>',
