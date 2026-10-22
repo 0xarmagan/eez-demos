@@ -5,3 +5,4 @@
 snippets/out/
 snippets/cache/
 __pycache__/
+node_modules/

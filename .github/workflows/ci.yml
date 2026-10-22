@@ -20,9 +20,14 @@ jobs:
     name: Structure, citations, panel drift
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
+
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24.22.1"
+          package-manager-cache: false
 
       - name: Structural audit
         run: bash scripts/audit.sh
@@ -91,7 +96,7 @@ jobs:
     # Keep the AppArmor policy below tied to a known runner OS.
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
 
@@ -99,14 +104,17 @@ jobs:
       # over-long line is not destroyed — it hides behind a scrollbar nobody
       # looks for: horizontally a line cut mid-identifier, vertically lines
       # below the fold. audit.sh cannot see either. The checker needs a
-      # browser; this repo has no node_modules, so install puppeteer here
-      # rather than vendoring it.
-      - uses: actions/setup-node@v4
+      # browser. Install only the exact dependency graph in package-lock.json.
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
         with:
-          node-version: "20"
+          node-version: "24.22.1"
+          package-manager-cache: false
 
       - name: Install puppeteer
-        run: npm install --no-save --ignore-scripts --no-audit --no-fund puppeteer@24.37.5
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Check dependency advisories
+        run: npm audit --audit-level=high
 
       # Only CI downloads the browser selected by the exact Puppeteer version.
       - name: Download pinned browser
@@ -140,16 +148,19 @@ jobs:
       - name: Walkthrough navigation and copy safeguards
         run: NODE_PATH="$PWD/node_modules" node scripts/check-walkthrough-controls.cjs
 
+      - name: Browsing, deployment copy, and agent skill boundaries
+        run: node scripts/check-site-safety.cjs
+
   solidity:
     name: Snippets compile and tests pass
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           persist-credentials: false
 
       - name: Install Foundry
-        uses: foundry-rs/foundry-toolchain@v1
+        uses: foundry-rs/foundry-toolchain@dba66c27052e63476d886f22216e119ba7e615bf # v1
         with:
           version: v1.7.1
 

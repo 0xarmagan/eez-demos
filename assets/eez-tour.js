@@ -133,7 +133,7 @@
     add(".closer", 12, "MORE",
         "llms.txt gives agents every walkthrough as text.");
     add(".navlinks", 10, "THE SOURCE",
-        "The contracts, the node, and the live testnet.");
+        "The contracts, the node, and EEZ-X mainnet, where transactions spend real ETH.");
     add('#quickstart a.card[href*="qs0-"]', 8, "START HERE",
         "Open card 00. \u201cHow this page works\u201d there explains the page.",
         { cta: { label: "Open it \u203a",

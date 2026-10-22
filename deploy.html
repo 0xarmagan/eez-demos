@@ -142,14 +142,14 @@ td.n{white-space:nowrap}
 
   <div class="topbar">
     <a class="back" href="./index.html">&larr; Quickstarts</a>
-    <span class="pill">PRE-MAINNET</span>
+    <span class="pill">MAINNET · REAL ETH</span>
   </div>
 
   <h1>Deploy on EEZ-X mainnet</h1>
-  <p class="lede">Five steps, one contract live on the EEZ-X mainnet rollup. Everything you need is on this page &mdash; the walkthroughs explain <em>why</em> it works, and none of them are prerequisites.</p>
+  <p class="lede">Use EEZ-X as a mainnet playground to test your contracts and integrations with the existing Ethereum ecosystem. Start with a small experiment: check the network, preview the deployment, then choose whether to broadcast. This uses real ETH; local walkthroughs remain available for simulation.</p>
 
-  <div class="banner" id="testnetNote">
-    <b>EEZ-X is live on Ethereum mainnet</b>, with its dashboard at <a href="https://mainnet.eez.dev/dashboard/" target="_blank" rel="noopener" style="color:#e6dcc0">mainnet.eez.dev ↗</a>. Every transaction here spends real ETH. Two more things to know before you start: the deploy command in step 4 has not yet been run end to end against this network, and it runs eez-core-protocol @ 855fe06, while the walkthroughs cite 9a1f815, 11 commits later. To see the protocol at 9a1f815 on your own machine first, <a href="./dapp-developers/qs1-run-your-first-round-trip.html" style="color:#e6dcc0">run the Quickstart locally</a>.
+  <div class="banner" id="networkNote">
+    <b>EEZ-X is live on Ethereum mainnet</b>, with its dashboard at <a href="https://mainnet.eez.dev/dashboard/" target="_blank" rel="noopener" style="color:#e6dcc0">mainnet.eez.dev ↗</a>. This playground is for small integration experiments, not large deposits. Transactions spend real ETH; their cost depends on the operation and current fees. The deploy command in step 4 has not yet been run end to end against this network. The dashboard reports eez-core-protocol @ 855fe06, while the walkthroughs cite 9a1f815, 11 commits later. To try the protocol at 9a1f815 in a simulation first, <a href="./dapp-developers/qs1-run-your-first-round-trip.html" style="color:#e6dcc0">run the local Quickstart in an authorized environment</a>.
   </div>
 
   <div class="steps">
@@ -174,7 +174,7 @@ td.n{white-space:nowrap}
       <div class="step-num" aria-hidden="true">2</div>
       <div class="step-body">
         <h2 class="step-title">Fund a fresh key</h2>
-        <p class="step-why">Send the key a small amount of ETH on Ethereum mainnet, only what you are willing to spend. Import the key into a browser wallet, then move some ETH to the EEZ-X rollup with the Bridge &amp; Calls tab of the <a href="https://mainnet.eez.dev/dashboard/" target="_blank" rel="noopener">mainnet dashboard</a>, a demo app on the testnet (it shows the rollup balance as ETH). Then import it into an encrypted local keystore. Enter the private key and a strong keystore password only at the hidden prompts; never put either secret in a command or environment variable:</p>
+        <p class="step-why">Before funding, verify the official dashboard and the network settings in step 3. Use a fresh wallet and only ETH you can afford to lose, including funds bridged to the rollup. The Bridge &amp; Calls tab of the <a href="https://mainnet.eez.dev/dashboard/" target="_blank" rel="noopener">mainnet dashboard</a> moves real ETH to EEZ-X; this guide does not establish the bridge's security or withdrawal guarantees. Import your fresh key into an encrypted local keystore in your own terminal. Enter the private key and a strong keystore password only at the hidden prompts, outside any agent session; never put either secret in a command, environment variable or chat:</p>
         <div class="term">
           <div class="term-head"><span class="term-label">SHELL</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
 <pre><span class="p">$ </span>cast wallet import eez-mainnet --interactive
@@ -220,22 +220,33 @@ td.n{white-space:nowrap}
     <section class="step">
       <div class="step-num" aria-hidden="true">4</div>
       <div class="step-body">
-        <h2 class="step-title">Deploy</h2>
-        <p class="step-why">One command. <code>src/MyContract.sol</code> is whatever you're shipping. Without <code>--broadcast</code>, Foundry 1.7.1 only prints the unsigned transaction.</p>
+        <h2 class="step-title">Preview, then choose whether to deploy</h2>
+        <p class="step-why">Replace <code>src/MyContract.sol:MyContract</code> with your reviewed contract and supply any required constructor arguments. Build and test it in an authorized environment first. This command checks for L2 chain ID <code>696990</code>, then previews the deployment without broadcasting. It still builds your project, queries the RPC and may prompt for the local keystore password. A preview is not proof of contract or network safety.</p>
         <div class="term">
-          <div class="term-head"><span class="term-label">SHELL</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
-<pre><span class="p">$ </span>forge create src/MyContract.sol:MyContract --rpc-url "$EEZ_RPC" --account eez-mainnet --broadcast</pre>
+          <div class="term-head"><span class="term-label">PREVIEW · NO BROADCAST</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
+<pre><span class="p">$ </span>test "$(cast chain-id --rpc-url "$EEZ_RPC")" = "696990" &amp;&amp;
+  forge create src/MyContract.sol:MyContract --rpc-url "$EEZ_RPC" --chain-id 696990 --account eez-mainnet</pre>
         </div>
+        <p class="step-why">If the chain check fails, stop and investigate the endpoint; do not bypass it. A matching chain ID alone does not authenticate an RPC. Review the account, contract, constructor arguments, value and estimated fees before continuing.</p>
+        <details id="broadcastChoice">
+          <summary>Send the deployment on EEZ-X mainnet &mdash; spends real ETH</summary>
+          <p class="step-why">Only run this after deciding to spend real ETH on this deployment. If an agent is helping, authorize this specific broadcast separately. Use the same reviewed contract and arguments as the preview.</p>
+          <div class="term">
+            <div class="term-head"><span class="term-label">MAINNET BROADCAST · REAL ETH</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
+<pre><span class="p">$ </span>test "$(cast chain-id --rpc-url "$EEZ_RPC")" = "696990" &amp;&amp;
+  forge create src/MyContract.sol:MyContract --rpc-url "$EEZ_RPC" --chain-id 696990 --account eez-mainnet --broadcast</pre>
+          </div>
+        </details>
         <div class="term out">
           <div class="term-head"><span class="term-label">EXPECTED OUTPUT &middot; NOT A COMMAND</span></div>
 <pre>Deployer: 0x&hellip;
-Deployed to: <span class="ok">0x&hellip;</span>   <span class="c">&larr; this line means you're done</span>
+Deployed to: <span class="ok">0x&hellip;</span>   <span class="c">&larr; verify the receipt and deployed code</span>
 Transaction hash: 0x&hellip;</pre>
         </div>
-        <p class="step-why">Verify it landed &mdash; non-empty bytes means deployed:</p>
+        <p class="step-why">After a broadcast, check the transaction receipt and the deployed address on the intended chain. Replace the quoted placeholder below with that address. Non-empty bytecode only establishes that code exists; compare it and the constructor configuration with your expected deployment. It does not prove cross-chain settlement or contract safety.</p>
         <div class="term">
           <div class="term-head"><span class="term-label">SHELL</span><button class="copybtn" type="button" data-copy-pre>COPY</button></div>
-<pre><span class="p">$ </span>cast code &lt;address&gt; --rpc-url $EEZ_RPC</pre>
+<pre><span class="p">$ </span>cast code "DEPLOYED_CONTRACT_ADDRESS" --rpc-url "$EEZ_RPC"</pre>
         </div>
       </div>
     </section>
@@ -248,7 +259,7 @@ Transaction hash: 0x&hellip;</pre>
         <div class="fails">
           <div class="fail"><span class="sym">insufficient funds</span><p class="fix">The key isn't funded on the EEZ-X rollup &mdash; move ETH over with the dashboard's Bridge &amp; Calls tab on <a href="https://mainnet.eez.dev/dashboard/" target="_blank" rel="noopener">mainnet.eez.dev</a>, then <code>cast balance $ADDR --rpc-url $EEZ_RPC</code> to confirm before retrying.</p></div>
           <div class="fail"><span class="sym">connection refused / timeout</span><p class="fix"><code>$EEZ_RPC</code> doesn't match the table in step 3 &mdash; re-copy it. <code>cast chain-id --rpc-url $EEZ_RPC</code> should print the chain id from the table.</p></div>
-          <div class="fail"><span class="sym">nonce too low</span><p class="fix">An earlier transaction from this key is stuck or already mined &mdash; <code>cast nonce $ADDR --rpc-url $EEZ_RPC</code> to inspect, then resend.</p></div>
+          <div class="fail"><span class="sym">nonce too low / no receipt yet</span><p class="fix">Inspect the original transaction hash and the account's nonce before taking action. A missing receipt is not proof that the transaction was rejected. Do not automatically resend, replace or send additional funds; first establish whether the original transaction is pending, mined or failed.</p></div>
         </div>
       </div>
     </section>
@@ -289,7 +300,7 @@ Transaction hash: 0x&hellip;</pre>
       <a href="./llms.txt">llms.txt</a>
       <a href="https://github.com/eez-association/eez-demos">GitHub</a>
     </span>
-    <span class="pin" id="pinLine">Verified against <a href="https://github.com/eez-association/eez-core-protocol/tree/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f" style="color:#9a9a9a;text-decoration:none;border-bottom:1px dotted #444">eez-core-protocol Git commit 9a1f815</a> &mdash; pre-mainnet (test network); interfaces may move.</span>
+    <span class="pin" id="pinLine">Walkthrough source: <a href="https://github.com/eez-association/eez-core-protocol/tree/9a1f815336c20d28e5ec5cecbf195c41fbd5ab0f" style="color:#9a9a9a;text-decoration:none;border-bottom:1px dotted #444">eez-core-protocol Git commit 9a1f815</a>. This page targets mainnet; the advertised deployment is older. Confirm its identity and interfaces before use.</span>
   </div>
 
 </div>
@@ -351,7 +362,7 @@ Transaction hash: 0x&hellip;</pre>
 
   if(live && cfg.deployedAt){
     var pin = document.getElementById("pinLine");
-    if(pin) pin.insertAdjacentText("beforeend", " The network runs " + cfg.deployedAt + ".");
+    if(pin) pin.insertAdjacentText("beforeend", " The dashboard configuration reports " + cfg.deployedAt + ".");
   }
 })();
 </script>

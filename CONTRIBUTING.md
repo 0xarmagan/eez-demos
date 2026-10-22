@@ -111,11 +111,28 @@ directory is not a security sandbox.
 
 The browser geometry check keeps Chromium's sandbox enabled. If the host cannot
 support it, use a suitable isolated host instead of disabling the sandbox.
-CI pins Puppeteer to 24.37.5 and Foundry to v1.7.1. npm lifecycle scripts are
-disabled, followed by an explicit browser download step in CI. Transitive npm
-dependencies and action tags are not yet locked to immutable versions.
+CI pins Node to 24.22.1, Puppeteer to 25.16.0 and Foundry to v1.7.1. Its npm
+dependency graph is committed in package-lock.json and installed with npm ci;
+lifecycle scripts are disabled, followed by an explicit browser download step
+in CI. Actions are pinned to full commit hashes. The dependency audit fails on
+high or critical advisories. These are development checks, not site runtime
+dependencies; publishing still serves static files.
 
-Deployment examples import a throwaway key interactively into an encrypted
+The site-safety browser check intercepts all HTTP requests and serves tracked
+fixtures, including the agent skill, without contacting a live RPC. It checks
+unexpected requests, wallet access, hostile text inputs, verified skill COPY,
+clipboard errors and the separate mainnet broadcast command. It never executes
+displayed commands. Existing geometry and navigation assertions remain enabled.
+
+The agent skill is reviewed text, not a shell installer. After a deliberate
+SKILL.md change, review the diff and update SKILL_SHA256 in assets/eez-skill.js
+to the file's SHA-256 digest; CI rejects drift. This detects an unexpected file
+response, not compromise of the entire website. Updates require review and
+approval rather than automatic adoption of instructions from a mutable URL.
+
+The mainnet playground guide previews before an explicit, chain-bound broadcast
+and calls for small integration experiments using real ETH. It does not certify
+the live protocol or bridge. Deployment examples import a fresh key interactively into an encrypted
 keystore. Never put private keys or keystore passwords in command arguments or
 exported variables. Install Foundry from verified official release artifacts.
 

@@ -2,8 +2,8 @@
  *
  * Adds a secondary button next to the intro's Start button. It opens a dialog
  * that hands the reader the agent skill built from these cards
- * (skills/eez-dapp-quickstart/SKILL.md): a one-line install for Claude Code,
- * the file itself for any other agent, and a link to read it first.
+ * (skills/eez-dapp-quickstart/SKILL.md): verified text to review and save in
+ * the reader's project. No shell installer or automatic instruction update.
  *
  * Load it on a page with <script src="../assets/eez-skill.js" defer></script>.
  * Pages without #btnStart are left alone.
@@ -14,10 +14,11 @@
   if (!start || !window.HTMLDialogElement) { return; }
 
   var NAME = "eez-dapp-quickstart";
+  // Update only after reviewing SKILL.md. CI checks the digest against the file.
+  var SKILL_SHA256 = "cb0e301d1f2a7cff525037e9c62582ff8ae43eaf832487fe8ec5ba391e367364";
   var here = document.currentScript ? document.currentScript.src : location.href;
   var url = new URL("../skills/" + NAME + "/SKILL.md", here).href;
-  var install = "mkdir -p .claude/skills/" + NAME + " && curl -fsSL " + url +
-    " -o .claude/skills/" + NAME + "/SKILL.md";
+  var destination = ".claude/skills/" + NAME + "/SKILL.md";
 
   var css = document.createElement("style");
   css.textContent = [
@@ -36,6 +37,7 @@
     "#skillDialog button:hover,#skillDialog a.btn:hover{color:#fff;border-color:#555}",
     "#skillDialog .acts{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 22px}",
     "#skillDialog .note{font-size:13px;color:#8a93a3;margin:0}",
+    "#skillDialog button:disabled{opacity:.55;cursor:not-allowed}",
     "#skillDialog .x{position:absolute;top:14px;right:14px;min-height:36px;padding:0 12px}",
     "#skillDialog .done{color:#0a0a0a;background:var(--eez-green,#3BE57E);border-color:transparent}"
   ].join("\n");
@@ -53,48 +55,77 @@
   d.innerHTML =
     '<button class="x" type="button" aria-label="Close">CLOSE</button>' +
     '<h2 id="skillTitle">Use these cards with your agent</h2>' +
-    "<p>One skill covers cards 00&ndash;04: how a cross-chain call works, the rules for code that makes one, a local run and a table of reverts. It is a single text file, pinned to eez-core-protocol @ 9a1f815. Nothing runs when you install it.</p>" +
-    '<span class="k">CLAUDE CODE &middot; RUN IN YOUR PROJECT</span>' +
-    '<div class="row"><code id="skillInstall"></code><button type="button" data-copy="install">COPY</button></div>' +
-    '<span class="k">ANY OTHER AGENT</span>' +
-    '<div class="acts"><button type="button" data-copy="file">COPY SKILL.MD</button>' +
+    "<p>One instruction file covers cards 00&ndash;04 and examples at eez-core-protocol @ 9a1f815. Review it before giving it to an agent: an agent may use these instructions to run tools. Copying this text does not execute its commands.</p>" +
+    '<span class="k">REVIEW, THEN SAVE IN YOUR PROJECT</span>' +
+    '<p>For Claude Code, save the reviewed text at this path. If a file already exists, compare it first. For another agent, attach the reviewed file using that agent&rsquo;s instructions feature.</p>' +
+    '<div class="row"><code id="skillDestination"></code></div>' +
+    '<div class="acts"><button type="button" data-copy="file" disabled>COPY SKILL.MD</button>' +
     '<a class="btn" id="skillView" target="_blank" rel="noopener">READ IT FIRST &#8599;</a></div>' +
-    '<p class="note">It defaults to local anvil chains and asks before anything touches EEZ-X mainnet, where transactions cost real ETH.</p>';
+    '<p id="skillStatus" role="status" aria-live="polite"></p>' +
+    '<p class="note">The skill respects your project&rsquo;s execution policy and requires authorization for mainnet transactions, which cost real ETH. It does not adopt updates automatically.</p>';
   document.body.appendChild(d);
-  d.querySelector("#skillInstall").textContent = install;
+  d.querySelector("#skillDestination").textContent = destination;
   d.querySelector("#skillView").href = url;
+  var copy = d.querySelector('[data-copy="file"]');
+  var status = d.querySelector("#skillStatus");
 
   // Keys typed in the dialog belong to it, not to the step player behind it.
   d.addEventListener("keydown", function (e) { if (e.key !== "Escape") { e.stopPropagation(); } });
   d.addEventListener("click", function (e) { if (e.target === d) { d.close(); } });
   d.querySelector(".x").addEventListener("click", function () { d.close(); });
   d.addEventListener("close", function () { open.focus(); });
-  // Fetch the file when the dialog opens, so COPY can write it while the click
-  // still counts as a user gesture (Safari drops it after an await).
+  // Load only on request. Verify before enabling COPY; never render fetched
+  // content as HTML or fall back to unverified text on an error.
   var file = null;
+  var loading = false;
   open.addEventListener("click", function () {
     d.showModal();
-    if (!file) {
-      file = fetch(url).then(function (r) { if (!r.ok) { throw new Error(r.status); } return r.text(); });
-      file.then(function (t) { file.text = t; }, function () { file = null; });
+    if (file || loading) { return; }
+    if (!window.crypto || !window.crypto.subtle || !window.AbortController) {
+      status.textContent = "Verification is unavailable. Use HTTPS and a current browser; copying is disabled.";
+      return;
     }
+    loading = true;
+    status.textContent = "Checking the skill file…";
+    var controller = new AbortController();
+    var timeout = setTimeout(function () { controller.abort(); }, 10000);
+    fetch(url, { credentials: "omit", redirect: "error", cache: "no-cache", signal: controller.signal })
+      .then(function (r) {
+        if (!r.ok || r.redirected) { throw new Error("Skill unavailable"); }
+        return r.arrayBuffer();
+      })
+      .then(function (bytes) {
+        if (bytes.byteLength > 65536) { throw new Error("Unexpected skill size"); }
+        return crypto.subtle.digest("SHA-256", bytes).then(function (digest) {
+          var actual = Array.from(new Uint8Array(digest), function (b) {
+            return b.toString(16).padStart(2, "0");
+          }).join("");
+          if (actual !== SKILL_SHA256) { throw new Error("Skill changed"); }
+          file = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+          copy.disabled = false;
+          status.textContent = "File matches this site's reviewed copy. Read it before installing.";
+        });
+      })
+      .catch(function () {
+        file = null;
+        copy.disabled = true;
+        status.textContent = "Could not verify the skill. Nothing was copied. Close and reopen to retry.";
+      })
+      .finally(function () { clearTimeout(timeout); loading = false; });
   });
 
   function flash(btn, text) {
-    var was = btn.textContent;
     btn.textContent = text;
     btn.classList.toggle("done", text === "COPIED");
     clearTimeout(btn._reset);
-    btn._reset = setTimeout(function () { btn.textContent = was; btn.classList.remove("done"); }, 1400);
+    btn._reset = setTimeout(function () { btn.textContent = "COPY SKILL.MD"; btn.classList.remove("done"); }, 1400);
   }
-  d.querySelectorAll("[data-copy]").forEach(function (btn) {
-    btn.addEventListener("click", function () {
-      var isInstall = btn.getAttribute("data-copy") === "install";
-      var ready = isInstall ? install : file && file.text;
-      var done = function () { flash(btn, "COPIED"); };
-      var fail = function () { flash(btn, "COPY FAILED"); };
-      if (ready) { navigator.clipboard.writeText(ready).then(done, fail); return; }
-      (file || Promise.reject()).then(function (t) { return navigator.clipboard.writeText(t); }).then(done, fail);
-    });
+  copy.addEventListener("click", function () {
+    if (!file || copy.disabled) { return; }
+    if (!navigator.clipboard || !navigator.clipboard.writeText) { flash(copy, "COPY FAILED"); return; }
+    navigator.clipboard.writeText(file).then(
+      function () { flash(copy, "COPIED"); },
+      function () { flash(copy, "COPY FAILED"); }
+    );
   });
 })();

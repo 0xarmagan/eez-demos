@@ -1,0 +1,11 @@
+{
+  "name": "eez-demos-checks",
+  "private": true,
+  "description": "CI-only browser checks for the static EEZ Quickstarts site",
+  "engines": {
+    "node": ">=24.22.1 <25"
+  },
+  "devDependencies": {
+    "puppeteer": "25.16.0"
+  }
+}

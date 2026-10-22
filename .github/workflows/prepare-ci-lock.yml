@@ -1,0 +1,29 @@
+# Temporary bootstrap: generate the dependency lock on GitHub, never locally.
+# Remove this workflow after reviewing and committing its artifact.
+name: Prepare CI dependency lock
+on:
+  push:
+    branches: [fix/site-agent-deploy-safety]
+    paths:
+      - package.json
+      - .github/workflows/prepare-ci-lock.yml
+permissions:
+  contents: read
+jobs:
+  lock:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24.22.1"
+          package-manager-cache: false
+      - name: Resolve metadata without installing or running package scripts
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
+        with:
+          name: reviewed-ci-lock
+          path: package-lock.json
+          retention-days: 3
