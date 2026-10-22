@@ -114,16 +114,11 @@
   .intro-learn b{display:block;font-family:var(--mono);font-size:14px;font-weight:400;letter-spacing:0.12em;color:var(--eez-green);margin-bottom:11px;}
   .intro-actions{margin-top:54px;}
   .intro-actions{display:flex;align-items:center;gap:20px 32px;flex-wrap:wrap;position:relative;}
-  .proves-pop summary{list-style:none;cursor:pointer;font-family:var(--mono);font-size:17px;letter-spacing:0.04em;color:#d8d8d8;padding:10px 0;border-bottom:1px dashed #4a4a4a;}
-  .proves-pop summary::-webkit-details-marker{display:none;}
-  .proves-pop summary::after{content:" +";color:var(--eez-green);}
-  .proves-pop[open] summary::after{content:" \2212";}
-  .proves-pop summary:hover{color:#fff;}
-  .proves-pop summary:focus-visible{outline:2px solid var(--eez-green);outline-offset:4px;}
-  .intro-proves{position:absolute;left:0;bottom:calc(100% + 18px);width:min(1180px,100%);display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:36px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:16px;padding:28px 32px;box-shadow:0 24px 60px -20px rgba(0,0,0,.85);z-index:5;}
-  .intro-proves p{margin:0;font-size:19px;line-height:1.5;color:#d8d8d8;text-wrap:pretty;}
-  .intro-proves b{display:block;font-family:var(--mono);font-size:14px;font-weight:400;letter-spacing:0.12em;color:var(--eez-green);margin-bottom:11px;}
-  .intro-proves #doesnt b{color:var(--muted);}
+  .end-proves{display:none;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;max-width:1010px;margin-top:24px;background:var(--eez-screen);border:1px solid var(--eez-edge);border-radius:16px;padding:20px 24px;}
+  #stage:has(#stepNav.at-end) .end-proves{display:grid;}
+  .end-proves p{margin:0;font-size:17px;line-height:1.5;color:#d8d8d8;text-wrap:pretty;}
+  .end-proves b{display:block;font-family:var(--mono);font-size:14px;font-weight:400;letter-spacing:0.12em;color:var(--eez-green);margin-bottom:11px;}
+  .end-proves #doesnt b{color:var(--muted);}
   /* Same gradient treatment as .btn-play, one size up for the stage;
      it carries class="btn-play" so it inherits that hover rule and
      the shared button:focus-visible green ring. */
@@ -137,9 +132,8 @@
     .intro-learn{grid-template-columns:minmax(0,1fr);gap:20px;}
     .intro-learn li{font-size:16px;}
     .intro-actions{margin-top:32px;}
-    .proves-pop summary{font-size:14px;}
-    .intro-proves{position:static;grid-template-columns:minmax(0,1fr);gap:18px;padding:18px;margin-top:12px;box-shadow:none;}
-    .intro-proves p{font-size:16px;}
+    .end-proves{grid-template-columns:minmax(0,1fr);gap:18px;padding:18px;}
+    .end-proves p{font-size:16px;}
     #btnStart{font-size:16px;padding:13px 24px;width:100%;}
   }
 </style>
@@ -340,6 +334,12 @@
       <div id="kicker" style="font-family:var(--mono);font-size:14px;letter-spacing:0.16em;color:var(--eez-green);margin-bottom:11px;"></div>
       <div id="caption" style="font-size:22px;line-height:1.45;color:#d8d8d8;text-wrap:pretty;"></div>
     </div>
+    <!-- Shown on the last step only (CSS: #stepNav.at-end), under the closing
+         caption, so it reads as the verdict on the run, not a pop-over. -->
+    <div class="end-proves">
+      <p id="proves"><b>WHAT THIS PROVES</b>Both directions pass on local anvil chains, two per scenario: a call from L1 to L2 and a call from L2 to L1 each get the other side's return value back inside the calling transaction.</p>
+      <p id="doesnt"><b>WHAT IT DOESN'T</b>It does not use real proofs or a live node. The script does the composer's job: it precomputes the return value into an entry, posts that entry before your call, and the batch is accepted by an accept-all proof system.</p>
+    </div>
 </div>
 
   <div id="codeCard" style="position:absolute;left:1208px;top:140px;width:664px;height:712px;background:var(--eez-chrome);border:1px solid var(--eez-edge);border-radius:10px;overflow:hidden;">
@@ -376,13 +376,6 @@
       <p style="margin:12px 0 0;font-family:var(--mono);font-size:12.5px;line-height:1.7;color:var(--muted);letter-spacing:0.02em;">Verified against eez-core-protocol Git commit 9a1f815 &mdash; pre-mainnet (test network); interfaces may move.<br>The terminal panels show commands and output; each source link opens the pinned script, test, or commit this step runs against.</p>
       <div class="intro-actions">
         <button id="btnStart" class="btn-play" type="button">Start the walkthrough →</button>
-        <details class="proves-pop">
-          <summary>What this proves, and what it doesn't</summary>
-          <div class="intro-proves">
-            <p id="proves"><b>WHAT THIS PROVES</b>Both directions pass on local anvil chains, two per scenario: a call from L1 to L2 and a call from L2 to L1 each get the other side's return value back inside the calling transaction.</p>
-            <p id="doesnt"><b>WHAT IT DOESN'T</b>It does not use real proofs or a live node. The script does the composer's job: it precomputes the return value into an entry, posts that entry before your call, and the batch is accepted by an accept-all proof system.</p>
-          </div>
-        </details>
       </div>
     </div>
   </section>

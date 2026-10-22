@@ -403,8 +403,8 @@ def build_index(pages):
 
 
 def proves_of(src):
-    """The intro's "What this proves / what it doesn't" pair, if the page has
-    one. It lives in the lead-in markup, not in the step arrays, so it is read
+    """The "What this proves / what it doesn't" pair shown on the last step, if
+    the page has one. It lives in static markup, not in the step arrays, so it is read
     here or an agent reading the export would get a different story."""
     out = []
     for key in ("proves", "doesnt"):
