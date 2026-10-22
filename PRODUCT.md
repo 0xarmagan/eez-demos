@@ -22,14 +22,14 @@ Success means a developer runs a cross-rollup round trip on their own machine, u
 
 It is the EEZ team's official hands-on learning layer and sits between two other surfaces:
 
-- **eez.dev** is the live EEZ-X testnet (Chiado L1). This site links out to it and doesn't duplicate its flows.
+- **mainnet.eez.dev** is the live EEZ-X network on Ethereum mainnet (dashboard: https://mainnet.eez.dev/dashboard/). This site links out to it and doesn't duplicate its flows. eez.dev is the older Chiado testnet.
 - **eez-core-protocol `docs/`** is the specification. This site teaches mechanics and cites the spec; it isn't a second spec.
 
 What a neighbor can't truthfully copy: every code panel is verbatim source cited at a pinned `file:line` and commit, checked mechanically in CI. Snippets compile and their Foundry tests pass. Nothing is pseudocode.
 
 ## Operating Context
 
-- Readers move between a walkthrough, their terminal (Foundry v1.7.1, `forge test`, the local e2e runner), the GitHub source the citations link to, and eez.dev.
+- Readers move between a walkthrough, their terminal (Foundry v1.7.1, `forge test`, the local e2e runner), the GitHub source the citations link to, and mainnet.eez.dev.
 - The offline path (snippets with no forge-std, no submodules, no Docker) has to work on a bare checkout.
 - Agents and LLMs consume the site through `llms.txt` / `llms-full.txt`, because the code panels render from JavaScript at runtime.
 
@@ -39,7 +39,7 @@ What a neighbor can't truthfully copy: every code panel is verbatim source cited
 - **Walkthrough format is fixed** (CONTRIBUTING.md): a 1920×1080 stage (diagram, code, caption, Prev/Play/Next), progressive `codeByStep` reveal, real data in diagrams, the `NEXT:` link chain, and the `scaleStage()` mobile floor. `pr5` is the template, and `scripts/new-demo.sh` scaffolds new pages from it.
 - **Card format:** an action-oriented title and a one-sentence hook that states the consequence, not the mechanism. No code on cards.
 - **Sources:** contracts come from `eez-core-protocol` and infra from `eez-rollupX`, both pinned by SHA. Pinned commits drift from upstream `main`, so check against the pin.
-- **Testnet facts:** EEZ-X runs on Chiado (L2 chain 699069). Launch L1 is Ethereum mainnet. The proof system in public source is dev-grade ECDSA (threshold 1), not production ZK, and `USE_GAS_LEFT` is off in every current deployment.
+- **Network facts:** EEZ-X runs on Ethereum mainnet (L1 chain 1, L2 chain 696990, protocol 855fe06). The older Chiado testnet (L2 chain 699069) is at eez.dev. The proof system in public source is dev-grade ECDSA (threshold 1), not production ZK, and `USE_GAS_LEFT` is off in every current deployment.
 - **Open decisions:**
   - whether to keep the hero phrase "as naturally as a same-chain call";
   - the unmeasured "DEPLOY A CONTRACT · ~15 MIN" pill;
