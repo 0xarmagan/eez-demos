@@ -10,7 +10,7 @@ cd eez-demos
 npx serve .          # or: python3 -m http.server 8000
 ```
 
-No build step, no dependencies — but serve it rather than opening `index.html` from disk, since a few paths are absolute (the favicon breaks otherwise).
+No build step or runtime dependencies — but serve it rather than opening `index.html` from disk, since a few paths are absolute (the favicon breaks otherwise). The npm manifest is for CI browser checks only.
 
 ## Add a new example
 
@@ -111,11 +111,33 @@ directory is not a security sandbox.
 
 The browser geometry check keeps Chromium's sandbox enabled. If the host cannot
 support it, use a suitable isolated host instead of disabling the sandbox.
-CI pins Puppeteer to 24.37.5 and Foundry to v1.7.1. npm lifecycle scripts are
-disabled, followed by an explicit browser download step in CI. Transitive npm
-dependencies and action tags are not yet locked to immutable versions.
+CI pins Node to 24.22.1, Puppeteer to 25.16.0 and Foundry to v1.7.1. Its npm
+dependency graph is committed in package-lock.json and installed with npm ci;
+lifecycle scripts are disabled, followed by an explicit browser download step
+in CI. Actions are pinned to full commit hashes. The dependency audit fails on
+high or critical advisories. These are development checks, not site runtime
+dependencies; publishing still serves static files.
 
-Deployment examples import a throwaway key interactively into an encrypted
+The PR's dependency-lock preparation workflow runs only on
+`fix/site-agent-deploy-safety` in this repository. It resolves package metadata
+on GitHub without lifecycle scripts, commits only package-lock.json to that
+branch, and starts CI on the updated branch. Only that job has repository write
+and workflow-dispatch permissions; the validation workflow remains read-only.
+No artifact download or local dependency installation is needed for that flow.
+
+The site-safety browser check intercepts all HTTP requests and serves tracked
+fixtures without contacting a live RPC. It checks unexpected requests (no page
+fetches the agent skill), wallet access, hostile text inputs, clipboard writes
+and the separate mainnet broadcast command. It never executes
+displayed commands. Existing geometry and navigation assertions remain enabled.
+
+The agent skill (skills/eez-dapp-quickstart/SKILL.md) is reviewed text, not a
+shell installer, and no page links to it. Updates require review and approval
+rather than automatic adoption of instructions from a mutable URL.
+
+The mainnet playground guide previews before an explicit, chain-bound broadcast
+and calls for small integration experiments using real ETH. It does not certify
+the live protocol or bridge. Deployment examples import a fresh key interactively into an encrypted
 keystore. Never put private keys or keystore passwords in command arguments or
 exported variables. Install Foundry from verified official release artifacts.
 

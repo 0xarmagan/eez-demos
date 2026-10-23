@@ -1,0 +1,41 @@
+# Generate the dependency lock on GitHub and commit only that file to this PR.
+# Deliberately restricted to this repository and review branch; no local download.
+name: Prepare CI dependency lock
+on:
+  push:
+    branches: [fix/site-agent-deploy-safety]
+    paths:
+      - package.json
+      - .github/workflows/prepare-ci-lock.yml
+permissions:
+  contents: read
+jobs:
+  lock:
+    if: github.repository == 'eez-association/eez-demos' && github.ref == 'refs/heads/fix/site-agent-deploy-safety'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "24.22.1"
+          package-manager-cache: false
+      - name: Resolve metadata without installing or running package scripts
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Commit the generated lock to this PR branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- package-lock.json
+          if ! git diff --cached --quiet; then
+            git -c core.hooksPath=/dev/null commit -m 'Lock CI dependencies generated on GitHub'
+            git -c core.hooksPath=/dev/null -c credential.helper= -c 'credential.helper=!gh auth git-credential' push origin HEAD:fix/site-agent-deploy-safety
+          fi
+          # GITHUB_TOKEN pushes do not trigger ordinary push workflows.
+          gh workflow run ci.yml --repo "$GITHUB_REPOSITORY" --ref fix/site-agent-deploy-safety
